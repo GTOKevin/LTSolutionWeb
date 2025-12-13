@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gestión de Facturas y Pagos - LogiTrans</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b8cee",
+                        "primary-content": "#ffffff",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2632",
+                        "border-light": "#e5e7eb",
+                        "border-dark": "#374151",
+                        "text-main": "#111418",
+                        "text-muted": "#617589",
+                        "success": "#078838",
+                        "warning": "#f59e0b",
+                        "danger": "#dc2626",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        /* Custom scrollbar for table container */
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-white transition-colors duration-200">
+<div class="flex min-h-screen w-full flex-row overflow-hidden">
+<!-- Sidebar -->
+<aside class="hidden lg:flex flex-col w-72 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark flex-shrink-0 z-20 transition-colors duration-200">
+<div class="flex flex-col h-full p-4 justify-between">
+<div class="flex flex-col gap-8">
+<div class="px-3">
+<div class="flex items-center gap-3">
+<div class="size-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined filled">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-base font-bold leading-tight text-text-main dark:text-white">LogiTrans</h1>
+<p class="text-xs font-normal text-text-muted dark:text-gray-400">Operaciones HAZMAT</p>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-gray-100 hover:text-text-main dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-gray-100 hover:text-text-main dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="text-sm font-medium">Envíos</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-gray-100 hover:text-text-main dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="text-sm font-medium">Cotizaciones</span>
+</a>
+<!-- Active Item -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-content transition-colors" href="#">
+<span class="material-symbols-outlined filled">receipt_long</span>
+<span class="text-sm font-semibold">Facturas</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-gray-100 hover:text-text-main dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-sm font-medium">Reportes</span>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-gray-100 hover:text-text-main dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Configuración</span>
+</a>
+<div class="px-3 py-4 border-t border-border-light dark:border-border-dark mt-2">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-cover bg-center" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAtT-QlqlT3kw5cS94i0dpU8-u0U03XgEA0kUkMntAHCnfZOTsvv4pr7MKbzXR_Etj8nGmdaoLmK-suWE5iOMdUz6MHxwshKSDnffw-RLmyOXOksoKACVeEurs_1EzAGgwxbsXVQ88LoH--zYwQhPsNWkvPo8vLtMkvbilwaCiUKpZMNui52yDPFoRQ-5qoZR_jLGEo5itssFMqxkmDC0mcwXPFnSYpxzXabO0ACUmzMM7hcYGvLwERCPRLiukjT6TcRRXIF3zK9cY");'></div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-text-main dark:text-white">Carlos Mendez</span>
+<span class="text-xs text-text-muted dark:text-gray-400">Logistics Manager</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0 bg-background-light dark:bg-background-dark overflow-y-auto">
+<!-- Header -->
+<header class="sticky top-0 z-10 bg-surface-light dark:bg-surface-dark border-b border-border-light dark:border-border-dark px-6 py-4 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4 lg:hidden">
+<button class="text-text-muted hover:text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="text-lg font-bold">LogiTrans</span>
+</div>
+<div class="hidden lg:flex flex-col">
+<h2 class="text-xl font-bold leading-tight tracking-tight text-text-main dark:text-white">Gestión de Facturas</h2>
+<p class="text-sm text-text-muted dark:text-gray-400">Administre cobros, pagos y estados financieros</p>
+</div>
+<div class="flex items-center gap-4 flex-1 justify-end">
+<div class="relative hidden md:flex w-full max-w-md mx-4">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="w-full h-10 pl-10 pr-4 rounded-lg bg-background-light dark:bg-background-dark border-none focus:ring-2 focus:ring-primary text-sm text-text-main dark:text-white placeholder-text-muted transition-all" placeholder="Buscar por # Factura, Cliente o ID de Envío..." type="text"/>
+</div>
+<div class="flex items-center gap-2 border-l border-border-light dark:border-border-dark pl-4 ml-2">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-muted transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-surface-light dark:border-surface-dark"></span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-muted transition-colors">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-6 md:p-8 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-5 border border-border-light dark:border-border-dark shadow-sm hover:border-primary/50 transition-colors group">
+<div class="flex justify-between items-start mb-2">
+<p class="text-sm font-medium text-text-muted dark:text-gray-400">Total Pendiente</p>
+<span class="p-1.5 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</span>
+</div>
+<div class="flex items-baseline gap-2">
+<p class="text-2xl font-bold text-text-main dark:text-white">$145,200.00</p>
+<span class="text-xs font-medium text-success bg-success/10 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">trending_up</span> +5.2%
+                            </span>
+</div>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-5 border border-border-light dark:border-border-dark shadow-sm hover:border-danger/50 transition-colors group">
+<div class="flex justify-between items-start mb-2">
+<p class="text-sm font-medium text-text-muted dark:text-gray-400">Vencido</p>
+<span class="p-1.5 rounded-lg bg-danger/10 text-danger group-hover:bg-danger group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</span>
+</div>
+<div class="flex items-baseline gap-2">
+<p class="text-2xl font-bold text-text-main dark:text-white">$12,500.00</p>
+<span class="text-xs font-medium text-danger bg-danger/10 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">trending_up</span> +1.2%
+                            </span>
+</div>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-5 border border-border-light dark:border-border-dark shadow-sm hover:border-success/50 transition-colors group">
+<div class="flex justify-between items-start mb-2">
+<p class="text-sm font-medium text-text-muted dark:text-gray-400">Cobrado este mes</p>
+<span class="p-1.5 rounded-lg bg-success/10 text-success group-hover:bg-success group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+</span>
+</div>
+<div class="flex items-baseline gap-2">
+<p class="text-2xl font-bold text-text-main dark:text-white">$89,000.00</p>
+<span class="text-xs font-medium text-success bg-success/10 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">trending_up</span> +12%
+                            </span>
+</div>
+</div>
+</div>
+<!-- Filters & Actions Toolbar -->
+<div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+<div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+<!-- Date Filter -->
+<div class="relative group">
+<button class="flex items-center gap-2 h-10 px-3 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg text-sm font-medium text-text-main dark:text-white hover:border-primary transition-colors min-w-[140px]">
+<span class="material-symbols-outlined text-[18px] text-text-muted">calendar_today</span>
+<span>Este Mes</span>
+<span class="material-symbols-outlined text-[18px] text-text-muted ml-auto">expand_more</span>
+</button>
+</div>
+<!-- Status Filter -->
+<div class="relative group">
+<button class="flex items-center gap-2 h-10 px-3 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg text-sm font-medium text-text-main dark:text-white hover:border-primary transition-colors min-w-[140px]">
+<span class="material-symbols-outlined text-[18px] text-text-muted">filter_list</span>
+<span>Estado: Todos</span>
+<span class="material-symbols-outlined text-[18px] text-text-muted ml-auto">expand_more</span>
+</button>
+</div>
+<!-- Density Toggle -->
+<div class="h-10 border-l border-border-light dark:border-border-dark mx-1 hidden md:block"></div>
+<button class="flex items-center justify-center size-10 rounded-lg border border-border-light dark:border-border-dark hover:bg-gray-100 dark:hover:bg-gray-800 text-text-muted dark:text-gray-400 transition-colors" title="Toggle Density">
+<span class="material-symbols-outlined text-[20px]">density_medium</span>
+</button>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto">
+<button class="hidden sm:flex items-center gap-2 h-10 px-4 bg-transparent border border-primary text-primary hover:bg-primary hover:text-white dark:text-primary dark:hover:text-white rounded-lg text-sm font-bold transition-all">
+<span class="material-symbols-outlined text-[20px]">download</span>
+                            Exportar
+                        </button>
+<div class="relative w-full md:w-auto">
+<button class="w-full md:w-auto flex items-center justify-center gap-2 h-10 px-5 bg-primary hover:bg-blue-600 text-white rounded-lg text-sm font-bold shadow-sm transition-all">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                                Nueva Factura
+                                <span class="w-[1px] h-4 bg-white/30 mx-1"></span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm overflow-hidden flex flex-col flex-1">
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-background-light dark:bg-background-dark border-b border-border-light dark:border-border-dark">
+<th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-gray-400 min-w-[60px]">
+<div class="flex items-center gap-1 cursor-pointer hover:text-primary">
+<input class="rounded border-gray-300 text-primary focus:ring-primary bg-white dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+</div>
+</th>
+<th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-gray-400 min-w-[140px]">
+<div class="flex items-center gap-1 cursor-pointer hover:text-primary">
+                                            Factura #
+                                            <span class="material-symbols-outlined text-[14px]">unfold_more</span>
+</div>
+</th>
+<th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-gray-400 min-w-[200px]">Cliente</th>
+<th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-gray-400 min-w-[140px]">Envío</th>
+<th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-gray-400 min-w-[120px]">Emisión</th>
+<th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-gray-400 min-w-[120px]">Vencimiento</th>
+<th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-gray-400 min-w-[140px]">Estado</th>
+<th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-gray-400 text-right min-w-[120px]">Monto</th>
+<th class="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-gray-400 text-center min-w-[80px]">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-light dark:divide-border-dark text-sm">
+<!-- Row 1: Pending -->
+<tr class="group hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
+<td class="py-3 px-4">
+<input class="rounded border-gray-300 text-primary focus:ring-primary bg-white dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<a class="font-medium text-primary hover:underline" href="#">INV-2023-001</a>
+</td>
+<td class="py-3 px-4">
+<div class="flex flex-col">
+<span class="font-medium text-text-main dark:text-white">PetroLogistics SA</span>
+<span class="text-xs text-text-muted">NIT: 900.123.456</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-warning filled" title="HAZMAT Class 3">local_fire_department</span>
+<span class="font-mono text-xs text-text-muted">HAZ-8829</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-muted">Oct 24, 2023</td>
+<td class="py-3 px-4 text-text-muted">Nov 24, 2023</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning border border-warning/20">
+<span class="material-symbols-outlined text-[14px] filled">schedule</span>
+                                            Pendiente
+                                        </span>
+</td>
+<td class="py-3 px-4 text-right font-medium text-text-main dark:text-white">$4,500.00</td>
+<td class="py-3 px-4 text-center">
+<button class="p-1 rounded-md text-text-muted hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-text-main transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Overdue -->
+<tr class="group hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
+<td class="py-3 px-4">
+<input class="rounded border-gray-300 text-primary focus:ring-primary bg-white dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<a class="font-medium text-primary hover:underline" href="#">INV-2023-004</a>
+</td>
+<td class="py-3 px-4">
+<div class="flex flex-col">
+<span class="font-medium text-text-main dark:text-white">Industrias Quimicas Ltda</span>
+<span class="text-xs text-text-muted">NIT: 800.987.654</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-danger filled" title="HAZMAT Class 6">science</span>
+<span class="font-mono text-xs text-text-muted">HAZ-9102</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-muted">Sep 15, 2023</td>
+<td class="py-3 px-4 text-danger font-medium">Oct 15, 2023</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-danger/10 text-danger border border-danger/20">
+<span class="material-symbols-outlined text-[14px] filled">error</span>
+                                            Vencida
+                                        </span>
+</td>
+<td class="py-3 px-4 text-right font-medium text-text-main dark:text-white">$12,500.00</td>
+<td class="py-3 px-4 text-center">
+<button class="p-1 rounded-md text-text-muted hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-text-main transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Paid -->
+<tr class="group hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
+<td class="py-3 px-4">
+<input class="rounded border-gray-300 text-primary focus:ring-primary bg-white dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<a class="font-medium text-primary hover:underline" href="#">INV-2022-890</a>
+</td>
+<td class="py-3 px-4">
+<div class="flex flex-col">
+<span class="font-medium text-text-main dark:text-white">Global Transporters Inc.</span>
+<span class="text-xs text-text-muted">NIT: 999.000.111</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-text-muted" title="Standard Cargo">inventory_2</span>
+<span class="font-mono text-xs text-text-muted">GEN-4432</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-muted">Oct 01, 2023</td>
+<td class="py-3 px-4 text-text-muted">Oct 31, 2023</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
+<span class="material-symbols-outlined text-[14px] filled">check_circle</span>
+                                            Pagada
+                                        </span>
+</td>
+<td class="py-3 px-4 text-right font-medium text-text-main dark:text-white">$2,150.00</td>
+<td class="py-3 px-4 text-center">
+<button class="p-1 rounded-md text-text-muted hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-text-main transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Partial Payment -->
+<tr class="group hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
+<td class="py-3 px-4">
+<input class="rounded border-gray-300 text-primary focus:ring-primary bg-white dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<a class="font-medium text-primary hover:underline" href="#">INV-2023-002</a>
+</td>
+<td class="py-3 px-4">
+<div class="flex flex-col">
+<span class="font-medium text-text-main dark:text-white">BioFuels Corp</span>
+<span class="text-xs text-text-muted">NIT: 777.888.999</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-warning filled" title="HAZMAT Class 9">warning</span>
+<span class="font-mono text-xs text-text-muted">HAZ-3321</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-muted">Oct 20, 2023</td>
+<td class="py-3 px-4 text-text-muted">Nov 20, 2023</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
+<span class="material-symbols-outlined text-[14px] filled">pie_chart</span>
+                                            Parcial
+                                        </span>
+</td>
+<td class="py-3 px-4 text-right font-medium text-text-main dark:text-white">$8,900.00</td>
+<td class="py-3 px-4 text-center">
+<button class="p-1 rounded-md text-text-muted hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-text-main transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Pending -->
+<tr class="group hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
+<td class="py-3 px-4">
+<input class="rounded border-gray-300 text-primary focus:ring-primary bg-white dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<a class="font-medium text-primary hover:underline" href="#">INV-2023-018</a>
+</td>
+<td class="py-3 px-4">
+<div class="flex flex-col">
+<span class="font-medium text-text-main dark:text-white">Minera del Sur</span>
+<span class="text-xs text-text-muted">NIT: 400.500.600</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-text-muted" title="Heavy Machinery">agriculture</span>
+<span class="font-mono text-xs text-text-muted">LOG-1102</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-muted">Oct 28, 2023</td>
+<td class="py-3 px-4 text-text-muted">Nov 28, 2023</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning border border-warning/20">
+<span class="material-symbols-outlined text-[14px] filled">schedule</span>
+                                            Pendiente
+                                        </span>
+</td>
+<td class="py-3 px-4 text-right font-medium text-text-main dark:text-white">$34,000.00</td>
+<td class="py-3 px-4 text-center">
+<button class="p-1 rounded-md text-text-muted hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-text-main transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="bg-surface-light dark:bg-surface-dark px-4 py-3 flex items-center justify-between border-t border-border-light dark:border-border-dark">
+<div class="flex-1 flex justify-between sm:hidden">
+<a class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" href="#">Anterior</a>
+<a class="relative ml-3 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" href="#">Siguiente</a>
+</div>
+<div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+<div>
+<p class="text-sm text-text-muted dark:text-gray-400">
+                                    Mostrando <span class="font-medium text-text-main dark:text-white">1</span> a <span class="font-medium text-text-main dark:text-white">5</span> de <span class="font-medium text-text-main dark:text-white">24</span> resultados
+                                </p>
+</div>
+<div>
+<nav aria-label="Pagination" class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+<a class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700" href="#">
+<span class="sr-only">Previous</span>
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</a>
+<a aria-current="page" class="z-10 bg-primary/10 border-primary text-primary relative inline-flex items-center px-4 py-2 border text-sm font-medium" href="#">1</a>
+<a class="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 relative inline-flex items-center px-4 py-2 border text-sm font-medium" href="#">2</a>
+<a class="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 relative inline-flex items-center px-4 py-2 border text-sm font-medium" href="#">3</a>
+<a class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700" href="#">
+<span class="sr-only">Next</span>
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</a>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Slide-over Drawer (Visible for demo, practically would be hidden/toggled) -->
+<div class="fixed inset-y-0 right-0 z-30 w-96 bg-surface-light dark:bg-surface-dark shadow-2xl border-l border-border-light dark:border-border-dark transform translate-x-full md:translate-x-0 transition-transform duration-300 hidden xl:flex flex-col">
+<div class="flex items-center justify-between p-6 border-b border-border-light dark:border-border-dark">
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-text-muted uppercase tracking-wider">Detalle de Factura</span>
+<h3 class="text-xl font-bold text-text-main dark:text-white">INV-2023-001</h3>
+</div>
+<button class="text-text-muted hover:text-text-main dark:text-gray-400 dark:hover:text-white">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 flex flex-col gap-6 custom-scrollbar">
+<!-- Status Card -->
+<div class="flex items-center justify-between p-4 bg-background-light dark:bg-background-dark rounded-lg">
+<div class="flex flex-col">
+<span class="text-xs text-text-muted">Estado Actual</span>
+<span class="text-sm font-bold text-warning flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] filled">schedule</span> Pendiente
+                        </span>
+</div>
+<div class="text-right">
+<span class="text-xs text-text-muted">Monto Total</span>
+<span class="text-lg font-bold text-text-main dark:text-white block">$4,500.00</span>
+</div>
+</div>
+<!-- Client Info -->
+<div class="flex flex-col gap-2">
+<h4 class="text-sm font-semibold text-text-main dark:text-white">Cliente</h4>
+<div class="flex items-start gap-3">
+<div class="size-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 font-bold">PL</div>
+<div>
+<p class="text-sm font-medium text-text-main dark:text-white">PetroLogistics SA</p>
+<p class="text-xs text-text-muted">Av. Industrial 4402, Bogotá</p>
+<p class="text-xs text-primary mt-1 cursor-pointer hover:underline">Ver perfil</p>
+</div>
+</div>
+</div>
+<!-- Shipment Context -->
+<div class="flex flex-col gap-2">
+<h4 class="text-sm font-semibold text-text-main dark:text-white">Envío Asociado</h4>
+<div class="p-3 border border-border-light dark:border-border-dark rounded-lg">
+<div class="flex justify-between mb-2">
+<span class="text-sm font-mono font-medium">HAZ-8829</span>
+<span class="material-symbols-outlined text-warning text-[18px] filled" title="Hazardous">local_fire_department</span>
+</div>
+<p class="text-xs text-text-muted mb-2">Transporte de Etanol - Tanque 5000L</p>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+<div class="bg-success h-1.5 rounded-full" style="width: 100%"></div>
+</div>
+<span class="text-[10px] text-success font-medium mt-1 block text-right">Entregado</span>
+</div>
+</div>
+<!-- Line Items -->
+<div class="flex flex-col gap-3">
+<h4 class="text-sm font-semibold text-text-main dark:text-white">Items</h4>
+<div class="space-y-3">
+<div class="flex justify-between text-sm">
+<span class="text-text-muted">Servicio Transporte (500km)</span>
+<span class="font-medium">$3,500.00</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-text-muted">Recargo HAZMAT (Clase 3)</span>
+<span class="font-medium">$800.00</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-text-muted">Seguro de Carga</span>
+<span class="font-medium">$200.00</span>
+</div>
+<div class="h-px bg-border-light dark:border-border-dark my-1"></div>
+<div class="flex justify-between text-sm font-bold">
+<span>Total</span>
+<span>$4,500.00</span>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="mt-auto flex flex-col gap-3 pt-6">
+<button class="w-full py-2.5 bg-primary hover:bg-blue-600 text-white rounded-lg text-sm font-bold shadow-sm transition-all flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">payments</span>
+                        Registrar Pago
+                    </button>
+<div class="grid grid-cols-2 gap-3">
+<button class="py-2 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark hover:bg-gray-100 dark:hover:bg-gray-800 text-text-main dark:text-white rounded-lg text-sm font-medium transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span> PDF
+                        </button>
+<button class="py-2 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark hover:bg-gray-100 dark:hover:bg-gray-800 text-text-main dark:text-white rounded-lg text-sm font-medium transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">mail</span> Email
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

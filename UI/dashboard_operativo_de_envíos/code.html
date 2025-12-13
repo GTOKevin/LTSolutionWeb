@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard Operativo de Envíos</title>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f9f506",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#23220f",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#2c2b14", // Slightly lighter than background-dark for cards
+                        "border-light": "#e6e6db",
+                        "border-dark": "#3e3d24",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-hidden selection:bg-primary selection:text-black">
+<div class="flex h-screen w-full">
+<!-- Sidebar -->
+<aside class="w-72 flex-shrink-0 flex flex-col justify-between border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark py-6 px-4 hidden lg:flex">
+<div class="flex flex-col gap-8">
+<!-- Branding -->
+<div class="flex items-center gap-3 px-2">
+<div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-black font-black text-xl tracking-tighter shadow-sm">
+                        L
+                    </div>
+<div class="flex flex-col">
+<h1 class="text-lg font-bold leading-none tracking-tight">LogiTrack</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Enterprise HAZMAT</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-1.5">
+<a class="flex items-center gap-3 px-4 py-3 rounded-full bg-background-light dark:bg-surface-dark text-slate-900 dark:text-white font-medium transition-all shadow-sm" href="#">
+<span class="material-symbols-outlined filled" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+                        Dashboard
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-dark/50 hover:text-slate-900 dark:hover:text-white font-medium transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">local_shipping</span>
+                        Envíos
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-dark/50 hover:text-slate-900 dark:hover:text-white font-medium transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">analytics</span>
+                        Reportes
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-dark/50 hover:text-slate-900 dark:hover:text-white font-medium transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">map</span>
+                        Rutas
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-dark/50 hover:text-slate-900 dark:hover:text-white font-medium transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">badge</span>
+                        Conductores
+                    </a>
+</nav>
+</div>
+<!-- Bottom Nav -->
+<div class="flex flex-col gap-4">
+<div class="px-4 py-4 rounded-2xl bg-slate-50 dark:bg-surface-dark border border-border-light dark:border-border-dark">
+<div class="flex items-center gap-3 mb-3">
+<span class="material-symbols-outlined text-orange-500">warning</span>
+<p class="text-sm font-bold">Alerta Crítica</p>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">Condiciones climáticas adversas en Ruta 9. Retrasos estimados de +2h.</p>
+<button class="text-xs font-bold text-slate-900 dark:text-white hover:underline">Ver detalles</button>
+</div>
+<div class="border-t border-border-light dark:border-border-dark pt-4 px-2">
+<a class="flex items-center gap-3 px-2 py-2 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+                        Configuración
+                    </a>
+<button class="flex items-center gap-3 px-2 py-2 mt-1 w-full text-left rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium transition-all" onclick="document.documentElement.classList.toggle('dark')">
+<span class="material-symbols-outlined dark:hidden">dark_mode</span>
+<span class="material-symbols-outlined hidden dark:block">light_mode</span>
+<span class="dark:hidden">Modo Oscuro</span>
+<span class="hidden dark:block">Modo Claro</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Header -->
+<header class="h-20 flex items-center justify-between px-8 border-b border-border-light dark:border-border-dark bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-20">
+<div class="flex flex-col">
+<h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard Operativo</h2>
+<p class="text-sm text-slate-500 dark:text-slate-400 hidden sm:block">Visión general de logística y transporte de cargas peligrosas</p>
+</div>
+<div class="flex items-center gap-4">
+<!-- Search -->
+<div class="relative group hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-600 dark:group-focus-within:text-slate-300 transition-colors">search</span>
+<input class="pl-10 pr-4 h-10 w-64 rounded-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark focus:border-slate-400 focus:ring-0 text-sm transition-all placeholder:text-slate-400 dark:text-white shadow-sm" placeholder="Buscar ID, transporte..." type="text"/>
+</div>
+<!-- Actions -->
+<button class="h-10 w-10 flex items-center justify-center rounded-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-border-dark transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white dark:border-surface-dark"></span>
+</button>
+<div class="h-8 w-px bg-border-light dark:bg-border-dark mx-1"></div>
+<button class="flex items-center gap-3 pl-1 pr-3 py-1 rounded-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-border-dark transition-colors">
+<div class="h-8 w-8 rounded-full bg-slate-200 bg-center bg-cover border border-slate-100 dark:border-slate-700" data-alt="User profile picture of operations manager" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC-9PhqluHvUgU9KNcUM4KLoQzUgDi3ZtFONfk5ZIxTzM-jdL_Ce9EikDI_qW__80jYUdhDx8vqgPOTMg8wmI0kZTzz5C9fmVwaST92mua9NioSqkUnCJZIjr6FSVw47QkCgxES1HduPl2lNQSSmWRkkIdsvVMyNtSW3dFb-Uetkbp9G6wxdjgHcWxFMzW0OkJbs8NUwICN8tCf7wK2RgBFzXXl08Xr6PtHfl7SLbC3UtMq3D_4OtdDSDiM49dOrXuZehUMxSYqqY8');"></div>
+<div class="flex flex-col items-start hidden lg:flex">
+<span class="text-sm font-bold text-slate-900 dark:text-white leading-none">Carlos M.</span>
+<span class="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none mt-1">Gerente Ops</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-lg hidden lg:block">expand_more</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth">
+<!-- KPI Section -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- KPI 1 -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-6 border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="flex flex-col gap-1">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">On-time %</p>
+<h3 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">94.5%</h3>
+</div>
+<span class="flex items-center text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-sm mr-0.5">trending_up</span>
+                                +2.1%
+                            </span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 h-1 rounded-full overflow-hidden">
+<div class="bg-emerald-500 h-full rounded-full" style="width: 94.5%"></div>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-6 border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="flex flex-col gap-1">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Retrasos Activos</p>
+<h3 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">3</h3>
+</div>
+<span class="flex items-center text-xs font-bold text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-sm mr-0.5">trending_up</span>
+                                +1
+                            </span>
+</div>
+<p class="text-xs text-slate-400 mt-2">Impacto en ETA prom: +45m</p>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-6 border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow relative">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl text-orange-500">science</span>
+</div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<div class="flex flex-col gap-1">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Riesgo Alto (HAZMAT)</p>
+<h3 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">12</h3>
+</div>
+<span class="flex items-center text-xs font-bold text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-sm mr-0.5">trending_down</span>
+                                -2
+                            </span>
+</div>
+<div class="flex gap-1 mt-2">
+<span class="h-2 w-2 rounded-full bg-red-500"></span>
+<span class="h-2 w-2 rounded-full bg-red-500"></span>
+<span class="h-2 w-2 rounded-full bg-orange-500"></span>
+<span class="h-2 w-2 rounded-full bg-slate-200 dark:bg-slate-700"></span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-6 border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="flex flex-col gap-1">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Capacidad de Flota</p>
+<h3 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">78%</h3>
+</div>
+<span class="flex items-center text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-sm mr-0.5">trending_up</span>
+                                +5%
+                            </span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 h-1 rounded-full overflow-hidden">
+<div class="bg-slate-900 dark:bg-slate-200 h-full rounded-full" style="width: 78%"></div>
+</div>
+</div>
+</section>
+<!-- Filters & Actions Toolbar -->
+<section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface-light dark:bg-surface-dark p-2 rounded-xl border border-border-light dark:border-border-dark shadow-sm sticky top-0 z-10">
+<div class="flex flex-wrap items-center gap-2 px-2">
+<!-- Filter Chips -->
+<button class="flex items-center gap-2 h-9 px-4 rounded-full bg-slate-100 dark:bg-background-dark text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+                            Transportista
+                            <span class="material-symbols-outlined text-base">expand_more</span>
+</button>
+<button class="flex items-center gap-2 h-9 px-4 rounded-full bg-slate-100 dark:bg-background-dark text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+                            Estado
+                            <span class="material-symbols-outlined text-base">expand_more</span>
+</button>
+<button class="flex items-center gap-2 h-9 px-4 rounded-full bg-slate-100 dark:bg-background-dark text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+                            Zona
+                            <span class="material-symbols-outlined text-base">expand_more</span>
+</button>
+<div class="h-6 w-px bg-slate-300 dark:bg-slate-700 mx-1"></div>
+<button class="flex items-center gap-2 h-9 px-3 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Densidad">
+<span class="material-symbols-outlined text-xl">reorder</span>
+</button>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto px-2 md:px-0">
+<div class="relative flex items-center text-slate-400 focus-within:text-slate-600 dark:focus-within:text-slate-200 md:hidden flex-1">
+<span class="material-symbols-outlined absolute left-3 text-lg">search</span>
+<input class="w-full h-9 pl-9 pr-4 rounded-full bg-slate-100 dark:bg-background-dark border-none text-sm focus:ring-1 focus:ring-slate-400" placeholder="Buscar..." type="text"/>
+</div>
+<button class="flex items-center justify-center gap-2 h-10 px-6 rounded-full bg-primary hover:bg-yellow-300 text-black text-sm font-bold shadow-sm transition-all active:scale-95 whitespace-nowrap">
+<span class="material-symbols-outlined text-lg">add</span>
+                            Nuevo Envío
+                        </button>
+</div>
+</section>
+<!-- Data Table -->
+<section class="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-[#34331a] border-b border-border-light dark:border-border-dark">
+<th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 w-28">ID Envío</th>
+<th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Origen → Destino</th>
+<th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Transportista</th>
+<th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">ETA</th>
+<th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Estado</th>
+<th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Riesgo (HAZ)</th>
+<th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 w-32">Capacidad</th>
+<th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 w-16"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-light dark:divide-border-dark text-sm">
+<!-- Row 1 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="py-4 px-6 font-medium text-slate-900 dark:text-white">
+<div class="flex items-center gap-2">
+<input class="rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer" type="checkbox"/>
+                                            #HZ-9021
+                                        </div>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-medium text-slate-900 dark:text-slate-200">Buenos Aires</span>
+<span class="text-xs text-slate-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">arrow_downward</span> Córdoba
+                                            </span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                LF
+                                            </div>
+<span class="text-slate-700 dark:text-slate-300 font-medium">Logística Fast</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-white">14:30</span>
+<span class="text-xs text-slate-500">Hoy</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                                            En Tránsito
+                                        </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2" title="Clase 3: Líquidos Inflamables">
+<span class="material-symbols-outlined text-orange-500 text-lg">local_fire_department</span>
+<span class="font-semibold text-slate-700 dark:text-slate-300">Nivel 3</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+<div class="bg-slate-800 dark:bg-slate-300 h-full rounded-full" style="width: 75%"></div>
+</div>
+<span class="text-xs text-slate-500 mt-1 block text-right">75%</span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 (Delayed) -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors bg-red-50/30 dark:bg-red-900/10">
+<td class="py-4 px-6 font-medium text-slate-900 dark:text-white">
+<div class="flex items-center gap-2">
+<input class="rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer" type="checkbox"/>
+                                            #HZ-9022
+                                        </div>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-medium text-slate-900 dark:text-slate-200">Mendoza</span>
+<span class="text-xs text-slate-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">arrow_downward</span> Santiago
+                                            </span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                TM
+                                            </div>
+<span class="text-slate-700 dark:text-slate-300 font-medium">TransMendoza</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-bold text-red-600 dark:text-red-400">18:00</span>
+<span class="text-xs text-red-500 font-medium">+2h Retraso</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-800">
+<span class="material-symbols-outlined text-sm">warning</span>
+                                            Demorado
+                                        </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2" title="Clase 6: Sustancias Tóxicas">
+<span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-lg">skull</span>
+<span class="font-semibold text-slate-700 dark:text-slate-300">Nivel 5</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+<div class="bg-slate-800 dark:bg-slate-300 h-full rounded-full" style="width: 98%"></div>
+</div>
+<span class="text-xs text-slate-500 mt-1 block text-right">98%</span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="py-4 px-6 font-medium text-slate-900 dark:text-white">
+<div class="flex items-center gap-2">
+<input class="rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer" type="checkbox"/>
+                                            #HZ-9023
+                                        </div>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-medium text-slate-900 dark:text-slate-200">Rosario</span>
+<span class="text-xs text-slate-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">arrow_downward</span> Santa Fe
+                                            </span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                ET
+                                            </div>
+<span class="text-slate-700 dark:text-slate-300 font-medium">Expreso Total</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-white">10:00</span>
+<span class="text-xs text-slate-500">Mañana</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                                            Pendiente
+                                        </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2" title="Carga General">
+<span class="material-symbols-outlined text-emerald-500 text-lg">check_circle</span>
+<span class="font-semibold text-slate-700 dark:text-slate-300">Nivel 1</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+<div class="bg-slate-800 dark:bg-slate-300 h-full rounded-full" style="width: 20%"></div>
+</div>
+<span class="text-xs text-slate-500 mt-1 block text-right">20%</span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="py-4 px-6 font-medium text-slate-900 dark:text-white">
+<div class="flex items-center gap-2">
+<input class="rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer" type="checkbox"/>
+                                            #HZ-9024
+                                        </div>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-medium text-slate-900 dark:text-slate-200">Salta</span>
+<span class="text-xs text-slate-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">arrow_downward</span> Jujuy
+                                            </span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                NL
+                                            </div>
+<span class="text-slate-700 dark:text-slate-300 font-medium">Norte Log</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-white">09:15</span>
+<span class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">A Tiempo</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+<span class="material-symbols-outlined text-sm">inventory_2</span>
+                                            Entregado
+                                        </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2" title="Gas Comprimido">
+<span class="material-symbols-outlined text-yellow-500 text-lg">propane</span>
+<span class="font-semibold text-slate-700 dark:text-slate-300">Nivel 2</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+<div class="bg-slate-800 dark:bg-slate-300 h-full rounded-full" style="width: 0%"></div>
+</div>
+<span class="text-xs text-slate-500 mt-1 block text-right">0%</span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="py-4 px-6 font-medium text-slate-900 dark:text-white">
+<div class="flex items-center gap-2">
+<input class="rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer" type="checkbox"/>
+                                            #HZ-9025
+                                        </div>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-medium text-slate-900 dark:text-slate-200">Neuquén</span>
+<span class="text-xs text-slate-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">arrow_downward</span> Bahía Blanca
+                                            </span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                PS
+                                            </div>
+<span class="text-slate-700 dark:text-slate-300 font-medium">Patagonia Sur</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-white">12:30</span>
+<span class="text-xs text-slate-500">Jueves</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+<span class="material-symbols-outlined text-sm">garage</span>
+                                            En Depósito
+                                        </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2" title="Explosivos">
+<span class="material-symbols-outlined text-red-500 text-lg">warning</span>
+<span class="font-semibold text-slate-700 dark:text-slate-300">Nivel 4</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+<div class="bg-slate-800 dark:bg-slate-300 h-full rounded-full" style="width: 50%"></div>
+</div>
+<span class="text-xs text-slate-500 mt-1 block text-right">50%</span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between p-4 border-t border-border-light dark:border-border-dark bg-slate-50 dark:bg-background-dark">
+<span class="text-xs text-slate-500 dark:text-slate-400">Mostrando 1-5 de 24 envíos</span>
+<div class="flex items-center gap-2">
+<button class="h-8 w-8 flex items-center justify-center rounded-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-slate-500 hover:bg-slate-100 dark:hover:bg-border-dark disabled:opacity-50">
+<span class="material-symbols-outlined text-base">chevron_left</span>
+</button>
+<button class="h-8 w-8 flex items-center justify-center rounded-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-slate-500 hover:bg-slate-100 dark:hover:bg-border-dark">
+<span class="material-symbols-outlined text-base">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Spacer for floating bar -->
+<div class="h-16"></div>
+</div>
+</main>
+</div>
+<!-- Floating Bulk Actions Bar -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+<div class="flex items-center gap-1 bg-slate-900 dark:bg-surface-light text-white dark:text-slate-900 pl-4 pr-1 py-1 rounded-full shadow-2xl border border-slate-700 dark:border-slate-300">
+<span class="text-sm font-medium mr-3">2 seleccionados</span>
+<div class="h-4 w-px bg-slate-700 dark:bg-slate-300 mx-1"></div>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors text-xs font-bold">
+<span class="material-symbols-outlined text-base">download</span>
+                Exportar
+            </button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors text-xs font-bold">
+<span class="material-symbols-outlined text-base">person_add</span>
+                Asignar
+            </button>
+<button class="flex items-center gap-2 px-3 py-1.5 ml-1 rounded-full bg-primary hover:bg-yellow-300 text-black transition-colors text-xs font-bold">
+                Cambiar Estado
+            </button>
+<button class="h-8 w-8 flex items-center justify-center rounded-full hover:bg-slate-800 dark:hover:bg-slate-200 text-slate-400">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+</div>
+</div>
+</body></html>

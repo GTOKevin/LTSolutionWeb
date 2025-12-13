@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gestión de Incidencias y SLA - LogiTrans HAZMAT</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b8cee",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1c252e", 
+                        "surface-light": "#ffffff",
+                        "border-dark": "#283039",
+                        "border-light": "#e5e7eb",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for better aesthetics in dark mode */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b4754;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display h-screen w-full flex overflow-hidden selection:bg-primary/30">
+<!-- Sidebar (Fixed) -->
+<aside class="flex-shrink-0 w-64 h-full flex flex-col border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-[#111418]">
+<div class="flex flex-col h-full p-4">
+<!-- Branding -->
+<div class="flex gap-3 mb-8 items-center px-2">
+<div class="bg-center bg-no-repeat bg-cover rounded-lg size-10 shadow-lg shadow-primary/20" data-alt="Abstract geometric logo in blue and dark tones representing logistics" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBdW-cPlQTdYw43atbg9qR2vfGFhjiuO_kRLMwOIm2xzRTGudbR1tsmmZnl5zAjoZnXB-8yJ3Odpnrzt5pu83iQFXVpKe4OF5vxYstDz8zGeoyi2v3m0g2W880zi-V_O-UY8DP6TVLNp3m0HHvr6cXKXnW_bCgSBseCTL5vSiJuj9t0Rk_PAopy88_GkfsT9PyAybJK-CNtMMNnb8B1kubBTDm3ntM0NN2emjjem-5-jLqktiHhssejEbsVXR73cH99cMYP-Vt59Iw");'></div>
+<div class="flex flex-col justify-center">
+<h1 class="text-slate-900 dark:text-white text-base font-bold leading-tight tracking-tight">LogiTrans HAZMAT</h1>
+<p class="text-slate-500 dark:text-[#9dabb9] text-xs font-medium uppercase tracking-wide">Ops Globales</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-1 flex-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dabb9] hover:bg-slate-100 dark:hover:bg-[#1c252e] hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[22px] group-hover:text-primary transition-colors">dashboard</span>
+<p class="text-sm font-medium">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dabb9] hover:bg-slate-100 dark:hover:bg-[#1c252e] hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[22px] group-hover:text-primary transition-colors">local_shipping</span>
+<p class="text-sm font-medium">Flota</p>
+</a>
+<!-- Active Item -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary dark:text-white dark:bg-[#283039] border border-primary/10 dark:border-[#3b4754]" href="#">
+<span class="material-symbols-outlined text-[22px] fill-1 text-primary">warning</span>
+<p class="text-sm font-bold">Incidencias</p>
+<span class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">3</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dabb9] hover:bg-slate-100 dark:hover:bg-[#1c252e] hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[22px] group-hover:text-primary transition-colors">description</span>
+<p class="text-sm font-medium">Reportes</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dabb9] hover:bg-slate-100 dark:hover:bg-[#1c252e] hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[22px] group-hover:text-primary transition-colors">settings</span>
+<p class="text-sm font-medium">Configuración</p>
+</a>
+</nav>
+<!-- User Profile (Bottom) -->
+<div class="mt-auto pt-4 border-t border-border-light dark:border-border-dark">
+<div class="flex items-center gap-3 px-2">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-border-light dark:ring-[#3b4754]" data-alt="Portrait of the active user operator" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDArref18ZQpFBwpwZ1krKte5ZsY4PIogW9l_udheOFYSCOt5dp8ctqoTnZ9Xuh8mWk7qpnrsVwnGrfFMnpM5W9d-KgfQ-ncTQ0Iq2nkZDReP-GloMp4_JH1sO6qDt7-rqTlO8MX2gs3Za-Q3dMKKja369GE8_odhJh3Y6Zz_2UXCEH1dmsY4WXqTqj_laEI3cSC2zk3Rakmb55GdbKBRHCCYqBCJVCODeru4NwVK5Nli3_crpPR-M4TOnC82bQTkwRABEFl9z2_Ys");'></div>
+<div class="flex flex-col overflow-hidden">
+<p class="text-slate-900 dark:text-white text-sm font-medium truncate">Carlos M.</p>
+<p class="text-slate-500 dark:text-[#9dabb9] text-xs truncate">Supervisor Turno B</p>
+</div>
+<button class="ml-auto text-slate-400 hover:text-white">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full min-w-0 bg-background-light dark:bg-background-dark overflow-hidden relative">
+<!-- Top Header -->
+<header class="flex items-center justify-between gap-4 px-6 py-3 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark z-20">
+<div class="flex flex-col gap-1">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 text-xs">
+<a class="text-slate-500 dark:text-[#9dabb9] hover:text-primary transition-colors" href="#">Operaciones</a>
+<span class="text-slate-400 dark:text-[#5e6a75]">/</span>
+<span class="text-slate-900 dark:text-white font-medium">Bandeja de Incidencias</span>
+</div>
+<h2 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Control de Tráfico y SLA</h2>
+</div>
+<!-- Global Search & Actions -->
+<div class="flex items-center gap-4">
+<label class="relative hidden md:block group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#9dabb9] group-focus-within:text-primary text-[20px]">search</span>
+<input class="form-input bg-slate-100 dark:bg-[#1c252e] border-none rounded-lg pl-10 pr-4 py-2 w-64 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64748b] focus:ring-1 focus:ring-primary focus:bg-white dark:focus:bg-[#101922] transition-all" placeholder="Buscar ID, placa o carga..." type="text" value=""/>
+</label>
+<div class="h-6 w-px bg-slate-200 dark:bg-[#3b4754] mx-2"></div>
+<div class="flex gap-2">
+<button class="relative flex items-center justify-center size-9 rounded-lg hover:bg-slate-100 dark:hover:bg-[#283039] text-slate-500 dark:text-white transition-colors">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border border-white dark:border-[#111418]"></span>
+</button>
+<button class="flex items-center justify-center size-9 rounded-lg hover:bg-slate-100 dark:hover:bg-[#283039] text-slate-500 dark:text-white transition-colors">
+<span class="material-symbols-outlined text-[22px]">help</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Scrollable Dashboard Content -->
+<div class="flex-1 overflow-hidden flex flex-col md:flex-row">
+<!-- Left Panel: List & filters (Flexible Width) -->
+<div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden border-r border-border-light dark:border-border-dark">
+<!-- Stats Overview -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 pb-2">
+<div class="flex flex-col gap-1 p-4 rounded-xl border border-red-200 bg-red-50 dark:border-red-900/30 dark:bg-red-900/10">
+<div class="flex justify-between items-start">
+<p class="text-slate-600 dark:text-red-200 text-xs font-semibold uppercase">Críticas (HAZMAT)</p>
+<span class="material-symbols-outlined text-red-500 text-lg">dangerous</span>
+</div>
+<div class="flex items-end gap-2 mt-1">
+<p class="text-slate-900 dark:text-white text-2xl font-bold leading-none">3</p>
+<p class="text-red-600 dark:text-red-400 text-xs font-medium mb-1">+1</p>
+</div>
+</div>
+<div class="flex flex-col gap-1 p-4 rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-900/30 dark:bg-amber-900/10">
+<div class="flex justify-between items-start">
+<p class="text-slate-600 dark:text-amber-200 text-xs font-semibold uppercase">SLA en Riesgo</p>
+<span class="material-symbols-outlined text-amber-500 text-lg">warning</span>
+</div>
+<div class="flex items-end gap-2 mt-1">
+<p class="text-slate-900 dark:text-white text-2xl font-bold leading-none">5</p>
+<p class="text-amber-600 dark:text-amber-400 text-xs font-medium mb-1">Due &lt;1h</p>
+</div>
+</div>
+<div class="flex flex-col gap-1 p-4 rounded-xl border border-slate-200 bg-white dark:border-[#3b4754] dark:bg-[#1c252e]">
+<div class="flex justify-between items-start">
+<p class="text-slate-500 dark:text-[#9dabb9] text-xs font-medium uppercase">Total Abiertas</p>
+<span class="material-symbols-outlined text-slate-400 text-lg">folder_open</span>
+</div>
+<div class="flex items-end gap-2 mt-1">
+<p class="text-slate-900 dark:text-white text-2xl font-bold leading-none">12</p>
+<span class="h-1 w-16 bg-slate-100 dark:bg-[#3b4754] rounded-full overflow-hidden mb-1">
+<div class="h-full bg-primary w-[60%]"></div>
+</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 p-4 rounded-xl border border-slate-200 bg-white dark:border-[#3b4754] dark:bg-[#1c252e]">
+<div class="flex justify-between items-start">
+<p class="text-slate-500 dark:text-[#9dabb9] text-xs font-medium uppercase">Tiempo Promedio</p>
+<span class="material-symbols-outlined text-green-500 text-lg">timer</span>
+</div>
+<div class="flex items-end gap-2 mt-1">
+<p class="text-slate-900 dark:text-white text-2xl font-bold leading-none">45m</p>
+<p class="text-green-600 dark:text-green-400 text-xs font-medium mb-1">-5%</p>
+</div>
+</div>
+</div>
+<!-- Toolbar -->
+<div class="px-6 py-4 flex items-center justify-between flex-wrap gap-3">
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-white dark:bg-[#1c252e] border border-slate-200 dark:border-[#3b4754] text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-[#283039] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                            Filtros
+                        </button>
+<div class="h-6 w-px bg-slate-200 dark:bg-[#3b4754] mx-1"></div>
+<div class="flex bg-slate-100 dark:bg-[#1c252e] rounded-md p-1 border border-slate-200 dark:border-[#3b4754]">
+<button class="px-3 py-1 rounded text-xs font-medium bg-white dark:bg-[#283039] text-slate-900 dark:text-white shadow-sm">Todas</button>
+<button class="px-3 py-1 rounded text-xs font-medium text-slate-500 dark:text-[#9dabb9] hover:text-slate-900 dark:hover:text-white">Mis Asignaciones</button>
+<button class="px-3 py-1 rounded text-xs font-medium text-slate-500 dark:text-[#9dabb9] hover:text-slate-900 dark:hover:text-white">Prioridad Alta</button>
+</div>
+</div>
+<div class="flex items-center gap-2 text-slate-500 dark:text-[#9dabb9] text-xs font-medium">
+<span>Orden:</span>
+<select class="bg-transparent border-none text-slate-900 dark:text-white font-bold text-xs p-0 pr-6 focus:ring-0 cursor-pointer">
+<option>SLA: Menor tiempo</option>
+<option>Más recientes</option>
+<option>Prioridad</option>
+</select>
+</div>
+</div>
+<!-- Data Grid -->
+<div class="flex-1 overflow-auto px-6 pb-6">
+<div class="min-w-full inline-block align-middle">
+<div class="border rounded-lg border-slate-200 dark:border-[#3b4754] overflow-hidden bg-white dark:bg-[#1c252e] shadow-sm">
+<table class="min-w-full divide-y divide-slate-200 dark:divide-[#283039]">
+<thead class="bg-slate-50 dark:bg-[#17212b]">
+<tr>
+<th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-[#9dabb9] uppercase tracking-wider" scope="col">ID / Fecha</th>
+<th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-[#9dabb9] uppercase tracking-wider" scope="col">Vehículo</th>
+<th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-[#9dabb9] uppercase tracking-wider" scope="col">Incidencia</th>
+<th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-[#9dabb9] uppercase tracking-wider" scope="col">Estado</th>
+<th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-[#9dabb9] uppercase tracking-wider" scope="col">SLA</th>
+<th class="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-[#9dabb9] uppercase tracking-wider" scope="col">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-[#283039]">
+<!-- Row 1: Selected -->
+<tr class="bg-primary/5 dark:bg-primary/10 cursor-pointer hover:bg-slate-50 dark:hover:bg-[#283039] transition-colors group">
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-primary">#INC-992</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">Hoy, 10:45 AM</span>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded bg-slate-100 dark:bg-[#3b4754] flex items-center justify-center text-slate-500 dark:text-white">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">TRK-5820</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">Ruta Norte 2</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-orange-500 text-[20px]">thermostat</span>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Fallo Cadena Frío</span>
+<span class="text-[10px] uppercase font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 px-1.5 py-0.5 rounded border border-orange-200 dark:border-orange-900/50 w-fit">HAZMAT Class 3</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2 px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/30 w-fit">
+<div class="size-2 rounded-full bg-red-500 animate-pulse"></div>
+<span class="text-xs font-bold">Crítico</span>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-mono font-bold text-red-600 dark:text-red-400">00:14:59</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">de 1h objetivo</span>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary dark:text-[#9dabb9] dark:hover:text-white p-1 rounded hover:bg-slate-100 dark:hover:bg-[#3b4754]">
+<span class="material-symbols-outlined">navigate_next</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="cursor-pointer hover:bg-slate-50 dark:hover:bg-[#283039] transition-colors">
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-slate-700 dark:text-white">#INC-988</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">Hoy, 09:30 AM</span>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded bg-slate-100 dark:bg-[#3b4754] flex items-center justify-center text-slate-500 dark:text-white">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">TRK-1044</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">Interurbano</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-500 text-[20px]">schedule</span>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Retraso en Carga</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">Logística General</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2 px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 w-fit">
+<div class="size-2 rounded-full bg-amber-500"></div>
+<span class="text-xs font-bold">Riesgo</span>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-mono font-bold text-amber-600 dark:text-amber-400">00:45:20</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">de 4h objetivo</span>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary dark:text-[#9dabb9] dark:hover:text-white p-1 rounded hover:bg-slate-100 dark:hover:bg-[#3b4754]">
+<span class="material-symbols-outlined">navigate_next</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="cursor-pointer hover:bg-slate-50 dark:hover:bg-[#283039] transition-colors">
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-slate-700 dark:text-white">#INC-985</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">Ayer, 18:00 PM</span>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded bg-slate-100 dark:bg-[#3b4754] flex items-center justify-center text-slate-500 dark:text-white">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">VAN-202</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">Última Milla</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">sensor_door</span>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Sensor Puerta</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">Seguridad</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 w-fit">
+<div class="size-2 rounded-full bg-slate-500"></div>
+<span class="text-xs font-bold">Investigando</span>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-mono font-bold text-slate-600 dark:text-slate-400">03:12:00</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">de 24h objetivo</span>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary dark:text-[#9dabb9] dark:hover:text-white p-1 rounded hover:bg-slate-100 dark:hover:bg-[#3b4754]">
+<span class="material-symbols-outlined">navigate_next</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="cursor-pointer hover:bg-slate-50 dark:hover:bg-[#283039] transition-colors">
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-slate-700 dark:text-white">#INC-980</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">Ayer, 14:20 PM</span>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded bg-slate-100 dark:bg-[#3b4754] flex items-center justify-center text-slate-500 dark:text-white">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">TRK-900</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">Ruta Sur</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-green-500 text-[20px]">check_circle</span>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Documentación</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">Administrativo</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2 px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/30 w-fit">
+<span class="material-symbols-outlined text-[14px]">check</span>
+<span class="text-xs font-bold">Resuelto</span>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-mono font-bold text-green-600 dark:text-green-400">Cerrado</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">a tiempo</span>
+</div>
+</td>
+<td class="px-4 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary dark:text-[#9dabb9] dark:hover:text-white p-1 rounded hover:bg-slate-100 dark:hover:bg-[#3b4754]">
+<span class="material-symbols-outlined">navigate_next</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Detail View (Fixed Width, Scrollable) -->
+<aside class="w-full md:w-[400px] lg:w-[440px] flex flex-col bg-white dark:bg-[#151d27] border-l border-border-light dark:border-border-dark shadow-xl z-10 h-full overflow-hidden">
+<!-- Header -->
+<div class="p-5 border-b border-border-light dark:border-border-dark flex justify-between items-start bg-slate-50 dark:bg-[#17212b]">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold px-2 py-0.5 rounded bg-primary text-white">ASIGNADO</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">Última act. hace 5m</span>
+</div>
+<h3 class="text-xl font-bold text-slate-900 dark:text-white">Incidencia #INC-992</h3>
+<p class="text-sm text-slate-600 dark:text-[#9dabb9]">Fallo Cadena Frío (Reefer)</p>
+</div>
+<button class="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-5 space-y-6">
+<!-- Map / Location -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="text-sm font-semibold text-slate-900 dark:text-white">Ubicación Actual</span>
+<span class="text-xs text-slate-500 dark:text-[#9dabb9]">KM 45, Ruta 5 Norte</span>
+</div>
+<div class="h-40 w-full rounded-lg bg-slate-200 dark:bg-[#283039] bg-center bg-cover border border-slate-300 dark:border-[#3b4754] relative overflow-hidden" data-location="Map showing highway route in northern Chile desert" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCro9mWjnEt3CROG3O2iUPPrcSywxlQapBVW2eMR9f7UIm4LbhsEr1f0bCd2EgUIG3BQRdxAUwQ8mVabaazZmPiOuDIR2rhErIb1Okhnghm1xvKvHz2yEcznDBUhvgkcSYlhZzVqB0nb2-SD8m3GdQOE55CdWMu-7FPC4_VN6N38W26L-OC8c-iQa41MBl7pQ53iR2XD3ewkbpXIPHhhCNXP_aVF7NVGQdYu1AOll095cOCggxJegKd9qEbv38SPrfWgZZQv3DuWAM");'>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="bg-red-500/20 size-12 rounded-full flex items-center justify-center animate-pulse">
+<div class="bg-red-500 size-4 rounded-full border-2 border-white shadow-lg"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Actions -->
+<div class="grid grid-cols-2 gap-3">
+<button class="flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium text-sm shadow-lg shadow-primary/20 transition-all">
+<span class="material-symbols-outlined text-[18px]">call</span>
+                            Contactar
+                        </button>
+<button class="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-[#283039] border border-slate-200 dark:border-[#3b4754] hover:bg-slate-50 dark:hover:bg-[#3b4754] text-slate-900 dark:text-white rounded-lg font-medium text-sm transition-all">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+                            Reintentar
+                        </button>
+<button class="col-span-2 flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-[#283039] border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg font-medium text-sm transition-all">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+                            Escalar Protocolo HAZMAT
+                        </button>
+</div>
+<!-- Audit Log / Timeline -->
+<div class="flex flex-col gap-3">
+<h4 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Auditoría</h4>
+<div class="relative pl-4 border-l-2 border-slate-200 dark:border-[#3b4754] space-y-6">
+<!-- Step 1 -->
+<div class="relative">
+<div class="absolute -left-[21px] top-1 size-3 rounded-full bg-slate-300 dark:bg-[#5e6a75] border-2 border-white dark:border-[#151d27]"></div>
+<div class="flex flex-col">
+<span class="text-xs font-mono text-slate-500 dark:text-[#9dabb9]">10:45 AM</span>
+<p class="text-sm text-slate-800 dark:text-slate-200">Alerta recibida: Temperatura &gt; 8°C</p>
+<p class="text-xs text-slate-500 mt-0.5">Sistema Automático</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="relative">
+<div class="absolute -left-[21px] top-1 size-3 rounded-full bg-slate-300 dark:bg-[#5e6a75] border-2 border-white dark:border-[#151d27]"></div>
+<div class="flex flex-col">
+<span class="text-xs font-mono text-slate-500 dark:text-[#9dabb9]">10:46 AM</span>
+<p class="text-sm text-slate-800 dark:text-slate-200">Reintento de conexión con sensor fallido</p>
+<p class="text-xs text-slate-500 mt-0.5">Sistema Automático</p>
+</div>
+</div>
+<!-- Step 3 (Current) -->
+<div class="relative">
+<div class="absolute -left-[21px] top-1 size-3 rounded-full bg-primary border-2 border-white dark:border-[#151d27] ring-4 ring-primary/20"></div>
+<div class="flex flex-col">
+<span class="text-xs font-mono text-primary font-bold">10:50 AM</span>
+<p class="text-sm font-medium text-slate-900 dark:text-white">Incidencia asignada a Operador</p>
+<div class="mt-2 bg-slate-100 dark:bg-[#1c252e] p-2 rounded text-xs text-slate-600 dark:text-[#9dabb9] border border-slate-200 dark:border-[#3b4754]">
+                                        Nota: Revisar telemetría secundaria antes de contactar.
+                                    </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="p-4 border-t border-border-light dark:border-border-dark bg-slate-50 dark:bg-[#17212b]">
+<label class="block text-xs font-medium text-slate-500 dark:text-[#9dabb9] mb-2">Resolución / Notas</label>
+<div class="flex gap-2">
+<input class="flex-1 form-input bg-white dark:bg-[#101922] border-slate-300 dark:border-[#3b4754] rounded-lg text-sm text-slate-900 dark:text-white" placeholder="Escribir nota interna..." type="text"/>
+<button class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2 rounded-lg text-sm font-bold">
+                             Enviar
+                         </button>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</body></html>

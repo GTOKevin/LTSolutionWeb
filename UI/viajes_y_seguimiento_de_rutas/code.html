@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Viajes y Seguimiento - Logistics Hub</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b8cee",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111418",
+                        "surface-dark": "#1d232a",
+                        "border-dark": "#283039",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111418; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #283039; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4754; 
+        }
+        
+        .glass-panel {
+            background: rgba(17, 20, 24, 0.95);
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex">
+<!-- 1. Left Sidebar (Permanent) -->
+<aside class="w-20 flex-none flex flex-col items-center py-6 border-r border-border-dark bg-[#111418] z-50">
+<div class="mb-8">
+<div class="bg-primary/20 p-2 rounded-xl">
+<span class="material-symbols-outlined text-primary text-3xl">local_shipping</span>
+</div>
+</div>
+<nav class="flex flex-col gap-6 w-full items-center">
+<button class="p-3 text-[#9dabb9] hover:text-white hover:bg-border-dark rounded-xl transition-colors group relative">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">Dashboard</span>
+</button>
+<button class="p-3 bg-primary/10 text-primary rounded-xl transition-colors relative">
+<span class="material-symbols-outlined fill-1">map</span>
+</button>
+<button class="p-3 text-[#9dabb9] hover:text-white hover:bg-border-dark rounded-xl transition-colors group relative">
+<span class="material-symbols-outlined">groups</span>
+<span class="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">Conductores</span>
+</button>
+<button class="p-3 text-[#9dabb9] hover:text-white hover:bg-border-dark rounded-xl transition-colors group relative">
+<span class="material-symbols-outlined">conveyor_belt</span>
+<span class="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">Flota</span>
+</button>
+<button class="p-3 text-[#9dabb9] hover:text-white hover:bg-border-dark rounded-xl transition-colors group relative">
+<span class="material-symbols-outlined">description</span>
+<span class="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">Reportes</span>
+</button>
+</nav>
+<div class="mt-auto flex flex-col gap-4">
+<button class="p-3 text-[#9dabb9] hover:text-white hover:bg-border-dark rounded-xl transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="size-10 rounded-full bg-cover bg-center border-2 border-border-dark cursor-pointer" data-alt="Profile picture of the user" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDsQPMwvHGuMNQAaBTMd_wy4JE8fBXpABWYVBC7u7pI0d9KTf0n8-Shnc_7mHRz1Tyx0zLPRE49p_vRsHEhBvcD4O_QSpxsTuCvi74i-X5TPc690tzZQHsrI25RZy82d0OGpsyglsz-UBrOkcyFBOFZTjAOSmyR09GVRnYeyUCewn26sgQ3-CmZaET979L1yaJ21W1Ds2H-k-YqUm54JqOcTN7_Du59YNVft6QtAAqqxRS3wtysHkP4lbno9ajvpnJTGSijQtQbI38");'></div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex flex-col flex-1 h-full min-w-0">
+<!-- 2. Top Navigation Bar (Fixed) -->
+<header class="h-16 border-b border-border-dark bg-[#111418] flex items-center justify-between px-6 shrink-0 z-40">
+<div class="flex items-center gap-4">
+<div class="flex flex-col">
+<div class="flex items-center gap-2 text-[#9dabb9] text-sm">
+<span>Logística</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-white font-medium">Centro de Control de Viajes</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<!-- Global Search -->
+<div class="relative hidden md:block group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#9dabb9] group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="bg-surface-dark border border-border-dark text-white text-sm rounded-lg block w-64 pl-10 p-2.5 focus:ring-primary focus:border-primary placeholder-[#9dabb9]" placeholder="Buscar ID de envío, placa..." type="text"/>
+</div>
+<div class="h-6 w-px bg-border-dark mx-2"></div>
+<button class="relative p-2 text-[#9dabb9] hover:text-white rounded-lg hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border border-[#111418]"></span>
+</button>
+<button class="p-2 text-[#9dabb9] hover:text-white rounded-lg hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+</div>
+</header>
+<!-- Split Pane Content -->
+<div class="flex flex-1 overflow-hidden relative">
+<!-- 3. Left Panel: Trip List & Filters -->
+<div class="w-[480px] flex-none flex flex-col border-r border-border-dark bg-[#111418] z-30">
+<!-- Tabs -->
+<div class="border-b border-border-dark px-6 pt-4">
+<h1 class="text-2xl font-bold text-white mb-4">Viajes y Planificación</h1>
+<div class="flex gap-8">
+<button class="pb-3 border-b-2 border-primary text-white font-medium text-sm flex items-center gap-2">
+<span>Planificación</span>
+<span class="bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full">12</span>
+</button>
+<button class="pb-3 border-b-2 border-transparent text-[#9dabb9] hover:text-white font-medium text-sm transition-colors flex items-center gap-2">
+<span>En Ruta</span>
+<span class="bg-[#283039] text-[#9dabb9] text-xs px-2 py-0.5 rounded-full">45</span>
+</button>
+<button class="pb-3 border-b-2 border-transparent text-[#9dabb9] hover:text-white font-medium text-sm transition-colors">
+                            Histórico
+                        </button>
+</div>
+</div>
+<!-- Filters & Controls -->
+<div class="p-4 border-b border-border-dark flex flex-col gap-3">
+<div class="flex gap-2">
+<div class="relative flex-1">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#9dabb9]">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+</div>
+<input class="bg-surface-dark border-none text-white text-sm rounded-lg block w-full pl-10 p-2.5 placeholder-[#9dabb9] focus:ring-1 focus:ring-primary" placeholder="Filtrar por zona, carga..." type="text"/>
+</div>
+<button class="px-3 bg-surface-dark hover:bg-border-dark text-[#9dabb9] rounded-lg transition-colors" title="Densidad">
+<span class="material-symbols-outlined text-[20px]">density_medium</span>
+</button>
+</div>
+<div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+<span class="text-xs font-medium px-2.5 py-1 rounded-md border border-red-500/30 bg-red-500/10 text-red-400 cursor-pointer whitespace-nowrap flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span> HAZMAT
+                        </span>
+<span class="text-xs font-medium px-2.5 py-1 rounded-md border border-border-dark bg-surface-dark text-[#9dabb9] hover:text-white cursor-pointer whitespace-nowrap">Prioridad Alta</span>
+<span class="text-xs font-medium px-2.5 py-1 rounded-md border border-border-dark bg-surface-dark text-[#9dabb9] hover:text-white cursor-pointer whitespace-nowrap">Sin Asignar</span>
+</div>
+</div>
+<!-- List Content -->
+<div class="flex-1 overflow-y-auto p-4 space-y-3">
+<!-- Card 1: Selected / Active -->
+<div class="bg-surface-dark border border-primary/50 rounded-lg p-4 shadow-lg cursor-pointer relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex justify-between items-start mb-2 pl-2">
+<div class="flex items-center gap-2">
+<span class="text-white font-semibold">#TR-4092</span>
+<span class="bg-blue-500/20 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-500/30">NUEVO</span>
+</div>
+<span class="text-[#9dabb9] text-xs font-mono">Hace 15 min</span>
+</div>
+<div class="pl-2 mb-3">
+<div class="flex items-center gap-2 text-sm text-gray-300 mb-1">
+<span class="material-symbols-outlined text-red-400 text-[18px]">science</span>
+<span>Ácido Sulfúrico (UN 1830)</span>
+</div>
+<div class="flex flex-col gap-1 border-l border-gray-700 pl-3 ml-1 mt-2">
+<div class="text-xs text-[#9dabb9]">Origen: <span class="text-white">Terminal Portuaria, Zona B</span></div>
+<div class="text-xs text-[#9dabb9]">Destino: <span class="text-white">Planta Industrial Norte</span></div>
+</div>
+</div>
+<div class="pl-2 flex justify-between items-center mt-4">
+<div class="flex items-center gap-2">
+<span class="text-xs text-[#9dabb9]">SLA: 4h restantes</span>
+</div>
+<button class="bg-primary hover:bg-blue-600 text-white text-xs font-bold py-1.5 px-4 rounded transition-colors flex items-center gap-1">
+                                Asignar
+                                <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-dark/50 border border-border-dark hover:border-gray-600 rounded-lg p-4 cursor-pointer pl-4 transition-colors">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="text-gray-300 font-medium">#TR-4088</span>
+<span class="bg-yellow-500/10 text-yellow-500 text-[10px] font-bold px-2 py-0.5 rounded border border-yellow-500/20 flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">warning</span> PENDIENTE
+                                </span>
+</div>
+<span class="text-[#9dabb9] text-xs font-mono">10:30 AM</span>
+</div>
+<div class="mb-2">
+<div class="flex items-center gap-2 text-sm text-[#9dabb9] mb-1">
+<span class="material-symbols-outlined text-gray-500 text-[18px]">inventory_2</span>
+<span>Componentes Electrónicos</span>
+</div>
+<div class="text-xs text-[#9dabb9] mt-1 truncate">Ruta: Almacén Central → Distribuidora Sur</div>
+</div>
+</div>
+<!-- Card 3: Problematic -->
+<div class="bg-surface-dark/50 border border-red-900/30 hover:border-red-500/50 rounded-lg p-4 cursor-pointer pl-4 transition-colors">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="text-gray-300 font-medium">#TR-4085</span>
+<span class="bg-red-500/10 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded border border-red-500/20 flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">error</span> RETRASADO
+                                </span>
+</div>
+<span class="text-[#9dabb9] text-xs font-mono">09:15 AM</span>
+</div>
+<div class="mb-2">
+<div class="flex items-center gap-2 text-sm text-[#9dabb9] mb-1">
+<span class="material-symbols-outlined text-red-400 text-[18px]">local_fire_department</span>
+<span>Combustible (Diesel)</span>
+</div>
+<div class="text-xs text-[#9dabb9] mt-1 truncate">Ruta: Refinería → Estación #44</div>
+</div>
+<div class="mt-2 text-xs text-red-400 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span> Desviación de ruta detectada
+                        </div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-dark/50 border border-border-dark hover:border-gray-600 rounded-lg p-4 cursor-pointer pl-4 transition-colors opacity-70">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="text-gray-400 font-medium">#TR-4080</span>
+<span class="bg-green-500/10 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded border border-green-500/20">EN SITIO</span>
+</div>
+<span class="text-[#9dabb9] text-xs font-mono">AYER</span>
+</div>
+<div class="mb-2">
+<div class="flex items-center gap-2 text-sm text-[#9dabb9] mb-1">
+<span class="material-symbols-outlined text-gray-500 text-[18px]">inventory_2</span>
+<span>Carga General</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 4. Map Area & Drawer Overlay -->
+<div class="flex-1 relative bg-[#0f1623] overflow-hidden">
+<!-- Map Background Image -->
+<div class="absolute inset-0 bg-cover bg-center opacity-60 mix-blend-luminosity" data-alt="Mapa oscuro de red vial urbana con estilo de alto contraste" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDR4_dQgyQ-whYzcBisU_w__hhDvdGkvMIHDABXWLptFLIFKyRnYE-bHVl--plAHdjnKzvd0vRJNozpi1aaoHZsStvgvN4z5DK7GwccbURaGmx4DT0dVYnnIhHfs4f4x0-SS2qf4htb4OXjtVpgTwxKYc_0jwgCeBgpR4bftXZHT2WN0la0Nq5rBnNxM5M570MBs8J-prj9NDNHSG5W6UlLIsUZedhreaYmnYJY0sV09RL0y7oUBk3zDD04zRIlA8du8QcTmecrODE"); filter: invert(1) hue-rotate(180deg) brightness(0.7) contrast(1.2);'>
+</div>
+<!-- Map Overlay Gradient for readability -->
+<div class="absolute inset-0 bg-gradient-to-r from-[#111418] via-transparent to-transparent opacity-80 pointer-events-none"></div>
+<!-- Assignment Drawer (Contextual) - Slide Out Simulation -->
+<div class="absolute top-4 left-4 bottom-4 w-[400px] glass-panel border border-border-dark rounded-xl shadow-2xl flex flex-col z-20 animate-in slide-in-from-left-4 fade-in duration-300">
+<div class="p-4 border-b border-border-dark flex justify-between items-center bg-[#111418]/50 rounded-t-xl">
+<div>
+<h2 class="text-white font-bold text-lg">Asignar Transportista</h2>
+<p class="text-xs text-[#9dabb9]">Para viaje #TR-4092 • HAZMAT Nivel 2</p>
+</div>
+<button class="text-[#9dabb9] hover:text-white">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Intelligent Match Content -->
+<div class="flex-1 overflow-y-auto p-4">
+<!-- Filters within drawer -->
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="text-[10px] uppercase font-bold text-[#9dabb9] w-full mb-1">Filtros Inteligentes Aplicados</span>
+<span class="px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">verified_user</span> Licencia HAZMAT
+                            </span>
+<span class="px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">local_shipping</span> Capacidad &gt; 5T
+                            </span>
+<span class="px-2 py-1 rounded bg-green-500/10 text-green-400 border border-green-500/20 text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">eco</span> Flota Eco
+                            </span>
+</div>
+<div class="space-y-3">
+<!-- Match 1 -->
+<div class="p-3 rounded-lg border border-primary/40 bg-primary/5 hover:bg-primary/10 cursor-pointer transition-all ring-1 ring-primary/50 relative">
+<div class="absolute -top-2 -right-2 bg-green-500 text-[#111418] text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10">98% MATCH</div>
+<div class="flex items-center gap-3 mb-2">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="Driver portrait" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBeCEh6CzVfGSmgNnIiP3UoAyemuv68Lw5cDIFGJ-Es4XizQKHKZSrY8EmlVlUj-Dww_jWDwOXuLovlro0Q_IQ8KYwfre7Zn6YOMzwsOEjC3lJHdSYYpFULO1JHNMg6ovb8T6bHqR5TS8Mn4kpWlVn47rhO0UGxUjOl5HyzBN7D8e9vh8vi29LBhq3xYxVFY2yE5Dft2f4mwLYKPEUNCI1PzZ5jjx36UzwZBpru23p-Cr-MXMWp5zOiORHOusI_DcVMkHxA--4tEdg");'></div>
+<div>
+<h3 class="text-sm font-bold text-white">Roberto Sanchez</h3>
+<p class="text-xs text-[#9dabb9]">Logistica Express S.A.</p>
+</div>
+<div class="ml-auto text-right">
+<div class="text-sm font-mono text-white">$450</div>
+<div class="text-[10px] text-green-400">En Zona (5km)</div>
+</div>
+</div>
+<div class="w-full bg-gray-700 h-1.5 rounded-full overflow-hidden mb-2">
+<div class="bg-gradient-to-r from-green-500 to-green-400 h-full rounded-full" style="width: 98%"></div>
+</div>
+<div class="flex justify-between items-center mt-2">
+<div class="flex gap-2">
+<span class="text-[10px] bg-[#283039] px-1.5 py-0.5 rounded text-[#9dabb9]">4.9 <span class="text-yellow-500">★</span></span>
+<span class="text-[10px] bg-[#283039] px-1.5 py-0.5 rounded text-[#9dabb9]">Escolta OK</span>
+</div>
+<button class="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded hover:bg-blue-600 transition-colors">Seleccionar</button>
+</div>
+</div>
+<!-- Match 2 -->
+<div class="p-3 rounded-lg border border-border-dark bg-surface-dark hover:border-gray-500 cursor-pointer transition-all">
+<div class="flex items-center gap-3 mb-2">
+<div class="size-10 rounded-full bg-gray-700 flex items-center justify-center text-[#9dabb9]">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-white">Transportes Globales</h3>
+<p class="text-xs text-[#9dabb9]">Unidad #404</p>
+</div>
+<div class="ml-auto text-right">
+<div class="text-sm font-mono text-white">$420</div>
+<div class="text-[10px] text-yellow-500">~15km</div>
+</div>
+</div>
+<div class="w-full bg-gray-700 h-1.5 rounded-full overflow-hidden mb-2">
+<div class="bg-yellow-500 h-full rounded-full" style="width: 85%"></div>
+</div>
+<div class="flex justify-between items-center mt-2">
+<span class="text-[10px] text-[#9dabb9]">85% Match - Distancia media</span>
+<button class="text-[#9dabb9] hover:text-white text-xs font-bold px-3 py-1.5 rounded border border-border-dark hover:border-white transition-colors">Seleccionar</button>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-border-dark bg-[#111418]/80">
+<div class="flex items-center gap-2 mb-3">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-9 h-5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+<span class="ml-2 text-xs font-medium text-gray-300">Solicitar Escolta de Seguridad</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Map Controls (Bottom Right) -->
+<div class="absolute bottom-6 right-6 flex flex-col gap-2 z-10">
+<button class="size-10 bg-surface-dark text-white rounded-lg shadow-lg flex items-center justify-center hover:bg-gray-700 transition-colors" title="Centrar">
+<span class="material-symbols-outlined">my_location</span>
+</button>
+<div class="bg-surface-dark rounded-lg shadow-lg flex flex-col overflow-hidden">
+<button class="size-10 text-white flex items-center justify-center hover:bg-gray-700 transition-colors border-b border-border-dark">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="size-10 text-white flex items-center justify-center hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined">remove</span>
+</button>
+</div>
+</div>
+<!-- Layer Controls (Top Right) -->
+<div class="absolute top-6 right-6 flex gap-2 z-10">
+<button class="h-9 px-3 bg-surface-dark text-white rounded-lg shadow-lg flex items-center gap-2 hover:bg-gray-700 transition-colors text-sm font-medium border border-border-dark">
+<span class="material-symbols-outlined text-sm">layers</span>
+                        Capas
+                    </button>
+<button class="h-9 px-3 bg-surface-dark text-white rounded-lg shadow-lg flex items-center gap-2 hover:bg-gray-700 transition-colors text-sm font-medium border border-border-dark">
+<span class="material-symbols-outlined text-sm">traffic</span>
+                        Tráfico
+                    </button>
+</div>
+<!-- Map Markers (Simulated) -->
+<!-- Truck Marker 1: Incident -->
+<div class="absolute top-[30%] left-[60%] flex flex-col items-center group cursor-pointer z-10" title="Incidente Crítico">
+<div class="relative">
+<div class="absolute -inset-2 bg-red-500/30 rounded-full animate-ping"></div>
+<div class="size-10 bg-red-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center relative z-10 text-white transform group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">local_shipping</span>
+</div>
+<div class="absolute -top-2 -right-2 bg-white text-red-600 rounded-full p-0.5 shadow border border-red-100">
+<span class="material-symbols-outlined text-[14px] font-bold">priority_high</span>
+</div>
+</div>
+<!-- Tooltip -->
+<div class="mt-2 bg-surface-dark text-white text-xs px-2 py-1 rounded shadow-lg border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                        #TR-4085: Desviación
+                    </div>
+</div>
+<!-- Truck Marker 2: Cluster -->
+<div class="absolute top-[45%] left-[55%] flex flex-col items-center group cursor-pointer" title="Cluster">
+<div class="size-12 bg-primary/90 rounded-full border-4 border-blue-900/50 shadow-lg flex items-center justify-center text-white font-bold transform group-hover:scale-110 transition-transform backdrop-blur-sm">
+                        5
+                    </div>
+</div>
+<!-- Truck Marker 3: Normal -->
+<div class="absolute top-[55%] left-[70%] flex flex-col items-center group cursor-pointer">
+<div class="size-8 bg-green-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white transform group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-sm">local_shipping</span>
+</div>
+</div>
+<!-- Route Path (SVG) -->
+<svg class="absolute inset-0 pointer-events-none opacity-60" style="width: 100%; height: 100%;">
+<path d="M 600 250 Q 750 350 850 450" fill="none" stroke="#ef4444" stroke-dasharray="5,5" stroke-width="3"></path>
+<path d="M 850 450 T 1000 600" fill="none" stroke="#2b8cee" stroke-width="3"></path>
+</svg>
+</div>
+</div>
+<!-- Toast / Undo Notification -->
+<div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-[#1d232a] text-white px-4 py-3 rounded-lg shadow-2xl border border-border-dark flex items-center gap-4 z-50 animate-in slide-in-from-bottom-4 fade-in duration-500 hidden">
+<span class="material-symbols-outlined text-green-400">check_circle</span>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Viaje #TR-4091 Asignado</span>
+<span class="text-xs text-[#9dabb9]">Conductor notificado correctamente.</span>
+</div>
+<div class="h-8 w-px bg-gray-700 mx-2"></div>
+<button class="text-sm text-primary font-bold hover:text-blue-400">Deshacer</button>
+<button class="text-[#9dabb9] hover:text-white ml-2">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+</div>
+</div>
+</body></html>
