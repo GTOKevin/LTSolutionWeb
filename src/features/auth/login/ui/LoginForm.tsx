@@ -22,6 +22,7 @@ import {
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Link as RouterLink } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginFormData } from '../model/schema';
 import { useLogin } from '../api/use-login';
@@ -272,7 +273,8 @@ export function LoginForm() {
                             }
                         />
                         <Link
-                            href="#"
+                            component={RouterLink}
+                            to="/forgot-password"
                             underline="hover"
                             sx={{
                                 fontSize: '0.875rem',

@@ -8,6 +8,7 @@ import { DashboardPage } from '@pages/dashboard';
 import { ClientesPage } from '@pages/clientes';
 import { CotizacionesPage } from '@pages/cotizaciones';
 import { HealthCheckPage } from '../../pages/health-check';
+import { ForgotPasswordPage } from '@pages/forgot-password';
 
 function RootRedirect() {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -27,6 +28,15 @@ export function RouterProvider() {
                     element={
                         <PublicRoute>
                             <LoginPage />
+                        </PublicRoute>
+                    }
+                />
+
+                <Route
+                    path="/forgot-password"
+                    element={
+                        <PublicRoute>
+                            <ForgotPasswordPage />
                         </PublicRoute>
                     }
                 />
