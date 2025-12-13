@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gestión de Ubigeo y Maestros - LogisticsApp</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b8cee",
+                        "primary-dark": "#1a6bb8",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111418",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2127",
+                        "border-light": "#e5e7eb",
+                        "border-dark": "#283039",
+                        "text-main-light": "#111827",
+                        "text-main-dark": "#ffffff",
+                        "text-secondary-light": "#6b7280",
+                        "text-secondary-dark": "#9dabb9",
+                        "success": "#10b981",
+                        "warning": "#f59e0b",
+                        "danger": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for tables */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #3b4754;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #4b5563;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main-light dark:text-text-main-dark antialiased h-screen overflow-hidden flex">
+<!-- Sidebar -->
+<aside class="w-64 bg-surface-dark dark:bg-[#111418] border-r border-border-dark flex flex-col justify-between shrink-0 h-full hidden md:flex transition-all">
+<div class="flex flex-col h-full">
+<!-- Logo Area -->
+<div class="p-6 flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-lg size-10 bg-primary flex items-center justify-center text-white" data-alt="Logistics App Logo Gradient">
+<span class="material-symbols-outlined text-2xl">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-white text-base font-bold leading-normal tracking-tight">LogisticsApp</h1>
+<p class="text-[#9dabb9] text-xs font-normal leading-normal">Admin Console</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 px-3 py-2 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#9dabb9] hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#9dabb9] hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">local_shipping</span>
+<span class="text-sm font-medium">Operaciones</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#9dabb9] hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">directions_car</span>
+<span class="text-sm font-medium">Flota</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#9dabb9] hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">groups</span>
+<span class="text-sm font-medium">Personal</span>
+</a>
+<div class="my-2 border-t border-border-dark mx-3"></div>
+<div class="px-3 py-2">
+<p class="text-xs font-semibold text-[#5a6b7c] uppercase tracking-wider mb-2">Administración</p>
+</div>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined fill-1">settings</span>
+<span class="text-sm font-semibold">Configuración</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#9dabb9] hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">description</span>
+<span class="text-sm font-medium">Reportes</span>
+</a>
+</nav>
+<!-- User Profile (Bottom) -->
+<div class="p-4 border-t border-border-dark">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-9 bg-gray-600" data-alt="User Avatar Profile" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD6OVG_QZtlE27G6Ja4RO2KTtjk-cMNFBU4D-nCgCI2P5rDs41_GnpE4glBK-PzV8_JQxw7dJi8H-p6dFGowQbPHpEm1F5emW5xVf-ZatYDiTIBmx0LQrPeNHITnQkKVFf0Jn8gjffXI2w6vGVGS6qfjGqgOBM55MHEtFSfAAV_Bd7r83UdcZIf-5jObmp_LxZZngSJpfNsL3_YDBAVNR0f88m9xoNnUEG6drlpHhVieNC54MCkTQACOpJIPxu-bcfNtcHg7vc0uV0");'></div>
+<div class="flex flex-col overflow-hidden">
+<p class="text-white text-sm font-medium truncate">Admin User</p>
+<p class="text-[#9dabb9] text-xs truncate">admin@logistics.com</p>
+</div>
+<span class="material-symbols-outlined text-[#9dabb9] ml-auto">more_vert</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Top Header -->
+<header class="h-16 bg-surface-light dark:bg-[#111418] border-b border-border-light dark:border-border-dark flex items-center justify-between px-6 shrink-0 z-20">
+<div class="flex items-center gap-4">
+<!-- Mobile Menu Button -->
+<button class="md:hidden text-text-secondary-dark hover:text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="hidden sm:flex items-center text-sm text-text-secondary-dark">
+<span class="hover:text-primary cursor-pointer">Inicio</span>
+<span class="material-symbols-outlined text-base mx-1">chevron_right</span>
+<span class="hover:text-primary cursor-pointer">Administración</span>
+<span class="material-symbols-outlined text-base mx-1">chevron_right</span>
+<span class="text-text-main-light dark:text-text-main-dark font-medium">Maestros</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<!-- Global Search -->
+<div class="hidden md:flex relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-text-secondary-dark text-[20px]">search</span>
+</div>
+<input autocomplete="off" class="block w-64 pl-10 pr-3 py-1.5 border border-border-light dark:border-[#3b4754] rounded-lg leading-5 bg-background-light dark:bg-[#1c2127] text-text-main-light dark:text-text-main-dark placeholder-text-secondary-dark focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-all" placeholder="Buscar en la plataforma..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2 flex items-center">
+<span class="text-xs text-text-secondary-dark border border-border-dark rounded px-1.5 py-0.5">⌘K</span>
+</div>
+</div>
+<div class="h-6 w-px bg-border-light dark:bg-border-dark mx-1"></div>
+<!-- Action Buttons -->
+<button class="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-text-secondary-light dark:text-text-secondary-dark transition-colors relative">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-danger rounded-full border-2 border-surface-light dark:border-background-dark"></span>
+</button>
+<button class="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-text-secondary-light dark:text-text-secondary-dark transition-colors">
+<span class="material-symbols-outlined text-[22px]">dark_mode</span>
+</button>
+</div>
+</header>
+<!-- Main Scrollable Area -->
+<main class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-background-light dark:bg-[#111418]">
+<div class="max-w-[1600px] mx-auto flex flex-col gap-6">
+<!-- Page Heading & Actions -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<h2 class="text-2xl font-bold text-text-main-light dark:text-white tracking-tight">Gestión de Maestros y Ubigeo</h2>
+<p class="text-text-secondary-light dark:text-[#9dabb9] text-sm mt-1">Administre la ubicación geográfica y los catálogos globales del sistema logístico.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-surface-light dark:bg-[#283039] hover:bg-gray-100 dark:hover:bg-[#323b46] text-text-main-light dark:text-white rounded-lg text-sm font-medium border border-border-light dark:border-transparent transition-colors flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                            Exportar Data
+                        </button>
+<button class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium transition-colors shadow-lg shadow-primary/20 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">save</span>
+                            Guardar Cambios
+                        </button>
+</div>
+</div>
+<!-- Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- Left Column: Ubigeo (Geographical) -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<div class="bg-surface-light dark:bg-[#1c2127] border border-border-light dark:border-[#283039] rounded-xl overflow-hidden shadow-sm">
+<div class="p-5 border-b border-border-light dark:border-[#283039] flex items-center justify-between bg-gray-50/50 dark:bg-[#1f252c]">
+<h3 class="font-semibold text-text-main-light dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">public</span>
+                                    Ubicación Geográfica
+                                </h3>
+<span class="text-xs font-mono bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">UBIGEO</span>
+</div>
+<div class="p-5 flex flex-col gap-5">
+<!-- Step 1: Departamento -->
+<div class="relative group">
+<label class="text-xs font-semibold text-text-secondary-light dark:text-[#9dabb9] uppercase tracking-wide mb-1.5 block">Departamento</label>
+<div class="relative">
+<select class="w-full h-11 bg-background-light dark:bg-[#111418] border border-border-light dark:border-[#3b4754] text-text-main-light dark:text-white text-sm rounded-lg px-3 focus:ring-1 focus:ring-primary focus:border-primary appearance-none transition-shadow cursor-pointer">
+<option>Lima</option>
+<option>Arequipa</option>
+<option>Cusco</option>
+<option>La Libertad</option>
+</select>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary-dark">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Step 2: Provincia -->
+<div class="relative group">
+<label class="text-xs font-semibold text-text-secondary-light dark:text-[#9dabb9] uppercase tracking-wide mb-1.5 block">Provincia</label>
+<div class="relative">
+<select class="w-full h-11 bg-background-light dark:bg-[#111418] border border-border-light dark:border-[#3b4754] text-text-main-light dark:text-white text-sm rounded-lg px-3 focus:ring-1 focus:ring-primary focus:border-primary appearance-none transition-shadow cursor-pointer">
+<option>Lima</option>
+<option>Barranca</option>
+<option>Cañete</option>
+<option>Huaral</option>
+</select>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary-dark">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Step 3: Distrito -->
+<div class="relative group">
+<label class="text-xs font-semibold text-text-secondary-light dark:text-[#9dabb9] uppercase tracking-wide mb-1.5 block">Distrito</label>
+<div class="relative">
+<select class="w-full h-11 bg-background-light dark:bg-[#111418] border border-border-light dark:border-[#3b4754] text-text-main-light dark:text-white text-sm rounded-lg px-3 focus:ring-1 focus:ring-primary focus:border-primary appearance-none transition-shadow cursor-pointer">
+<option>Miraflores</option>
+<option>San Isidro</option>
+<option>La Molina</option>
+<option>Santiago de Surco</option>
+</select>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary-dark">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Map/Visual Representation Placeholder -->
+<div class="h-48 w-full bg-cover bg-center relative border-t border-border-light dark:border-[#283039]" data-alt="Map representation of selected district" data-location="Lima District Map" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAwHUgR5AlFwre7yDUVUx7cpsQBtpol-SazqMbdU0e_c0Y5KFmqwDFTbyDJKCUtNo7Y3s-dWL6zigEATbDeKtb8HuKkyyVEcMnTkobI8c3oT7a5FpN8212Ne14aIH253g__1oxcYAVIJAp05qV560Ee55yxIwH6UtyQOdG46FVftcg0iMh1dvU9DpcGhSaF8IlOyx1dVEUW7WjjUXb1628KYd8OYJoMj3r0zRifzKVLuyDWOQaow0ca_wq1QZ2VhtL44J0YXhZqNEY');">
+<div class="absolute inset-0 bg-gradient-to-t from-[#1c2127] to-transparent opacity-80"></div>
+<div class="absolute bottom-4 left-4">
+<p class="text-white text-sm font-bold">Zona Operativa: Centro</p>
+<p class="text-xs text-primary font-medium">Cobertura: 98%</p>
+</div>
+</div>
+<div class="p-4 bg-gray-50/50 dark:bg-[#1f252c] border-t border-border-light dark:border-[#283039] flex gap-2">
+<button class="flex-1 py-2 px-3 bg-transparent border border-dashed border-border-dark dark:border-[#3b4754] text-text-secondary-light dark:text-[#9dabb9] hover:text-primary hover:border-primary rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add_location_alt</span>
+                                    Nuevo Distrito
+                                </button>
+</div>
+</div>
+<!-- Quick Stats Panel -->
+<div class="bg-surface-light dark:bg-[#1c2127] border border-border-light dark:border-[#283039] rounded-xl p-5 shadow-sm">
+<h4 class="text-sm font-semibold text-text-main-light dark:text-white mb-4">Métricas de Catálogo</h4>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="text-sm text-text-secondary-dark">Total Distritos Activos</span>
+<span class="text-sm font-mono text-white">1,874</span>
+</div>
+<div class="w-full bg-[#111418] rounded-full h-1.5">
+<div class="bg-success h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-sm text-text-secondary-dark">Roles Configurados</span>
+<span class="text-sm font-mono text-white">12</span>
+</div>
+<div class="w-full bg-[#111418] rounded-full h-1.5">
+<div class="bg-primary h-1.5 rounded-full" style="width: 45%"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-sm text-text-secondary-dark">Alertas HAZMAT</span>
+<span class="text-sm font-mono text-danger">3</span>
+</div>
+<div class="w-full bg-[#111418] rounded-full h-1.5">
+<div class="bg-danger h-1.5 rounded-full" style="width: 15%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Master Data Tables -->
+<div class="lg:col-span-8 flex flex-col h-full min-h-[600px]">
+<!-- Tabs Navigation -->
+<div class="border-b border-border-light dark:border-[#283039] mb-4">
+<nav aria-label="Tabs" class="-mb-px flex space-x-6 overflow-x-auto custom-scrollbar">
+<a class="border-b-2 border-primary text-primary whitespace-nowrap py-4 px-1 text-sm font-medium flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+                                    Monedas
+                                </a>
+<a class="border-b-2 border-transparent text-text-secondary-light dark:text-[#9dabb9] hover:text-text-main-light dark:hover:text-white hover:border-gray-300 whitespace-nowrap py-4 px-1 text-sm font-medium flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+                                    Tipos de Doc.
+                                </a>
+<a class="border-b-2 border-transparent text-text-secondary-light dark:text-[#9dabb9] hover:text-text-main-light dark:hover:text-white hover:border-gray-300 whitespace-nowrap py-4 px-1 text-sm font-medium flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+                                    Roles
+                                </a>
+<a class="border-b-2 border-transparent text-text-secondary-light dark:text-[#9dabb9] hover:text-text-main-light dark:hover:text-white hover:border-gray-300 whitespace-nowrap py-4 px-1 text-sm font-medium flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[20px]">traffic</span>
+                                    Estados
+                                </a>
+</nav>
+</div>
+<!-- Data Table Container -->
+<div class="bg-surface-light dark:bg-[#1c2127] border border-border-light dark:border-[#283039] rounded-xl flex-1 flex flex-col shadow-sm">
+<!-- Table Toolbar -->
+<div class="p-4 border-b border-border-light dark:border-[#283039] flex flex-wrap items-center justify-between gap-4">
+<div class="relative max-w-xs w-full">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-secondary-dark">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</span>
+<input class="block w-full pl-9 pr-3 py-2 bg-background-light dark:bg-[#111418] border border-border-light dark:border-[#3b4754] rounded-lg text-sm text-text-main-light dark:text-white placeholder-text-secondary-dark focus:ring-1 focus:ring-primary focus:border-primary transition-all" placeholder="Filtrar registros..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<!-- Density Toggle -->
+<div class="flex items-center bg-background-light dark:bg-[#111418] rounded-lg p-1 border border-border-light dark:border-[#3b4754]">
+<button class="p-1 rounded hover:bg-white/10 text-text-secondary-dark" title="Compacto">
+<span class="material-symbols-outlined text-[18px]">format_align_justify</span>
+</button>
+<button class="p-1 rounded bg-surface-light dark:bg-[#283039] text-primary shadow-sm" title="Cómodo">
+<span class="material-symbols-outlined text-[18px]">density_medium</span>
+</button>
+</div>
+<button class="flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-lg text-sm font-bold shadow hover:bg-primary-dark transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                                        Nuevo
+                                    </button>
+</div>
+</div>
+<!-- Table -->
+<div class="overflow-x-auto custom-scrollbar rounded-b-xl flex-1">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-gray-50 dark:bg-[#181d23] border-b border-border-light dark:border-[#283039]">
+<th class="p-4 text-xs font-semibold text-text-secondary-light dark:text-[#9dabb9] uppercase tracking-wider w-24">Código ISO</th>
+<th class="p-4 text-xs font-semibold text-text-secondary-light dark:text-[#9dabb9] uppercase tracking-wider">Descripción</th>
+<th class="p-4 text-xs font-semibold text-text-secondary-light dark:text-[#9dabb9] uppercase tracking-wider w-24 text-center">Símbolo</th>
+<th class="p-4 text-xs font-semibold text-text-secondary-light dark:text-[#9dabb9] uppercase tracking-wider w-32">Estado</th>
+<th class="p-4 text-xs font-semibold text-text-secondary-light dark:text-[#9dabb9] uppercase tracking-wider w-40">Última Edición</th>
+<th class="p-4 text-xs font-semibold text-text-secondary-light dark:text-[#9dabb9] uppercase tracking-wider w-20 text-center">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-light dark:divide-[#283039]">
+<!-- Row 1 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-[#232930] transition-colors group">
+<td class="p-4 text-sm font-mono text-text-main-light dark:text-white">PEN</td>
+<td class="p-4 text-sm text-text-main-light dark:text-white font-medium">Nuevo Sol Peruano</td>
+<td class="p-4 text-sm text-text-main-light dark:text-white text-center">S/</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                                    Activo
+                                                </span>
+</td>
+<td class="p-4 text-sm text-text-secondary-light dark:text-[#9dabb9]">24 Oct 2023</td>
+<td class="p-4 text-center">
+<button class="text-text-secondary-dark hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-[#232930] transition-colors group">
+<td class="p-4 text-sm font-mono text-text-main-light dark:text-white">USD</td>
+<td class="p-4 text-sm text-text-main-light dark:text-white font-medium">Dólar Americano</td>
+<td class="p-4 text-sm text-text-main-light dark:text-white text-center">$</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                                    Activo
+                                                </span>
+</td>
+<td class="p-4 text-sm text-text-secondary-light dark:text-[#9dabb9]">24 Oct 2023</td>
+<td class="p-4 text-center">
+<button class="text-text-secondary-dark hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-[#232930] transition-colors group">
+<td class="p-4 text-sm font-mono text-text-main-light dark:text-white">EUR</td>
+<td class="p-4 text-sm text-text-main-light dark:text-white font-medium">Euro</td>
+<td class="p-4 text-sm text-text-main-light dark:text-white text-center">€</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-900/50">
+<span class="size-1.5 rounded-full bg-yellow-500"></span>
+                                                    Revisión
+                                                </span>
+</td>
+<td class="p-4 text-sm text-text-secondary-light dark:text-[#9dabb9]">20 Oct 2023</td>
+<td class="p-4 text-center">
+<button class="text-text-secondary-dark hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-[#232930] transition-colors group">
+<td class="p-4 text-sm font-mono text-text-main-light dark:text-white">BRL</td>
+<td class="p-4 text-sm text-text-main-light dark:text-white font-medium">Real Brasileño</td>
+<td class="p-4 text-sm text-text-main-light dark:text-white text-center">R$</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50">
+<span class="size-1.5 rounded-full bg-red-500"></span>
+                                                    Inactivo
+                                                </span>
+</td>
+<td class="p-4 text-sm text-text-secondary-light dark:text-[#9dabb9]">15 Oct 2023</td>
+<td class="p-4 text-center">
+<button class="text-text-secondary-dark hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 (Inline Edit State Simulation) -->
+<tr class="bg-primary/5 border-l-2 border-l-primary hover:bg-primary/10 transition-colors">
+<td class="p-4 text-sm font-mono text-text-main-light dark:text-white">
+<input class="w-16 bg-white dark:bg-[#111418] border border-border-light dark:border-[#3b4754] rounded px-2 py-1 text-xs focus:ring-1 focus:ring-primary focus:border-primary" type="text" value="CNY"/>
+</td>
+<td class="p-4 text-sm text-text-main-light dark:text-white font-medium">
+<input class="w-full bg-white dark:bg-[#111418] border border-border-light dark:border-[#3b4754] rounded px-2 py-1 text-xs focus:ring-1 focus:ring-primary focus:border-primary" type="text" value="Yuan Chino"/>
+</td>
+<td class="p-4 text-sm text-text-main-light dark:text-white text-center">¥</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                                    Activo
+                                                </span>
+</td>
+<td class="p-4 text-sm text-text-secondary-light dark:text-[#9dabb9]">Ahora</td>
+<td class="p-4 text-center flex justify-center gap-2">
+<button class="text-success hover:text-success/80 transition-colors" title="Guardar">
+<span class="material-symbols-outlined text-[20px]">check</span>
+</button>
+<button class="text-danger hover:text-danger/80 transition-colors" title="Cancelar">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-4 py-3 border-t border-border-light dark:border-[#283039] bg-gray-50/50 dark:bg-[#1f252c] rounded-b-xl flex items-center justify-between">
+<span class="text-xs text-text-secondary-dark">Mostrando <span class="font-medium text-text-main-light dark:text-white">1-5</span> de <span class="font-medium text-text-main-light dark:text-white">24</span> resultados</span>
+<div class="flex items-center gap-2">
+<button class="size-8 flex items-center justify-center rounded-lg border border-border-light dark:border-[#3b4754] text-text-secondary-dark hover:bg-white/10 disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="size-8 flex items-center justify-center rounded-lg border border-border-light dark:border-[#3b4754] text-text-secondary-dark hover:bg-white/10">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

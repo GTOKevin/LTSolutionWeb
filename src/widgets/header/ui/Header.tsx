@@ -2,105 +2,166 @@ import {
     AppBar,
     IconButton,
     Toolbar,
+    Box,
+    InputBase,
+    Badge,
     Typography,
-    Button,
-    Chip,
-    Stack,
+    useTheme,
+    alpha
 } from '@mui/material';
 import {
     Menu as MenuIcon,
-    Brightness4 as DarkModeIcon,
-    Brightness7 as LightModeIcon,
-    Logout as LogoutIcon,
-    LocalShipping as TruckIcon,
-    Warning as WarningIcon,
+    Search as SearchIcon,
+    Notifications as NotificationsIcon,
+    DarkMode as DarkModeIcon,
+    LightMode as LightModeIcon,
+    ChevronRight as ChevronRightIcon
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@shared/store/auth.store';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { useThemeStore } from '@shared/store/theme.store';
+import { DRAWER_WIDTH } from '@widgets/sidebar/ui/Sidebar';
 
 export function Header() {
-    const navigate = useNavigate();
-    const { user, logout } = useAuthStore();
-    const { toggleSidebar, pageTitle } = useLayoutStore();
+    const { toggleSidebar } = useLayoutStore();
     const { mode, toggleMode } = useThemeStore();
-
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
+    const theme = useTheme();
 
     return (
         <AppBar
             position="fixed"
+            elevation={0}
             sx={{
-                zIndex: (theme) => theme.zIndex.drawer + 1,
-                background: (theme) =>
-                    theme.palette.mode === 'light'
-                        ? 'linear-gradient(90deg, #0d47a1 0%, #1565c0 100%)'
-                        : 'linear-gradient(90deg, #1a1f2e 0%, #2a2f3e 100%)',
+                width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+                ml: { md: `${DRAWER_WIDTH}px` },
+                bgcolor: theme.palette.mode === 'dark' ? '#111418' : '#ffffff', // From design
+                borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#283039' : theme.palette.divider}`,
+                color: theme.palette.text.primary
             }}
         >
-            <Toolbar>
-                <IconButton color="inherit" edge="start" onClick={toggleSidebar} sx={{ mr: 2 }}>
+            <Toolbar sx={{ height: 64, px: 3 }}>
+                {/* Mobile Menu Button */}
+                <IconButton
+                    color="inherit"
+                    edge="start"
+                    onClick={toggleSidebar}
+                    sx={{ mr: 2, display: { md: 'none' } }}
+                >
                     <MenuIcon />
                 </IconButton>
 
-                <TruckIcon sx={{ mr: 1.5, fontSize: 28 }} />
+                {/* Breadcrumbs (Hidden on Mobile) */}
+                <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1 }}>
+                    <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ cursor: 'pointer', '&:hover': { color: theme.palette.primary.main } }}
+                    >
+                        Inicio
+                    </Typography>
+                    <ChevronRightIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                    <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        sx={{ cursor: 'pointer', '&:hover': { color: theme.palette.primary.main } }}
+                    >
+                        Administración
+                    </Typography>
+                    <ChevronRightIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                    <Typography variant="body2" fontWeight={500}>
+                        Maestros
+                    </Typography>
+                </Box>
 
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 700 }}>
-                    {pageTitle}
-                </Typography>
+                <Box sx={{ flexGrow: 1 }} />
 
-                {user && (
-                    <Stack direction="row" spacing={1.5} alignItems="center">
-                        <Chip
-                            icon={<WarningIcon />}
-                            label="Cargas Peligrosas"
-                            size="small"
-                            color="warning"
-                            sx={{
-                                fontWeight: 700,
-                                display: { xs: 'none', md: 'flex' },
-                            }}
+                {/* Right Actions */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    {/* Search Bar (Hidden on Mobile) */}
+                    <Box
+                        sx={{
+                            position: 'relative',
+                            display: { xs: 'none', md: 'flex' },
+                            alignItems: 'center',
+                            bgcolor: theme.palette.mode === 'dark' ? '#1c2127' : '#f6f7f8',
+                            borderRadius: 2,
+                            border: `1px solid ${theme.palette.mode === 'dark' ? '#3b4754' : theme.palette.divider}`,
+                            width: 280,
+                            height: 36,
+                            px: 1.5,
+                            '&:focus-within': {
+                                borderColor: theme.palette.primary.main,
+                                boxShadow: `0 0 0 1px ${theme.palette.primary.main}`
+                            }
+                        }}
+                    >
+                        <SearchIcon sx={{ fontSize: 20, color: 'text.secondary', mr: 1 }} />
+                        <InputBase
+                            placeholder="Buscar en la plataforma..."
+                            sx={{ flex: 1, fontSize: '0.875rem' }}
                         />
-
-                        <Chip
-                            label={user.role}
-                            size="small"
-                            color="secondary"
+                        <Box
+                            component="span"
                             sx={{
-                                textTransform: 'capitalize',
-                                fontWeight: 600,
-                            }}
-                        />
-
-                        <IconButton onClick={toggleMode} color="inherit" size="small">
-                            {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
-                        </IconButton>
-
-                        <Button
-                            color="inherit"
-                            startIcon={<LogoutIcon />}
-                            onClick={handleLogout}
-                            sx={{
-                                display: { xs: 'none', sm: 'flex' },
-                                fontWeight: 600,
+                                fontSize: '0.75rem',
+                                color: 'text.secondary',
+                                border: `1px solid ${theme.palette.divider}`,
+                                borderRadius: 0.5,
+                                px: 0.5,
+                                py: 0.25,
+                                lineHeight: 1
                             }}
                         >
-                            Salir
-                        </Button>
+                            ⌘K
+                        </Box>
+                    </Box>
 
-                        <IconButton
-                            onClick={handleLogout}
-                            color="inherit"
-                            sx={{ display: { xs: 'flex', sm: 'none' } }}
+                    {/* Divider */}
+                    <Box 
+                        sx={{ 
+                            height: 24, 
+                            width: '1px', 
+                            bgcolor: theme.palette.divider,
+                            mx: 0.5 
+                        }} 
+                    />
+
+                    {/* Notifications */}
+                    <IconButton
+                        size="small"
+                        sx={{
+                            p: 1,
+                            borderRadius: 2,
+                            color: 'text.secondary',
+                            '&:hover': { bgcolor: alpha(theme.palette.text.primary, 0.05) }
+                        }}
+                    >
+                        <Badge 
+                            variant="dot" 
+                            color="error"
+                            sx={{ '& .MuiBadge-badge': { top: 4, right: 4, border: `2px solid ${theme.palette.background.paper}` } }}
                         >
-                            <LogoutIcon />
-                        </IconButton>
-                    </Stack>
-                )}
+                            <NotificationsIcon sx={{ fontSize: 22 }} />
+                        </Badge>
+                    </IconButton>
+
+                    {/* Theme Toggle */}
+                    <IconButton
+                        onClick={toggleMode}
+                        size="small"
+                        sx={{
+                            p: 1,
+                            borderRadius: 2,
+                            color: 'text.secondary',
+                            '&:hover': { bgcolor: alpha(theme.palette.text.primary, 0.05) }
+                        }}
+                    >
+                        {mode === 'dark' ? (
+                            <LightModeIcon sx={{ fontSize: 22 }} />
+                        ) : (
+                            <DarkModeIcon sx={{ fontSize: 22 }} />
+                        )}
+                    </IconButton>
+                </Box>
             </Toolbar>
         </AppBar>
     );
