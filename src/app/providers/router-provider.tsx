@@ -53,7 +53,8 @@ export function RouterProvider() {
                         </ProtectedRoute>
                     }
                 >
-                    <Route index element={<DashboardPage />} />
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                    <Route path="dashboard" element={<DashboardPage />} />
                     <Route path="clientes" element={<ClientesPage />} />
                     <Route path="cotizaciones" element={<CotizacionesPage />} />
                 </Route>

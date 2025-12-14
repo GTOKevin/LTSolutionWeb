@@ -47,7 +47,7 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-    { text: 'Dashboard', path: '/app/dashboard', icon: <DashboardIcon /> },
+    { text: 'Dashboard', path: '/app', icon: <DashboardIcon /> },
     {
         text: 'Gestión Comercial',
         icon: <BusinessIcon />,
@@ -94,11 +94,24 @@ export function Sidebar() {
     const { user } = useAuthStore();
     const theme = useTheme();
     
-    const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({
-        'Gestión Comercial': true,
-        'Operaciones': true,
-        'Configuración': true
-    });
+    // Calculate initial open state based on current location
+    const getInitialOpenState = () => {
+        const state: Record<string, boolean> = {};
+        menuItems.forEach(item => {
+            if (item.children) {
+                // Check if any child matches the current path
+                const hasActiveChild = item.children.some(child => 
+                    child.path && (location.pathname === child.path || location.pathname.startsWith(`${child.path}/`))
+                );
+                if (hasActiveChild) {
+                    state[item.text] = true;
+                }
+            }
+        });
+        return state;
+    };
+    
+    const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>(getInitialOpenState);
 
     const handleSubmenuClick = (text: string) => {
         setOpenSubmenus(prev => ({ ...prev, [text]: !prev[text] }));
@@ -112,14 +125,19 @@ export function Sidebar() {
     };
 
     const renderMenuItem = (item: MenuItem, depth = 0) => {
-        const isSelected = item.path ? location.pathname === item.path : false;
+        // Improved active state logic: exact match or starts with path (for nested routes)
+        const isSelected = item.path 
+            ? (location.pathname === item.path || location.pathname.startsWith(`${item.path}/`))
+            : false;
+            
         const hasChildren = item.children && item.children.length > 0;
         const isOpen = openSubmenus[item.text];
 
         // Custom colors from design
-        const inactiveColor = '#9dabb9';
+        const inactiveColor = '#475569';
         const activeColor = theme.palette.primary.main;
         const hoverBg = alpha(theme.palette.common.white, 0.05);
+        const selectedBg = alpha(theme.palette.primary.main, 0.12); // Slightly stronger background
 
         if (hasChildren) {
             return (
@@ -193,14 +211,22 @@ export function Sidebar() {
                         justifyContent: 'initial',
                         px: 2,
                         color: isSelected ? activeColor : inactiveColor,
-                        backgroundColor: isSelected ? alpha(activeColor, 0.1) : 'transparent',
+                        backgroundColor: isSelected ? selectedBg : 'transparent',
+                        borderLeft: isSelected ? `3px solid ${activeColor}` : '3px solid transparent', // Add border indicator
                         '&:hover': {
-                            backgroundColor: isSelected ? alpha(activeColor, 0.15) : hoverBg,
+                            backgroundColor: isSelected ? alpha(activeColor, 0.2) : hoverBg,
                             color: theme.palette.text.primary,
                             '& .MuiListItemIcon-root': {
-                                color: activeColor
+                                color: isSelected ? activeColor : theme.palette.text.primary
                             }
                         },
+                        '&.Mui-selected': {
+                             backgroundColor: selectedBg,
+                             color: activeColor,
+                             '&:hover': {
+                                 backgroundColor: alpha(activeColor, 0.2),
+                             }
+                        }
                     }}
                 >
                     <ListItemIcon
@@ -218,7 +244,7 @@ export function Sidebar() {
                         primary={item.text} 
                         primaryTypographyProps={{ 
                             fontSize: '0.875rem', 
-                            fontWeight: isSelected ? 600 : 500 
+                            fontWeight: isSelected ? 700 : 500 
                         }} 
                     />
                 </ListItemButton>
