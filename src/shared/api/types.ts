@@ -1,8 +1,13 @@
+export interface ValidationError {
+    field: string;
+    message: string;
+}
+
 export interface ApiError {
     title: string;
     status: number;
     detail?: string;
-    errors?: Record<string, string[]>;
+    errors?: ValidationError[];
 }
 
 export interface PagedResponse<T> {

@@ -50,5 +50,6 @@ export interface ClienteParams {
     search?: string;
     page?: number;
     size?: number;
+    active?:string;
 }
 

@@ -13,7 +13,9 @@ import {
     ListItem,
     ListItemText,
     ListItemSecondaryAction,
-    Chip
+    Chip,
+    Alert,
+    Snackbar
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -29,23 +31,26 @@ import { createContactoSchema } from '../../model/schema';
 import type { CreateContactoSchema } from '../../model/schema';
 import { useState } from 'react';
 import type { ClienteContacto } from '@entities/cliente/model/types';
+import { handleBackendErrors } from '@shared/utils/form-validation';
 
 interface ClienteContactosListProps {
     clienteId: number;
+    viewOnly?: boolean;
 }
 
-export function ClienteContactosList({ clienteId }: ClienteContactosListProps) {
+export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteContactosListProps) {
     const theme = useTheme();
     const queryClient = useQueryClient();
     const [editingId, setEditingId] = useState<number | null>(null);
     const [showForm, setShowForm] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [openSnackbar, setOpenSnackbar] = useState(false);
 
     const { data: data, isLoading } = useQuery({
         queryKey: ['cliente-contactos', clienteId],
         queryFn: () => clienteApi.getContactos(clienteId, undefined, undefined, 1, 100),
         enabled: !!clienteId
     });
-    console.log(data);
 
     const {
         register,
@@ -53,6 +58,7 @@ export function ClienteContactosList({ clienteId }: ClienteContactosListProps) {
         reset,
         setValue,
         control,
+        setError,
         formState: { errors, isSubmitting }
     } = useForm<CreateContactoSchema>({
         resolver: zodResolver(createContactoSchema),
@@ -67,6 +73,13 @@ export function ClienteContactosList({ clienteId }: ClienteContactosListProps) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cliente-contactos', clienteId] });
             resetForm();
+        },
+        onError: (error: any) => {
+            const genericError = handleBackendErrors<CreateContactoSchema>(error, setError);
+            if (genericError) {
+                setErrorMessage(genericError);
+                setOpenSnackbar(true);
+            }
         }
     });
 
@@ -76,6 +89,13 @@ export function ClienteContactosList({ clienteId }: ClienteContactosListProps) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cliente-contactos', clienteId] });
             resetForm();
+        },
+        onError: (error: any) => {
+            const genericError = handleBackendErrors<CreateContactoSchema>(error, setError);
+            if (genericError) {
+                setErrorMessage(genericError);
+                setOpenSnackbar(true);
+            }
         }
     });
 
@@ -83,6 +103,10 @@ export function ClienteContactosList({ clienteId }: ClienteContactosListProps) {
         mutationFn: (id: number) => clienteApi.removeContacto(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cliente-contactos', clienteId] });
+        },
+        onError: (error: any) => {
+            setErrorMessage('Error al eliminar el contacto');
+            setOpenSnackbar(true);
         }
     });
 
@@ -129,10 +153,10 @@ export function ClienteContactosList({ clienteId }: ClienteContactosListProps) {
                 <Typography variant="subtitle1" fontWeight="bold">
                     Lista de Contactos
                 </Typography>
-                {!showForm && (
+                {!showForm && !viewOnly && (
                     <Button 
                         startIcon={<AddIcon />} 
-                        variant="outlined" 
+                        variant="contained" 
                         size="small"
                         onClick={() => setShowForm(true)}
                     >
@@ -268,23 +292,48 @@ export function ClienteContactosList({ clienteId }: ClienteContactosListProps) {
                                         </Typography>
                                     }
                                 />
-                                <ListItemSecondaryAction>
-                                    <IconButton size="small" onClick={() => handleEdit(contacto)}>
-                                        <EditIcon fontSize="small" />
-                                    </IconButton>
-                                    <IconButton 
-                                        size="small" 
-                                        color="error" 
-                                        onClick={() => deleteMutation.mutate(contacto.clienteContactoID)}
-                                    >
-                                        <DeleteIcon fontSize="small" />
-                                    </IconButton>
-                                </ListItemSecondaryAction>
+                                {!viewOnly && (
+                                    <ListItemSecondaryAction>
+                                        <Box display="flex" gap={0.5}>
+                                            <IconButton 
+                                                size="small" 
+                                                onClick={() => handleEdit(contacto)}
+                                                sx={{ 
+                                                    color: 'text.secondary',
+                                                    '&:hover': { color: 'primary.main' }
+                                                }}
+                                            >
+                                                <EditIcon fontSize="small" />
+                                            </IconButton>
+                                            <IconButton 
+                                                size="small" 
+                                                color="error" 
+                                                onClick={() => deleteMutation.mutate(contacto.clienteContactoID)}
+                                                sx={{ 
+                                                    color: 'text.secondary',
+                                                    '&:hover': { color: 'error.main' }
+                                                }}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        </Box>
+                                    </ListItemSecondaryAction>
+                                )}
                             </ListItem>
                         ))
                     )}
                 </List>
             )}
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={6000}
+                onClose={() => setOpenSnackbar(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={() => setOpenSnackbar(false)} severity="error" sx={{ width: '100%' }}>
+                    {errorMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }

@@ -14,7 +14,9 @@ import {
     useTheme,
     alpha,
     Tabs,
-    Tab
+    Tab,
+    Alert,
+    Snackbar
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,12 +27,14 @@ import type { CreateClienteSchema } from '../../model/schema';
 import { useEffect, useState } from 'react';
 import type { Cliente } from '@entities/cliente/model/types';
 import { ClienteContactosList } from '../../contactos/ui/ClienteContactosModal';
+import { handleBackendErrors } from '@shared/utils/form-validation';
 
 interface CreateEditClienteModalProps {
     open: boolean;
     onClose: () => void;
     clienteToEdit?: Cliente | null;
     onSuccess: (clienteId: number) => void;
+    viewOnly?: boolean;
 }
 
 interface TabPanelProps {
@@ -60,11 +64,13 @@ function CustomTabPanel(props: TabPanelProps) {
     );
 }
 
-export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess }: CreateEditClienteModalProps) {
+export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess, viewOnly = false }: CreateEditClienteModalProps) {
     const theme = useTheme();
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState(0);
     const [createdClientId, setCreatedClientId] = useState<number | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [openSnackbar, setOpenSnackbar] = useState(false);
     
     const isEdit = !!clienteToEdit;
     const effectiveClienteId = clienteToEdit?.clienteID || createdClientId;
@@ -75,6 +81,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
         handleSubmit,
         reset,
         control,
+        setError,
         formState: { errors, isSubmitting }
     } = useForm<CreateClienteSchema>({
         resolver: zodResolver(createClienteSchema),
@@ -87,6 +94,10 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
         if (open) {
             setActiveTab(0);
             setCreatedClientId(null);
+            setErrorMessage(null);
+            setOpenSnackbar(false);
+            // Clear any previous errors
+            // reset() clears values but we want to clear errors too if needed, though reset usually handles it.
             if (clienteToEdit) {
                 reset({
                     ruc: clienteToEdit.ruc,
@@ -142,6 +153,14 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                 // Edit mode or subsequent save
                 onClose();
             }
+        },
+        onError: (error: any) => {
+            console.log("Mutation Error:", error);
+            const genericError = handleBackendErrors<CreateClienteSchema>(error, setError);
+            if (genericError) {
+                setErrorMessage(genericError);
+                setOpenSnackbar(true);
+            }
         }
     });
 
@@ -154,6 +173,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
     };
 
     return (
+        <>
         <Dialog 
             open={open} 
             onClose={onClose} 
@@ -170,10 +190,10 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
             }}>
                 <Box sx={{ mb: 2 }}>
                     <Typography variant="h6" fontWeight="bold">
-                        {isEdit || createdClientId ? 'Gestión de Cliente' : 'Nuevo Cliente'}
+                        {viewOnly ? 'Detalle del Cliente' : (isEdit || createdClientId ? 'Gestión de Cliente' : 'Nuevo Cliente')}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                        {isEdit || createdClientId ? 'Administre la información y contactos del cliente' : 'Complete la información para registrar un nuevo cliente'}
+                        {viewOnly ? 'Visualización de información del cliente' : (isEdit || createdClientId ? 'Administre la información y contactos del cliente' : 'Complete la información para registrar un nuevo cliente')}
                     </Typography>
                 </Box>
                 
@@ -189,6 +209,13 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
             </DialogTitle>
             
             <DialogContent sx={{ p: 0 }}>
+                {activeTab === 0 && errorMessage && (
+                     <Box sx={{ p: 3, pb: 0 }}>
+                        <Alert severity="error" onClose={() => setErrorMessage(null)}>
+                            {errorMessage}
+                        </Alert>
+                     </Box>
+                )}
                 <CustomTabPanel value={activeTab} index={0}>
                     <form id="cliente-form" onSubmit={handleSubmit(onSubmit)}>
                         <Box sx={{ px: 3 }}>
@@ -206,7 +233,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                                         {...register('ruc')}
                                         error={!!errors.ruc}
                                         helperText={errors.ruc?.message}
-                                        disabled={isEdit || !!createdClientId}
+                                        disabled={viewOnly || isEdit || !!createdClientId}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 12, md: 6 }}>
@@ -216,6 +243,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                                         {...register('razonSocial')}
                                         error={!!errors.razonSocial}
                                         helperText={errors.razonSocial?.message}
+                                        disabled={viewOnly}
                                     />
                                 </Grid>
 
@@ -226,6 +254,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                                         {...register('direccionLegal')}
                                         error={!!errors.direccionLegal}
                                         helperText={errors.direccionLegal?.message}
+                                        disabled={viewOnly}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 12, md: 6 }}>
@@ -235,6 +264,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                                         {...register('direccionFiscal')}
                                         error={!!errors.direccionFiscal}
                                         helperText={errors.direccionFiscal?.message}
+                                        disabled={viewOnly}
                                     />
                                 </Grid>
 
@@ -252,6 +282,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                                         {...register('contactoPrincipal')}
                                         error={!!errors.contactoPrincipal}
                                         helperText={errors.contactoPrincipal?.message}
+                                        disabled={viewOnly}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 12, md: 6 }}>
@@ -261,6 +292,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                                         {...register('email')}
                                         error={!!errors.email}
                                         helperText={errors.email?.message}
+                                        disabled={viewOnly}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 12, md: 6 }}>
@@ -270,6 +302,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                                         {...register('telefono')}
                                         error={!!errors.telefono}
                                         helperText={errors.telefono?.message}
+                                        disabled={viewOnly}
                                     />
                                 </Grid>
                                 {isEdit && (
@@ -284,6 +317,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                                                         checked={field.value}
                                                         onChange={(e) => field.onChange(e.target.checked)}
                                                         color="success"
+                                                        disabled={viewOnly}
                                                     />
                                                 }
                                                 label="Cliente Activo"
@@ -299,16 +333,16 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
 
                 <CustomTabPanel value={activeTab} index={1}>
                     <Box sx={{ px: 3, height: '100%' }}>
-                        {effectiveClienteId && <ClienteContactosList clienteId={effectiveClienteId} />}
+                        {effectiveClienteId && <ClienteContactosList clienteId={effectiveClienteId} viewOnly={viewOnly} />}
                     </Box>
                 </CustomTabPanel>
             </DialogContent>
             
             <DialogActions sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
                 <Button onClick={onClose} color="inherit">
-                    {activeTab === 0 ? 'Cancelar' : 'Cerrar'}
+                    {activeTab === 0 ? (viewOnly ? 'Cerrar' : 'Cancelar') : 'Cerrar'}
                 </Button>
-                {activeTab === 0 && (
+                {activeTab === 0 && !viewOnly && (
                     <Button 
                         type="submit" 
                         form="cliente-form"
@@ -320,5 +354,16 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                 )}
             </DialogActions>
         </Dialog>
+        <Snackbar 
+            open={openSnackbar} 
+            autoHideDuration={6000} 
+            onClose={() => setOpenSnackbar(false)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+            <Alert onClose={() => setOpenSnackbar(false)} severity="error" sx={{ width: '100%' }}>
+                {errorMessage}
+            </Alert>
+        </Snackbar>
+        </>
     );
 }

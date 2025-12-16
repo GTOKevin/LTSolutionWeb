@@ -4,77 +4,132 @@ import {
     Button,
     TextField,
     InputAdornment,
-    Select,
-    MenuItem,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Checkbox,
     Chip,
     IconButton,
-    Paper,
     useTheme,
     alpha,
-    Collapse
+    Collapse,
+    Snackbar,
+    Alert
 } from '@mui/material';
 import {
     Search as SearchIcon,
     FilterList as FilterListIcon,
     Add as AddIcon,
-    Reorder as ReorderIcon,
-    ViewAgenda as ViewAgendaIcon,
-    Visibility as VisibilityIcon,
-    Edit as EditIcon,
-    Delete as DeleteIcon
+    Tune as TuneIcon
 } from '@mui/icons-material';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
 import { useState, useEffect } from 'react';
 import { CreateEditClienteModal } from '../../features/cliente/create-edit/ui/CreateEditClienteModal';
+import { ConfirmDialog } from '../../shared/components/ui/ConfirmDialog';
 import type { Cliente } from '@entities/cliente/model/types';
+import { ClientesTable } from '../../features/cliente/list/ui/ClientesTable';
+import { ClientesMobileList } from '../../features/cliente/list/ui/ClientesMobileList';
 
 export function ClientesPage() {
     const theme = useTheme();
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [page, setPage] = useState(1);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
     const [statusFilter, setStatusFilter] = useState(' ');
     const [showFilters, setShowFilters] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [clienteToEdit, setClienteToEdit] = useState<Cliente | null>(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [clienteToDelete, setClienteToDelete] = useState<Cliente | null>(null);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+
+    const [viewOnlyMode, setViewOnlyMode] = useState(false);
+
+    useEffect(() => {
+        const handleOpenCreateModal = () => handleCreate();
+        window.addEventListener('open-create-client-modal', handleOpenCreateModal);
+        return () => window.removeEventListener('open-create-client-modal', handleOpenCreateModal);
+    }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(searchTerm);
+            setPage(0); // Reset page on new search
         }, 1000);
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ['clientes', page, debouncedSearch],
-        queryFn: () => clienteApi.getAll({ page, size: 10, search: debouncedSearch })
+        queryKey: ['clientes', page, rowsPerPage, debouncedSearch, statusFilter],
+        queryFn: () => clienteApi.getAll({ 
+            page: page + 1, 
+            size: rowsPerPage, 
+            search: debouncedSearch,
+            active: statusFilter === ' ' ? undefined : statusFilter
+        })
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: number) => clienteApi.delete(id),
+        onSuccess: () => {
+            setDeleteConfirmOpen(false);
+            setClienteToDelete(null);
+            setSnackbarMessage(`Cliente ${clienteToDelete?.razonSocial} Eliminado.`);
+            setSnackbarOpen(true);
+            refetch();
+        },
+        onError: () => {
+             setDeleteConfirmOpen(false);
+             setClienteToDelete(null);
+             // Optionally handle error message
+        }
     });
 
     const handleCreate = () => {
         setClienteToEdit(null);
+        setViewOnlyMode(false);
         setModalOpen(true);
     };
 
     const handleEdit = (cliente: Cliente) => {
         setClienteToEdit(cliente);
+        setViewOnlyMode(false);
         setModalOpen(true);
+    };
+
+    const handleView = (cliente: Cliente) => {
+        setClienteToEdit(cliente);
+        setViewOnlyMode(true);
+        setModalOpen(true);
+    };
+
+    const handleDeleteClick = (cliente: Cliente) => {
+        setClienteToDelete(cliente);
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (clienteToDelete) {
+            deleteMutation.mutate(clienteToDelete.clienteID);
+        }
     };
 
     const handleCloseModal = () => {
         setModalOpen(false);
         setClienteToEdit(null);
+        setViewOnlyMode(false);
     };
 
     const handleSuccess = (id: number) => {
         refetch();
+    };
+
+    const handleChangePage = (event: unknown, newPage: number) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
     };
 
     return (
@@ -82,13 +137,14 @@ export function ClientesPage() {
             flex: 1, 
             overflow: 'auto', 
             bgcolor: theme.palette.mode === 'dark' ? '#101922' : '#f6f7f8',
-            p: 3,
-            position: 'relative'
+            p: { xs: 2, md: 3 },
+            position: 'relative',
+            pb: { xs: 10, md: 3 } // Padding bottom for mobile nav
         }}>
-            <Box sx={{ maxWidth: 1600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
+            <Box sx={{ maxWidth: 1600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 3 }, height: '100%' }}>
                 
-                {/* Toolbar */}
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                {/* Desktop Toolbar */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                         <Typography variant="h5" fontWeight="bold" color="text.primary">
                             Cartera de Clientes
@@ -99,22 +155,6 @@ export function ClientesPage() {
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        {/* Density Toggle (Hidden on mobile) */}
-                        <Box sx={{ 
-                            display: { xs: 'none', sm: 'flex' }, 
-                            bgcolor: 'background.paper', 
-                            border: `1px solid ${theme.palette.divider}`, 
-                            borderRadius: 2, 
-                            p: 0.5 
-                        }}>
-                            <IconButton size="small" sx={{ borderRadius: 1 }}>
-                                <ReorderIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton size="small" sx={{ borderRadius: 1, color: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.1) }}>
-                                <ViewAgendaIcon fontSize="small" />
-                            </IconButton>
-                        </Box>
-
                         {/* Filters */}
                         <Button
                             variant="outlined"
@@ -142,162 +182,101 @@ export function ClientesPage() {
                     </Box>
                 </Box>
 
-                {/* Main Table Card */}
-                <Paper sx={{ 
-                    flex: 1, 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    minHeight: 0, 
-                    overflow: 'hidden',
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 3,
-                    boxShadow: theme.shadows[1]
-                }}>
-                    {/* Table Toolbar */}
+                {/* Mobile Toolbar */}
+                <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ position: 'relative', width: '100%' }}>
+                        <TextField
+                            placeholder="Buscar cliente, ID o contacto..."
+                            fullWidth
+                            size="small"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            sx={{ 
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 3,
+                                    bgcolor: 'background.paper',
+                                    pr: 5 // Space for filter button
+                                }
+                            }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon color="action" />
+                                    </InputAdornment>
+                                ),
+                                endAdornment: (
+                                    <InputAdornment position="end" sx={{ position: 'absolute', right: 8 }}>
+                                        <IconButton 
+                                            size="small" 
+                                            onClick={() => setShowFilters(!showFilters)}
+                                            sx={{ color: showFilters ? 'primary.main' : 'text.secondary' }}
+                                        >
+                                            <TuneIcon fontSize="small" />
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }}
+                        />
+                    </Box>
+                    
                     <Collapse in={showFilters}>
-                        <Box sx={{ 
-                            p: 2, 
-                            borderBottom: `1px solid ${theme.palette.divider}`, 
-                            display: 'flex', 
-                            gap: 2, 
-                            bgcolor: alpha(theme.palette.background.default, 0.5) 
-                        }}>
-                            <TextField
-                                placeholder="Buscar por Razón Social o ID Fiscal..."
-                                size="small"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                sx={{ flex: 1, maxWidth: 400 }}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <SearchIcon color="action" />
-                                        </InputAdornment>
-                                    ),
-                                    sx: { bgcolor: 'background.paper' }
-                                }}
+                        <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 0.5, '::-webkit-scrollbar': { display: 'none' } }}>
+                            <Chip 
+                                label="Todos" 
+                                size="small" 
+                                color={statusFilter === ' ' ? 'primary' : 'default'} 
+                                onClick={() => setStatusFilter(' ')}
+                                sx={{ fontWeight: 500 }}
                             />
-                            <Select
-                                size="small"
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                sx={{ minWidth: 180, bgcolor: 'background.paper' }}
-                            >
-                                <MenuItem value=" ">Todos los Estados</MenuItem>
-                                <MenuItem value="1">Activo</MenuItem>
-                                <MenuItem value="0">Inactivo</MenuItem>
-                            </Select>
+                            <Chip 
+                                label="Habilitados" 
+                                size="small" 
+                                color={statusFilter === '1' ? 'primary' : 'default'}
+                                variant={statusFilter === '1' ? 'filled' : 'outlined'}
+                                onClick={() => setStatusFilter('1')}
+                                sx={{ bgcolor: statusFilter === '1' ? undefined : 'background.paper', fontWeight: 500 }}
+                            />
+                            <Chip 
+                                label="Inactivos" 
+                                size="small" 
+                                color={statusFilter === '0' ? 'primary' : 'default'}
+                                variant={statusFilter === '0' ? 'filled' : 'outlined'}
+                                onClick={() => setStatusFilter('0')}
+                                sx={{ bgcolor: statusFilter === '0' ? undefined : 'background.paper', fontWeight: 500 }}
+                            />
                         </Box>
                     </Collapse>
+                </Box>
 
-                    {/* Table Container */}
-                    <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
-                        <Table stickyHeader>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell padding="checkbox">
-                                        <Checkbox color="primary" />
-                                    </TableCell>
-                                    <TableCell>Razón Social</TableCell>
-                                    <TableCell>RUC</TableCell>
-                                    <TableCell>Contacto Principal</TableCell>
-                                    <TableCell>Estado</TableCell>
-                                    <TableCell>Teléfono</TableCell>
-                                    <TableCell align="right">Acciones</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {isLoading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={7} align="center" sx={{ py: 10 }}>
-                                            Cargando clientes...
-                                        </TableCell>
-                                    </TableRow>
-                                ) : data?.data?.items.map((cliente: Cliente) => (
-                                    <TableRow 
-                                        key={cliente.clienteID}
-                                        hover
-                                        sx={{ 
-                                            '&:hover .actions-group': { opacity: 1 },
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        <TableCell padding="checkbox">
-                                            <Checkbox color="primary" />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                                <Typography variant="body2" fontWeight={500}>
-                                                    {cliente.razonSocial}
-                                                </Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {cliente.email || 'Sin correo'}
-                                                </Typography>
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Typography variant="body2" fontFamily="monospace" color="text.secondary">
-                                                {cliente.ruc}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell>{cliente.contactoPrincipal}</TableCell>
-                                        <TableCell>
-                                            <Chip 
-                                                label={cliente.activo ? 'Habilitado' : 'Inactivo'} 
-                                                size="small"
-                                                sx={{ 
-                                                    height: 24,
-                                                    bgcolor: cliente.activo 
-                                                        ? alpha(theme.palette.success.main, 0.1) 
-                                                        : alpha(theme.palette.error.main, 0.1),
-                                                    color: cliente.activo 
-                                                        ? theme.palette.success.dark 
-                                                        : theme.palette.error.dark,
-                                                    fontWeight: 600,
-                                                    fontSize: '0.75rem'
-                                                }}
-                                            />
-                                        </TableCell>
-                                        <TableCell>{cliente.telefono || '-'}</TableCell>
-                                        <TableCell align="right">
-                                            <Box className="actions-group" sx={{ 
-                                                display: 'flex', 
-                                                justifyContent: 'flex-end', 
-                                                gap: 1,
-                                                opacity: { xs: 1, md: 0 },
-                                                transition: 'opacity 0.2s'
-                                            }}>
-                                                <IconButton size="small">
-                                                    <VisibilityIcon fontSize="small" />
-                                                </IconButton>
-                                                <IconButton 
-                                                    size="small" 
-                                                    color="primary"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleEdit(cliente);
-                                                    }}
-                                                >
-                                                    <EditIcon fontSize="small" />
-                                                </IconButton>
-                                                <IconButton size="small" color="error">
-                                                    <DeleteIcon fontSize="small" />
-                                                </IconButton>
-                                            </Box>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                                {data?.data?.items.length === 0 && (
-                                    <TableRow>
-                                        <TableCell colSpan={7} align="center" sx={{ py: 8, color: 'text.secondary' }}>
-                                            No se encontraron clientes
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </Paper>
+                {/* Mobile Content (Cards) */}
+                <ClientesMobileList
+                    data={data?.data}
+                    isLoading={isLoading}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={setPage}
+                    onView={handleView}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteClick}
+                />
+
+                {/* Desktop Content (Table) */}
+                <ClientesTable
+                    data={data?.data}
+                    isLoading={isLoading}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    showFilters={showFilters}
+                    searchTerm={searchTerm}
+                    statusFilter={statusFilter}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    onSearchChange={setSearchTerm}
+                    onStatusFilterChange={setStatusFilter}
+                    onView={handleView}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteClick}
+                />
             </Box>
 
             <CreateEditClienteModal 
@@ -305,7 +284,34 @@ export function ClientesPage() {
                 onClose={handleCloseModal}
                 clienteToEdit={clienteToEdit}
                 onSuccess={handleSuccess}
+                viewOnly={viewOnlyMode}
             />
+
+            <ConfirmDialog
+                open={deleteConfirmOpen}
+                title="Eliminar Cliente"
+                content={
+                    <Typography>
+                        ¿Está seguro de eliminar el cliente <strong>{clienteToDelete?.razonSocial}</strong> con RUC <strong>{clienteToDelete?.ruc}</strong>?
+                    </Typography>
+                }
+                onClose={() => setDeleteConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                severity="error"
+                confirmText="Eliminar"
+                isLoading={deleteMutation.isPending}
+            />
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }
