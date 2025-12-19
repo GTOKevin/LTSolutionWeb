@@ -103,7 +103,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
         handleSubmit,
         reset,
         setError,
-        formState: { errors, isSubmitting }
+        formState: { errors, isDirty }
     } = useForm<CreateFlotaSchema>({
         resolver: zodResolver(createFlotaSchema),
         defaultValues: {
@@ -499,7 +499,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
                         type="submit"
                         form="flota-form"
                         variant="contained" 
-                        disabled={mutation.isPending}
+                        disabled={mutation.isPending || (isEdit && !isDirty)}
                         startIcon={mutation.isPending ? <CircularProgress size={20} color="inherit" /> : null}
                     >
                         {isEdit || createdFlotaId ? 'Guardar Cambios' : 'Crear Vehículo'}

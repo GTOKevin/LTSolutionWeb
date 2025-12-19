@@ -59,7 +59,7 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
         setValue,
         control,
         setError,
-        formState: { errors, isSubmitting }
+        formState: { errors, isSubmitting, isDirty }
     } = useForm<CreateContactoSchema>({
         resolver: zodResolver(createContactoSchema),
         defaultValues: {
@@ -245,7 +245,7 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
                             <Button 
                                 type="submit" 
                                 variant="contained"
-                                disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}
+                                disabled={isSubmitting || createMutation.isPending || updateMutation.isPending || (!!editingId && !isDirty)}
                             >
                                 Guardar
                             </Button>

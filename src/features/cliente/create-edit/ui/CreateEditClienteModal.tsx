@@ -82,7 +82,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
         reset,
         control,
         setError,
-        formState: { errors, isSubmitting }
+        formState: { errors, isSubmitting, isDirty }
     } = useForm<CreateClienteSchema>({
         resolver: zodResolver(createClienteSchema),
         defaultValues: {
@@ -347,7 +347,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                         type="submit" 
                         form="cliente-form"
                         variant="contained" 
-                        disabled={isSubmitting || mutation.isPending}
+                        disabled={isSubmitting || mutation.isPending || (isEdit && !isDirty)}
                     >
                         {isEdit || createdClientId ? 'Guardar Cambios' : 'Registrar y Continuar'}
                     </Button>

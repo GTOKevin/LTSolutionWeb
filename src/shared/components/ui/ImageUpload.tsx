@@ -8,13 +8,16 @@ import {
     alpha,
     useTheme,
     Dialog,
-    DialogContent
+    DialogContent,
+    DialogActions
 } from '@mui/material';
 import {
     CloudUpload as UploadIcon,
     Delete as DeleteIcon,
     Visibility as ViewIcon,
-    Image as ImageIcon
+    Image as ImageIcon,
+    Download as DownloadIcon,
+    Close as CloseIcon
 } from '@mui/icons-material';
 import imageCompression from 'browser-image-compression';
 import { archivoApi } from '@shared/api/archivo.api';
@@ -97,18 +100,29 @@ export function ImageUpload({
     const getFullUrl = (path: string) => {
         if (path.startsWith('http')) return path;
         const baseUrl = API_URL.replace(/\/api\/?$/, '');
-        return `${baseUrl}${path}`;
+        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
     };
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (!value) return;
-        const link = document.createElement('a');
-        link.href = getFullUrl(value);
-        link.target = '_blank';
-        link.download = value.split('/').pop() || 'imagen';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const fullUrl = getFullUrl(value);
+        try {
+            const response = await fetch(fullUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            const filename = value.split('/').pop() || 'imagen';
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error downloading:', error);
+            // Fallback
+            window.open(fullUrl, '_blank');
+        }
     };
 
     return (
@@ -233,33 +247,31 @@ export function ImageUpload({
                 open={previewOpen} 
                 onClose={() => setPreviewOpen(false)}
                 maxWidth="lg"
+                fullWidth
             >
-                <DialogContent sx={{ p: 0, position: 'relative', bgcolor: 'black', display: 'flex', justifyContent: 'center' }}>
+                <DialogActions sx={{ p: 1, borderBottom: `1px solid ${theme.palette.divider}` }}>
+                    <Typography variant="subtitle1" sx={{ flex: 1, px: 2, fontWeight: 600 }}>
+                        Vista Previa
+                    </Typography>
+                    <Button onClick={handleDownload} startIcon={<DownloadIcon />} variant="outlined" size="small" sx={{ mr: 1 }}>
+                        Descargar
+                    </Button>
+                    <IconButton onClick={() => setPreviewOpen(false)} size="small">
+                        <CloseIcon />
+                    </IconButton>
+                </DialogActions>
+                <DialogContent sx={{ p: 0, bgcolor: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
                     {value && (
                         <img 
                             src={getFullUrl(value)} 
                             alt="Full preview" 
-                            style={{ maxWidth: '100%', maxHeight: '90vh' }} 
+                            style={{ 
+                                maxWidth: '100%', 
+                                maxHeight: '80vh', 
+                                objectFit: 'contain' 
+                            }} 
                         />
                     )}
-                    <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 1 }}>
-                         <Button 
-                            variant="contained" 
-                            color="primary" 
-                            size="small"
-                            onClick={handleDownload}
-                        >
-                            Descargar
-                        </Button>
-                        <Button 
-                            variant="contained" 
-                            color="inherit" 
-                            size="small"
-                            onClick={() => setPreviewOpen(false)}
-                        >
-                            Cerrar
-                        </Button>
-                    </Box>
                 </DialogContent>
             </Dialog>
         </Box>

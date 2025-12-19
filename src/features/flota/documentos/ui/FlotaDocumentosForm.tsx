@@ -39,7 +39,7 @@ export function FlotaDocumentosForm({
         handleSubmit,
         control,
         reset,
-        formState: { errors }
+        formState: { errors, isDirty }
     } = useForm<CreateFlotaDocumentoSchema>({
         resolver: zodResolver(createFlotaDocumentoSchema),
         defaultValues: {
@@ -161,7 +161,7 @@ export function FlotaDocumentosForm({
                             <Button 
                                 type="submit" 
                                 variant="contained" 
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || (isEditing && !isDirty)}
                             >
                                 {isEditing ? 'Actualizar' : 'Guardar'}
                             </Button>
