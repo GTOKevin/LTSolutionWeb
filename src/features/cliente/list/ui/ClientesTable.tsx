@@ -29,8 +29,8 @@ import {
 } from '@mui/icons-material';
 import type { Cliente } from '@entities/cliente/model/types';
 import type { PagedResponse } from '@shared/api/types';
-import { getStatusStyles, ROWS_PER_PAGE_OPTIONS } from '../../utils/ui-helpers';
-
+import { getStatusStyles } from '../../utils/ui-helpers';
+import { ROWS_PER_PAGE_OPTIONS } from '../../../../shared/constants/constantes';
 interface ClientesTableProps {
     data?: PagedResponse<Cliente>;
     isLoading: boolean;

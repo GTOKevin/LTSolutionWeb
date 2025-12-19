@@ -6,6 +6,7 @@ import { AppLayout } from '@widgets/layout/ui/AppLayout';
 import { LoginPage } from '@pages/login';
 import { DashboardPage } from '@pages/dashboard';
 import { ClientesPage } from '@pages/clientes';
+import { FlotasPage } from '@pages/flotas';
 import { CotizacionesPage } from '@pages/cotizaciones';
 import { HealthCheckPage } from '../../pages/health-check';
 import { ForgotPasswordPage } from '@pages/forgot-password';
@@ -56,6 +57,7 @@ export function RouterProvider() {
                     <Route index element={<Navigate to="dashboard" replace />} />
                     <Route path="dashboard" element={<DashboardPage />} />
                     <Route path="clientes" element={<ClientesPage />} />
+                    <Route path="flota" element={<FlotasPage />} />
                     <Route path="cotizaciones" element={<CotizacionesPage />} />
                 </Route>
 

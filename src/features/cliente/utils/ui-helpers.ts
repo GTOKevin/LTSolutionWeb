@@ -1,6 +1,5 @@
 import { alpha } from '@mui/material';
 import type{ Theme } from '@mui/material';
-export const ROWS_PER_PAGE_OPTIONS = [5, 10, 25, 50];
 
 export const getStatusStyles = (theme: Theme, active: boolean) => {
     return active

@@ -155,7 +155,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
             }
         },
         onError: (error: any) => {
-            console.log("Mutation Error:", error);
+            console.warn("Mutation Error:", error);
             const genericError = handleBackendErrors<CreateClienteSchema>(error, setError);
             if (genericError) {
                 setErrorMessage(genericError);
