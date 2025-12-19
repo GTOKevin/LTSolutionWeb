@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TELEFONO_PERU_REGEX } from '@/shared/constants/constantes';
 
 export const createClienteSchema = z.object({
     ruc: z.string().min(11, 'RUC debe tener 11 dígitos').max(11, 'RUC debe tener 11 dígitos'),
@@ -6,7 +7,7 @@ export const createClienteSchema = z.object({
     direccionLegal: z.string().optional(),
     direccionFiscal: z.string().optional(),
     contactoPrincipal: z.string().min(1, 'Contacto Principal es requerido'),
-    telefono: z.string().optional(),
+    telefono: z.string().regex(TELEFONO_PERU_REGEX, 'Debe ser un celular válido (9 dígitos)').optional().or(z.literal('')),
     email: z.string().email('Email inválido').optional().or(z.literal('')),
     activo: z.boolean().default(true),
 });
