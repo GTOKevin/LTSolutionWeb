@@ -33,6 +33,7 @@ import { useEffect, useState } from 'react';
 import type { Colaborador } from '@entities/colaborador/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { LicenciaList } from '../../licencias/ui/LicenciaList';
 
 interface CreateEditColaboradorModalProps {
     open: boolean;
@@ -463,8 +464,14 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
                 </CustomTabPanel>
 
                 <CustomTabPanel value={activeTab} index={1}>
-                    <Box p={3} textAlign="center" color="text.secondary">
-                        Funcionalidad de Licencias en construcción...
+                    <Box sx={{ px: 3 }}>
+                        {effectiveId ? (
+                            <LicenciaList colaboradorId={effectiveId} viewOnly={viewOnly} />
+                        ) : (
+                            <Box p={3} textAlign="center" color="text.secondary">
+                                Guarde el colaborador para agregar licencias
+                            </Box>
+                        )}
                     </Box>
                 </CustomTabPanel>
                 
