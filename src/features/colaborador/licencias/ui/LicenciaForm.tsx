@@ -105,11 +105,11 @@ export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: L
                 sx: { borderRadius: 3 }
             }}
         >
-            <DialogTitle sx={{ 
+            <DialogTitle component="div" sx={{ 
                 borderBottom: `1px solid ${theme.palette.divider}`,
                 bgcolor: alpha(theme.palette.background.default, 0.5)
             }}>
-                <Typography variant="h6" fontWeight="bold">
+                <Typography variant="h6" component="div" fontWeight="bold">
                     {isEdit ? 'Editar Ausencia/Licencia' : 'Nueva Ausencia/Licencia'}
                 </Typography>
             </DialogTitle>

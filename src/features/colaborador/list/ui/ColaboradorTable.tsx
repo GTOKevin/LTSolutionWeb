@@ -57,6 +57,7 @@ export function ColaboradorTable({
     onDelete
 }: ColaboradorTableProps) {
     const theme = useTheme();
+    console.log(1);
 
     return (
         <Paper sx={{ 

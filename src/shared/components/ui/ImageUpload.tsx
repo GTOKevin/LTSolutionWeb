@@ -71,9 +71,10 @@ export function ImageUpload({
                 lastModified: Date.now()
             });
 
-            if (value && value.startsWith('/uploads')) {
-                await archivoApi.delete(value).catch(console.error);
-            }
+            // NO eliminamos el archivo anterior aquí. Se manejará en el backend al guardar.
+            // if (value && value.startsWith('/uploads')) {
+            //    await archivoApi.delete(value).catch(console.error);
+            // }
 
             const response = await archivoApi.upload(compressedFile, folder);
             onChange(response.data.url);

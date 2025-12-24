@@ -34,6 +34,7 @@ import type { Colaborador } from '@entities/colaborador/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { TIPO_MAESTRO } from '@/shared/constants/constantes';
 import { LicenciaList } from '../../licencias/ui/LicenciaList';
+import { ColaboradorDocumentoList } from '../../documentos/ui/ColaboradorDocumentoList';
 
 interface CreateEditColaboradorModalProps {
     open: boolean;
@@ -206,7 +207,7 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
                 sx: { borderRadius: 3, minHeight: '80vh' }
             }}
         >
-            <DialogTitle sx={{ 
+            <DialogTitle component="div" sx={{ 
                 borderBottom: `1px solid ${theme.palette.divider}`,
                 bgcolor: alpha(theme.palette.background.default, 0.5),
                 pb: 0
@@ -476,8 +477,14 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
                 </CustomTabPanel>
                 
                 <CustomTabPanel value={activeTab} index={2}>
-                    <Box p={3} textAlign="center" color="text.secondary">
-                        Funcionalidad de Documentos en construcción...
+                    <Box sx={{ px: 3 }}>
+                        {effectiveId ? (
+                            <ColaboradorDocumentoList colaboradorId={effectiveId} viewOnly={viewOnly} />
+                        ) : (
+                            <Box p={3} textAlign="center" color="text.secondary">
+                                Guarde el colaborador para agregar documentos
+                            </Box>
+                        )}
                     </Box>
                 </CustomTabPanel>
 

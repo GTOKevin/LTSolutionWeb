@@ -183,7 +183,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                 sx: { borderRadius: 3, minHeight: '80vh' }
             }}
         >
-            <DialogTitle sx={{ 
+            <DialogTitle component="div" sx={{ 
                 borderBottom: `1px solid ${theme.palette.divider}`,
                 bgcolor: alpha(theme.palette.background.default, 0.5),
                 pb: 0
