@@ -35,6 +35,7 @@ import { handleBackendErrors } from '@shared/utils/form-validation';
 import { TIPO_MAESTRO } from '@/shared/constants/constantes';
 import { LicenciaList } from '../../licencias/ui/LicenciaList';
 import { ColaboradorDocumentoList } from '../../documentos/ui/ColaboradorDocumentoList';
+import { ColaboradorPagoList } from '../../pagos/ui/ColaboradorPagoList';
 
 interface CreateEditColaboradorModalProps {
     open: boolean;
@@ -489,8 +490,14 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
                 </CustomTabPanel>
 
                 <CustomTabPanel value={activeTab} index={3}>
-                    <Box p={3} textAlign="center" color="text.secondary">
-                        Funcionalidad de Pagos en construcción...
+                    <Box sx={{ px: 3 }}>
+                        {effectiveId ? (
+                            <ColaboradorPagoList colaboradorId={effectiveId} viewOnly={viewOnly} />
+                        ) : (
+                            <Box p={3} textAlign="center" color="text.secondary">
+                                Guarde el colaborador para agregar pagos
+                            </Box>
+                        )}
                     </Box>
                 </CustomTabPanel>
             </DialogContent>

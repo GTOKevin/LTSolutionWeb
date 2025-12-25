@@ -4,32 +4,37 @@ import {
     Button,
     useTheme,
     IconButton,
-    List,
-    ListItem,
-    ListItemText,
-    ListItemSecondaryAction,
     Avatar,
     Snackbar,
     Alert,
     TablePagination,
-    Dialog,
-    DialogActions
+    Grid,
+    Card,
+    CardContent,
+    CardActions,
+    Tooltip,
+    alpha
 } from '@mui/material';
 import {
     Edit as EditIcon,
     Delete as DeleteIcon,
     Add as AddIcon,
     Description as FileIcon,
-    Visibility as ViewIcon
+    Visibility as ViewIcon,
+    Warning as WarningIcon,
+    CheckCircle as CheckIcon,
+    Error as ErrorIcon,
+    CalendarToday as CalendarIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { colaboradorDocumentoApi } from '@entities/colaborador-documento/api/colaborador-documento.api';
 import type { ColaboradorDocumento } from '@entities/colaborador-documento/model/types';
-import { ExpirationStatus } from '@shared/components/ui/ExpirationStatus';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
 import { useState } from 'react';
 import { ColaboradorDocumentoForm } from './ColaboradorDocumentoForm';
+import { parseDateOnly, formatDateLong } from '@/shared/utils/date-utils';
+import { ROWS_DOC_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 
 const API_URL = import.meta.env.VITE_IMG_URL_BASE || 'https://localhost:44332';
 
@@ -37,6 +42,49 @@ interface ColaboradorDocumentoListProps {
     colaboradorId: number;
     viewOnly?: boolean;
 }
+
+const getExpirationStatus = (fechaVencimiento: string) => {
+    const vencimiento = parseDateOnly(fechaVencimiento);
+    if (!vencimiento) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const diffTime = vencimiento.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays <= 30) {
+        return {
+            color: 'error' as const,
+            icon: <ErrorIcon fontSize="small" />,
+            label: 'Vence pronto',
+            fullLabel: 'El documento vencerá pronto, actualice el documento.',
+            textColor: 'error.main',
+            bgColor: 'error.lighter',
+            borderColor: 'error.main'
+        };
+    } else if (diffDays <= 90) {
+        return {
+            color: 'warning' as const,
+            icon: <WarningIcon fontSize="small" />,
+            label: 'Próximo a vencer',
+            fullLabel: 'El documento está próximo a vencer.',
+            textColor: 'warning.main',
+            bgColor: 'warning.lighter',
+            borderColor: 'warning.main'
+        };
+    } else {
+        return {
+            color: 'success' as const,
+            icon: <CheckIcon fontSize="small" />,
+            label: 'Vigente',
+            fullLabel: 'Documento vigente',
+            textColor: 'success.main',
+            bgColor: 'success.lighter',
+            borderColor: 'success.main'
+        };
+    }
+};
 
 export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: ColaboradorDocumentoListProps) {
     const theme = useTheme();
@@ -49,7 +97,7 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(6);
 
     const { data, isLoading, isError, error } = useQuery({
         queryKey: ['colaborador-documentos', colaboradorId, page, rowsPerPage],
@@ -132,10 +180,10 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
                 )}
             </Box>
 
-            <List sx={{ flex: 1, overflow: 'auto', p: 0 }}>
+            <Box sx={{ flex: 1, overflow: 'auto', p: 0.5 }}>
                 {isLoading ? (
                     <Box p={3} textAlign="center">Cargando documentos...</Box>
-                ) : data?.data?.items?.length === 0 ? (
+                ) : items.length === 0 ? (
                     <Box 
                         p={5} 
                         textAlign="center" 
@@ -150,92 +198,153 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
                         {!viewOnly && <Typography variant="caption">Haga clic en "Agregar Documento" para comenzar.</Typography>}
                     </Box>
                 ) : (
-                    data?.data?.items?.map((doc) => (
-                        <ListItem 
-                            key={doc.colaboradorDocumentoID} 
-                            divider
-                            sx={{ 
-                                '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.05)' },
-                                borderRadius: 1,
-                                mb: 1,
-                                border: `1px solid ${theme.palette.divider}`
-                            }}
-                        >
-                            <Box mr={2} sx={{ cursor: doc.rutaArchivo ? 'pointer' : 'default' }} onClick={() => doc.rutaArchivo && handlePreview(doc.rutaArchivo)}>
-                                {doc.rutaArchivo ? (
-                                    <Avatar
-                                        variant="rounded"
-                                        src={getFullUrl(doc.rutaArchivo)}
-                                        alt={doc.numeroDocumento || 'Doc'}
+                    <Grid container spacing={2}>
+                        {items.map((doc) => {
+                            const status = getExpirationStatus(doc.fechaVencimiento);
+                            return (
+                                <Grid size={{xs:12,sm:6,md:4}} key={doc.colaboradorDocumentoID}>
+                                    <Card 
+                                        elevation={0}
                                         sx={{ 
-                                            width: 50, 
-                                            height: 50,
-                                            border: `1px solid ${theme.palette.divider}`
+                                            border: `1px solid ${theme.palette.divider}`,
+                                            borderRadius: 2,
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            transition: 'all 0.2s',
+                                            '&:hover': {
+                                                borderColor: theme.palette.primary.main,
+                                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.1)}`
+                                            }
                                         }}
-                                    />
-                                ) : (
-                                    <Box color="primary.main" sx={{ p: 1, border: `1px solid ${theme.palette.divider}`, borderRadius: 1 }}>
-                                        <FileIcon fontSize="large" />
-                                    </Box>
-                                )}
-                            </Box>
-                            <ListItemText
-                                primary={
-                                    <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
-                                        <Typography variant="subtitle1" fontWeight={600}>
-                                            {doc.numeroDocumento || 'S/N'}
-                                        </Typography>
-                                        <ExpirationStatus expirationDate={doc.fechaVencimiento} />
-                                    </Box>
-                                }
-                                secondary={
-                                    <Box component="span" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
-                                        <Typography variant="body2" component="span" color="text.primary">
-                                            {doc.tipoDocumento?.nombre || 'Documento'}
-                                        </Typography>
-                                        <Typography variant="caption" component="span" color="text.secondary">
-                                            Vence: {new Date(doc.fechaVencimiento).toLocaleDateString()}
-                                        </Typography>
-                                    </Box>
-                                }
-                            />
-                            <ListItemSecondaryAction>
-                                {doc.rutaArchivo && (
-                                    <IconButton 
-                                        size="small" 
-                                        onClick={() => handlePreview(doc.rutaArchivo!)} 
-                                        sx={{ mr: 1, display: { xs: 'none', sm: 'inline-flex' } }}
-                                        title="Ver documento"
                                     >
-                                        <ViewIcon fontSize="small" />
-                                    </IconButton>
-                                )}
-                                {!viewOnly && (
-                                    <>
-                                        <IconButton size="small" color='primary' onClick={() => handleEdit(doc)} sx={{ mr: 1 }}>
-                                            <EditIcon fontSize="small" />
-                                        </IconButton>
-                                        <IconButton size="small" color="error" onClick={() => handleDelete(doc)}>
-                                            <DeleteIcon fontSize="small" />
-                                        </IconButton>
-                                    </>
-                                )}
-                            </ListItemSecondaryAction>
-                        </ListItem>
-                    ))
-                )}
-            </List>
+                                        <CardContent sx={{ p: 2, flex: 1 }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                                                <Box 
+                                                    onClick={() => doc.rutaArchivo && handlePreview(doc.rutaArchivo)}
+                                                    sx={{ 
+                                                        cursor: doc.rutaArchivo ? 'pointer' : 'default',
+                                                        borderRadius: 2,
+                                                        overflow: 'hidden',
+                                                        border: `1px solid ${theme.palette.divider}`
+                                                    }}
+                                                >
+                                                    {doc.rutaArchivo ? (
+                                                        <Avatar
+                                                            variant="rounded"
+                                                            src={getFullUrl(doc.rutaArchivo)}
+                                                            alt={doc.numeroDocumento || 'Doc'}
+                                                            sx={{ width: 64, height: 64 }}
+                                                        />
+                                                    ) : (
+                                                        <Box 
+                                                            sx={{ 
+                                                                width: 64, 
+                                                                height: 64, 
+                                                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                color: 'primary.main'
+                                                            }}
+                                                        >
+                                                            <FileIcon fontSize="large" />
+                                                        </Box>
+                                                    )}
+                                                </Box>
+                                                {status && (
+                                                    <Tooltip title={status.fullLabel}>
+                                                        <Box 
+                                                            sx={{ 
+                                                                display: 'flex', 
+                                                                alignItems: 'center', 
+                                                                gap: 0.5,
+                                                                px: 1,
+                                                                py: 0.5,
+                                                                borderRadius: 1,
+                                                                bgcolor: alpha(theme.palette[status.color].main, 0.1),
+                                                                color: status.textColor,
+                                                                border: `1px solid ${alpha(theme.palette[status.color].main, 0.2)}`
+                                                            }}
+                                                        >
+                                                            {status.icon}
+                                                            <Typography variant="caption" fontWeight="bold">
+                                                                {status.label}
+                                                            </Typography>
+                                                        </Box>
+                                                    </Tooltip>
+                                                )}
+                                            </Box>
 
-            <TablePagination
-                component="div"
-                count={data?.data?.totalItems || 0}
-                page={page}
-                onPageChange={handleChangePage}
-                rowsPerPage={rowsPerPage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                labelRowsPerPage="Filas por página"
-                labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-            />
+                                            <Typography variant="subtitle1" fontWeight={700} noWrap title={doc.numeroDocumento || 'S/N'}>
+                                                {doc.numeroDocumento || 'S/N'}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                                {doc.tipoDocumento?.nombre || 'Documento'}
+                                            </Typography>
+
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', bgcolor: alpha(theme.palette.background.default, 0.5), p: 1, borderRadius: 1 }}>
+                                                <CalendarIcon fontSize="small" />
+                                                <Box>
+                                                    <Typography variant="caption" display="block" color="text.secondary">Vencimiento</Typography>
+                                                    <Typography variant="body2" fontWeight={500}>
+                                                        {formatDateLong(doc.fechaVencimiento)}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                        </CardContent>
+
+                                        <CardActions sx={{ p: 1.5, pt: 0, justifyContent: 'flex-end', gap: 1 }}>
+                                            {doc.rutaArchivo && (
+                                                <Button 
+                                                    size="small" 
+                                                    startIcon={<ViewIcon />}
+                                                    onClick={() => handlePreview(doc.rutaArchivo!)}
+                                                    color="inherit"
+                                                >
+                                                    Ver
+                                                </Button>
+                                            )}
+                                            {!viewOnly && (
+                                                <>
+                                                    <IconButton 
+                                                        size="small" 
+                                                        onClick={() => handleEdit(doc)}
+                                                        color="primary"
+                                                        sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1) }}
+                                                    >
+                                                        <EditIcon fontSize="small" />
+                                                    </IconButton>
+                                                    <IconButton 
+                                                        size="small" 
+                                                        color="error" 
+                                                        onClick={() => handleDelete(doc)}
+                                                        sx={{ bgcolor: alpha(theme.palette.error.main, 0.1) }}
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </IconButton>
+                                                </>
+                                            )}
+                                        </CardActions>
+                                    </Card>
+                                </Grid>
+                            );
+                        })}
+                    </Grid>
+                )}
+                <TablePagination
+                    component="div"
+                    count={totalItems}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    rowsPerPageOptions={ROWS_DOC_PER_PAGE_OPTIONS}
+                    labelRowsPerPage="Filas por página"
+                    labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+                    sx={{ mt: 2, borderTop: `1px solid ${theme.palette.divider}` }}
+                />
+            </Box>
 
             <ColaboradorDocumentoForm 
                 open={openForm}

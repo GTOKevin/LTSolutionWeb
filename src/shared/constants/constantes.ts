@@ -4,7 +4,8 @@ export const TIPO_MAESTRO = {
     TIPO_MEDIDA: 'MEDIDA',
     TIPO_DOCUMENTO_FLOTA:'DOCUMENTO_FLOTA',
     TIPO_SEXO: 'SEXO',
-    TIPO_LICENCIA: 'LICENCIA'
+    TIPO_LICENCIA: 'LICENCIA',
+    TIPO_PAGO: 'PAGO'
 }
 
 export const TIPOS_COMBUSTIBLE = [
@@ -24,3 +25,5 @@ export const TELEFONO_PERU_REGEX = /^9\d{8}$/;
 
 
 export const ROWS_PER_PAGE_OPTIONS = [5, 10, 25, 50];
+
+export const ROWS_DOC_PER_PAGE_OPTIONS = [5, 10, 25, 50];
