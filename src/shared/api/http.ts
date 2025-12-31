@@ -1,7 +1,14 @@
 import axios, { AxiosError } from 'axios';
 import { env } from '../config/env';
 import { useAuthStore } from '../store/auth.store';
-import type { ApiError } from './types';
+import { authApi } from '@entities/auth/api/auth.api';
+
+export interface ApiError {
+    title: string;
+    status: number;
+    detail: string;
+    errors?: Record<string, string[]>;
+}
 
 export const httpClient = axios.create({
     baseURL: env.apiUrl,
@@ -26,18 +33,79 @@ httpClient.interceptors.request.use(
     }
 );
 
+let isRefreshing = false;
+let failedQueue: Array<{ resolve: (token: string) => void; reject: (error: any) => void }> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+    failedQueue.forEach((prom) => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token!);
+        }
+    });
+    failedQueue = [];
+};
+
 // Response interceptor for error handling
 httpClient.interceptors.response.use(
     (response) => response,
-    (error: AxiosError<ApiError>) => {
-        // Handle 401 Unauthorized - trigger logout
-        if (error.response?.status === 401) {
-            const { logout } = useAuthStore.getState();
-            logout();
+    async (error: AxiosError<ApiError>) => {
+        const originalRequest = error.config as any;
 
-            // Redirect to login if not already there
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
+        // Handle 401 Unauthorized - attempt refresh
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            if (isRefreshing) {
+                return new Promise<string>((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                })
+                    .then((token) => {
+                        originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                        return httpClient(originalRequest);
+                    })
+                    .catch((err) => {
+                        return Promise.reject(err);
+                    });
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            const { token, refreshToken, setAuth, setSessionExpired, logout } = useAuthStore.getState();
+
+            if (!refreshToken || !token) {
+                // No refresh token available, logout directly
+                isRefreshing = false;
+                logout();
+                 if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
+                return Promise.reject(error);
+            }
+
+            try {
+                // Call refresh API
+                const res = await authApi.refreshToken({ token, refreshToken });
+                
+                // Update store with new tokens
+                setAuth(res.token, res.refreshToken);
+                
+                // Process queue
+                processQueue(null, res.token);
+                
+                // Retry original request
+                originalRequest.headers['Authorization'] = 'Bearer ' + res.token;
+                return httpClient(originalRequest);
+            } catch (refreshError) {
+                // Refresh failed
+                processQueue(refreshError, null);
+                
+                // Trigger Session Expired Modal
+                setSessionExpired(true);
+                
+                return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
             }
         }
 
@@ -52,5 +120,3 @@ httpClient.interceptors.response.use(
         return Promise.reject(apiError);
     }
 );
-
-export type { ApiError };

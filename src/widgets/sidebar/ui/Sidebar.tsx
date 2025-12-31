@@ -11,7 +11,10 @@ import {
     Avatar,
     IconButton,
     useTheme,
-    alpha
+    alpha,
+    Menu,
+    MenuItem,
+    Divider
 } from '@mui/material';
 import {
     Dashboard as DashboardIcon,
@@ -29,7 +32,11 @@ import {
     Security as SecurityIcon,
     Category as CategoryIcon,
     Business as BusinessIcon,
-    Receipt as ReceiptIcon
+    Receipt as ReceiptIcon,
+    Build as BuildIcon,
+    AccountCircle,
+    Key,
+    Logout
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLayoutStore } from '@shared/store/layout.store';
@@ -53,7 +60,7 @@ const menuItems: MenuItem[] = [
         icon: <BusinessIcon />,
         children: [
             { text: 'Clientes', path: '/app/clientes', icon: <GroupsIcon /> },
-            { text: 'Cotizaciones', path: '/app/cotizaciones', icon: <DescriptionIcon /> }, // Mapped to Description for now
+            { text: 'Cotizaciones', path: '/app/cotizaciones', icon: <ReportIcon /> }, 
             { text: 'Facturas', path: '/app/facturas', icon: <ReceiptIcon /> },
         ]
     },
@@ -62,6 +69,7 @@ const menuItems: MenuItem[] = [
         icon: <TruckIcon />,
         children: [
              { text: 'Flota', path: '/app/flota', icon: <CarIcon /> },
+             { text: 'Mantenimientos', path: '/app/mantenimientos', icon: <BuildIcon /> },
              { text: 'Mercadería', path: '/app/mercaderia', icon: <InventoryIcon /> },
              { text: 'Colaboradores', path: '/app/colaboradores', icon: <GroupsIcon /> },
              { text: 'Gastos', path: '/app/gastos', icon: <MonetizationOnIcon /> },
@@ -91,8 +99,24 @@ export function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
     const { sidebarOpen, setSidebarOpen } = useLayoutStore();
-    const { user } = useAuthStore();
+    const { user, logout } = useAuthStore();
     const theme = useTheme();
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const openMenu = Boolean(anchorEl);
+
+    const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleLogout = () => {
+        handleMenuClose();
+        logout();
+        navigate('/login');
+    };
     
     // Calculate initial open state based on current location
     const getInitialOpenState = () => {
@@ -311,35 +335,87 @@ export function Sidebar() {
                 p: 2, 
                 borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#283039' : theme.palette.divider}`,
             }}>
-                <Box sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    p: 1,
-                    borderRadius: 2,
-                    cursor: 'pointer',
-                    '&:hover': {
-                        bgcolor: alpha(theme.palette.common.white, 0.05)
-                    }
-                }}>
+                <Box 
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        p: 1,
+                        borderRadius: 2,
+                        cursor: 'pointer',
+                        '&:hover': {
+                            bgcolor: alpha(theme.palette.common.white, 0.05)
+                        }
+                    }}
+                    onClick={handleMenuClick}
+                >
                     <Avatar 
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6OVG_QZtlE27G6Ja4RO2KTtjk-cMNFBU4D-nCgCI2P5rDs41_GnpE4glBK-PzV8_JQxw7dJi8H-p6dFGowQbPHpEm1F5emW5xVf-ZatYDiTIBmx0LQrPeNHITnQkKVFf0Jn8gjffXI2w6vGVGS6qfjGqgOBM55MHEtFSfAAV_Bd7r83UdcZIf-5jObmp_LxZZngSJpfNsL3_YDBAVNR0f88m9xoNnUEG6drlpHhVieNC54MCkTQACOpJIPxu-bcfNtcHg7vc0uV0" 
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6OVG_QZtlE27G6Ja4RO2KTtjk-cMNFBU4D-nCgCI2P5rDs41_GnpE4glBK-PzV8_JQxw7dJi8H-p6dFGowQbPHpEm1F5emW5xVf-ZatYDiTIBmx0LQrPeNHITnQkKVFf0Jn8gjffXI2w6vGVGS6qfjGqgOBM55MHEtFSfAAV_Bd7r83UdcZIf-5jObmp_LxZZngSJpfNsL3_YDBAVNR0f88m9xoNnUEG6drlpHhVieNC54MCkTQACOpJIPxu-bcfNtcHg7vc0uV0"
                         sx={{ width: 36, height: 36, bgcolor: 'grey.700' }}
                     >
-                        {user?.nombre?.[0] || 'U'}
+                        {user?.name?.[0] || 'U'}
                     </Avatar>
                     <Box sx={{ flex: 1, overflow: 'hidden' }}>
                         <Typography variant="body2" fontWeight={500} noWrap>
-                            {user?.nombre || 'Admin User'}
+                            {user?.name || ''}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
-                            {user?.email || 'admin@logistics.com'}
+                            {user?.email || ''}
                         </Typography>
                     </Box>
-                    <IconButton size="small" sx={{ color: '#9dabb9' }}>
+                    <IconButton 
+                        size="small" 
+                        sx={{ color: '#9dabb9' }}
+                        onClick={(e) => {
+                            e.stopPropagation(); // Prevent double triggering if parent has handler
+                            handleMenuClick(e);
+                        }}
+                    >
                         <MoreVertIcon fontSize="small" />
                     </IconButton>
                 </Box>
+                <Menu
+                    anchorEl={anchorEl}
+                    open={openMenu}
+                    onClose={handleMenuClose}
+                    anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                    }}
+                    transformOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'right',
+                    }}
+                    PaperProps={{
+                        sx: {
+                            mt: -1,
+                            minWidth: 200,
+                            boxShadow: theme.shadows[3],
+                            border: `1px solid ${theme.palette.divider}`,
+                            bgcolor: theme.palette.background.paper
+                        }
+                    }}
+                >
+                    <MenuItem onClick={handleMenuClose}>
+                        <ListItemIcon>
+                            <AccountCircle fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>Mi Perfil</ListItemText>
+                    </MenuItem>
+                    <MenuItem onClick={handleMenuClose}>
+                        <ListItemIcon>
+                            <Key fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>Cambiar contraseña</ListItemText>
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem onClick={handleLogout} sx={{ color: theme.palette.error.main }}>
+                        <ListItemIcon>
+                            <Logout fontSize="small" sx={{ color: theme.palette.error.main }} />
+                        </ListItemIcon>
+                        <ListItemText>Cerrar sesión</ListItemText>
+                    </MenuItem>
+                </Menu>
             </Box>
         </Box>
     );

@@ -5,7 +5,9 @@ export const TIPO_MAESTRO = {
     TIPO_DOCUMENTO_FLOTA:'DOCUMENTO_FLOTA',
     TIPO_SEXO: 'SEXO',
     TIPO_LICENCIA: 'LICENCIA',
-    TIPO_PAGO: 'PAGO'
+    TIPO_PAGO: 'PAGO',
+    TIPO_PRODUCTO: 'PRODUCTO',
+    TIPO_SERVICIO: 'MANTENIMIENTO'
 }
 
 export const TIPOS_COMBUSTIBLE = [
@@ -14,6 +16,10 @@ export const TIPOS_COMBUSTIBLE = [
     { value: 'GASOLINA/GNV', label: 'GASOLINA/GNV' },
     { value: 'GASOLINA/GLP', label: 'GASOLINA/GLP' },
 ];
+
+export const TIPO_ESTADO={
+    MANTENIMIENTO:'MANTENIMIENTO'
+}
 
 export const PLACA_PERU_REGEX = /^[A-Z0-9]{3}-[0-9]{3,4}$/;
 

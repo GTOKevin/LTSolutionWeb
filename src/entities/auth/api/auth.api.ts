@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api/http';
-import type { LoginRequest, LoginResponse } from '../model/types';
+import type { LoginRequest, LoginResponse, RefreshTokenRequest } from '../model/types';
 
 export const authApi = {
     login: async (nombre: string, clave: string): Promise<LoginResponse> => {
@@ -7,4 +7,9 @@ export const authApi = {
         const response = await httpClient.post<LoginResponse>('/auth/login', request);
         return response.data;
     },
+
+    refreshToken: async (request: RefreshTokenRequest): Promise<LoginResponse> => {
+        const response = await httpClient.post<LoginResponse>('/auth/refresh-token', request);
+        return response.data;
+    }
 };

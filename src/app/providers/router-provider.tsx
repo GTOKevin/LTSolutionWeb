@@ -11,6 +11,7 @@ import { CotizacionesPage } from '@pages/cotizaciones';
 import { HealthCheckPage } from '../../pages/health-check';
 import { ForgotPasswordPage } from '@pages/forgot-password';
 import { ColaboradoresPage } from '@/pages/colaboradores';
+import { MantenimientosPage } from '@/pages/mantenimientos';
 
 function RootRedirect() {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -61,6 +62,7 @@ export function RouterProvider() {
                     <Route path="flota" element={<FlotasPage />} />
                     <Route path="cotizaciones" element={<CotizacionesPage />} />
                     <Route path="colaboradores" element={<ColaboradoresPage />} />
+                    <Route path="mantenimientos" element={<MantenimientosPage />} />
                 </Route>
 
                 {/* Catch all */}

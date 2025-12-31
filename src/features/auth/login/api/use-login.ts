@@ -9,10 +9,10 @@ export function useLogin() {
     const setAuth = useAuthStore((state) => state.setAuth);
 
     return useMutation({
-        mutationFn: ({ nombre, clave }: { nombre: string; clave: string }) =>
-            authApi.login(nombre, clave),
+        mutationFn: ({ name, password }: { name: string; password: string }) =>
+            authApi.login(name, password),
         onSuccess: (data) => {
-            setAuth(data.token);
+            setAuth(data.token, data.refreshToken);
             navigate('/app');
         },
         onError: (error: ApiError) => {

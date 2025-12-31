@@ -5,6 +5,8 @@ interface JWTPayload {
     exp: number;
     iss?: string;
     aud?: string;
+    name?: string;
+    email?: string;
 }
 
 export function parseJWT(token: string): JWTPayload | null {
@@ -43,5 +45,7 @@ export function getUserFromToken(token: string) {
         userId: payload.sub,
         roleId: payload.roleId,
         role: payload.role,
+        name: payload.name || null,
+        email: payload.email || null
     };
 }
