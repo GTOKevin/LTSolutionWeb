@@ -13,12 +13,15 @@ import {
 import { 
     MoreVert as MoreVertIcon,
     Visibility as VisibilityIcon,
+    TableView as ExcelIcon,
+    PictureAsPdf as PdfIcon,
     Edit as EditIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { formatDateLong } from '@shared/utils/date-utils';
 import { useState } from 'react';
+import { useMantenimientoReport } from '../../hooks/useMantenimientoReport';
 
 interface MantenimientoMobileListProps {
     data?: Mantenimiento[];
@@ -36,6 +39,7 @@ export function MantenimientoMobileList({
     onDelete
 }: MantenimientoMobileListProps) {
     const theme = useTheme();
+    const { generateExcel, generatePdf } = useMantenimientoReport();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedItem, setSelectedItem] = useState<Mantenimiento | null>(null);
 
@@ -46,15 +50,17 @@ export function MantenimientoMobileList({
 
     const handleMenuClose = () => {
         setAnchorEl(null);
-        setSelectedItem(null);
+        // Don't clear selectedItem here to prevent content flash during close animation
     };
 
-    const handleAction = (action: 'view' | 'edit' | 'delete') => {
+    const handleAction = (action: 'view' | 'edit' | 'delete' | 'excel' | 'pdf') => {
         if (!selectedItem) return;
         
         if (action === 'view') onView(selectedItem);
         if (action === 'edit') onEdit(selectedItem);
         if (action === 'delete') onDelete(selectedItem);
+        if (action === 'excel') generateExcel(selectedItem.mantenimientoID);
+        if (action === 'pdf') generatePdf(selectedItem.mantenimientoID);
         
         handleMenuClose();
     };
@@ -76,7 +82,10 @@ export function MantenimientoMobileList({
         return <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>No se encontraron registros</Box>;
     }
 
-    const isCompleted = (item: Mantenimiento | null) => item?.estadoID === 1;
+    const isCompleted = (item: Mantenimiento | null) => {
+        const name = item?.estado?.nombre?.toUpperCase();
+        return name === 'FINALIZADO' || name === 'COMPLETADO';
+    };
 
     return (
         <Stack spacing={2} sx={{ display: { xs: 'flex', md: 'none' } }}>
@@ -149,20 +158,36 @@ export function MantenimientoMobileList({
                     <VisibilityIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
                     Ver Detalle
                 </MenuItem>
-                <MenuItem 
-                    onClick={() => handleAction('edit')} 
-                    disabled={isCompleted(selectedItem)}
-                >
-                    <EditIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-                    Editar
-                </MenuItem>
-                <MenuItem 
-                    onClick={() => handleAction('delete')}
-                    disabled={isCompleted(selectedItem)}
-                >
-                    <DeleteIcon fontSize="small" sx={{ mr: 1, color: 'error.main' }} />
-                    <Typography color="error">Eliminar</Typography>
-                </MenuItem>
+                
+                {selectedItem && isCompleted(selectedItem) ? (
+                    [
+                        <MenuItem key="pdf" onClick={() => handleAction('pdf')}>
+                            <PdfIcon fontSize="small" sx={{ mr: 1, color: 'error.main' }} />
+                            Exportar PDF
+                        </MenuItem>,
+                        <MenuItem key="excel" onClick={() => handleAction('excel')}>
+                            <ExcelIcon fontSize="small" sx={{ mr: 1, color: 'success.main' }} />
+                            Exportar Excel
+                        </MenuItem>
+                    ]
+                ) : (
+                    [
+                        <MenuItem 
+                            key="edit"
+                            onClick={() => handleAction('edit')} 
+                        >
+                            <EditIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                            Editar
+                        </MenuItem>,
+                        <MenuItem 
+                            key="delete"
+                            onClick={() => handleAction('delete')}
+                        >
+                            <DeleteIcon fontSize="small" sx={{ mr: 1, color: 'error.main' }} />
+                            <Typography color="error">Eliminar</Typography>
+                        </MenuItem>
+                    ]
+                )}
             </Menu>
         </Stack>
     );

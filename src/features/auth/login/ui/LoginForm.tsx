@@ -56,7 +56,7 @@ export function LoginForm() {
     const loginMutation = useLogin();
 
     const onSubmit = (data: LoginFormData) => {
-        loginMutation.mutate(data);
+        loginMutation.mutate({ name: data.nombre, password: data.clave });
     };
 
     return (

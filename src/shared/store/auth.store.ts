@@ -1,14 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getUserFromToken, isTokenExpired } from '../lib/jwt';
-
-interface User {
-    userId: string;
-    roleId: string;
-    role: string;
-    name: string | null;
-    email: string | null;
-}
+import type { User } from '@entities/auth/model/types';
 
 interface AuthState {
     token: string | null;

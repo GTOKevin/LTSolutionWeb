@@ -18,6 +18,18 @@ export const useMantenimientoReport = () => {
         }
     };
 
+    const generateFileName = (mantenimiento: any, ext: string) => {
+        const tipo = mantenimiento?.tipoServicio?.nombre || 'General';
+        const placa = mantenimiento?.flota?.placa || 'SinPlaca';
+        const fecha = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        
+        // Sanitize
+        const safeTipo = tipo.replace(/[^a-zA-Z0-9]/g, '_');
+        const safePlaca = placa.replace(/[^a-zA-Z0-9]/g, '_');
+        
+        return `${safeTipo}_${safePlaca}_${fecha}.${ext}`;
+    };
+
     const generateExcel = useCallback(async (mantenimientoId: number) => {
         try {
             const reportData = await fetchReportData(mantenimientoId);
@@ -146,7 +158,7 @@ export const useMantenimientoReport = () => {
 
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            saveAs(blob, `Mantenimiento_Reporte_${mantenimientoId}.xlsx`);
+            saveAs(blob, generateFileName(reportData.mantenimiento, 'xlsx'));
 
         } catch (error) {
             console.error('Error exporting to Excel:', error);
@@ -205,11 +217,6 @@ export const useMantenimientoReport = () => {
             addRow('Servicio:', parentInfo.servicio ?? "", 'Fecha:', parentInfo.fecha);
             addRow('Km Ingreso:', parentInfo.kmIngreso, 'Km Salida:', parentInfo.kmSalida);
             
-            // Long text fields need split or multiline? 
-            // For simplicity in PDF basic report, we'll just put them. 
-            // Ideally we check length or use autoTable for this too, but text() is fine for short lines.
-            // Let's use splitTextToSize for longer fields
-            
             const addLongRow = (label: string, value: string) => {
                 doc.setFont('helvetica', 'bold');
                 doc.text(label, leftColX, startY);
@@ -227,7 +234,7 @@ export const useMantenimientoReport = () => {
             startY += 5; // Spacing before table
 
             // --- Details Table ---
-            const tableColumn = ["Producto/Servicio", "Descripción", "Cant.", "Mon.", "Costo", "Total"];
+            const tableColumn = ["Producto/Servicio", "Descripción", "Cant.", "Mon.", "Costo", "IGV", "Total"];
             const tableRows: any[] = [];
 
             reportData.detalles.forEach(item => {
@@ -237,6 +244,7 @@ export const useMantenimientoReport = () => {
                     item.cantidad,
                     item.moneda?.codigo,
                     item.costo.toFixed(2),
+                    item.montoIGV.toFixed(2),
                     item.total.toFixed(2)
                 ];
                 tableRows.push(row);
@@ -260,11 +268,11 @@ export const useMantenimientoReport = () => {
                     2: { cellWidth: 15, halign: 'center' },
                     3: { cellWidth: 15, halign: 'center' },
                     4: { cellWidth: 20, halign: 'right' },
-                    5: { cellWidth: 20, halign: 'right' }
+                    5: { cellWidth: 20, halign: 'right' },
+                    6: { cellWidth: 20, halign: 'right' }
                 },
                 didDrawPage: (data) => {
                     // Footer with totals on last page? 
-                    // Or just append after table. autoTable returns final Y.
                 }
             });
 
@@ -274,7 +282,7 @@ export const useMantenimientoReport = () => {
             doc.setFont('helvetica', 'bold');
             doc.text(totals, 195, finalY, { align: 'right' });
 
-            doc.save(`Mantenimiento_Reporte_${mantenimientoId}.pdf`);
+            doc.save(generateFileName(reportData.mantenimiento, 'pdf'));
 
         } catch (error) {
             console.error('Error exporting to PDF:', error);

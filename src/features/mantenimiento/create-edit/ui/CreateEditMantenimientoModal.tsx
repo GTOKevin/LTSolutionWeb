@@ -17,6 +17,7 @@ import {
     MenuItem
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
+import type {SubmitHandler} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
@@ -119,7 +120,7 @@ export function CreateEditMantenimientoModal({
         reset,
         setError,
         formState: { errors, isDirty }
-    } = useForm<CreateMantenimientoSchema>({
+    } = useForm({
         resolver: zodResolver(createMantenimientoSchema)
     });
 
@@ -189,7 +190,7 @@ export function CreateEditMantenimientoModal({
         }
     });
 
-    const onSubmit = (data: CreateMantenimientoSchema) => {
+    const onSubmit: SubmitHandler<CreateMantenimientoSchema> = (data) => {
         if (data.estadoID === 102) { // Completed/Finalized
             setPendingData(data);
             setConfirmationOpen(true);
@@ -364,7 +365,11 @@ export function CreateEditMantenimientoModal({
                                             disabled={viewOnly}
                                         >
                                             <MenuItem value={0} disabled>Seleccione estado...</MenuItem>
-                                            {listaEstados.map((item) => (
+                                            {listaEstados.filter(item => {
+                                                if (isEdit || createdId) return true; // Show all states if editing or created
+                                                const name = item.text.toUpperCase();
+                                                return name !== 'COMPLETADO'; // Hide Completed/Finalized for new
+                                            }).map((item) => (
                                                 <MenuItem key={item.id} value={item.id}>
                                                     {item.text}
                                                 </MenuItem>

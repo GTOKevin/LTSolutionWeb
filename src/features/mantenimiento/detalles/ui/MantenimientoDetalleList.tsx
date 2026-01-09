@@ -20,12 +20,14 @@ import {
     Card,
     CardContent,
     Divider,
-    Grid
+    Grid,
+    alpha
 } from '@mui/material';
 import {
     Add as AddIcon,
     Edit as EditIcon,
-    Delete as DeleteIcon
+    Delete as DeleteIcon,
+    MonetizationOn as MonetizationOnIcon
 } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
@@ -42,7 +44,7 @@ interface MantenimientoDetalleListProps {
     mantenimientoInfo?: Mantenimiento | null;
 }
 
-export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false }: MantenimientoDetalleListProps) {
+export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, mantenimientoInfo }: MantenimientoDetalleListProps) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const queryClient = useQueryClient();
@@ -56,6 +58,10 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false }: 
         message: '',
         severity: 'success'
     });
+
+    const isCompleted = mantenimientoInfo?.estado?.nombre?.toUpperCase() === 'FINALIZADO' || mantenimientoInfo?.estado?.nombre?.toUpperCase() === 'COMPLETADO';
+    const showActions = !viewOnly && !isCompleted;
+    const colSpan = showActions ? 8 : 7;
 
     // Query for all details (uses updated backend response which includes totals)
     const { data, isLoading } = useQuery({
@@ -72,7 +78,11 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false }: 
     const totalsByCurrency = data?.totalsByCurrency || {};
 
     const createMutation = useMutation({
-        mutationFn: (data: CreateMantenimientoDetalleSchema) => mantenimientoApi.addDetalle(mantenimientoId, data),
+        mutationFn: (data: CreateMantenimientoDetalleSchema) => 
+            mantenimientoApi.addDetalle(mantenimientoId, {
+                ...data,
+                descripcion: data.descripcion ?? undefined
+            }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['mantenimiento-detalles', mantenimientoId] });
             handleCancel();
@@ -85,7 +95,10 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false }: 
 
     const updateMutation = useMutation({
         mutationFn: (data: CreateMantenimientoDetalleSchema) => 
-            editingId ? mantenimientoApi.updateDetalle(editingId, data) : Promise.reject('No ID'),
+            editingId ? mantenimientoApi.updateDetalle(editingId, {
+                ...data,
+                descripcion: data.descripcion ?? undefined
+            }) : Promise.reject('No ID'),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['mantenimiento-detalles', mantenimientoId] });
             handleCancel();
@@ -153,7 +166,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false }: 
                 
                 <Box sx={{ display: 'flex', gap: 1 }}>
 
-                    {!viewOnly && !showForm && (
+                    {showActions && !showForm && (
                         <Button
                             startIcon={<AddIcon />}
                             variant="contained"
@@ -191,17 +204,17 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false }: 
                                             <TableCell align="right">SubTotal</TableCell>
                                             <TableCell align="right">IGV</TableCell>
                                             <TableCell align="right">Total</TableCell>
-                                            <TableCell align="right">Acciones</TableCell>
+                                            {showActions && <TableCell align="right">Acciones</TableCell>}
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {isLoading ? (
                                             <TableRow>
-                                                <TableCell colSpan={8} align="center">Cargando...</TableCell>
+                                                <TableCell colSpan={colSpan} align="center">Cargando...</TableCell>
                                             </TableRow>
                                         ) : data?.items.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={8} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                                <TableCell colSpan={colSpan} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                                                     No hay insumos registrados
                                                 </TableCell>
                                             </TableRow>
@@ -231,8 +244,8 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false }: 
                                                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                                                         {item.moneda?.simbolo} {item.total.toFixed(2)}
                                                     </TableCell>
-                                                    <TableCell align="right">
-                                                        {!viewOnly && (
+                                                    {showActions && (
+                                                        <TableCell align="right">
                                                             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                                                 <IconButton 
                                                                     size="small" 
@@ -249,8 +262,8 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false }: 
                                                                     <DeleteIcon fontSize="small" />
                                                                 </IconButton>
                                                             </Box>
-                                                        )}
-                                                    </TableCell>
+                                                        </TableCell>
+                                                    )}
                                                 </TableRow>
                                             ))
                                         )}
@@ -348,25 +361,57 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false }: 
 
                     {/* Totals Section */}
                     {Object.keys(totalsByCurrency).length > 0 && (
-                        <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default', borderTop: '2px solid', borderColor: 'primary.main' }}>
-                            <Typography variant="caption" color="text.secondary" fontWeight="bold" display="block" mb={2} letterSpacing={1}>
-                                RESUMEN DE TOTALES
-                            </Typography>
-                            <Grid container spacing={3}>
-                                {Object.entries(totalsByCurrency).map(([symbol, total]) => (
-                                    <Grid key={symbol}>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                            <Typography variant="caption" color="text.secondary" fontWeight="bold">
-                                                TOTAL {symbol}
-                                            </Typography>
-                                            <Typography variant="h5" color="primary.main" fontWeight="bold">
-                                                {symbol} {total.toFixed(2)}
-                                            </Typography>
-                                        </Box>
+                        <Box sx={{ mt: 2 }}>
+                            <Card variant="elevation" elevation={0} sx={{ 
+                                bgcolor: alpha(theme.palette.primary.main, 0.04),
+                                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                                borderRadius: 3
+                            }}>
+                                <CardContent sx={{ p: 2 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                        <MonetizationOnIcon color="primary" />
+                                        <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
+                                            Resumen Económico
+                                        </Typography>
+                                    </Box>
+                                    
+                                    <Grid container spacing={2}>
+                                        {Object.entries(totalsByCurrency).map(([symbol, total]) => (
+                                            <Grid key={symbol} size={{ xs: 12, sm: 'auto' }}>
+                                                <Paper elevation={0} sx={{ 
+                                                    p: 2, 
+                                                    minWidth: 180,
+                                                    bgcolor: 'background.paper',
+                                                    border: `1px solid ${theme.palette.divider}`,
+                                                    borderRadius: 2,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    gap: 2
+                                                }}>
+                                                    <Box>
+                                                        <Typography variant="caption" color="text.secondary" fontWeight="bold" sx={{ display: 'block', mb: 0.5 }}>
+                                                            TOTAL {symbol === 'S/' ? 'SOLES' : 'DÓLARES'}
+                                                        </Typography>
+                                                        <Typography variant="h5" fontWeight="800" color="text.primary">
+                                                            {symbol} {total.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={{ 
+                                                        p: 1, 
+                                                        borderRadius: '50%', 
+                                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                                        color: theme.palette.primary.main
+                                                    }}>
+                                                        {symbol === 'S/' ? <Typography fontWeight="bold">S/</Typography> : <Typography fontWeight="bold">$</Typography>}
+                                                    </Box>
+                                                </Paper>
+                                            </Grid>
+                                        ))}
                                     </Grid>
-                                ))}
-                            </Grid>
-                        </Paper>
+                                </CardContent>
+                            </Card>
+                        </Box>
                     )}
                 </>
             )}

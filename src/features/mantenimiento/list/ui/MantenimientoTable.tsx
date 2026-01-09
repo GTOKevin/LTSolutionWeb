@@ -57,7 +57,6 @@ export function MantenimientoTable({
         // Using "Estado" name from entity if available
         
         let color: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' = 'default';
-        let label = 'Desconocido';
 
         // Mock logic - ideally use status.nombre
         // You might want to pass the full object to this function
@@ -172,8 +171,8 @@ export function MantenimientoTable({
                                         onView={() => onView(item)}
                                         onEdit={item.estadoID !== 102 ? () => onEdit(item) : undefined}
                                         onDelete={item.estadoID !== 102 ? () => onDelete(item) : undefined}
-                                        onExportExcel={() => generateExcel(item.mantenimientoID)}
-                                        onExportPdf={() => generatePdf(item.mantenimientoID)}
+                                        onExportExcel={(item.estado?.nombre?.toUpperCase() === 'COMPLETADO') ? () => generateExcel(item.mantenimientoID) : undefined}
+                                        onExportPdf={(item.estado?.nombre?.toUpperCase() === 'COMPLETADO') ? () => generatePdf(item.mantenimientoID) : undefined}
                                     />
                                 </TableCell>
                             </TableRow>

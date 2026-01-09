@@ -27,8 +27,7 @@ import { CreateEditMantenimientoModal } from '@features/mantenimiento/create-edi
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import { estadoApi } from '@entities/estado/api/estado.api';
-import { maestroApi } from '@entities/maestro/api/maestro.api';
-import { TIPO_ESTADO, TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { TIPO_ESTADO } from '@/shared/constants/constantes';
 
 export function MantenimientosPage() {
     const theme = useTheme();
@@ -37,7 +36,7 @@ export function MantenimientosPage() {
     // State
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [showFilters, setShowFilters] = useState(false);
+    const [showFilters, setShowFilters] = useState(true);
     
     // Filters State
     const [filters, setFilters] = useState({
@@ -61,11 +60,9 @@ export function MantenimientosPage() {
     // Catalog Queries for Filters
     const { data: flotas } = useQuery({ queryKey: ['flotas-select'], queryFn: () => flotaApi.getSelect() });
     const { data: estados } = useQuery({ queryKey: ['estados-select'], queryFn: () => estadoApi.getSelect(undefined,undefined,TIPO_ESTADO.MANTENIMIENTO) });
-    const { data: tiposServicio } = useQuery({ queryKey: ['tipos-servicio'], queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_SERVICIO) });
 
     const listaFlotas = flotas?.data || [];
     const listaEstados = estados?.data || [];
-    const listaTiposServicio = tiposServicio?.data || [];
 
     // Main Query
     const { data, isLoading } = useQuery({

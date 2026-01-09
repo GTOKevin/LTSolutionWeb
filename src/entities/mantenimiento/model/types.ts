@@ -46,18 +46,18 @@ export interface CreateMantenimientoDto {
     flotaID: number;
     tipoServicioID: number;
     fechaIngreso: string;
-    fechaSalida?: string;
+    fechaSalida?: string | null;
     motivoIngreso: string;
-    diagnosticoMecanico?: string;
-    solucion?: string;
+    diagnosticoMecanico?: string | null;
+    solucion?: string | null;
     kmIngreso: number;
-    kmSalida?: number;
+    kmSalida?: number | null;
     estadoID: number;
 }
 
 export interface CreateMantenimientoDetalleDto {
     tipoProductoID: number;
-    descripcion?: string;
+    descripcion?: string | null;
     cantidad: number;
     monedaID: number;
     costo: number;
