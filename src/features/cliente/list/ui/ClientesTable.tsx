@@ -28,7 +28,7 @@ import {
     Delete as DeleteIcon
 } from '@mui/icons-material';
 import type { Cliente } from '@entities/cliente/model/types';
-import type { PagedResponse } from '@shared/api/types';
+import type { PagedResponse } from '@/shared/model/types';
 import { getStatusStyles } from '../../utils/ui-helpers';
 import { ROWS_PER_PAGE_OPTIONS } from '../../../../shared/constants/constantes';
 interface ClientesTableProps {

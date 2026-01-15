@@ -13,7 +13,7 @@ import {
     Chip
 } from '@mui/material';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
-import type { PagedResponse } from '@shared/api/types';
+import type { PagedResponse } from '@/shared/model/types';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { formatDateLong } from '@shared/utils/date-utils';
 import React from 'react';

@@ -1,6 +1,6 @@
 import  { httpClient } from '@shared/api/http';
 import type { Cliente, ClienteContacto, CreateClienteDto, CreateClienteContactoDto, ClienteParams } from '../model/types';
-import type { PagedResponse } from '@shared/api/types';
+import type { PagedResponse } from '@/shared/model/types';
 
 export const clienteApi = {
     getById: (id: number) => httpClient.get<Cliente>(`/Cliente/${id}`),

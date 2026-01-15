@@ -1,5 +1,5 @@
 import type { UseFormSetError } from 'react-hook-form';
-import type { ApiError, ValidationError } from '../api/types';
+import type { ApiError, ValidationError } from '../model/types';
 
 /**
  * Maps backend validation errors to react-hook-form errors.

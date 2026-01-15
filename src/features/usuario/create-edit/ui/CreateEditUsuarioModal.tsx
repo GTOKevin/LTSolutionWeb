@@ -29,6 +29,7 @@ import { useEffect, useState } from 'react';
 import type { Usuario } from '@entities/usuario/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { Visibility, VisibilityOff, LockReset, Info, Close as CloseIcon } from '@mui/icons-material';
+import { handleNoSpacesKeyDown } from '@shared/utils/input-validators';
 
 interface CreateEditUsuarioModalProps {
     open: boolean;
@@ -113,15 +114,17 @@ export function CreateEditUsuarioModal({ open, onClose, usuarioToEdit, onSuccess
     }, [open, usuarioToEdit, reset]);
 
     const mutation = useMutation({
-        mutationFn: (data: UsuarioFormSchema) => {
+        mutationFn: async (data: UsuarioFormSchema) => {
             if (isEdit && usuarioToEdit) {
                 const updateData = {
                     ...data,
                     clave: data.clave || ''
                 };
-                return usuarioApi.update(usuarioToEdit.usuarioID, updateData as any).then(() => usuarioToEdit.usuarioID);
+                await usuarioApi.update(usuarioToEdit.usuarioID, updateData as any);
+                return usuarioToEdit.usuarioID;
             }
-            return usuarioApi.create(data as any);
+            const response= await usuarioApi.create(data as any);
+            return response;
         },
         onSuccess: (id) => {
             queryClient.invalidateQueries({ queryKey: ['usuarios'] });
@@ -142,12 +145,6 @@ export function CreateEditUsuarioModal({ open, onClose, usuarioToEdit, onSuccess
 
     const handleTogglePasswordVisibility = () => {
         setShowPassword((prev) => !prev);
-    };
-
-    const handleNoSpaces = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        if (e.key === ' ') {
-            e.preventDefault();
-        }
     };
 
     const generateSecurePassword = () => {
@@ -237,7 +234,7 @@ export function CreateEditUsuarioModal({ open, onClose, usuarioToEdit, onSuccess
                                     placeholder="ej: jdoe_logistica"
                                     fullWidth
                                     {...register('nombre')}
-                                    onKeyDown={handleNoSpaces}
+                                    onKeyDown={handleNoSpacesKeyDown}
                                     error={!!errors.nombre}
                                     helperText={errors.nombre?.message}
                                     disabled={viewOnly}
@@ -254,7 +251,7 @@ export function CreateEditUsuarioModal({ open, onClose, usuarioToEdit, onSuccess
                                     placeholder="usuario@logisegura.com"
                                     fullWidth
                                     {...register('email')}
-                                    onKeyDown={handleNoSpaces}
+                                    onKeyDown={handleNoSpacesKeyDown}
                                     error={!!errors.email}
                                     helperText={errors.email?.message}
                                     disabled={viewOnly}
@@ -275,7 +272,7 @@ export function CreateEditUsuarioModal({ open, onClose, usuarioToEdit, onSuccess
                                                 fullWidth
                                                 placeholder="••••••••"
                                                 {...register('clave')}
-                                                onKeyDown={handleNoSpaces}
+                                                onKeyDown={handleNoSpacesKeyDown}
                                                 error={!!errors.clave}
                                                 helperText={errors.clave?.message}
                                                 disabled={viewOnly}

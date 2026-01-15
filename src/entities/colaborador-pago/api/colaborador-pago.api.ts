@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api/http';
-import type { PagedResponse } from '@shared/api/types';
+import type { PagedResponse } from '@/shared/model/types';
 import type { ColaboradorPago, CreateColaboradorPagoDto, ColaboradorPagoParams } from '../model/types';
 
 export const colaboradorPagoApi = {

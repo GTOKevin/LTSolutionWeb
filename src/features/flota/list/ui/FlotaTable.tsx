@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import type { Flota } from '@entities/flota/model/types';
-import type { PagedResponse } from '@shared/api/types';
+import type { PagedResponse } from '@/shared/model/types';
 import { StatusChip } from '@shared/components/ui/StatusChip';
 import { TableActions } from '@shared/components/ui/TableActions';
 import React from 'react';

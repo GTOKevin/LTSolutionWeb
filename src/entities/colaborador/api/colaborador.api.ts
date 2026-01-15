@@ -1,7 +1,6 @@
 import { httpClient } from '@shared/api/http';
-import type { PagedResponse } from '@shared/api/types';
+import type { SelectItem,PagedResponse } from '@/shared/model/types';
 import type { Colaborador, CreateColaboradorDto, ColaboradorParams } from '../model/types';
-import type { SelestListItem } from '@/shared/model/types';
 
 export const colaboradorApi = {
     getAll: (params: ColaboradorParams) => 
@@ -11,10 +10,10 @@ export const colaboradorApi = {
         httpClient.get<Colaborador>(`/Colaborador/${id}`),
 
     getSelect: (search?: string, limit: number = 20) =>
-        httpClient.get<SelestListItem[]>('/Colaborador/select', { params: { search, limit } }),
+        httpClient.get<SelectItem[]>('/Colaborador/select', { params: { search, limit } }),
 
     getSelectAvailable: (currentColaboradorId?: number) =>
-        httpClient.get<SelestListItem[]>('/Colaborador/select-available', { params: { currentColaboradorId } }),
+        httpClient.get<SelectItem[]>('/Colaborador/select-available', { params: { currentColaboradorId } }),
 
     create: (data: CreateColaboradorDto) => 
         httpClient.post<number>('/Colaborador', data),

@@ -1,6 +1,5 @@
 import { httpClient } from '@shared/api/http';
-import type { PagedResponse } from '@shared/api/types';
-import type { SelestListItem } from '@shared/model/types';
+import type { PagedResponse, SelectItem } from '@/shared/model/types';
 import type { 
     Flota, 
     FlotaDocumento, 
@@ -17,7 +16,7 @@ export const flotaApi = {
         httpClient.get<PagedResponse<Flota>>('/Flota', { params }),
 
     getSelect: (search?: string, limit: number = 20) =>
-        httpClient.get<SelestListItem[]>('/Flota/select', { params: { search, limit } }),
+        httpClient.get<SelectItem[]>('/Flota/select', { params: { search, limit } }),
 
     getDocumentos: (params: FlotaDocumentoParams) =>
         httpClient.get<PagedResponse<FlotaDocumento>>('/Flota/documentos', { params }),

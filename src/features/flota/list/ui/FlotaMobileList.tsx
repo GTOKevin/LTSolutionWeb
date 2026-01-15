@@ -17,7 +17,7 @@ import {
     LocalGasStation as FuelIcon
 } from '@mui/icons-material';
 import type { Flota } from '@entities/flota/model/types';
-import type { PagedResponse } from '@shared/api/types';
+import type { PagedResponse } from '@/shared/model/types';
 import { StatusChip } from '@shared/components/ui/StatusChip';
 
 interface FlotaMobileListProps {

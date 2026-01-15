@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api/http';
-import type { PagedResponse, SelectItem } from '@shared/api/types';
+import type { PagedResponse, SelectItem } from '@/shared/model/types';
 import type { Usuario, CreateUsuarioDto, UsuarioParams } from '../model/types';
 
 export interface UsuariosPagedResponse extends PagedResponse<Usuario> {

@@ -22,7 +22,7 @@ import {
     Lock as LockIcon
 } from '@mui/icons-material';
 import type { Usuario } from '@entities/usuario/model/types';
-import type { PagedResponse } from '@shared/api/types';
+import type { PagedResponse } from '@/shared/model/types';
 import { useState } from 'react';
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 

@@ -13,7 +13,7 @@ import {
     Collapse
 } from '@mui/material';
 import { Search as SearchIcon, FilterList as FilterListIcon } from '@mui/icons-material';
-import type { SelestListItem } from '@/shared/model/types';
+import type { SelectItem } from '@/shared/model/types';
 
 interface UsuarioFilterProps {
     searchTerm: string;
@@ -22,8 +22,8 @@ interface UsuarioFilterProps {
     onRoleChange: (value: string) => void;
     statusFilter: string;
     onStatusChange: (value: string) => void;
-    roles: SelestListItem[];
-    estados: SelestListItem[];
+    roles: SelectItem[];
+    estados: SelectItem[];
     onApplyFilters: () => void;
     showFilters: boolean;
     onToggleFilters: () => void;
