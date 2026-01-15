@@ -26,7 +26,7 @@ import { MantenimientoMobileList } from '@features/mantenimiento/list/ui/Manteni
 import { CreateEditMantenimientoModal } from '@features/mantenimiento/create-edit/ui/CreateEditMantenimientoModal';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { flotaApi } from '@entities/flota/api/flota.api';
-import { estadoApi } from '@entities/estado/api/estado.api';
+import { estadoApi } from '@shared/api/estado.api';
 import { TIPO_ESTADO } from '@/shared/constants/constantes';
 
 export function MantenimientosPage() {

@@ -1,4 +1,4 @@
-import type { TipoMaestro } from '../../maestro/model/types';
+import type { TipoMaestro } from '@shared/model/maestro.types';
 
 export interface TipoDocumento {
     tipoDocumentoID: number;

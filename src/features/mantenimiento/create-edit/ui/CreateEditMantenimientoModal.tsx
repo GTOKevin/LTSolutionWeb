@@ -28,8 +28,8 @@ import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { MantenimientoDetalleList } from '../../detalles/ui/MantenimientoDetalleList';
 import { flotaApi } from '@entities/flota/api/flota.api';
-import { maestroApi } from '@entities/maestro/api/maestro.api';
-import { estadoApi } from '@entities/estado/api/estado.api';
+import { estadoApi } from '@shared/api/estado.api';
+import { maestroApi } from '@shared/api/maestro.api';
 import { TIPO_ESTADO, TIPO_MAESTRO } from '@/shared/constants/constantes';
 import { 
     DirectionsCar as CarIcon, 

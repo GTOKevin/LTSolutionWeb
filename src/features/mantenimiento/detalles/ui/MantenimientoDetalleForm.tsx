@@ -43,7 +43,7 @@ export function MantenimientoDetalleForm({
         setValue,
         watch,
         formState: { errors }
-    } = useForm<CreateMantenimientoDetalleSchema>({
+    } = useForm({
         resolver: zodResolver(createMantenimientoDetalleSchema),
         defaultValues: defaultValues || {
             tipoProductoID: 0,
@@ -61,8 +61,8 @@ export function MantenimientoDetalleForm({
     const [selectedCategoria, setSelectedCategoria] = useState<string>('');
     
     // Watch values for calculation
-    const cantidad = watch('cantidad');
-    const costo = watch('costo');
+    const cantidad = watch('cantidad') as number;
+    const costo = watch('costo') as number;
     const igv = watch('igv');
 
     useEffect(() => {

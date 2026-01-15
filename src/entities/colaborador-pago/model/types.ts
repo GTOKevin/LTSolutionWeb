@@ -1,4 +1,4 @@
-import type { TipoMaestro } from '../../maestro/model/types';
+import type { TipoMaestro } from '@shared/model/maestro.types';
 import type { Moneda } from '../../moneda/model/types';
 
 export interface ColaboradorPago {

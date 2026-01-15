@@ -13,6 +13,9 @@ export const colaboradorApi = {
     getSelect: (search?: string, limit: number = 20) =>
         httpClient.get<SelestListItem[]>('/Colaborador/select', { params: { search, limit } }),
 
+    getSelectAvailable: (currentColaboradorId?: number) =>
+        httpClient.get<SelestListItem[]>('/Colaborador/select-available', { params: { currentColaboradorId } }),
+
     create: (data: CreateColaboradorDto) => 
         httpClient.post<number>('/Colaborador', data),
 

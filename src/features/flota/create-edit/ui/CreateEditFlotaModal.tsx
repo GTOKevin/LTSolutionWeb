@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { maestroApi } from '@entities/maestro/api/maestro.api';
+import { maestroApi } from '@shared/api/maestro.api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import { createFlotaSchema } from '../../model/schema';

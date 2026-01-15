@@ -24,7 +24,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { colaboradorApi } from '@entities/colaborador/api/colaborador.api';
-import { maestroApi } from '@entities/maestro/api/maestro.api';
+import { maestroApi } from '@shared/api/maestro.api';
 import { rolColaboradorApi } from '@entities/rol-colaborador/api/rol-colaborador.api';
 import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { createColaboradorSchema } from '../../model/schema';

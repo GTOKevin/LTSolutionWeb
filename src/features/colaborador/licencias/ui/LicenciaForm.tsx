@@ -17,7 +17,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { licenciaApi } from '@entities/licencia/api/licencia.api';
-import { maestroApi } from '@entities/maestro/api/maestro.api';
+import { maestroApi } from '@shared/api/maestro.api';
 import type { Licencia } from '@entities/licencia/model/types';
 import { createLicenciaSchema } from '../model/schema';
 import type { CreateLicenciaSchema } from '../model/schema';

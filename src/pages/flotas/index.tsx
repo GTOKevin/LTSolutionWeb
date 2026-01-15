@@ -31,7 +31,7 @@ export function FlotasPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
-    const [showFilters, setShowFilters] = useState(false);
+    const [showFilters, setShowFilters] = useState(true);
     
     // Modal State
     const [openModal, setOpenModal] = useState(false);

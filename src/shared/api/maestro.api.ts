@@ -1,6 +1,6 @@
 import { httpClient } from '@shared/api/http';
 import type { PagedResponse } from '@shared/api/types';
-import type { TipoMaestro, CreateTipoMaestroDto, TipoMaestroParams } from '../model/types';
+import type { TipoMaestro, CreateTipoMaestroDto, TipoMaestroParams } from '../model/maestro.types';
 import type { SelestListItem } from '@/shared/model/types';
 
 export const maestroApi = {
