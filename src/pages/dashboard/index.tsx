@@ -10,7 +10,7 @@ export function DashboardPage() {
     }, [setPageTitle]);
 
     return (
-        <Box>
+        <Box sx={{ height: '100%', overflow: 'auto', p: 3 }}>
             <Typography variant="h4" gutterBottom>
                 Dashboard
             </Typography>

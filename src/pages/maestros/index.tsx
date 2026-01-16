@@ -6,29 +6,32 @@ import {
     Snackbar,
     Alert,
     TextField,
-    InputAdornment
+    InputAdornment,
+    Autocomplete
 } from '@mui/material';
 import {
     Add as AddIcon,
-    Search as SearchIcon
+    Search as SearchIcon,
+    FilterList as FilterIcon
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
-import { rolColaboradorApi } from '@entities/rol-colaborador/api/rol-colaborador.api';
+import { tipoMaestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { useState, useEffect } from 'react';
-import { CreateEditRolColaboradorModal } from '../../features/rol-colaborador/create-edit/ui/CreateEditRolColaboradorModal';
-import type { RolColaborador } from '@entities/rol-colaborador/model/types';
-import { RolColaboradorTable } from '../../features/rol-colaborador/list/ui/RolColaboradorTable';
-import { RolColaboradorMobileList } from '../../features/rol-colaborador/list/ui/RolColaboradorMobileList';
+import { CreateEditTipoMaestroModal } from '../../features/tipo-maestro/create-edit/ui/CreateEditTipoMaestroModal';
+import type { TipoMaestro } from '@entities/tipo-maestro/model/types';
+import { TipoMaestroTable } from '../../features/tipo-maestro/list/ui/TipoMaestroTable';
+import { TipoMaestroMobileList } from '../../features/tipo-maestro/list/ui/TipoMaestroMobileList';
 
-export function RolesColaboradorPage() {
+export function MaestrosPage() {
     const theme = useTheme();
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedSeccion, setSelectedSeccion] = useState<string | null>(null);
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     
     const [modalOpen, setModalOpen] = useState(false);
-    const [rolToEdit, setRolToEdit] = useState<RolColaborador | null>(null);
+    const [maestroToEdit, setMaestroToEdit] = useState<TipoMaestro | null>(null);
     
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -41,27 +44,38 @@ export function RolesColaboradorPage() {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
+    // Reset page when section filter changes
+    useEffect(() => {
+        setPage(0);
+    }, [selectedSeccion]);
+
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ['roles-colaborador', page, rowsPerPage, debouncedSearch],
-        queryFn: () => rolColaboradorApi.getAll({ 
+        queryKey: ['tipo-maestros', page, rowsPerPage, debouncedSearch, selectedSeccion],
+        queryFn: () => tipoMaestroApi.getAll({ 
             page: page + 1, 
             size: rowsPerPage, 
-            search: debouncedSearch
+            search: debouncedSearch,
+            seccion: selectedSeccion || undefined
         })
     });
 
+    const { data: secciones } = useQuery({
+        queryKey: ['secciones-maestro'],
+        queryFn: tipoMaestroApi.getSecciones
+    });
+
     const handleCreate = () => {
-        setRolToEdit(null);
+        setMaestroToEdit(null);
         setModalOpen(true);
     };
 
-    const handleEdit = (rol: RolColaborador) => {
-        setRolToEdit(rol);
+    const handleEdit = (maestro: TipoMaestro) => {
+        setMaestroToEdit(maestro);
         setModalOpen(true);
     };
 
     const handleSuccess = (id: number) => {
-        setSnackbarMessage(rolToEdit ? 'Rol de colaborador actualizado exitosamente.' : 'Rol de colaborador creado exitosamente.');
+        setSnackbarMessage(maestroToEdit ? 'Maestro actualizado exitosamente.' : 'Maestro creado exitosamente.');
         setSnackbarOpen(true);
         refetch();
     };
@@ -94,10 +108,10 @@ export function RolesColaboradorPage() {
             }}>
                 <Box>
                     <Typography variant="h4" fontWeight="bold" color="text.primary">
-                        Gestión de Roles de Colaborador
+                        Gestión de Maestros
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
-                        Administra los roles específicos para los colaboradores
+                        Administra las tablas maestras y configuraciones del sistema
                     </Typography>
                 </Box>
                 <Button 
@@ -112,7 +126,7 @@ export function RolesColaboradorPage() {
                         py: 1.2
                     }}
                 >
-                    Nuevo Rol
+                    Nuevo Maestro
                 </Button>
             </Box>
 
@@ -124,23 +138,53 @@ export function RolesColaboradorPage() {
                 p: 2, 
                 borderRadius: 3,
                 boxShadow: theme.shadows[1],
-                border: `1px solid ${theme.palette.divider}`
+                border: `1px solid ${theme.palette.divider}`,
+                flexWrap: 'wrap'
             }}>
-                <TextField
-                    placeholder="Buscar por Nombre de Rol..."
-                    size="small"
-                    fullWidth
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon color="action" />
-                            </InputAdornment>
-                        ),
-                        sx: { borderRadius: 2 }
-                    }}
-                />
+                <Box sx={{ flex: 1, minWidth: '250px' }}>
+                    <TextField
+                        placeholder="Buscar por Nombre o Código..."
+                        size="small"
+                        fullWidth
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon color="action" />
+                                </InputAdornment>
+                            ),
+                            sx: { borderRadius: 2 }
+                        }}
+                    />
+                </Box>
+                
+                <Box sx={{ minWidth: '250px' }}>
+                    <Autocomplete
+                        options={secciones?.data || []}
+                        value={selectedSeccion}
+                        onChange={(_, newValue) => setSelectedSeccion(newValue)}
+                        renderInput={(params) => (
+                            <TextField 
+                                {...params} 
+                                placeholder="Filtrar por Sección" 
+                                size="small"
+                                InputProps={{
+                                    ...params.InputProps,
+                                    startAdornment: (
+                                        <>
+                                            <InputAdornment position="start">
+                                                <FilterIcon color="action" fontSize="small" />
+                                            </InputAdornment>
+                                            {params.InputProps.startAdornment}
+                                        </>
+                                    ),
+                                    sx: { borderRadius: 2 }
+                                }}
+                            />
+                        )}
+                    />
+                </Box>
             </Box>
 
             {/* Content Section */}
@@ -148,11 +192,12 @@ export function RolesColaboradorPage() {
                 display: 'flex', 
                 flexDirection: 'column', 
                 borderRadius: 3, 
-                overflow: 'hidden'
+                flex: 1,
+                minHeight: 0
             }}>
                 {/* Desktop Table */}
-                <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                    <RolColaboradorTable
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, flex: 1, minHeight: 0, flexDirection: 'column' }}>
+                    <TipoMaestroTable
                         data={data?.data}
                         isLoading={isLoading}
                         page={page}
@@ -165,7 +210,7 @@ export function RolesColaboradorPage() {
 
                 {/* Mobile List */}
                 <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                    <RolColaboradorMobileList
+                    <TipoMaestroMobileList
                         data={data?.data}
                         isLoading={isLoading}
                         page={page}
@@ -177,10 +222,10 @@ export function RolesColaboradorPage() {
                 </Box>
             </Box>
 
-            <CreateEditRolColaboradorModal 
+            <CreateEditTipoMaestroModal 
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
-                rolToEdit={rolToEdit}
+                maestroToEdit={maestroToEdit}
                 onSuccess={handleSuccess}
             />
 

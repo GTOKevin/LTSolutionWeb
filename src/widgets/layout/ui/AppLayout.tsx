@@ -17,15 +17,26 @@ export function AppLayout() {
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    p: { xs: 0, md: 3 }, // Removed padding on mobile to match full width designs often used, or keep small p
                     width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-                    minHeight: '100vh',
-                    overflow: 'auto',
-                    mb: { xs: 7, md: 0 } // Space for bottom nav
+                    height: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    bgcolor: theme.palette.mode === 'dark' ? '#111418' : '#f6f7f8'
                 }}
             >
-                <Toolbar sx={{ height: 64 }} /> {/* Spacer for fixed header */}
-                <Outlet />
+                <Toolbar sx={{ height: 64, flexShrink: 0 }} />
+                <Box sx={{ 
+                    flex: 1, 
+                    minHeight: 0, 
+                    position: 'relative',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'auto', // Changed from hidden to auto to allow global scroll if content overflows here
+                    pb: { xs: 7, md: 0 } // Move bottom padding here for mobile nav
+                }}>
+                    <Outlet />
+                </Box>
             </Box>
             <BottomNav />
         </Box>

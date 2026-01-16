@@ -15,6 +15,7 @@ import { MantenimientosPage } from '@/pages/mantenimientos';
 import { UsuariosPage } from '@/pages/usuarios';
 import { RolesPage } from '@/pages/roles';
 import { RolesColaboradorPage } from '@/pages/roles-colaborador';
+import { MaestrosPage } from '@/pages/maestros';
 // import { UsuariosPage } from '@/pages/usuarios';
 
 
@@ -71,6 +72,7 @@ export function RouterProvider() {
                     <Route path="usuarios" element={<UsuariosPage />} />
                     <Route path="roles-usuario" element={<RolesPage />} />
                     <Route path="roles-colaborador" element={<RolesColaboradorPage />} />
+                    <Route path="maestros" element={<MaestrosPage />} />
                 </Route>
 
                 {/* Catch all */}

@@ -9,26 +9,27 @@ import {
     TableHead,
     TableRow,
     TablePagination,
-    useTheme
+    useTheme,
+    Chip
 } from '@mui/material';
 import React from 'react';
-import type { RolColaborador } from '@entities/rol-colaborador/model/types';
+import type { TipoMaestro } from '@entities/tipo-maestro/model/types';
 import type { PagedResponse } from '@/shared/model/types';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 import { StatusChip } from '@/shared/components/ui/StatusChip';
 
-interface RolColaboradorTableProps {
-    data?: PagedResponse<RolColaborador>;
+interface TipoMaestroTableProps {
+    data?: PagedResponse<TipoMaestro>;
     isLoading: boolean;
     page: number;
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onEdit: (rol: RolColaborador) => void;
+    onEdit: (maestro: TipoMaestro) => void;
 }
 
-export function RolColaboradorTable({
+export function TipoMaestroTable({
     data,
     isLoading,
     page,
@@ -36,7 +37,7 @@ export function RolColaboradorTable({
     onPageChange,
     onRowsPerPageChange,
     onEdit
-}: RolColaboradorTableProps) {
+}: TipoMaestroTableProps) {
     const theme = useTheme();
 
     return (
@@ -53,7 +54,8 @@ export function RolColaboradorTable({
                     <TableHead>
                         <TableRow>
                             <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.75rem' }}>Nombre</TableCell>
-                            <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.75rem' }}>Descripción</TableCell>
+                            <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.75rem' }}>Sección</TableCell>
+                            <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.75rem' }}>Código</TableCell>
                             <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.75rem' }}>Estado</TableCell>
                             <TableCell align="right" sx={{ color: 'text.secondary', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.75rem' }}>Acciones</TableCell>
                         </TableRow>
@@ -61,13 +63,13 @@ export function RolColaboradorTable({
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
                                     Cargando datos...
                                 </TableCell>
                             </TableRow>
                         ) : data?.items.map((item) => (
                             <TableRow 
-                                key={item.rolColaboradorID} 
+                                key={item.tipoMaestroID} 
                                 hover
                                 sx={{ 
                                     '&:hover .actions-group': { opacity: 1 },
@@ -81,19 +83,26 @@ export function RolColaboradorTable({
                                                 {item.nombre}
                                             </Typography>
                                             <Typography variant="caption" color="text.secondary">
-                                                ID: {item.rolColaboradorID}
+                                                ID: {item.tipoMaestroID}
                                             </Typography>
                                         </Box>
                                     </Box>
                                 </TableCell>
                                 <TableCell>
-                                    <Typography variant="body2" color="text.secondary" sx={{ 
-                                        maxWidth: 300, 
-                                        whiteSpace: 'nowrap', 
-                                        overflow: 'hidden', 
-                                        textOverflow: 'ellipsis' 
-                                    }}>
-                                        {item.descripcion || '-'}
+                                    <Chip 
+                                        label={item.seccion} 
+                                        size="small" 
+                                        sx={{ 
+                                            borderRadius: 1,
+                                            fontWeight: 600,
+                                            bgcolor: theme.palette.action.hover,
+                                            color: theme.palette.text.secondary
+                                        }} 
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <Typography variant="body2" color="text.secondary" fontFamily="monospace">
+                                        {item.codigo || '-'}
                                     </Typography>
                                 </TableCell>
                                 <TableCell>
@@ -103,7 +112,7 @@ export function RolColaboradorTable({
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                                         <TableActions 
                                             onEdit={() => onEdit(item)}
-                                            editTooltip="Editar Rol"
+                                            editTooltip="Editar Maestro"
                                         />
                                     </Box>
                                 </TableCell>
@@ -111,8 +120,8 @@ export function RolColaboradorTable({
                         ))}
                         {!isLoading && data?.items.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4} align="center" sx={{ py: 8, color: 'text.secondary' }}>
-                                    No se encontraron roles
+                                <TableCell colSpan={5} align="center" sx={{ py: 8, color: 'text.secondary' }}>
+                                    No se encontraron registros
                                 </TableCell>
                             </TableRow>
                         )}
