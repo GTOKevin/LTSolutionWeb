@@ -6,7 +6,7 @@ interface StatusChipProps {
 
 export function StatusChip({ active }: StatusChipProps) {
     const theme = useTheme();
-
+    console.log(active);
     return (
         <Chip
             label={active ? 'Activo' : 'Inactivo'}
