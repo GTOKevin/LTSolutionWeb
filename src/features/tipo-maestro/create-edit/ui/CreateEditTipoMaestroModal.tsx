@@ -145,13 +145,6 @@ export function CreateEditTipoMaestroModal({
                                         value={value || null}
                                         onChange={(_, newValue) => onChange(newValue)}
                                         onInputChange={(_, newInputValue) => {
-                                            // When typing free text, update the form value
-                                            // Note: Autocomplete behavior can be tricky. 
-                                            // If freeSolo is true, value can be string.
-                                            // We usually rely on onChange for selection, but for typing...
-                                            // If user types and doesn't select, onChange might be called with string or we rely on onInputChange?
-                                            // With freeSolo, onChange is called with string value when Enter is pressed or focus lost if it's not an option?
-                                            // Actually, simplest way for react-hook-form + Autocomplete freeSolo:
                                             onChange(newInputValue);
                                         }}
                                         renderInput={(params) => (
