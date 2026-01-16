@@ -60,7 +60,7 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
         control,
         setError,
         formState: { errors, isSubmitting, isDirty }
-    } = useForm<CreateContactoSchema>({
+    } = useForm({
         resolver: zodResolver(createContactoSchema),
         defaultValues: {
             activo: true

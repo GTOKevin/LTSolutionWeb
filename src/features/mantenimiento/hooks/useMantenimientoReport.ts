@@ -270,9 +270,6 @@ export const useMantenimientoReport = () => {
                     4: { cellWidth: 20, halign: 'right' },
                     5: { cellWidth: 20, halign: 'right' },
                     6: { cellWidth: 20, halign: 'right' }
-                },
-                didDrawPage: (data) => {
-                    // Footer with totals on last page? 
                 }
             });
 

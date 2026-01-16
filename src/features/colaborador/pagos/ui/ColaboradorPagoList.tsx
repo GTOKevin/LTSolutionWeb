@@ -25,7 +25,7 @@ import type { ColaboradorPago } from '@entities/colaborador-pago/model/types';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { useState } from 'react';
 import { ColaboradorPagoForm } from './ColaboradorPagoForm';
-import { formatDateLong, formatDateShort } from '@/shared/utils/date-utils';
+import { formatDateShort } from '@/shared/utils/date-utils';
 
 interface ColaboradorPagoListProps {
     colaboradorId: number;

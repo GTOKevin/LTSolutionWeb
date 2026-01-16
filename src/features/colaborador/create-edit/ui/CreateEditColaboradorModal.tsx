@@ -110,7 +110,7 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
         control,
         setError,
         formState: { errors, isSubmitting, isDirty }
-    } = useForm<CreateColaboradorSchema>({
+    } = useForm({
         resolver: zodResolver(createColaboradorSchema),
         defaultValues: {
             activo: true
@@ -159,14 +159,17 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
     }, [open, colaboradorToEdit, reset]);
 
     const mutation = useMutation({
-        mutationFn: (data: CreateColaboradorSchema) => {
+        mutationFn: async (data: CreateColaboradorSchema) => {
             if (isEdit && colaboradorToEdit) {
-                return colaboradorApi.update(colaboradorToEdit.colaboradorID, data).then(() => colaboradorToEdit.colaboradorID);
+                await colaboradorApi.update(colaboradorToEdit.colaboradorID, data);
+                return colaboradorToEdit.colaboradorID;
             }
             if (createdId) {
-                return colaboradorApi.update(createdId, data).then(() => createdId);
+                await colaboradorApi.update(createdId, data);
+                return createdId;
             }
-            return colaboradorApi.create(data);
+            const response = await colaboradorApi.create(data);
+            return response.data;   
         },
         onSuccess: (id:number) => {
             queryClient.invalidateQueries({ queryKey: ['colaboradores'] });

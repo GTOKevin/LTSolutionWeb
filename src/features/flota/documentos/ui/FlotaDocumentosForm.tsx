@@ -40,7 +40,7 @@ export function FlotaDocumentosForm({
         control,
         reset,
         formState: { errors, isDirty }
-    } = useForm<CreateFlotaDocumentoSchema>({
+    } = useForm({
         resolver: zodResolver(createFlotaDocumentoSchema),
         defaultValues: {
             tipoDocumentoID: 0,
@@ -81,7 +81,7 @@ export function FlotaDocumentosForm({
                         control={control}
                         render={({ field }) => (
                             <TipoDocumentoSelect
-                                value={field.value}
+                                value={field.value as number}
                                 onChange={field.onChange}
                                 error={!!errors.tipoDocumentoID}
                                 helperText={errors.tipoDocumentoID?.message}

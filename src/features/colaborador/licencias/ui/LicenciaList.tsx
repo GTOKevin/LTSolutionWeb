@@ -25,7 +25,6 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { licenciaApi } from '@entities/licencia/api/licencia.api';
 import type { Licencia } from '@entities/licencia/model/types';
-import { StatusChip } from '@shared/components/ui/StatusChip';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { useState } from 'react';
 import { LicenciaForm } from './LicenciaForm';

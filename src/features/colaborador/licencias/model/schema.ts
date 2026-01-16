@@ -11,8 +11,6 @@ export const createLicenciaSchema = z.object({
     if (!data.fechaFinal) return true;
     const inicio = new Date(data.fechaInicial);
     const fin = new Date(data.fechaFinal);
-    // User requirement: "La fecha inicial no puede ser menor a la fecha de vencimiento, puede ser igual pero no menor."
-    // Interpreted as: FechaFinal >= FechaInicial.
     return fin >= inicio;
 }, {
     message: "La fecha final debe ser mayor o igual a la fecha de inicio",

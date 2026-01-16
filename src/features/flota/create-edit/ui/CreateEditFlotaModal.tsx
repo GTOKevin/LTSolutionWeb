@@ -104,7 +104,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
         reset,
         setError,
         formState: { errors, isDirty }
-    } = useForm<CreateFlotaSchema>({
+    } = useForm({
         resolver: zodResolver(createFlotaSchema),
         defaultValues: {
             activo: true
@@ -161,14 +161,17 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
     }, [open, flotaToEdit, reset]);
 
     const mutation = useMutation({
-        mutationFn: (data: CreateFlotaSchema) => {
+        mutationFn: async (data: CreateFlotaSchema) => {
             if (isEdit && flotaToEdit) {
-                return flotaApi.update(flotaToEdit.flotaID, data).then(() => flotaToEdit.flotaID);
+                await flotaApi.update(flotaToEdit.flotaID, data);
+                return flotaToEdit.flotaID;
             }
             if (createdFlotaId) {
-                return flotaApi.update(createdFlotaId, data).then(() => createdFlotaId);
+                await flotaApi.update(createdFlotaId, data);
+                return createdFlotaId;
             }
-            return flotaApi.create(data);
+            const response = await flotaApi.create(data);
+            return response.data;
         },
         onSuccess: (id:number) => {
             queryClient.invalidateQueries({ queryKey: ['flotas'] });

@@ -89,11 +89,6 @@ const menuItems: MenuItem[] = [
     { text: 'Reportes', path: '/app/reportes', icon: <ReportIcon /> }
 ];
 
-// Helper icon for mapping
-function DescriptionIcon(props: any) {
-    return <ReportIcon {...props} />;
-}
-
 
 export function Sidebar() {
     const navigate = useNavigate();

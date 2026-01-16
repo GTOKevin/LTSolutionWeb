@@ -86,11 +86,13 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
     }, [open, pagoToEdit, reset]);
 
     const mutation = useMutation({
-        mutationFn: (data: CreateColaboradorPagoSchema) => {
+        mutationFn: async (data: CreateColaboradorPagoSchema) => {
             if (isEdit && pagoToEdit) {
-                return colaboradorPagoApi.update(pagoToEdit.colaboradorPagoID, data);
+                await colaboradorPagoApi.update(pagoToEdit.colaboradorPagoID, data);
+                return pagoToEdit.colaboradorPagoID;
             }
-            return colaboradorPagoApi.create(colaboradorId, data);
+            const response = await colaboradorPagoApi.create(colaboradorId, data);
+            return response.data;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['colaborador-pagos', colaboradorId] });

@@ -83,7 +83,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
         control,
         setError,
         formState: { errors, isSubmitting, isDirty }
-    } = useForm<CreateClienteSchema>({
+    } = useForm({
         resolver: zodResolver(createClienteSchema),
         defaultValues: {
             activo: true
@@ -125,20 +125,23 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
     }, [open, clienteToEdit, reset]);
 
     const mutation = useMutation({
-        mutationFn: (data: CreateClienteSchema) => {
+            mutationFn: async (data: CreateClienteSchema) => {
             if (isEdit && clienteToEdit) {
-                return clienteApi.update(clienteToEdit.clienteID, data).then(() => clienteToEdit.clienteID);
+                 await clienteApi.update(clienteToEdit.clienteID, data);
+                 return clienteToEdit.clienteID;
             }
             // If we have a createdClientId, we are effectively editing it, but the prop isEdit is false.
             // However, the form submits to this mutation.
             // If we already created it (createdClientId exists) and user clicks save again on tab 0, 
             // we should probably update it.
             if (createdClientId) {
-                return clienteApi.update(createdClientId, data).then(() => createdClientId);
+                 await clienteApi.update(createdClientId, data);
+                 return createdClientId;
             }
-            return clienteApi.create(data);
+            const response = await clienteApi.create(data);
+            return response.data;
         },
-        onSuccess: (id) => {
+        onSuccess: (id:number) => {
             queryClient.invalidateQueries({ queryKey: ['clientes'] });
             onSuccess(id);
             

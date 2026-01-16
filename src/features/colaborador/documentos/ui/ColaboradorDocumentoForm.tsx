@@ -47,7 +47,7 @@ export function ColaboradorDocumentoForm({ open, onClose, colaboradorId, documen
         reset,
         control,
         formState: { errors, isSubmitting }
-    } = useForm<CreateColaboradorDocumentoSchema>({
+    } = useForm({
         resolver: zodResolver(createColaboradorDocumentoSchema),
         defaultValues: {
             colaboradorID: colaboradorId,
@@ -82,11 +82,13 @@ export function ColaboradorDocumentoForm({ open, onClose, colaboradorId, documen
     }, [open, documentoToEdit, colaboradorId, reset]);
 
     const mutation = useMutation({
-        mutationFn: (data: CreateColaboradorDocumentoSchema) => {
+        mutationFn: async (data: CreateColaboradorDocumentoSchema) => {
             if (isEdit && documentoToEdit) {
-                return colaboradorDocumentoApi.update(documentoToEdit.colaboradorDocumentoID, data);
+                await colaboradorDocumentoApi.update(documentoToEdit.colaboradorDocumentoID, data);
+                return documentoToEdit.colaboradorDocumentoID;
             }
-            return colaboradorDocumentoApi.create(colaboradorId, data);
+            const response = await colaboradorDocumentoApi.create(colaboradorId, data);
+            return response.data;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['colaborador-documentos', colaboradorId] });

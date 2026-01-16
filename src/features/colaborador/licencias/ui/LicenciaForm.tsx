@@ -6,8 +6,6 @@ import {
     Button,
     TextField,
     Grid,
-    FormControlLabel,
-    Switch,
     MenuItem,
     Typography,
     useTheme,
@@ -49,7 +47,7 @@ export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: L
         reset,
         control,
         formState: { errors, isSubmitting }
-    } = useForm<CreateLicenciaSchema>({
+    } = useForm({
         resolver: zodResolver(createLicenciaSchema),
         defaultValues: {
             colaboradorID: colaboradorId
@@ -79,11 +77,13 @@ export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: L
     }, [open, licenciaToEdit, colaboradorId, reset]);
 
     const mutation = useMutation({
-        mutationFn: (data: CreateLicenciaSchema) => {
+        mutationFn: async (data: CreateLicenciaSchema) => {
             if (isEdit && licenciaToEdit) {
-                return licenciaApi.update(licenciaToEdit.licenciaID, data);
+                await licenciaApi.update(licenciaToEdit.licenciaID, data);
+                return licenciaToEdit.licenciaID;
             }
-            return licenciaApi.create(colaboradorId, data);
+            const response = await licenciaApi.create(colaboradorId, data);
+            return response.data;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['licencias', colaboradorId] });
