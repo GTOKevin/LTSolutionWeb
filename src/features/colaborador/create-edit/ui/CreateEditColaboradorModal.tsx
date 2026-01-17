@@ -174,14 +174,7 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
         onSuccess: (id:number) => {
             queryClient.invalidateQueries({ queryKey: ['colaboradores'] });
             onSuccess(id);
-            
-            if (!isEdit && !createdId) {
-                setCreatedId(id);
-                // Move to next tab or just enable them
-                // setActiveTab(1); 
-            } else {
-                onClose();
-            }
+            onClose();
         },
         onError: (error: any) => {
             const genericError = handleBackendErrors<CreateColaboradorSchema>(error, setError);

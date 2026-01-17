@@ -3,11 +3,13 @@ import {
     Typography,
     Button,
     useTheme,
-    alpha
+    alpha,
+    TextField,
+    InputAdornment
 } from '@mui/material';
 import {
-    FilterList as FilterListIcon,
-    Add as AddIcon
+    Add as AddIcon,
+    Search as SearchIcon
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -26,7 +28,6 @@ export function ColaboradoresPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
-    const [showFilters, setShowFilters] = useState(false);
     
     // Modal State
     const [openModal, setOpenModal] = useState(false);
@@ -122,27 +123,47 @@ export function ColaboradoresPage() {
                             Administra conductores y personal administrativo
                         </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button
-                            variant={showFilters ? "contained" : "outlined"}
-                            startIcon={<FilterListIcon />}
-                            onClick={() => setShowFilters(!showFilters)}
-                            color={showFilters ? "primary" : "inherit"}
-                        >
-                            Filtros
-                        </Button>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={handleCreate}
-                            sx={{ 
-                                px: 3,
-                                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`,
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={handleCreate}
+                        sx={{ 
+                            px: 3,
+                            background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`,
+                        }}
+                    >
+                        Nuevo Colaborador
+                    </Button>
+                </Box>
+
+                {/* Toolbar Section */}
+                <Box sx={{ 
+                    display: 'flex', 
+                    gap: 2, 
+                    bgcolor: theme.palette.background.paper, 
+                    p: 2, 
+                    borderRadius: 3,
+                    boxShadow: theme.shadows[1],
+                    border: `1px solid ${theme.palette.divider}`,
+                    flexWrap: 'wrap'
+                }}>
+                    <Box sx={{ flex: 1, minWidth: '250px' }}>
+                        <TextField
+                            placeholder="Buscar por Nombre, DNI o Rol..."
+                            size="small"
+                            fullWidth
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon color="action" />
+                                    </InputAdornment>
+                                ),
+                                sx: { borderRadius: 2 }
                             }}
-                        >
-                            Nuevo Colaborador
-                        </Button>
+                        />
                     </Box>
                 </Box>
 
@@ -152,11 +173,8 @@ export function ColaboradoresPage() {
                     isLoading={isLoading}
                     page={page}
                     rowsPerPage={rowsPerPage}
-                    showFilters={showFilters}
-                    searchTerm={searchTerm}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    onSearchChange={setSearchTerm}
                     onEdit={handleEdit}
                     onDelete={handleDeleteClick}
                     onView={handleView}
@@ -167,7 +185,8 @@ export function ColaboradoresPage() {
                     isLoading={isLoading}
                     page={page}
                     rowsPerPage={rowsPerPage}
-                    onPageChange={setPage}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
                     onEdit={handleEdit}
                     onDelete={handleDeleteClick}
                     onView={handleView}
@@ -180,7 +199,7 @@ export function ColaboradoresPage() {
                 onClose={() => setOpenModal(false)}
                 colaboradorToEdit={selectedColaborador}
                 onSuccess={() => {
-                    // Refresh handled by modal mutation success
+                    setOpenModal(false);
                 }}
                 viewOnly={viewOnly}
             />

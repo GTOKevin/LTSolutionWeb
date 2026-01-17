@@ -9,13 +9,8 @@ import {
     TableRow,
     TablePagination,
     useTheme,
-    alpha,
-    TextField,
-    InputAdornment,
-    Collapse,
     Typography
 } from '@mui/material';
-import { Search as SearchIcon } from '@mui/icons-material';
 import type { Flota } from '@entities/flota/model/types';
 import type { PagedResponse } from '@/shared/model/types';
 import { StatusChip } from '@shared/components/ui/StatusChip';
@@ -27,11 +22,8 @@ interface FlotaTableProps {
     isLoading: boolean;
     page: number;
     rowsPerPage: number;
-    showFilters: boolean;
-    searchTerm: string;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onSearchChange: (value: string) => void;
     onView: (flota: Flota) => void;
     onEdit: (flota: Flota) => void;
     onDelete: (flota: Flota) => void;
@@ -42,11 +34,8 @@ export function FlotaTable({
     isLoading,
     page,
     rowsPerPage,
-    showFilters,
-    searchTerm,
     onPageChange,
     onRowsPerPageChange,
-    onSearchChange,
     onView,
     onEdit,
     onDelete
@@ -63,31 +52,6 @@ export function FlotaTable({
             borderRadius: 3,
             boxShadow: theme.shadows[1]
         }}>
-            <Collapse in={showFilters}>
-                <Box sx={{ 
-                    p: 2, 
-                    borderBottom: `1px solid ${theme.palette.divider}`, 
-                    bgcolor: alpha(theme.palette.background.default, 0.5) 
-                }}>
-                    <TextField
-                        placeholder="Buscar por Placa, Marca o Modelo..."
-                        size="small"
-                        value={searchTerm}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        fullWidth
-                        sx={{ maxWidth: 400 }}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon color="action" />
-                                </InputAdornment>
-                            ),
-                            sx: { bgcolor: 'background.paper' }
-                        }}
-                    />
-                </Box>
-            </Collapse>
-
             <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
                 <Table stickyHeader>
                     <TableHead>

@@ -9,16 +9,12 @@ import {
     TableRow,
     TablePagination,
     useTheme,
-    alpha,
-    TextField,
-    InputAdornment,
-    Collapse,
     Typography,
+    Avatar,
     Chip,
-    Avatar
+    alpha
 } from '@mui/material';
 import { 
-    Search as SearchIcon,
     Person as PersonIcon 
 } from '@mui/icons-material';
 import type { Colaborador } from '@entities/colaborador/model/types';
@@ -32,11 +28,8 @@ interface ColaboradorTableProps {
     isLoading: boolean;
     page: number;
     rowsPerPage: number;
-    showFilters: boolean;
-    searchTerm: string;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onSearchChange: (value: string) => void;
     onView: (colaborador: Colaborador) => void;
     onEdit: (colaborador: Colaborador) => void;
     onDelete: (colaborador: Colaborador) => void;
@@ -47,17 +40,13 @@ export function ColaboradorTable({
     isLoading,
     page,
     rowsPerPage,
-    showFilters,
-    searchTerm,
     onPageChange,
     onRowsPerPageChange,
-    onSearchChange,
     onView,
     onEdit,
     onDelete
 }: ColaboradorTableProps) {
     const theme = useTheme();
-    console.log(1);
 
     return (
         <Paper sx={{ 
@@ -70,31 +59,6 @@ export function ColaboradorTable({
             borderRadius: 3,
             boxShadow: theme.shadows[1]
         }}>
-            <Collapse in={showFilters}>
-                <Box sx={{ 
-                    p: 2, 
-                    borderBottom: `1px solid ${theme.palette.divider}`, 
-                    bgcolor: alpha(theme.palette.background.default, 0.5) 
-                }}>
-                    <TextField
-                        placeholder="Buscar por Nombre, DNI o Rol..."
-                        size="small"
-                        value={searchTerm}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        fullWidth
-                        sx={{ maxWidth: 400 }}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon color="action" />
-                                </InputAdornment>
-                            ),
-                            sx: { bgcolor: 'background.paper' }
-                        }}
-                    />
-                </Box>
-            </Collapse>
-
             <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
                 <Table stickyHeader>
                     <TableHead>

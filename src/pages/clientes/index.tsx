@@ -4,19 +4,16 @@ import {
     Button,
     TextField,
     InputAdornment,
-    Chip,
-    IconButton,
-    useTheme,
-    alpha,
-    Collapse,
     Snackbar,
-    Alert
+    Alert,
+    Select,
+    MenuItem,
+    useTheme,
+    alpha
 } from '@mui/material';
 import {
     Search as SearchIcon,
-    FilterList as FilterListIcon,
-    Add as AddIcon,
-    Tune as TuneIcon
+    Add as AddIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
@@ -34,7 +31,6 @@ export function ClientesPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [statusFilter, setStatusFilter] = useState(' ');
-    const [showFilters, setShowFilters] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [clienteToEdit, setClienteToEdit] = useState<Cliente | null>(null);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -143,122 +139,79 @@ export function ClientesPage() {
         }}>
             <Box sx={{ maxWidth: 1600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 3 }, height: '100%' }}>
                 
-                {/* Desktop Toolbar */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                        <Typography variant="h5" fontWeight="bold" color="text.primary">
+                {/* Header */}
+                <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'flex-start',
+                    gap: 2,
+                    flexWrap: 'wrap'
+                }}>
+                    <Box>
+                        <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1, letterSpacing: '-0.02em' }}>
                             Cartera de Clientes
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body1" color="text.secondary">
                             Gestione la información, documentación y contactos de sus clientes.
                         </Typography>
                     </Box>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        {/* Filters */}
-                        <Button
-                            variant="outlined"
-                            startIcon={<FilterListIcon />}
-                            onClick={() => setShowFilters(!showFilters)}
-                            sx={{ 
-                                bgcolor: showFilters ? alpha(theme.palette.primary.main, 0.1) : 'background.paper',
-                                color: showFilters ? 'primary.main' : 'text.primary',
-                                borderColor: showFilters ? 'primary.main' : theme.palette.divider,
-                                '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.2) }
-                            }}
-                        >
-                            Filtros
-                        </Button>
-
-                        {/* Primary Action */}
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            sx={{ boxShadow: 2 }}
-                            onClick={handleCreate}
-                        >
-                            Nuevo Cliente
-                        </Button>
-                    </Box>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        sx={{ 
+                            px: 3,
+                            background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`,
+                        }}
+                        onClick={handleCreate}
+                    >
+                        Nuevo Cliente
+                    </Button>
                 </Box>
 
-                {/* Mobile Toolbar */}
-                <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ position: 'relative', width: '100%' }}>
+                {/* Toolbar Section */}
+                <Box sx={{ 
+                    display: 'flex', 
+                    gap: 2, 
+                    bgcolor: theme.palette.background.paper, 
+                    p: 2, 
+                    borderRadius: 3,
+                    boxShadow: theme.shadows[1],
+                    border: `1px solid ${theme.palette.divider}`,
+                    flexWrap: 'wrap'
+                }}>
+                    <Box sx={{ flex: 1, minWidth: '250px' }}>
                         <TextField
-                            placeholder="Buscar cliente, ID o contacto..."
-                            fullWidth
+                            placeholder="Buscar por Razón Social o ID Fiscal..."
                             size="small"
+                            fullWidth
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            sx={{ 
-                                '& .MuiOutlinedInput-root': {
-                                    borderRadius: 3,
-                                    bgcolor: 'background.paper',
-                                    pr: 5 // Space for filter button
-                                }
-                            }}
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">
                                         <SearchIcon color="action" />
                                     </InputAdornment>
                                 ),
-                                endAdornment: (
-                                    <InputAdornment position="end" sx={{ position: 'absolute', right: 8 }}>
-                                        <IconButton 
-                                            size="small" 
-                                            onClick={() => setShowFilters(!showFilters)}
-                                            sx={{ color: showFilters ? 'primary.main' : 'text.secondary' }}
-                                        >
-                                            <TuneIcon fontSize="small" />
-                                        </IconButton>
-                                    </InputAdornment>
-                                )
+                                sx: { borderRadius: 2 }
                             }}
                         />
                     </Box>
-                    
-                    <Collapse in={showFilters}>
-                        <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 0.5, '::-webkit-scrollbar': { display: 'none' } }}>
-                            <Chip 
-                                label="Todos" 
-                                size="small" 
-                                color={statusFilter === ' ' ? 'primary' : 'default'} 
-                                onClick={() => setStatusFilter(' ')}
-                                sx={{ fontWeight: 500 }}
-                            />
-                            <Chip 
-                                label="Habilitados" 
-                                size="small" 
-                                color={statusFilter === '1' ? 'primary' : 'default'}
-                                variant={statusFilter === '1' ? 'filled' : 'outlined'}
-                                onClick={() => setStatusFilter('1')}
-                                sx={{ bgcolor: statusFilter === '1' ? undefined : 'background.paper', fontWeight: 500 }}
-                            />
-                            <Chip 
-                                label="Inactivos" 
-                                size="small" 
-                                color={statusFilter === '0' ? 'primary' : 'default'}
-                                variant={statusFilter === '0' ? 'filled' : 'outlined'}
-                                onClick={() => setStatusFilter('0')}
-                                sx={{ bgcolor: statusFilter === '0' ? undefined : 'background.paper', fontWeight: 500 }}
-                            />
-                        </Box>
-                    </Collapse>
+                    <Box sx={{ minWidth: '200px' }}>
+                        <Select
+                            size="small"
+                            fullWidth
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            sx={{ borderRadius: 2 }}
+                        >
+                            <MenuItem value=" ">Todos los Estados</MenuItem>
+                            <MenuItem value="1">Activo</MenuItem>
+                            <MenuItem value="0">Inactivo</MenuItem>
+                        </Select>
+                    </Box>
                 </Box>
-
-                {/* Mobile Content (Cards) */}
-                <ClientesMobileList
-                    data={data?.data}
-                    isLoading={isLoading}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    onPageChange={setPage}
-                    onView={handleView}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
-                />
 
                 {/* Desktop Content (Table) */}
                 <ClientesTable
@@ -266,13 +219,21 @@ export function ClientesPage() {
                     isLoading={isLoading}
                     page={page}
                     rowsPerPage={rowsPerPage}
-                    showFilters={showFilters}
-                    searchTerm={searchTerm}
-                    statusFilter={statusFilter}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    onSearchChange={setSearchTerm}
-                    onStatusFilterChange={setStatusFilter}
+                    onView={handleView}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteClick}
+                />
+
+                {/* Mobile Content (Cards) */}
+                <ClientesMobileList
+                    data={data?.data}
+                    isLoading={isLoading}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
                     onView={handleView}
                     onEdit={handleEdit}
                     onDelete={handleDeleteClick}
