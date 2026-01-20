@@ -80,7 +80,7 @@ export function useMantenimientos() {
         setPage(0);
     }, []);
 
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
     };
 

@@ -69,7 +69,7 @@ export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: Colabor
         }
     });
 
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
     };
 

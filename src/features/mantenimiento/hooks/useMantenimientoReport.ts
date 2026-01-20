@@ -63,13 +63,14 @@ export const useMantenimientoReport = () => {
             const parentInfo = reportData.mantenimiento ? {
                 flota: `${reportData.mantenimiento.flota?.marca} ${reportData.mantenimiento.flota?.modelo} (${reportData.mantenimiento.flota?.placa})`,
                 servicio: reportData.mantenimiento.tipoServicio?.nombre,
-                fecha: formatDateLong(reportData.mantenimiento.fechaIngreso),
+                fechaIngreso: formatDateLong(reportData.mantenimiento.fechaIngreso),
+                fechaSalida: reportData.mantenimiento.fechaSalida ? formatDateLong(reportData.mantenimiento.fechaSalida) : '-',
                 kmIngreso: reportData.mantenimiento.kmIngreso?.toString() || '-',
                 kmSalida: reportData.mantenimiento.kmSalida?.toString() || '-',
                 motivo: reportData.mantenimiento.motivoIngreso || '-',
                 diagnostico: reportData.mantenimiento.diagnosticoMecanico || '-',
                 solucion: reportData.mantenimiento.solucion || '-'
-            } : { flota: '-', servicio: '-', fecha: '-', kmIngreso: '-', kmSalida: '-', motivo: '-', diagnostico: '-', solucion: '-' };
+            } : { flota: '-', servicio: '-', fechaIngreso: '-', fechaSalida: '-', kmIngreso: '-', kmSalida: '-', motivo: '-', diagnostico: '-', solucion: '-' };
 
             const addInfoRow = (row: number, label: string, value: string) => {
                 const labelCell = worksheet.getCell(`A${row}`);
@@ -81,18 +82,19 @@ export const useMantenimientoReport = () => {
 
             addInfoRow(3, 'Vehículo:', parentInfo.flota);
             addInfoRow(4, 'Servicio:', parentInfo.servicio ?? "");
-            addInfoRow(5, 'Fecha:', parentInfo.fecha);
-            addInfoRow(6, 'Km Ingreso:', parentInfo.kmIngreso);
-            addInfoRow(7, 'Km Salida:', parentInfo.kmSalida);
-            addInfoRow(8, 'Motivo Ingreso:', parentInfo.motivo);
-            addInfoRow(9, 'Diagnóstico:', parentInfo.diagnostico);
-            addInfoRow(10, 'Solución:', parentInfo.solucion);
+            addInfoRow(5, 'Fecha Ingreso:', parentInfo.fechaIngreso);
+            addInfoRow(6, 'Fecha Salida:', parentInfo.fechaSalida);
+            addInfoRow(7, 'Km Ingreso:', parentInfo.kmIngreso);
+            addInfoRow(8, 'Km Salida:', parentInfo.kmSalida);
+            addInfoRow(9, 'Motivo Ingreso:', parentInfo.motivo);
+            addInfoRow(10, 'Diagnóstico:', parentInfo.diagnostico);
+            addInfoRow(11, 'Solución:', parentInfo.solucion);
 
             // --- Table Header ---
-            const headerRowIndex = 12;
+            const headerRowIndex = 13;
             const headers = [
                 'ID', 'Producto/Servicio', 'Descripción', 'Cantidad', 'Moneda', 
-                'Costo Unit.', 'SubTotal', 'IGV', 'Total', 'Fecha Registro'
+                'Costo Unit.', 'SubTotal', 'IGV', 'Total'
             ];
             const headerRow = worksheet.getRow(headerRowIndex);
             headerRow.values = headers;
@@ -115,8 +117,7 @@ export const useMantenimientoReport = () => {
                     item.costo,
                     item.subTotal,
                     item.montoIGV,
-                    item.total,
-                    new Date(item.fechaRegistro).toLocaleDateString()
+                    item.total
                 ];
                 
                 row.eachCell((cell) => {
@@ -184,13 +185,14 @@ export const useMantenimientoReport = () => {
             const parentInfo = reportData.mantenimiento ? {
                 flota: `${reportData.mantenimiento.flota?.marca} ${reportData.mantenimiento.flota?.modelo} (${reportData.mantenimiento.flota?.placa})`,
                 servicio: reportData.mantenimiento.tipoServicio?.nombre,
-                fecha: formatDateLong(reportData.mantenimiento.fechaIngreso),
+                fechaIngreso: formatDateLong(reportData.mantenimiento.fechaIngreso),
+                fechaSalida: reportData.mantenimiento.fechaSalida ? formatDateLong(reportData.mantenimiento.fechaSalida) : '-',
                 kmIngreso: reportData.mantenimiento.kmIngreso?.toString() || '-',
                 kmSalida: reportData.mantenimiento.kmSalida?.toString() || '-',
                 motivo: reportData.mantenimiento.motivoIngreso || '-',
                 diagnostico: reportData.mantenimiento.diagnosticoMecanico || '-',
                 solucion: reportData.mantenimiento.solucion || '-'
-            } : { flota: '-', servicio: '-', fecha: '-', kmIngreso: '-', kmSalida: '-', motivo: '-', diagnostico: '-', solucion: '-' };
+            } : { flota: '-', servicio: '-', fechaIngreso: '-', fechaSalida: '-', kmIngreso: '-', kmSalida: '-', motivo: '-', diagnostico: '-', solucion: '-' };
 
             const leftColX = 14;
             const rightColX = 110;
@@ -214,7 +216,8 @@ export const useMantenimientoReport = () => {
             };
 
             addRow('Vehículo:', parentInfo.flota);
-            addRow('Servicio:', parentInfo.servicio ?? "", 'Fecha:', parentInfo.fecha);
+            addRow('Servicio:', parentInfo.servicio ?? "");
+            addRow('Fecha Ingreso:', parentInfo.fechaIngreso, 'Fecha Salida:', parentInfo.fechaSalida);
             addRow('Km Ingreso:', parentInfo.kmIngreso, 'Km Salida:', parentInfo.kmSalida);
             
             const addLongRow = (label: string, value: string) => {

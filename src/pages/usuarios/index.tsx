@@ -156,13 +156,13 @@ export function UsuariosPage() {
         setViewOnlyMode(false);
     };
 
-    const handleSuccess = (id: number) => {
+    const handleSuccess = (_: number) => {
         setSnackbarMessage(usuarioToEdit ? 'Usuario actualizado exitosamente.' : 'Usuario creado exitosamente.');
         setSnackbarOpen(true);
         refetch();
     };
 
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
     };
 

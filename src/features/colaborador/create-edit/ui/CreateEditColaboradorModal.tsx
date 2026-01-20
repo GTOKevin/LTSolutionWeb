@@ -20,22 +20,13 @@ import {
     CircularProgress,
     Divider
 } from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { colaboradorApi } from '@entities/colaborador/api/colaborador.api';
-import { maestroApi } from '@shared/api/maestro.api';
-import { rolColaboradorApi } from '@entities/rol-colaborador/api/rol-colaborador.api';
-import { monedaApi } from '@entities/moneda/api/moneda.api';
-import { createColaboradorSchema } from '../../model/schema';
-import type { CreateColaboradorSchema } from '../../model/schema';
-import { useEffect, useState } from 'react';
+import { Controller } from 'react-hook-form';
 import type { Colaborador } from '@entities/colaborador/model/types';
-import { handleBackendErrors } from '@shared/utils/form-validation';
-import { TIPO_MAESTRO } from '@/shared/constants/constantes';
 import { LicenciaList } from '../../licencias/ui/LicenciaList';
 import { ColaboradorDocumentoList } from '../../documentos/ui/ColaboradorDocumentoList';
 import { ColaboradorPagoList } from '../../pagos/ui/ColaboradorPagoList';
+import { TabPanel } from '@/shared/components/ui/TabPanel';
+import { useColaboradorForm } from '../../hooks/useColaboradorForm';
 
 interface CreateEditColaboradorModalProps {
     open: boolean;
@@ -45,151 +36,39 @@ interface CreateEditColaboradorModalProps {
     viewOnly?: boolean;
 }
 
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-}
-
-function CustomTabPanel(props: TabPanelProps) {
-    const { children, value, index, ...other } = props;
-
-    return (
-        <div
-            role="tabpanel"
-            hidden={value !== index}
-            id={`colab-tabpanel-${index}`}
-            aria-labelledby={`colab-tab-${index}`}
-            {...other}
-            style={{ height: '100%' }}
-        >
-            {value === index && (
-                <Box sx={{ py: 3 }}>
-                    {children}
-                </Box>
-            )}
-        </div>
-    );
-}
-
 export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, onSuccess, viewOnly = false }: CreateEditColaboradorModalProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
-    const [activeTab, setActiveTab] = useState(0);
-    const [createdId, setCreatedId] = useState<number | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
-
-    const isEdit = !!colaboradorToEdit;
-    const effectiveId = colaboradorToEdit?.colaboradorID || createdId;
-    const canEditDetails = !!effectiveId;
-
-    // Queries for Selects
-    const { data: roles } = useQuery({
-        queryKey: ['roles-colaborador'],
-        queryFn: () => rolColaboradorApi.getSelect(undefined, 100),
-        enabled: open
-    });
-
-    const { data: generos } = useQuery({
-        queryKey: ['tipos-genero'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_SEXO),
-        enabled: open
-    });
-
-    const { data: monedas } = useQuery({
-        queryKey: ['monedas'],
-        queryFn: () => monedaApi.getSelect(undefined, 100),
-        enabled: open
-    });
 
     const {
-        register,
-        handleSubmit,
-        reset,
-        control,
-        setError,
-        formState: { errors, isSubmitting, isDirty }
-    } = useForm({
-        resolver: zodResolver(createColaboradorSchema),
-        defaultValues: {
-            activo: true
-        }
+        form: {
+            register,
+            handleSubmit,
+            control,
+            formState: { errors, isSubmitting, isDirty }
+        },
+        mutation,
+        onSubmit,
+        activeTab,
+        setActiveTab,
+        errorMessage,
+        setErrorMessage,
+        openSnackbar,
+        setOpenSnackbar,
+        effectiveId,
+        canEditDetails,
+        isEdit,
+        createdId,
+        roles,
+        generos,
+        monedas
+    } = useColaboradorForm({
+        colaboradorToEdit,
+        onSuccess,
+        onClose,
+        open
     });
 
-    useEffect(() => {
-        if (open) {
-            setActiveTab(0);
-            setCreatedId(null);
-            setErrorMessage(null);
-            if (colaboradorToEdit) {
-                reset({
-                    rolColaboradorID: colaboradorToEdit.rolColaboradorID,
-                    tipoGeneroID: colaboradorToEdit.tipoGeneroID,
-                    nombres: colaboradorToEdit.nombres,
-                    primerApellido: colaboradorToEdit.primerApellido,
-                    segundoApellido: colaboradorToEdit.segundoApellido || '',
-                    direccion: colaboradorToEdit.direccion || '',
-                    telefono: colaboradorToEdit.telefono || '',
-                    email: colaboradorToEdit.email || '',
-                    fechaNacimiento: colaboradorToEdit.fechaNacimiento || '',
-                    fechaIngreso: colaboradorToEdit.fechaIngreso || '',
-                    monedaID: colaboradorToEdit.monedaID,
-                    salario: colaboradorToEdit.salario,
-                    activo: colaboradorToEdit.activo
-                });
-            } else {
-                reset({
-                    rolColaboradorID: 0,
-                    tipoGeneroID: 0,
-                    nombres: '',
-                    primerApellido: '',
-                    segundoApellido: '',
-                    direccion: '',
-                    telefono: '',
-                    email: '',
-                    fechaNacimiento: '',
-                    fechaIngreso: new Date().toISOString().split('T')[0],
-                    monedaID: 0,
-                    salario: 0,
-                    activo: true
-                });
-            }
-        }
-    }, [open, colaboradorToEdit, reset]);
-
-    const mutation = useMutation({
-        mutationFn: async (data: CreateColaboradorSchema) => {
-            if (isEdit && colaboradorToEdit) {
-                await colaboradorApi.update(colaboradorToEdit.colaboradorID, data);
-                return colaboradorToEdit.colaboradorID;
-            }
-            if (createdId) {
-                await colaboradorApi.update(createdId, data);
-                return createdId;
-            }
-            const response = await colaboradorApi.create(data);
-            return response.data;   
-        },
-        onSuccess: (id:number) => {
-            queryClient.invalidateQueries({ queryKey: ['colaboradores'] });
-            onSuccess(id);
-            onClose();
-        },
-        onError: (error: any) => {
-            const genericError = handleBackendErrors<CreateColaboradorSchema>(error, setError);
-            if (genericError) {
-                setErrorMessage(genericError);
-                setOpenSnackbar(true);
-            }
-        }
-    });
-
-    const onSubmit = (data: CreateColaboradorSchema) => {
-        mutation.mutate(data);
-    };
-
-    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
         setActiveTab(newValue);
     };
 
@@ -242,11 +121,11 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
                      </Box>
                 )}
                 
-                <CustomTabPanel value={activeTab} index={0}>
+                <TabPanel value={activeTab} index={0} name="colaborador">
                     <form id="colab-form" onSubmit={handleSubmit(onSubmit)}>
                         <Box sx={{ px: 3 }}>
                             <Grid container spacing={3}>
-                                <Grid size={12}>
+                                <Grid size={{ xs: 12 }}>
                                     <Typography variant="subtitle2" fontWeight="bold" color="primary" sx={{ mb: 1 }}>
                                         Información Básica
                                     </Typography>
@@ -319,7 +198,7 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
                                     />
                                 </Grid>
 
-                                <Grid size={12}>
+                                <Grid size={{ xs: 12 }}>
                                     <Divider sx={{ my: 1 }} />
                                     <Typography variant="subtitle2" fontWeight="bold" color="primary" sx={{ mb: 1, mt: 1 }}>
                                         Contacto y Dirección
@@ -357,7 +236,7 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
                                     />
                                 </Grid>
 
-                                <Grid size={12}>
+                                <Grid size={{ xs: 12 }}>
                                     <Divider sx={{ my: 1 }} />
                                     <Typography variant="subtitle2" fontWeight="bold" color="primary" sx={{ mb: 1, mt: 1 }}>
                                         Datos Laborales
@@ -459,9 +338,9 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
                             </Grid>
                         </Box>
                     </form>
-                </CustomTabPanel>
+                </TabPanel>
 
-                <CustomTabPanel value={activeTab} index={1}>
+                <TabPanel value={activeTab} index={1} name="colaborador">
                     <Box sx={{ px: 3 }}>
                         {effectiveId ? (
                             <LicenciaList colaboradorId={effectiveId} viewOnly={viewOnly} />
@@ -471,9 +350,9 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
                             </Box>
                         )}
                     </Box>
-                </CustomTabPanel>
+                </TabPanel>
                 
-                <CustomTabPanel value={activeTab} index={2}>
+                <TabPanel value={activeTab} index={2} name="colaborador">
                     <Box sx={{ px: 3 }}>
                         {effectiveId ? (
                             <ColaboradorDocumentoList colaboradorId={effectiveId} viewOnly={viewOnly} />
@@ -483,9 +362,9 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
                             </Box>
                         )}
                     </Box>
-                </CustomTabPanel>
+                </TabPanel>
 
-                <CustomTabPanel value={activeTab} index={3}>
+                <TabPanel value={activeTab} index={3} name="colaborador">
                     <Box sx={{ px: 3 }}>
                         {effectiveId ? (
                             <ColaboradorPagoList colaboradorId={effectiveId} viewOnly={viewOnly} />
@@ -495,7 +374,7 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
                             </Box>
                         )}
                     </Box>
-                </CustomTabPanel>
+                </TabPanel>
             </DialogContent>
             
             <DialogActions sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>

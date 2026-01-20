@@ -111,7 +111,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
 
     const totalItems = data?.data?.total || 0;
 
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
     };
 
@@ -168,7 +168,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
             queryClient.invalidateQueries({ queryKey: ['flota-documentos', flotaId] });
             handleFormCancel();
         },
-        onError: (error: any) => {
+        onError: () => {
             setErrorMessage('Error al crear documento. Verifique los datos.');
             setOpenSnackbar(true);
         }
@@ -181,7 +181,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
             queryClient.invalidateQueries({ queryKey: ['flota-documentos', flotaId] });
             handleFormCancel();
         },
-        onError: (error: any) => {
+        onError: () => {
             setErrorMessage('Error al actualizar documento. Verifique los datos.');
             setOpenSnackbar(true);
         }
@@ -192,7 +192,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['flota-documentos', flotaId] });
         },
-        onError: (error: any) => {
+        onError: () => {
             setErrorMessage('Error al eliminar el documento');
             setOpenSnackbar(true);
         }

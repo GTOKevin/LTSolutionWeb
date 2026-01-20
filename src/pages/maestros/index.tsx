@@ -74,13 +74,13 @@ export function MaestrosPage() {
         setModalOpen(true);
     };
 
-    const handleSuccess = (id: number) => {
+    const handleSuccess = (_: number) => {
         setSnackbarMessage(maestroToEdit ? 'Maestro actualizado exitosamente.' : 'Maestro creado exitosamente.');
         setSnackbarOpen(true);
         refetch();
     };
 
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
     };
 

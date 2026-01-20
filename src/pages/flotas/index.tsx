@@ -80,7 +80,7 @@ export function FlotasPage() {
     });
 
     // Handlers
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
     };
 
@@ -118,7 +118,7 @@ export function FlotasPage() {
         }
     };
 
-    const handleSuccess = (id: number) => {
+    const handleSuccess = (_: number) => {
         setSnackbarMessage(selectedFlota ? 'Vehículo actualizado exitosamente' : 'Vehículo creado exitosamente');
         setSnackbarOpen(true);
         queryClient.invalidateQueries({ queryKey: ['flotas'] });

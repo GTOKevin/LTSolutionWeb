@@ -9,7 +9,6 @@ import {
     TableHead,
     TableRow,
     Paper,
-    IconButton,
     TablePagination,
     Snackbar,
     Alert,
@@ -25,8 +24,8 @@ import {
 } from '@mui/material';
 import {
     Add as AddIcon,
-    Edit as EditIcon,
-    Delete as DeleteIcon,
+    Delete,
+    EditNotifications,
     MonetizationOn as MonetizationOnIcon
 } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -36,6 +35,7 @@ import type { CreateMantenimientoDetalleSchema } from '../../model/schema';
 import { useState } from 'react';
 import { MantenimientoDetalleForm } from './MantenimientoDetalleForm';
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
+import { TableActions } from '@shared/components/ui/TableActions';
 
 
 interface MantenimientoDetalleListProps {
@@ -157,7 +157,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
     };
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%',minHeight: 650 }}>
             {/* Header & Actions */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                 <Typography variant="subtitle1" fontWeight="bold">
@@ -192,7 +192,15 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                 <>
                     {/* Desktop Table View */}
                     {!isMobile && (
-                        <Paper variant="outlined" sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <Paper sx={{ 
+                            flex: 1, 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            overflow: 'hidden',
+                            border: `1px solid ${theme.palette.divider}`,
+                            borderRadius: 3,
+                            boxShadow: theme.shadows[1]
+                        }}>
                             <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
                                 <Table stickyHeader size="small">
                                     <TableHead>
@@ -220,7 +228,14 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                                             </TableRow>
                                         ) : (
                                             data?.items.map((item) => (
-                                                <TableRow key={item.mantenimientoDetalleID} hover>
+                                                <TableRow 
+                                                    key={item.mantenimientoDetalleID} 
+                                                    hover
+                                                    sx={{ 
+                                                        '&:hover .actions-group': { opacity: 1 },
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
                                                     <TableCell>
                                                         {(item as any).tipoProducto?.nombre || `ID: ${item.tipoProductoID}`}
                                                     </TableCell>
@@ -246,22 +261,10 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                                                     </TableCell>
                                                     {showActions && (
                                                         <TableCell align="right">
-                                                            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                                                <IconButton 
-                                                                    size="small" 
-                                                                    color="primary"
-                                                                    onClick={() => handleEdit(item)}
-                                                                >
-                                                                    <EditIcon fontSize="small" />
-                                                                </IconButton>
-                                                                <IconButton 
-                                                                    size="small" 
-                                                                    color="error"
-                                                                    onClick={() => deleteMutation.mutate(item.mantenimientoDetalleID)}
-                                                                >
-                                                                    <DeleteIcon fontSize="small" />
-                                                                </IconButton>
-                                                            </Box>
+                                                            <TableActions 
+                                                                onEdit={() => handleEdit(item)}
+                                                                onDelete={() => deleteMutation.mutate(item.mantenimientoDetalleID)}
+                                                            />
                                                         </TableCell>
                                                     )}
                                                 </TableRow>
@@ -295,7 +298,15 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                              ) : (
                                 <Stack spacing={2}>
                                     {data?.items.map((item) => (
-                                        <Card key={item.mantenimientoDetalleID} variant="outlined">
+                                        <Card 
+                                            key={item.mantenimientoDetalleID} 
+                                            elevation={0}
+                                            sx={{ 
+                                                border: `1px solid ${theme.palette.divider}`,
+                                                borderRadius: 3,
+                                                position: 'relative'
+                                            }}
+                                        >
                                             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                                                     <Typography variant="subtitle2" fontWeight="bold">
@@ -331,10 +342,10 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                                                 </Grid>
                                                 {!viewOnly && (
                                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
-                                                        <Button size="small" variant="outlined" onClick={() => handleEdit(item)} startIcon={<EditIcon />}>
+                                                        <Button size="small" variant="outlined" onClick={() => handleEdit(item)} startIcon={<EditNotifications />}>
                                                             Editar
                                                         </Button>
-                                                        <Button size="small" variant="outlined" color="error" onClick={() => deleteMutation.mutate(item.mantenimientoDetalleID)} startIcon={<DeleteIcon />}>
+                                                        <Button size="small" variant="outlined" color="error" onClick={() => deleteMutation.mutate(item.mantenimientoDetalleID)} startIcon={<Delete />}>
                                                             Eliminar
                                                         </Button>
                                                     </Box>
@@ -361,13 +372,13 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
 
                     {/* Totals Section */}
                     {Object.keys(totalsByCurrency).length > 0 && (
-                        <Box sx={{ mt: 2 }}>
+                        <Box sx={{ mt: 2, mb:3  }}>
                             <Card variant="elevation" elevation={0} sx={{ 
                                 bgcolor: alpha(theme.palette.primary.main, 0.04),
                                 border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                                 borderRadius: 3
                             }}>
-                                <CardContent sx={{ p: 2 }}>
+                                <CardContent sx={{ p: 2}}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                         <MonetizationOnIcon color="primary" />
                                         <Typography variant="subtitle1" fontWeight="bold" color="text.primary">

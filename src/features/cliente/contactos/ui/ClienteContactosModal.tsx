@@ -104,7 +104,7 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cliente-contactos', clienteId] });
         },
-        onError: (error: any) => {
+        onError: () => {
             setErrorMessage('Error al eliminar el contacto');
             setOpenSnackbar(true);
         }

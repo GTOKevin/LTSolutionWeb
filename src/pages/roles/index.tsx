@@ -60,13 +60,13 @@ export function RolesPage() {
         setModalOpen(true);
     };
 
-    const handleSuccess = (id: number) => {
+    const handleSuccess = (_: number) => {
         setSnackbarMessage(rolToEdit ? 'Rol actualizado exitosamente.' : 'Rol creado exitosamente.');
         setSnackbarOpen(true);
         refetch();
     };
 
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
     };
 

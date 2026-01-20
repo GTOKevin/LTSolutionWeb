@@ -115,11 +115,11 @@ export function ClientesPage() {
         setViewOnlyMode(false);
     };
 
-    const handleSuccess = (id: number) => {
+    const handleSuccess = (_: number) => {
         refetch();
     };
 
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
     };
 

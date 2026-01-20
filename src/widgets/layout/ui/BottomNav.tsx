@@ -47,7 +47,7 @@ export function BottomNav() {
             <BottomNavigation
                 showLabels
                 value={getValue()}
-                onChange={(event, newValue) => {
+                onChange={(_, newValue) => {
                     switch (newValue) {
                         case 0: navigate('/app'); break;
                         case 1: navigate('/app/clientes'); break;

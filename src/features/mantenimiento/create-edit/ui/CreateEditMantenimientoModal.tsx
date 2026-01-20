@@ -16,26 +16,15 @@ import {
     CircularProgress,
     MenuItem
 } from '@mui/material';
-import { useForm } from 'react-hook-form';
-import type {SubmitHandler} from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
-import { createMantenimientoSchema } from '../../model/schema';
-import type { CreateMantenimientoSchema } from '../../model/schema';
-import { useEffect, useState } from 'react';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
-import { handleBackendErrors } from '@shared/utils/form-validation';
 import { MantenimientoDetalleList } from '../../detalles/ui/MantenimientoDetalleList';
-import { flotaApi } from '@entities/flota/api/flota.api';
-import { estadoApi } from '@shared/api/estado.api';
-import { maestroApi } from '@shared/api/maestro.api';
-import { TIPO_ESTADO, TIPO_MAESTRO } from '@/shared/constants/constantes';
 import { 
     DirectionsCar as CarIcon, 
     Login as LoginIcon,
     VisibilityOff as HiddenIcon
 } from '@mui/icons-material';
+import { TabPanel } from '@/shared/components/ui/TabPanel';
+import { useMantenimientoForm } from '../../hooks/useMantenimientoForm';
 
 interface CreateEditMantenimientoModalProps {
     open: boolean;
@@ -43,33 +32,6 @@ interface CreateEditMantenimientoModalProps {
     mantenimientoToEdit?: Mantenimiento | null;
     onSuccess: (id: number) => void;
     viewOnly?: boolean;
-}
-
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-}
-
-function CustomTabPanel(props: TabPanelProps) {
-    const { children, value, index, ...other } = props;
-
-    return (
-        <div
-            role="tabpanel"
-            hidden={value !== index}
-            id={`mantenimiento-tabpanel-${index}`}
-            aria-labelledby={`mantenimiento-tab-${index}`}
-            {...other}
-            style={{ height: '100%' }}
-        >
-            {value === index && (
-                <Box sx={{ py: 3 }}>
-                    {children}
-                </Box>
-            )}
-        </div>
-    );
 }
 
 export function CreateEditMantenimientoModal({ 
@@ -80,134 +42,37 @@ export function CreateEditMantenimientoModal({
     viewOnly = false 
 }: CreateEditMantenimientoModalProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
-    const [activeTab, setActiveTab] = useState(0);
-    const [createdId, setCreatedId] = useState<number | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [confirmationOpen, setConfirmationOpen] = useState(false);
-    const [pendingData, setPendingData] = useState<CreateMantenimientoSchema | null>(null);
-
-    const isEdit = !!mantenimientoToEdit;
-    const effectiveId = mantenimientoToEdit?.mantenimientoID || createdId;
-    const canEditDetails = !!effectiveId;
-
-    // Queries for Selects
-    const { data: flotas } = useQuery({
-        queryKey: ['flotas-select'],
-        queryFn: () => flotaApi.getSelect(),
-        enabled: open
-    });
-
-    const { data: tiposServicio } = useQuery({
-        queryKey: ['tipos-servicio'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_SERVICIO),
-        enabled: open
-    });
-
-    const { data: estados } = useQuery({
-        queryKey: ['estados-select'],
-        queryFn: () => estadoApi.getSelect(undefined, undefined, TIPO_ESTADO.MANTENIMIENTO),
-        enabled: open
-    });
-
-    const listaFlotas = flotas?.data || [];
-    const listaTiposServicio = tiposServicio?.data || [];
-    const listaEstados = estados?.data || [];
 
     const {
-        register,
-        handleSubmit,
-        reset,
-        setError,
-        formState: { errors, isDirty }
-    } = useForm({
-        resolver: zodResolver(createMantenimientoSchema)
+        form: {
+            register,
+            handleSubmit,
+            formState: { errors, isDirty }
+        },
+        mutation,
+        onSubmit,
+        handleConfirmSave,
+        activeTab,
+        setActiveTab,
+        errorMessage,
+        setErrorMessage,
+        confirmationOpen,
+        setConfirmationOpen,
+        effectiveId,
+        canEditDetails,
+        isEdit,
+        createdId,
+        listaFlotas,
+        listaTiposServicio,
+        listaEstados
+    } = useMantenimientoForm({
+        mantenimientoToEdit,
+        onSuccess,
+        onClose,
+        open
     });
 
-    useEffect(() => {
-        if (open) {
-            setActiveTab(0);
-            setCreatedId(null);
-            setErrorMessage(null);
-            if (mantenimientoToEdit) {
-                reset({
-                    flotaID: mantenimientoToEdit.flotaID,
-                    tipoServicioID: mantenimientoToEdit.tipoServicioID,
-                    fechaIngreso: mantenimientoToEdit.fechaIngreso, // YYYY-MM-DD
-                    fechaSalida: mantenimientoToEdit.fechaSalida,
-                    motivoIngreso: mantenimientoToEdit.motivoIngreso,
-                    diagnosticoMecanico: mantenimientoToEdit.diagnosticoMecanico,
-                    solucion: mantenimientoToEdit.solucion,
-                    kmIngreso: mantenimientoToEdit.kmIngreso,
-                    kmSalida: mantenimientoToEdit.kmSalida,
-                    estadoID: mantenimientoToEdit.estadoID
-                });
-            } else {
-                reset({
-                    flotaID: 0,
-                    tipoServicioID: 0,
-                    fechaIngreso: new Date().toISOString().split('T')[0],
-                    fechaSalida: undefined,
-                    motivoIngreso: '',
-                    diagnosticoMecanico: '',
-                    solucion: '',
-                    kmIngreso: 0,
-                    kmSalida: 0,
-                    estadoID: 0 // Should select 'Pendiente' by default if possible
-                });
-            }
-        }
-    }, [open, mantenimientoToEdit, reset]);
-
-    const mutation = useMutation({
-        mutationFn: (data: CreateMantenimientoSchema) => {
-            if (isEdit && mantenimientoToEdit) {
-                return mantenimientoApi.update(mantenimientoToEdit.mantenimientoID, data).then(() => mantenimientoToEdit.mantenimientoID);
-            }
-            if (createdId) {
-                return mantenimientoApi.update(createdId, data).then(() => createdId);
-            }
-            return mantenimientoApi.create(data);
-        },
-        onSuccess: (id: number) => {
-            queryClient.invalidateQueries({ queryKey: ['mantenimientos'] });
-            onSuccess(id);
-
-            if (!isEdit && !createdId) {
-                setCreatedId(id);
-                // Optionally move to details tab automatically
-                // setActiveTab(1); 
-                onClose(); // Or close, as per requirement "Registrar Ingreso"
-            } else {
-                onClose();
-            }
-        },
-        onError: (error: any) => {
-            const genericError = handleBackendErrors<CreateMantenimientoSchema>(error, setError);
-            if (genericError) {
-                setErrorMessage(genericError);
-            }
-        }
-    });
-
-    const onSubmit: SubmitHandler<CreateMantenimientoSchema> = (data) => {
-        if (data.estadoID === 102) { // Completed/Finalized
-            setPendingData(data);
-            setConfirmationOpen(true);
-        } else {
-            mutation.mutate(data);
-        }
-    };
-
-    const handleConfirmSave = () => {
-        if (pendingData) {
-            mutation.mutate(pendingData);
-            setConfirmationOpen(false);
-            setPendingData(null);
-        }
-    };
-
-    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
         setActiveTab(newValue);
     };
 
@@ -215,7 +80,7 @@ export function CreateEditMantenimientoModal({
         <>
             <Dialog
                 open={open}
-                onClose={(event, reason) => {
+                onClose={(_, reason) => {
                     if (reason && reason === 'backdropClick') return;
                     onClose();
                 }}
@@ -259,7 +124,7 @@ export function CreateEditMantenimientoModal({
                     </Box>
                 )}
 
-                <CustomTabPanel value={activeTab} index={0}>
+                <TabPanel value={activeTab} index={0} name="mantenimiento">
                     <form id="mantenimiento-form" onSubmit={handleSubmit(onSubmit)}>
                         <Box sx={{ px: 3 }}>
                             <Box sx={{ mb: 3 }}>
@@ -268,10 +133,10 @@ export function CreateEditMantenimientoModal({
                                     Identificación de Unidad
                                 </Typography>
                                 <Grid container spacing={3}>
-                                    <Grid size={{xs:12, md:6}}>
+                                    <Grid size={{ xs: 12, md: 6 }}>
                                         <TextField
                                             select
-                                            label="Vehículo / Flota"
+                                            label="Unidad"
                                             fullWidth
                                             {...register('flotaID')}
                                             defaultValue={isEdit && mantenimientoToEdit ? mantenimientoToEdit.flotaID : 0}
@@ -287,7 +152,7 @@ export function CreateEditMantenimientoModal({
                                             ))}
                                         </TextField>
                                     </Grid>
-                                    <Grid size={{xs:12, md:6}}>
+                                    <Grid size={{ xs: 12, md: 6 }}>
                                         <TextField
                                             select
                                             label="Tipo de Servicio"
@@ -315,7 +180,7 @@ export function CreateEditMantenimientoModal({
                                     Detalles de Ingreso
                                 </Typography>
                                 <Grid container spacing={3}>
-                                    <Grid size={{xs:12, md:6}}>
+                                    <Grid size={{ xs: 12, md: 6 }}>
                                         <TextField
                                             label="Fecha de Ingreso"
                                             type="date"
@@ -327,9 +192,9 @@ export function CreateEditMantenimientoModal({
                                             InputLabelProps={{ shrink: true }}
                                         />
                                     </Grid>
-                                    <Grid size={{xs:12, md:6}}>
+                                    <Grid size={{ xs: 12, md: 6 }}>
                                         <TextField
-                                            label="Kilometraje Actual"
+                                            label="Kilometraje Ingreso"
                                             type="number"
                                             fullWidth
                                             {...register('kmIngreso')}
@@ -341,7 +206,7 @@ export function CreateEditMantenimientoModal({
                                             }}
                                         />
                                     </Grid>
-                                    <Grid size={{xs:12}}>
+                                    <Grid size={{ xs: 12 }}>
                                         <TextField
                                             label="Motivo de Ingreso / Observaciones"
                                             multiline
@@ -353,7 +218,7 @@ export function CreateEditMantenimientoModal({
                                             disabled={viewOnly}
                                         />
                                     </Grid>
-                                    <Grid size={{xs:12, md:6}}>
+                                    <Grid size={{ xs: 12, md: 6 }}>
                                         <TextField
                                             select
                                             label="Estado"
@@ -386,7 +251,7 @@ export function CreateEditMantenimientoModal({
                                         Cierre y Diagnóstico (Opcional)
                                     </Typography>
                                     <Grid container spacing={3}>
-                                        <Grid size={{xs:12, md:6}}>
+                                        <Grid size={{ xs: 12, md: 6 }}>
                                             <TextField
                                                 label="Fecha de Salida"
                                                 type="date"
@@ -398,7 +263,7 @@ export function CreateEditMantenimientoModal({
                                                 InputLabelProps={{ shrink: true }}
                                             />
                                         </Grid>
-                                        <Grid size={{xs:12, md:6}}>
+                                        <Grid size={{ xs: 12, md: 6 }}>
                                             <TextField
                                                 label="Kilometraje Salida"
                                                 type="number"
@@ -409,7 +274,7 @@ export function CreateEditMantenimientoModal({
                                                 disabled={viewOnly}
                                             />
                                         </Grid>
-                                        <Grid size={{xs:12}}>
+                                        <Grid size={{ xs: 12 }}>
                                             <TextField
                                                 label="Diagnóstico Mecánico"
                                                 multiline
@@ -421,9 +286,9 @@ export function CreateEditMantenimientoModal({
                                                 disabled={viewOnly}
                                             />
                                         </Grid>
-                                        <Grid size={{xs:12}}>
+                                        <Grid size={{ xs: 12 }}>
                                             <TextField
-                                                label="Solución Aplicada"
+                                                label="Solución"
                                                 multiline
                                                 rows={2}
                                                 fullWidth
@@ -438,9 +303,9 @@ export function CreateEditMantenimientoModal({
                             )}
                         </Box>
                     </form>
-                </CustomTabPanel>
+                </TabPanel>
 
-                <CustomTabPanel value={activeTab} index={1}>
+                <TabPanel value={activeTab} index={1} name="mantenimiento">
                     {effectiveId && (
                         <Box sx={{ px: 3, height: 500 }}>
                             <MantenimientoDetalleList 
@@ -450,7 +315,7 @@ export function CreateEditMantenimientoModal({
                             />
                         </Box>
                     )}
-                </CustomTabPanel>
+                </TabPanel>
             </DialogContent>
 
             <DialogActions sx={{

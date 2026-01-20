@@ -16,18 +16,12 @@ import {
     CircularProgress,
     MenuItem
 } from '@mui/material';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { maestroApi } from '@shared/api/maestro.api';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { flotaApi } from '@entities/flota/api/flota.api';
-import { createFlotaSchema } from '../../model/schema';
-import type { CreateFlotaSchema } from '../../model/schema';
-import { useEffect, useState } from 'react';
 import type { Flota } from '@entities/flota/model/types';
 import { FlotaDocumentosList } from '../../documentos/ui/FlotaDocumentosList';
-import { handleBackendErrors } from '@shared/utils/form-validation';
-import {TIPO_MAESTRO,TIPOS_COMBUSTIBLE} from '@/shared/constants/constantes';
+import { TIPOS_COMBUSTIBLE } from '@/shared/constants/constantes';
+import { TabPanel } from '@/shared/components/ui/TabPanel';
+import { useFlotaForm } from '../../hooks/useFlotaForm';
+
 interface CreateEditFlotaModalProps {
     open: boolean;
     onClose: () => void;
@@ -36,167 +30,36 @@ interface CreateEditFlotaModalProps {
     viewOnly?: boolean;
 }
 
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-}
-
-function CustomTabPanel(props: TabPanelProps) {
-    const { children, value, index, ...other } = props;
-
-    return (
-        <div
-            role="tabpanel"
-            hidden={value !== index}
-            id={`flota-tabpanel-${index}`}
-            aria-labelledby={`flota-tab-${index}`}
-            {...other}
-            style={{ height: '100%' }}
-        >
-            {value === index && (
-                <Box sx={{ py: 3 }}>
-                    {children}
-                </Box>
-            )}
-        </div>
-    );
-}
-
 export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, viewOnly = false }: CreateEditFlotaModalProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
-    const [activeTab, setActiveTab] = useState(0);
-    const [createdFlotaId, setCreatedFlotaId] = useState<number | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    
-    const isEdit = !!flotaToEdit;
-    const effectiveFlotaId = flotaToEdit?.flotaID || createdFlotaId;
-    const canEditDocs = !!effectiveFlotaId;
-
-    const { data: tiposFlota } = useQuery({
-        queryKey: ['tipos-flota'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_FLOTA),
-        enabled: open
-    });
-
-    const { data: tiposPeso } = useQuery({
-        queryKey: ['tipos-peso'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_PESO),
-        enabled: open
-    });
-
-    const { data: tiposMedida } = useQuery({
-        queryKey: ['tipos-medida'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_MEDIDA),
-        enabled: open
-    });
-
-    // Derived state - Clean Code pattern
-    const listaFlota = tiposFlota?.data || [];
-    const listaPeso = tiposPeso?.data || [];
-    const listaMedida = tiposMedida?.data || [];
-
 
     const {
-        register,
-        handleSubmit,
-        reset,
-        setError,
-        formState: { errors, isDirty }
-    } = useForm({
-        resolver: zodResolver(createFlotaSchema),
-        defaultValues: {
-            activo: true
-        }
+        form: {
+            register,
+            handleSubmit,
+            formState: { errors, isDirty }
+        },
+        mutation,
+        onSubmit,
+        activeTab,
+        setActiveTab,
+        errorMessage,
+        setErrorMessage,
+        effectiveFlotaId,
+        canEditDocs,
+        isEdit,
+        createdFlotaId,
+        listaFlota,
+        listaPeso,
+        listaMedida
+    } = useFlotaForm({
+        flotaToEdit,
+        onSuccess,
+        onClose,
+        open
     });
 
-    useEffect(() => {
-        if (open) {
-            setActiveTab(0);
-            setCreatedFlotaId(null);
-            setErrorMessage(null);
-            if (flotaToEdit) {
-                reset({
-                    tipoFlota: flotaToEdit.tipoFlota,
-                    marca: flotaToEdit.marca || '',
-                    modelo: flotaToEdit.modelo || '',
-                    placa: flotaToEdit.placa,
-                    anio: flotaToEdit.anio,
-                    color: flotaToEdit.color || '',
-                    ejes: flotaToEdit.ejes,
-                    tipoPesoID: flotaToEdit.tipoPesoID,
-                    pesoBruto: flotaToEdit.pesoBruto,
-                    pesoNeto: flotaToEdit.pesoNeto,
-                    cargaUtil: flotaToEdit.cargaUtil,
-                    tipoMedidaID: flotaToEdit.tipoMedidaID,
-                    largo: flotaToEdit.largo,
-                    alto: flotaToEdit.alto,
-                    ancho: flotaToEdit.ancho,
-                    tipoCombustible: flotaToEdit.tipoCombustible,
-                    activo: flotaToEdit.estado
-                });
-            } else {
-                reset({
-                    tipoFlota: 0,
-                    marca: '',
-                    modelo: '',
-                    placa: '',
-                    anio: new Date().getFullYear(),
-                    color: '',
-                    ejes: 0,
-                    tipoPesoID: 0,
-                    pesoBruto: 0,
-                    pesoNeto: 0,
-                    cargaUtil: 0,
-                    tipoMedidaID: 0,
-                    largo: 0,
-                    alto: 0,
-                    ancho: 0,
-                    tipoCombustible: '',
-                    activo: true,
-                });
-            }
-        }
-    }, [open, flotaToEdit, reset]);
-
-    const mutation = useMutation({
-        mutationFn: async (data: CreateFlotaSchema) => {
-            if (isEdit && flotaToEdit) {
-                await flotaApi.update(flotaToEdit.flotaID, data);
-                return flotaToEdit.flotaID;
-            }
-            if (createdFlotaId) {
-                await flotaApi.update(createdFlotaId, data);
-                return createdFlotaId;
-            }
-            const response = await flotaApi.create(data);
-            return response.data;
-        },
-        onSuccess: (id:number) => {
-            queryClient.invalidateQueries({ queryKey: ['flotas'] });
-            onSuccess(id);
-            
-            if (!isEdit && !createdFlotaId) {
-                setCreatedFlotaId(id);
-                setActiveTab(1); 
-            } else {
-                onClose();
-            }
-        },
-        onError: (error: any) => {
-            const genericError = handleBackendErrors<CreateFlotaSchema>(error, setError);
-            if (genericError) {
-                setErrorMessage(genericError);
-            }
-        }
-    });
-
-    const onSubmit = (data: CreateFlotaSchema) => {
-        mutation.mutate(data);
-    };
-
-    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
         setActiveTab(newValue);
     };
 
@@ -243,7 +106,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
                         </Alert>
                      </Box>
                 )}
-                <CustomTabPanel value={activeTab} index={0}>
+                <TabPanel value={activeTab} index={0} name="flota">
                     <form id="flota-form" onSubmit={handleSubmit(onSubmit)}>
                         <Box sx={{ px: 3 }}>
                             <Grid container spacing={3}>
@@ -252,7 +115,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
                                         Identificación
                                     </Typography>
                                 </Grid>
-                                <Grid size={{ xs: 12,md:4 }}>
+                                <Grid size={{ xs: 12, md: 4 }}>
                                     <TextField
                                         label="Placa"
                                         fullWidth
@@ -262,7 +125,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
                                         disabled={viewOnly}
                                     />
                                 </Grid>
-                                <Grid size={{ xs: 12,md:4 }}>
+                                <Grid size={{ xs: 12, md: 4 }}>
                                     <TextField
                                         select
                                         label="Tipo Unidad"
@@ -314,7 +177,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
                                         disabled={viewOnly}
                                     />
                                 </Grid>
-                                <Grid size={{ xs: 12,md:6 }}>
+                                <Grid size={{ xs: 12, md: 6 }}>
                                     <TextField
                                         label="Marca"
                                         fullWidth
@@ -324,7 +187,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
                                         disabled={viewOnly}
                                     />
                                 </Grid>
-                                <Grid size={{ xs: 12,md:6 }}>
+                                <Grid size={{ xs: 12, md: 6 }}>
                                     <TextField
                                         label="Modelo"
                                         fullWidth
@@ -335,12 +198,12 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
                                     />
                                 </Grid>
 
-                                <Grid size={{ xs: 12}}>
+                                <Grid size={{ xs: 12 }}>
                                     <Typography variant="subtitle2" fontWeight="bold" color="primary" sx={{ mb: 1, mt: 2 }}>
                                         Especificaciones Técnicas
                                     </Typography>
                                 </Grid>
-                                <Grid size={{ xs: 12,md:4 }}>
+                                <Grid size={{ xs: 12, md: 4 }}>
                                     <TextField
                                         select
                                         label="Tipo Peso"
@@ -395,7 +258,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
                                         slotProps={{ htmlInput: { step: "0.01" } }}
                                     />
                                 </Grid>
-                                <Grid size={{ xs: 12,md:4 }}>
+                                <Grid size={{ xs: 12, md: 4 }}>
                                     <TextField
                                         select
                                         label="Tipo Medida"
@@ -471,15 +334,15 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
                             </Grid>
                         </Box>
                     </form>
-                </CustomTabPanel>
+                </TabPanel>
                 
-                <CustomTabPanel value={activeTab} index={1}>
+                <TabPanel value={activeTab} index={1} name="flota">
                     {effectiveFlotaId && (
                         <Box sx={{ px: 3, height: 500 }}>
                             <FlotaDocumentosList flotaId={effectiveFlotaId} viewOnly={viewOnly} />
                         </Box>
                     )}
-                </CustomTabPanel>
+                </TabPanel>
             </DialogContent>
 
             <DialogActions sx={{ 

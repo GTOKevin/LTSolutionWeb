@@ -47,39 +47,26 @@ export function MantenimientoTable({
     const { generateExcel, generatePdf } = useMantenimientoReport();
 
     // Helper to get status color/label
-    const getStatusChip = (statusId: number) => {
-        // This mapping should ideally come from a master table or enum
-        // For now, I'll mock it based on the reference: 1=Pending, 2=In Progress, 3=Completed
-        // Assuming Backend: 1=Pendiente, 2=En Proceso, 3=Finalizado
-        // Or using existing Estado entity if possible.
-        // Let's assume standard IDs for now and adjust later.
-        
-        // Using "Estado" name from entity if available
+    const getStatusChip = (status: any) => {
+        if (!status) return <Chip label="N/A" size="small" />;
         
         let color: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' = 'default';
+        const name = status.nombre.toLowerCase();
+        
+        if (name.includes('pendiente') || name.includes('agendado')) color = 'default';
+        else if (name.includes('proceso') || name.includes('taller')) color = 'warning';
+        else if (name.includes('finalizado') || name.includes('completado')) color = 'success';
+        else if (name.includes('cancelado')) color = 'error';
 
-        // Mock logic - ideally use status.nombre
-        // You might want to pass the full object to this function
-        return (status: any) => {
-            if (!status) return <Chip label="N/A" size="small" />;
-            
-            // Heuristic based on name
-            const name = status.nombre.toLowerCase();
-            if (name.includes('pendiente') || name.includes('agendado')) color = 'default';
-            else if (name.includes('proceso') || name.includes('taller')) color = 'warning';
-            else if (name.includes('finalizado') || name.includes('completado')) color = 'success';
-            else if (name.includes('cancelado')) color = 'error';
-
-            return (
-                <Chip 
-                    label={status.nombre} 
-                    color={color} 
-                    size="small" 
-                    variant={color === 'default' ? 'outlined' : 'filled'}
-                    sx={{ fontWeight: 500 }}
-                />
-            );
-        };
+        return (
+            <Chip 
+                label={status.nombre} 
+                color={color} 
+                size="small" 
+                variant={color === 'default' ? 'outlined' : 'filled'}
+                sx={{ fontWeight: 500 }}
+            />
+        );
     };
 
     const getServiceIcon = (serviceName: string = '') => {
@@ -164,7 +151,7 @@ export function MantenimientoTable({
                                     </Box>
                                 </TableCell>
                                 <TableCell>
-                                    {getStatusChip(item.estadoID)(item.estado)}
+                                    {getStatusChip(item.estado)}
                                 </TableCell>
                                 <TableCell align="right">
                                     <TableActions 

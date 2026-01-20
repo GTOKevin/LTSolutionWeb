@@ -14,7 +14,8 @@ import {
     alpha,
     Card,
     CardContent,
-    Stack
+    Stack,
+    TablePagination
 } from '@mui/material';
 import {
     Edit as EditIcon,
@@ -41,10 +42,16 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
     const [licenciaToEdit, setLicenciaToEdit] = useState<Licencia | null>(null);
     const [openDelete, setOpenDelete] = useState(false);
     const [licenciaToDelete, setLicenciaToDelete] = useState<Licencia | null>(null);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const { data, isLoading } = useQuery({
-        queryKey: ['licencias', colaboradorId],
-        queryFn: () => licenciaApi.getAll({ colaboradorID: colaboradorId, size: 100 })
+        queryKey: ['licencias', colaboradorId, page, rowsPerPage],
+        queryFn: () => licenciaApi.getAll({ 
+            colaboradorID: colaboradorId, 
+            page: page + 1,
+            size: rowsPerPage 
+        })
     });
 
     const deleteMutation = useMutation({
@@ -69,6 +76,15 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
     const handleDelete = (licencia: Licencia) => {
         setLicenciaToDelete(licencia);
         setOpenDelete(true);
+    };
+
+    const handleChangePage = (_: unknown, newPage: number) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
     };
 
     if (isLoading) {
@@ -190,6 +206,17 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
                     </Box>
                 )}
             </Box>
+
+            <TablePagination
+                component="div"
+                count={data?.data?.total || 0}
+                page={page}
+                onPageChange={handleChangePage}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                labelRowsPerPage="Filas por página"
+                rowsPerPageOptions={[5, 10, 25]}
+            />
 
             <LicenciaForm 
                 open={openForm}

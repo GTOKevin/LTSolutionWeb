@@ -99,7 +99,7 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(6);
 
-    const { data, isLoading, isError, error } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ['colaborador-documentos', colaboradorId, page, rowsPerPage],
         queryFn: () => colaboradorDocumentoApi.getAll({ 
             colaboradorID: colaboradorId, 
@@ -124,7 +124,7 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
         }
     });
 
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
     };
 
