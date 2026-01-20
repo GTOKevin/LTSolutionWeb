@@ -5,8 +5,7 @@ import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api'
 import { flotaApi } from '@entities/flota/api/flota.api';
 import { estadoApi } from '@shared/api/estado.api';
 import { maestroApi } from '@shared/api/maestro.api';
-import { createMantenimientoSchema } from '../model/schema';
-import type { CreateMantenimientoSchema } from '../model/schema';
+import { createMantenimientoSchema, type CreateMantenimientoSchema } from '../model/schema';
 import { useEffect, useState } from 'react';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';

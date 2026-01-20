@@ -17,8 +17,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { licenciaApi } from '@entities/licencia/api/licencia.api';
 import { maestroApi } from '@shared/api/maestro.api';
 import type { Licencia } from '@entities/licencia/model/types';
-import { createLicenciaSchema } from '../model/schema';
-import type { CreateLicenciaSchema } from '../model/schema';
+import { createLicenciaSchema, type CreateLicenciaSchema } from '../model/schema';
 import { useEffect } from 'react';
 import { TIPO_MAESTRO } from '@/shared/constants/constantes';
 

@@ -17,8 +17,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { colaboradorDocumentoApi } from '@entities/colaborador-documento/api/colaborador-documento.api';
 import { tipoDocumentoApi } from '@entities/tipo-documento/api/tipo-documento.api';
 import type { ColaboradorDocumento } from '@entities/colaborador-documento/model/types';
-import { createColaboradorDocumentoSchema } from '../model/schema';
-import type { CreateColaboradorDocumentoSchema } from '../model/schema';
+import { createColaboradorDocumentoSchema, type CreateColaboradorDocumentoSchema } from '../model/schema';
 import { ImageUpload } from '@shared/components/ui/ImageUpload';
 import { useEffect } from 'react';
 

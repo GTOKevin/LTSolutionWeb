@@ -19,8 +19,7 @@ import { maestroApi } from '@shared/api/maestro.api';
 import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { TIPO_MAESTRO } from '@/shared/constants/constantes';
 import type { ColaboradorPago } from '@entities/colaborador-pago/model/types';
-import { createColaboradorPagoSchema } from '../model/schema';
-import type { CreateColaboradorPagoSchema } from '../model/schema';
+import { createColaboradorPagoSchema, type CreateColaboradorPagoSchema } from '../model/schema';
 import { useEffect } from 'react';
 
 interface ColaboradorPagoFormProps {

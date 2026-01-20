@@ -1,5 +1,5 @@
-import { alpha } from '@mui/material';
-import type{ Theme } from '@mui/material';
+import { alpha, type Theme } from '@mui/material';
+
 
 export const getStatusStyles = (theme: Theme, active: boolean) => {
     return active

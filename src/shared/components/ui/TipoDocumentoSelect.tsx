@@ -1,12 +1,11 @@
 import {
     TextField,
     MenuItem,
-    CircularProgress
+    CircularProgress, 
+    type TextFieldProps
 } from '@mui/material';
 
-import type {
-    TextFieldProps
-} from '@mui/material';
+
 import { useQuery } from '@tanstack/react-query';
 import { tipoDocumentoApi } from '@entities/tipo-documento/api/tipo-documento.api';
 

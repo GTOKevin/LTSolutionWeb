@@ -9,8 +9,7 @@ import {
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createFlotaDocumentoSchema } from '../../model/schema';
-import type { CreateFlotaDocumentoSchema } from '../../model/schema';
+import { createFlotaDocumentoSchema, type CreateFlotaDocumentoSchema } from '../../model/schema';
 import { ImageUpload } from '@shared/components/ui/ImageUpload';
 import { TipoDocumentoSelect } from '@shared/components/ui/TipoDocumentoSelect';
 import { useEffect } from 'react';
