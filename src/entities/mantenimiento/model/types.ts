@@ -1,6 +1,7 @@
 import type { TipoMaestro } from '@shared/model/maestro.types';
 import type { Flota } from '../../flota/model/types';
 import type { Moneda } from '../../moneda/model/types';
+import type { Estado } from '@shared/model/estado.types';
 
 export interface MantenimientoDetalle {
     mantenimientoDetalleID: number;
@@ -38,7 +39,7 @@ export interface Mantenimiento {
     // Relations
     flota?: Flota;
     tipoServicio?: TipoMaestro;
-    estado?: any; // To be defined (Estado entity)
+    estado?: Estado;
     mantenimientoDetalles: MantenimientoDetalle[];
 }
 

@@ -21,6 +21,17 @@ export const TIPO_ESTADO={
     MANTENIMIENTO:'MANTENIMIENTO'
 }
 
+export const ESTADO_MANTENIMIENTO_ID = {
+    COMPLETADO: 102
+};
+
+export const ESTADO_MANTENIMIENTO_NAMES = {
+    PENDIENTE: ['pendiente', 'agendado'],
+    PROCESO: ['proceso', 'taller'],
+    COMPLETADO: ['finalizado', 'completado'],
+    CANCELADO: ['cancelado']
+};
+
 export const PLACA_PERU_REGEX = /^[A-Z0-9]{3}-[0-9]{3,4}$/;
 
 export const TEXTO_SEGURO_REGEX = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\-_.,\s]+$/;

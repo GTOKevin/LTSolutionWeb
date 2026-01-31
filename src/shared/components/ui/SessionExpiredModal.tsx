@@ -7,7 +7,8 @@ import {
     Button,
     Typography,
     Box,
-    LinearProgress
+    LinearProgress,
+    useTheme
 } from '@mui/material';
 import { Warning as WarningIcon } from '@mui/icons-material';
 import { useAuthStore } from '@shared/store/auth.store';
@@ -15,6 +16,7 @@ import { useAuthStore } from '@shared/store/auth.store';
 export function SessionExpiredModal() {
     const { isSessionExpired, logout } = useAuthStore();
     const [countdown, setCountdown] = useState(5);
+    const theme = useTheme();
 
     useEffect(() => {
         let timer: ReturnType<typeof setInterval>;
@@ -40,7 +42,6 @@ export function SessionExpiredModal() {
 
     const handleLogout = () => {
         logout();
-        // Force navigation to login just in case
         window.location.href = '/login';
     };
 
@@ -51,40 +52,41 @@ export function SessionExpiredModal() {
             open={isSessionExpired}
             maxWidth="xs"
             fullWidth
+            disableEscapeKeyDown
             PaperProps={{
                 sx: {
                     borderRadius: 2,
                     p: 1,
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    borderTop: `6px solid ${theme.palette.warning.main}`
                 }
             }}
+            onClose={() => {}} // Disable closing by clicking outside
         >
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 3 }}>
                 <WarningIcon color="warning" sx={{ fontSize: 48, mb: 2 }} />
             </Box>
-            <DialogTitle sx={{ pb: 1 }}>Sesión Expirada</DialogTitle>
+            <DialogTitle sx={{ pb: 1, fontWeight: 'bold' }}>Su sesión ha expirado</DialogTitle>
             <DialogContent>
-                <Typography variant="body1" color="text.secondary" paragraph>
-                    Tu sesión ha terminado por seguridad.
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                    Serás redirigido al login en <strong>{countdown}</strong> segundos.
+                <Typography variant="body1" color="text.secondary" paragraph sx={{ fontSize: '1.1rem' }}>
+                    Cerrando en {countdown}...
                 </Typography>
                 <LinearProgress 
                     variant="determinate" 
                     value={(5 - countdown) * 20} 
-                    color="primary"
-                    sx={{ height: 6, borderRadius: 3 }}
+                    color="warning"
+                    sx={{ height: 8, borderRadius: 4, mt: 1 }}
                 />
             </DialogContent>
             <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
                 <Button 
                     variant="contained" 
+                    color="warning"
                     onClick={handleLogout}
                     fullWidth
-                    sx={{ mx: 2 }}
+                    sx={{ mx: 2, fontWeight: 'bold' }}
                 >
-                    Ir al Login ahora
+                    Cerrar sesión ahora
                 </Button>
             </DialogActions>
         </Dialog>

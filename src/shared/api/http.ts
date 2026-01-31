@@ -12,6 +12,7 @@ export interface ApiError {
 
 export const httpClient = axios.create({
     baseURL: env.apiUrl,
+    withCredentials: true, // Allow cookies to be sent/received
     headers: {
         'Content-Type': 'application/json',
     },
@@ -55,6 +56,17 @@ httpClient.interceptors.response.use(
 
         // Handle 401 Unauthorized - attempt refresh
         if (error.response?.status === 401 && !originalRequest._retry) {
+            // Prevent infinite loop: if the refresh token request itself fails with 401, 
+            // do not attempt to refresh again.
+            if (originalRequest.url?.includes('/auth/refresh-token')) {
+                return Promise.reject(error);
+            }
+
+            // Do NOT attempt refresh on login failure (401)
+            if (originalRequest.url?.includes('/auth/login')) {
+                return Promise.reject(error);
+            }
+
             if (isRefreshing) {
                 return new Promise<string>((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
@@ -71,24 +83,18 @@ httpClient.interceptors.response.use(
             originalRequest._retry = true;
             isRefreshing = true;
 
-            const { token, refreshToken, setAuth, setSessionExpired, logout } = useAuthStore.getState();
+            const { token, setAuth, setSessionExpired, logout } = useAuthStore.getState();
 
-            if (!refreshToken || !token) {
-                // No refresh token available, logout directly
-                isRefreshing = false;
-                logout();
-                 if (window.location.pathname !== '/login') {
-                    window.location.href = '/login';
-                }
-                return Promise.reject(error);
-            }
-
+            // Note: We don't check for refreshToken here anymore because it's in a cookie
+            
             try {
-                // Call refresh API
-                const res = await authApi.refreshToken({ token, refreshToken });
+                // Call refresh API - send empty tokens or current invalid token just to satisfy DTO if needed
+                // But typically for cookie flow, DTO might not be needed or we send empty string
+                // The backend will prioritize the cookie
+                const res = await authApi.refreshToken({ token: token || '', refreshToken: '' });
                 
-                // Update store with new tokens
-                setAuth(res.token, res.refreshToken);
+                // Update store with new access token (refresh token is handled by cookie)
+                setAuth(res.token, res.refreshToken); // res.refreshToken might be empty string from backend now
                 
                 // Process queue
                 processQueue(null, res.token);
