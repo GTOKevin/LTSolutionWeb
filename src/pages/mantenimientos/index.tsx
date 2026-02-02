@@ -123,7 +123,13 @@ export function MantenimientosPage() {
                             variant="contained"
                             startIcon={<AddIcon />}
                             onClick={handleCreate}
-                            sx={{ px: 3 }}
+                            sx={{ 
+                            boxShadow: 2, 
+                            fontWeight: 'bold', 
+                            px: 3, 
+                            py: 1.2,
+                            borderRadius: 2
+                             }}
                         >
                             Nuevo Registro
                         </Button>

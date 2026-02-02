@@ -38,4 +38,6 @@ export interface UsuarioParams {
     search?: string;
     page?: number;
     size?: number;
+    rolUsuarioID?: number;
+    estadoID?: number;
 }

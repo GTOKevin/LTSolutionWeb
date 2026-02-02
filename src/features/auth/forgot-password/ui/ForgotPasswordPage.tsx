@@ -48,7 +48,8 @@ export function ForgotPasswordPage() {
                 setSuccessMessage(response.message || 'Si el correo existe, se enviará un enlace de recuperación.');
             },
             onError: (error: any) => {
-                setErrorMessage(error.detail || 'Ocurrió un error al procesar la solicitud.');
+                // Generic error message to prevent user enumeration
+                setErrorMessage('Si el correo existe, se enviará un enlace de recuperación.');
             },
         });
     };

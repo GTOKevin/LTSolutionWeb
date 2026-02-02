@@ -25,12 +25,12 @@ export function RolUsuarioTable({
     onRowsPerPageChange,
     onEdit
 }: RolUsuarioTableProps) {
-    const columns: Column[] = [
+    const columns: Column[] = React.useMemo(() => [
         { id: 'nombre', label: 'Nombre' },
         { id: 'descripcion', label: 'Descripción' },
         { id: 'estado', label: 'Estado' },
         { id: 'acciones', label: 'Acciones', align: 'right' }
-    ];
+    ], []);
 
     return (
         <SharedTable

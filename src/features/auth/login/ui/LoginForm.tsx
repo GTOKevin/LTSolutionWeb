@@ -135,7 +135,7 @@ export function LoginForm() {
                             borderRadius: 2,
                         }}
                     >
-                        {(loginMutation.error as ApiError)?.detail || 'Error al iniciar sesión'}
+                        Credenciales incorrectas. Verifique su usuario y contraseña.
                     </Alert>
                 )}
 

@@ -9,7 +9,7 @@ import { createMantenimientoSchema, type CreateMantenimientoSchema } from '../mo
 import { useEffect, useState } from 'react';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
-import { TIPO_ESTADO, TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { ESTADO_SECCIONES, TIPO_MAESTRO } from '@/shared/constants/constantes';
 
 interface UseMantenimientoFormProps {
     mantenimientoToEdit?: Mantenimiento | null;
@@ -45,7 +45,7 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
 
     const { data: estados } = useQuery({
         queryKey: ['estados-select'],
-        queryFn: () => estadoApi.getSelect(undefined, undefined, TIPO_ESTADO.MANTENIMIENTO),
+        queryFn: () => estadoApi.getSelect(undefined, undefined, ESTADO_SECCIONES.MANTENIMIENTO),
         enabled: open
     });
 

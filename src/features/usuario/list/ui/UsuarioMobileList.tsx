@@ -25,6 +25,7 @@ import type { Usuario } from '@entities/usuario/model/types';
 import type { PagedResponse } from '@/shared/model/types';
 import { useState } from 'react';
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
+import { EstadoUsuarioEnum } from '@/shared/constants/enums';
 
 interface UsuarioMobileListProps {
     data?: PagedResponse<Usuario>;
@@ -136,8 +137,8 @@ export function UsuarioMobileList({
                                 <Chip 
                                     label={user.estado?.nombre} 
                                     size="small"
-                                    color={user.estado?.nombre === 'Activo' ? 'success' : 'default'}
-                                    variant={user.estado?.nombre === 'Activo' ? 'filled' : 'outlined'}
+                                    color={user.estadoID === EstadoUsuarioEnum.Activo ? 'success' : 'default'}
+                                    variant={user.estadoID === EstadoUsuarioEnum.Activo ? 'filled' : 'outlined'}
                                 />
                                 <Button 
                                     size="small" 

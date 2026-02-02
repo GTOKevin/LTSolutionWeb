@@ -18,6 +18,7 @@ import type { Usuario } from '@entities/usuario/model/types';
 import type { PagedResponse } from '@/shared/model/types';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
+import { EstadoUsuarioEnum } from '@/shared/constants/enums';
 
 interface UsuarioTableProps {
     data?: PagedResponse<Usuario>;
@@ -46,14 +47,14 @@ export function UsuarioTable({
 }: UsuarioTableProps) {
     const theme = useTheme();
 
-    const columns: Column[] = [
+    const columns: Column[] = React.useMemo(() => [
         { id: 'usuario', label: 'Usuario' },
         { id: 'rol', label: 'Rol' },
         { id: 'colaborador', label: 'Colaborador' },
         { id: 'estado', label: 'Estado' },
         { id: 'ultimoAcceso', label: 'Último Acceso' },
         { id: 'acciones', label: 'Acciones', align: 'right' }
-    ];
+    ], []);
 
     return (
         <SharedTable
@@ -124,8 +125,8 @@ export function UsuarioTable({
                             px: 1.5,
                             py: 0.5,
                             borderRadius: 10,
-                            bgcolor: item.estado?.nombre === 'Activo' ? alpha(theme.palette.success.main, 0.1) : alpha(theme.palette.error.main, 0.1),
-                            color: item.estado?.nombre === 'Activo' ? theme.palette.success.main : theme.palette.error.main,
+                            bgcolor: item.estadoID === EstadoUsuarioEnum.Activo ? alpha(theme.palette.success.main, 0.1) : alpha(theme.palette.error.main, 0.1),
+                            color: item.estadoID === EstadoUsuarioEnum.Activo ? theme.palette.success.main : theme.palette.error.main,
                         }}>
                             <Box sx={{ 
                                 width: 6, 

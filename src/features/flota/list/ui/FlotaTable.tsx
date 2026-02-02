@@ -29,7 +29,7 @@ export function FlotaTable({
     onEdit,
     onDelete
 }: FlotaTableProps) {
-    const columns: Column[] = [
+    const columns: Column[] = React.useMemo(() => [
         { id: 'placa', label: 'Placa' },
         { id: 'marca', label: 'Marca / Modelo' },
         { id: 'tipo', label: 'Tipo' },
@@ -37,7 +37,7 @@ export function FlotaTable({
         { id: 'combustible', label: 'Combustible' },
         { id: 'estado', label: 'Estado' },
         { id: 'acciones', label: 'Acciones', align: 'right' }
-    ];
+    ], []);
 
     return (
         <SharedTable

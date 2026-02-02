@@ -32,14 +32,14 @@ export function ColaboradorTable({
 }: ColaboradorTableProps) {
     const theme = useTheme();
 
-    const columns: Column[] = [
+    const columns: Column[] = React.useMemo(() => [
         { id: 'colaborador', label: 'Colaborador' },
         { id: 'rol', label: 'Rol' },
         { id: 'contacto', label: 'Contacto' },
         { id: 'fechaIngreso', label: 'Fecha Ingreso' },
         { id: 'estado', label: 'Estado' },
         { id: 'acciones', label: 'Acciones', align: 'right' }
-    ];
+    ], []);
 
     return (
         <SharedTable

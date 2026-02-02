@@ -64,14 +64,14 @@ export function MantenimientoTable({
 }: MantenimientoTableProps) {
     const { generateExcel, generatePdf } = useMantenimientoReport();
 
-    const columns: Column[] = [
+    const columns: Column[] = React.useMemo(() => [
         { id: 'mantenimientoID', label: 'ID Mantenimiento' },
         { id: 'flota', label: 'Flota / Patente' },
         { id: 'tipoServicio', label: 'Tipo Servicio' },
         { id: 'fechas', label: 'Fechas' },
         { id: 'estado', label: 'Estado' },
         { id: 'acciones', label: 'Acciones', align: 'right' }
-    ];
+    ], []);
 
     return (
         <SharedTable

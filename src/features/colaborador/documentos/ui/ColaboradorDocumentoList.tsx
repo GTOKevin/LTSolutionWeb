@@ -148,15 +148,8 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
         setOpenDelete(true);
     };
 
-    const getFullUrl = (path?: string) => {
-        if (!path) return '';
-        if (path.startsWith('http')) return path;
-        const baseUrl = API_URL.replace(/\/api\/?$/, '');
-        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-    };
-
     const handlePreview = (path: string) => {
-        setPreviewUrl(getFullUrl(path));
+        setPreviewUrl(path);
     };
 
     const handleClosePreview = () => {
@@ -232,7 +225,7 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
                                                     {doc.rutaArchivo ? (
                                                         <Avatar
                                                             variant="rounded"
-                                                            src={getFullUrl(doc.rutaArchivo)}
+                                                            src={doc.rutaArchivo}
                                                             alt={doc.numeroDocumento || 'Doc'}
                                                             sx={{ width: 64, height: 64 }}
                                                         />

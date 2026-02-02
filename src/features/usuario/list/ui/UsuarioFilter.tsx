@@ -12,7 +12,7 @@ import {
     alpha,
     Collapse
 } from '@mui/material';
-import { Search as SearchIcon, FilterList as FilterListIcon } from '@mui/icons-material';
+import { Search as SearchIcon, FilterList as FilterListIcon, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
 
 interface UsuarioFilterProps {
@@ -49,97 +49,111 @@ export function UsuarioFilter({
             borderRadius: 3,
             boxShadow: theme.shadows[1],
             border: `1px solid ${theme.palette.divider}`,
-            mb: 3
+            mb: 3,
+            overflow: 'visible' // Ensure content is not clipped
         }}>
             <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box 
+                    onClick={onToggleFilters}
+                    sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1.5, 
+                        mb: showFilters ? 3 : 0, 
+                        pb: showFilters ? 2 : 0, 
+                        borderBottom: showFilters ? `1px dashed ${theme.palette.divider}` : 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        userSelect: 'none'
+                    }}
+                >
                     <Box sx={{ 
                         p: 1, 
                         borderRadius: 2, 
                         bgcolor: alpha(theme.palette.primary.main, 0.1),
                         color: theme.palette.primary.main,
-                        display: 'flex',
-                        cursor: 'pointer'
-                    }} onClick={onToggleFilters}>
+                        display: 'flex'
+                    }}>
                         <FilterListIcon fontSize="small" />
                     </Box>
-                    <Typography variant="h6" fontWeight="bold">
+                    <Typography variant="subtitle1" fontWeight="bold" sx={{ flex: 1 }}>
                         Filtros de Búsqueda
                     </Typography>
+                    {showFilters ? <KeyboardArrowUp color="action" /> : <KeyboardArrowDown color="action" />}
                 </Box>
 
                 <Collapse in={showFilters}>
                     <Grid container spacing={2} alignItems="center">
                         <Grid size={{xs:12,md:4}}>
-                        <TextField
-                            placeholder="Buscar por Nombre o Email..."
-                            fullWidth
-                            size="small"
-                            value={searchTerm}
-                            onChange={(e) => onSearchChange(e.target.value)}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon color="action" />
-                                    </InputAdornment>
-                                ),
-                                sx: { borderRadius: 2 }
-                            }}
-                        />
+                            <TextField
+                                placeholder="Buscar por Nombre o Email..."
+                                fullWidth
+                                size="small"
+                                value={searchTerm}
+                                onChange={(e) => onSearchChange(e.target.value)}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchIcon color="action" />
+                                        </InputAdornment>
+                                    ),
+                                    sx: { borderRadius: 2 }
+                                }}
+                            />
+                        </Grid>
+                        <Grid size={{xs:12,sm:6,md:3}}>
+                            <TextField
+                                select
+                                fullWidth
+                                size="small"
+                                label="Rol"
+                                value={roleFilter}
+                                onChange={(e) => onRoleChange(e.target.value)}
+                                InputProps={{ sx: { borderRadius: 2 } }}
+                            >
+                                <MenuItem value="0">Todos los Roles</MenuItem>
+                                {roles.map((role) => (
+                                    <MenuItem key={role.id} value={role.id.toString()}>
+                                        {role.text}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </Grid>
+                        <Grid size={{xs:12,sm:6,md:3}}>
+                            <TextField
+                                select
+                                fullWidth
+                                size="small"
+                                label="Estado"
+                                value={statusFilter}
+                                onChange={(e) => onStatusChange(e.target.value)}
+                                InputProps={{ sx: { borderRadius: 2 } }}
+                            >
+                                <MenuItem value="0">Todos los Estados</MenuItem>
+                                {estados.map((estado) => (
+                                    <MenuItem key={estado.id} value={estado.id.toString()}>
+                                        {estado.text}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </Grid>
+                        <Grid size={{xs:12,md:2}}>
+                            <Button
+                                variant="contained"
+                                fullWidth
+                                startIcon={<SearchIcon />}
+                                onClick={onApplyFilters}
+                                sx={{ 
+                                    borderRadius: 2,
+                                    height: 40,
+                                    fontWeight: 'bold',
+                                    boxShadow: 'none'
+                                }}
+                            >
+                                Buscar
+                            </Button>
+                        </Grid>
                     </Grid>
-                    <Grid size={{xs:12,sm:6,md:3}}>
-                        <TextField
-                            select
-                            fullWidth
-                            size="small"
-                            label="Rol"
-                            value={roleFilter}
-                            onChange={(e) => onRoleChange(e.target.value)}
-                            InputProps={{ sx: { borderRadius: 2 } }}
-                        >
-                            <MenuItem value="0">Todos los Roles</MenuItem>
-                            {roles.map((role) => (
-                                <MenuItem key={role.id} value={role.id.toString()}>
-                                    {role.text}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </Grid>
-                    <Grid size={{xs:12,sm:6,md:3}}>
-                        <TextField
-                            select
-                            fullWidth
-                            size="small"
-                            label="Estado"
-                            value={statusFilter}
-                            onChange={(e) => onStatusChange(e.target.value)}
-                            InputProps={{ sx: { borderRadius: 2 } }}
-                        >
-                            <MenuItem value="0">Todos los Estados</MenuItem>
-                            {estados.map((estado) => (
-                                <MenuItem key={estado.id} value={estado.id.toString()}>
-                                    {estado.text}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </Grid>
-                    <Grid size={{xs:12,md:2}}>
-                        <Button
-                            variant="contained"
-                            fullWidth
-                            startIcon={<SearchIcon />}
-                            onClick={onApplyFilters}
-                            sx={{ 
-                                borderRadius: 2,
-                                height: 40,
-                                fontWeight: 'bold',
-                                boxShadow: 'none'
-                            }}
-                        >
-                            Buscar
-                        </Button>
-                    </Grid>
-                </Grid>
                 </Collapse>
             </CardContent>
         </Card>

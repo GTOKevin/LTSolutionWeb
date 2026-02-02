@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { env } from '../config/env';
 import { useAuthStore } from '../store/auth.store';
 import { authApi } from '@entities/auth/api/auth.api';
@@ -8,6 +8,10 @@ export interface ApiError {
     status: number;
     detail: string;
     errors?: Record<string, string[]>;
+}
+
+interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
+    _retry?: boolean;
 }
 
 export const httpClient = axios.create({
@@ -34,10 +38,15 @@ httpClient.interceptors.request.use(
     }
 );
 
-let isRefreshing = false;
-let failedQueue: Array<{ resolve: (token: string) => void; reject: (error: any) => void }> = [];
+interface FailedRequest {
+    resolve: (token: string) => void;
+    reject: (error: unknown) => void;
+}
 
-const processQueue = (error: any, token: string | null = null) => {
+let isRefreshing = false;
+let failedQueue: FailedRequest[] = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
     failedQueue.forEach((prom) => {
         if (error) {
             prom.reject(error);
@@ -52,10 +61,10 @@ const processQueue = (error: any, token: string | null = null) => {
 httpClient.interceptors.response.use(
     (response) => response,
     async (error: AxiosError<ApiError>) => {
-        const originalRequest = error.config as any;
+        const originalRequest = error.config as CustomAxiosRequestConfig;
 
         // Handle 401 Unauthorized - attempt refresh
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
             // Prevent infinite loop: if the refresh token request itself fails with 401, 
             // do not attempt to refresh again.
             if (originalRequest.url?.includes('/auth/refresh-token')) {
@@ -83,7 +92,7 @@ httpClient.interceptors.response.use(
             originalRequest._retry = true;
             isRefreshing = true;
 
-            const { token, setAuth, setSessionExpired, logout } = useAuthStore.getState();
+            const { token, setAuth } = useAuthStore.getState();
 
             // Note: We don't check for refreshToken here anymore because it's in a cookie
             
@@ -98,31 +107,20 @@ httpClient.interceptors.response.use(
                 
                 // Process queue
                 processQueue(null, res.token);
-                
+
                 // Retry original request
                 originalRequest.headers['Authorization'] = 'Bearer ' + res.token;
                 return httpClient(originalRequest);
             } catch (refreshError) {
-                // Refresh failed
                 processQueue(refreshError, null);
-                
-                // Trigger Session Expired Modal
-                setSessionExpired(true);
-                
+                // Optional: Logout user on refresh failure
+                useAuthStore.getState().logout();
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;
             }
         }
 
-        // Normalize error response
-        const apiError: ApiError = {
-            title: error.response?.data?.title || 'Error',
-            status: error.response?.status || 500,
-            detail: error.response?.data?.detail || error.message,
-            errors: error.response?.data?.errors,
-        };
-
-        return Promise.reject(apiError);
+        return Promise.reject(error);
     }
 );

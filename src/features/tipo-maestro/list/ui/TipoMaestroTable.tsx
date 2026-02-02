@@ -28,13 +28,13 @@ export function TipoMaestroTable({
 }: TipoMaestroTableProps) {
     const theme = useTheme();
 
-    const columns: Column[] = [
+    const columns: Column[] = React.useMemo(() => [
         { id: 'nombre', label: 'Nombre' },
         { id: 'seccion', label: 'Sección' },
         { id: 'codigo', label: 'Código' },
         { id: 'estado', label: 'Estado' },
         { id: 'acciones', label: 'Acciones', align: 'right' }
-    ];
+    ], []);
 
     return (
         <SharedTable

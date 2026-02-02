@@ -53,6 +53,9 @@ export function SharedTable<T>({
 }: SharedTableProps<T>) {
     const theme = useTheme();
 
+
+
+
     return (
         <Paper sx={{ 
             display: { xs: 'none', md: 'flex' },
@@ -61,8 +64,9 @@ export function SharedTable<T>({
             border: `1px solid ${theme.palette.divider}`,
             borderRadius: 3,
             boxShadow: theme.shadows[1],
-            flex: 1,
-            minHeight: 0,
+            // Removed flex: 1 and minHeight: 0 to allow natural growth if parent allows it
+            // or keep it if parent constrains it. 
+            // If parent has height: auto, this will grow.
             ...containerSx
         }}>
             <TableContainer sx={{ flex: 1, overflow: 'auto' }}>

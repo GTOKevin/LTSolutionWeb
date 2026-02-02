@@ -156,9 +156,11 @@ export function FlotasPage() {
                         startIcon={<AddIcon />}
                         onClick={handleCreate}
                         sx={{ 
-                            px: 3,
-                            background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`,
+                            boxShadow: 2, 
+                            fontWeight: 'bold', 
+                            px: 3, 
+                            py: 1.2,
+                            borderRadius: 2
                         }}
                     >
                         Nuevo Vehículo

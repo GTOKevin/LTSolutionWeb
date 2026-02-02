@@ -31,6 +31,7 @@ import type { Usuario } from '@entities/usuario/model/types';
 import { UsuarioTable } from '../../features/usuario/list/ui/UsuarioTable';
 import { UsuarioMobileList } from '../../features/usuario/list/ui/UsuarioMobileList';
 import { UsuarioFilter } from '@/features/usuario/list/ui/UsuarioFilter';
+import { ESTADO_SECCIONES } from '@/shared/constants/constantes';
 
 export function UsuariosPage() {
     const theme = useTheme();
@@ -68,7 +69,6 @@ export function UsuariosPage() {
             page: page + 1, 
             size: rowsPerPage, 
             search: debouncedSearch,
-            // @ts-ignore - Assuming API supports these params or I need to update types
             rolUsuarioID: roleFilter !== '0' ? Number(roleFilter) : undefined,
             estadoID: statusFilter !== '0' ? Number(statusFilter) : undefined
         })
@@ -81,7 +81,7 @@ export function UsuariosPage() {
 
     const { data: estados } = useQuery({
         queryKey: ['estados-usuario-select'],
-        queryFn: () => estadoApi.getSelect(undefined, 20, 'Usuario')
+        queryFn: () => estadoApi.getSelect(undefined, 20, ESTADO_SECCIONES.USUARIO)
     });
 
     const deleteMutation = useMutation({
@@ -308,15 +308,16 @@ export function UsuariosPage() {
                     onToggleFilters={handleToggleFilters}
                 />
 
-                {/* Content Section (Toolbar + Table) */}
+                {/* Content Section */}
                 <Box sx={{ 
                     display: 'flex', 
                     flexDirection: 'column', 
                     borderRadius: 3, 
-                    overflow: 'hidden'
+                    flex: 1,
+                    minHeight: 500 // Min height to prevent squash
                 }}>
                     {/* Desktop Table */}
-                    <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Box sx={{ display: { xs: 'none', md: 'flex' }, flex: 1, minHeight: 0, flexDirection: 'column' }}>
                         <UsuarioTable
                             data={data}
                             isLoading={isLoading}

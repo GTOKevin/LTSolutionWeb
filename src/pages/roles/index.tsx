@@ -98,11 +98,11 @@ export function RolesPage() {
                     startIcon={<AddIcon />}
                     onClick={handleCreate}
                     sx={{ 
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        fontWeight: 600,
-                        px: 3,
-                        py: 1.2
+                            boxShadow: 2, 
+                            fontWeight: 'bold', 
+                            px: 3, 
+                            py: 1.2,
+                            borderRadius: 2
                     }}
                 >
                     Nuevo Rol

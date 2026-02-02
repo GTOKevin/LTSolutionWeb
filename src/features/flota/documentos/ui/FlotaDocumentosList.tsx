@@ -40,8 +40,6 @@ import { parseDateOnly, formatDateLong } from '@/shared/utils/date-utils';
 import { FlotaDocumentosForm } from './FlotaDocumentosForm';
 import { ROWS_DOC_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 
-const API_URL = import.meta.env.VITE_IMG_URL_BASE || 'https://localhost:44332';
-
 interface FlotaDocumentosListProps {
     flotaId: number;
     viewOnly?: boolean;
@@ -120,15 +118,8 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
         setPage(0);
     };
 
-    const getFullUrl = (path?: string) => {
-        if (!path) return '';
-        if (path.startsWith('http')) return path;
-        const baseUrl = API_URL.replace(/\/api\/?$/, '');
-        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-    };
-
     const handlePreview = (path: string) => {
-        setPreviewUrl(getFullUrl(path));
+        setPreviewUrl(path);
     };
 
     const handleClosePreview = () => {
@@ -304,7 +295,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
                                                         {doc.rutaArchivo ? (
                                                             <Avatar
                                                                 variant="rounded"
-                                                                src={getFullUrl(doc.rutaArchivo)}
+                                                                src={doc.rutaArchivo}
                                                                 alt={doc.numeroDocumento}
                                                                 sx={{ width: 64, height: 64 }}
                                                             />

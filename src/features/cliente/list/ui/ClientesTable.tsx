@@ -29,14 +29,14 @@ export function ClientesTable({
     onEdit,
     onDelete
 }: ClientesTableProps) {
-    const columns: Column[] = [
+    const columns: Column[] = React.useMemo(() => [
         { id: 'razonSocial', label: 'Razón Social' },
         { id: 'ruc', label: 'RUC' },
         { id: 'contactoPrincipal', label: 'Contacto Principal' },
         { id: 'estado', label: 'Estado' },
         { id: 'telefono', label: 'Teléfono' },
         { id: 'acciones', label: 'Acciones', align: 'right' }
-    ];
+    ], []);
 
     return (
         <SharedTable

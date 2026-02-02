@@ -3,11 +3,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import { estadoApi } from '@shared/api/estado.api';
-import { TIPO_ESTADO } from '@/shared/constants/constantes';
+import { ESTADO_SECCIONES } from '@/shared/constants/constantes';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { INITIAL_FILTERS } from '../model/types';
 import type { MantenimientoFiltersState } from '../model/types';
 
+/**
+ * Hook personalizado para gestionar la lógica de negocio del módulo de Mantenimientos.
+ * 
+ * Centraliza el estado de la UI (paginación, modales), la gestión de datos (fetching con React Query)
+ * y las operaciones CRUD.
+ * 
+ * @returns {Object} Objeto con el estado y los manejadores de eventos necesarios para la vista.
+ */
 export function useMantenimientos() {
     const queryClient = useQueryClient();
     
@@ -35,7 +43,7 @@ export function useMantenimientos() {
     
     const { data: estados } = useQuery({ 
         queryKey: ['estados-select'], 
-        queryFn: () => estadoApi.getSelect(undefined, undefined, TIPO_ESTADO.MANTENIMIENTO) 
+        queryFn: () => estadoApi.getSelect(undefined, undefined, ESTADO_SECCIONES.MANTENIMIENTO) 
     });
 
     // Main Query
@@ -64,16 +72,28 @@ export function useMantenimientos() {
     });
 
     // --- Handlers ---
+    
+    /**
+     * Actualiza el término de búsqueda y reinicia la paginación.
+     * @param query - Nuevo texto a buscar.
+     */
     const handleSearch = useCallback((query: string) => {
         setSearchQuery(query);
         setPage(0);
     }, []);
 
+    /**
+     * Aplica nuevos filtros avanzados y reinicia la paginación.
+     * @param filters - Objeto con los nuevos filtros (fechas, flota, estado).
+     */
     const handleFilter = useCallback((filters: MantenimientoFiltersState) => {
         setAppliedFilters(filters);
         setPage(0);
     }, []);
 
+    /**
+     * Limpia todos los filtros y búsquedas, restableciendo el estado inicial.
+     */
     const handleClear = useCallback(() => {
         setSearchQuery('');
         setAppliedFilters(INITIAL_FILTERS);
