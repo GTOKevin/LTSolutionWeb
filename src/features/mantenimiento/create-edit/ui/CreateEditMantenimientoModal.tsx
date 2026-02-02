@@ -20,11 +20,11 @@ import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { MantenimientoDetalleList } from '../../detalles/ui/MantenimientoDetalleList';
 import { 
     DirectionsCar as CarIcon, 
-    Login as LoginIcon,
     VisibilityOff as HiddenIcon
 } from '@mui/icons-material';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
 import { useMantenimientoForm } from '../../hooks/useMantenimientoForm';
+import { SectionHeader } from '@/shared/components/ui/SectionHeader';
 
 interface CreateEditMantenimientoModalProps {
     open: boolean;
@@ -175,10 +175,7 @@ export function CreateEditMantenimientoModal({
                             </Box>
 
                             <Box sx={{ mb: 3 }}>
-                                <Typography variant="subtitle2" fontWeight="bold" color="text.primary" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1, textTransform: 'uppercase', letterSpacing: 1 }}>
-                                    <LoginIcon fontSize="small" color="primary" />
-                                    Detalles de Ingreso
-                                </Typography>
+                                <SectionHeader number="2" title="Detalles de Ingreso" themeColor={theme.palette.primary.main} />
                                 <Grid container spacing={3}>
                                     <Grid size={{ xs: 12, md: 6 }}>
                                         <TextField
