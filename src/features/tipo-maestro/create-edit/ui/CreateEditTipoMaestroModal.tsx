@@ -10,16 +10,13 @@ import {
     FormControlLabel,
     Switch,
     IconButton,
-    Autocomplete
+    Autocomplete,
+    Alert
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
-import { tipoMaestroSchema, type TipoMaestroSchema } from '../../model/schema';
-import { tipoMaestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
+import { Controller } from 'react-hook-form';
 import type { TipoMaestro } from '@entities/tipo-maestro/model/types';
+import { useTipoMaestroForm } from '../../hooks/useTipoMaestroForm';
 
 interface CreateEditTipoMaestroModalProps {
     open: boolean;
@@ -34,71 +31,22 @@ export function CreateEditTipoMaestroModal({
     maestroToEdit,
     onSuccess
 }: CreateEditTipoMaestroModalProps) {
-    const isEdit = !!maestroToEdit;
-    const queryClient = useQueryClient();
+    
+    const {
+        form,
+        errorMessage,
+        setErrorMessage,
+        secciones,
+        onSubmit,
+        isEdit,
+        isSubmitting
+    } = useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit });
 
     const {
         control,
         handleSubmit,
-        reset,
-        formState: { errors, isSubmitting }
-    } = useForm({
-        resolver: zodResolver(tipoMaestroSchema),
-        defaultValues: {
-            nombre: '',
-            codigo: '',
-            seccion: '',
-            activo: true
-        }
-    });
-
-    // Fetch secciones for Autocomplete
-    const { data: secciones } = useQuery({
-        queryKey: ['secciones-maestro'],
-        queryFn: tipoMaestroApi.getSecciones,
-        staleTime: 1000 * 60 * 5 // 5 minutes
-    });
-
-    useEffect(() => {
-        if (open) {
-            if (maestroToEdit) {
-                reset({
-                    nombre: maestroToEdit.nombre,
-                    codigo: maestroToEdit.codigo || '',
-                    seccion: maestroToEdit.seccion || '',
-                    activo: maestroToEdit.activo
-                });
-            } else {
-                reset({
-                    nombre: '',
-                    codigo: '',
-                    seccion: '',
-                    activo: true
-                });
-            }
-        }
-    }, [open, maestroToEdit, reset]);
-
-    const mutation = useMutation({
-        mutationFn: async (data: TipoMaestroSchema) => {
-            if (isEdit && maestroToEdit) {
-                await tipoMaestroApi.update(maestroToEdit.tipoMaestroID, data);
-                return maestroToEdit.tipoMaestroID;
-            }
-            const response = await tipoMaestroApi.create(data);
-            return response.data;
-        },
-        onSuccess: (id: number) => {
-            queryClient.invalidateQueries({ queryKey: ['tipo-maestros'] });
-            queryClient.invalidateQueries({ queryKey: ['secciones-maestro'] }); // Invalidate sections as we might have added one
-            onSuccess(id);
-            onClose();
-        },
-    });
-
-    const onSubmit = (data: TipoMaestroSchema) => {
-        mutation.mutate(data);
-    };
+        formState: { errors }
+    } = form;
 
     return (
         <Dialog 
@@ -110,7 +58,7 @@ export function CreateEditTipoMaestroModal({
                 sx: { borderRadius: 3 }
             }}
         >
-            <DialogTitle sx={{ 
+            <DialogTitle component="div" sx={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 alignItems: 'center',
@@ -126,6 +74,12 @@ export function CreateEditTipoMaestroModal({
 
             <form onSubmit={handleSubmit(onSubmit)}>
                 <DialogContent>
+                    {errorMessage && (
+                        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setErrorMessage(null)}>
+                            {errorMessage}
+                        </Alert>
+                    )}
+
                     <Grid container spacing={2}>
                         <Grid size={{xs:12}}>
                             <Typography variant="subtitle2" color="primary" sx={{ mb: 2, fontWeight: 600 }}>
@@ -205,26 +159,27 @@ export function CreateEditTipoMaestroModal({
                                             <Switch
                                                 checked={field.value}
                                                 onChange={(e) => field.onChange(e.target.checked)}
-                                                color="success"
+                                                color="primary"
                                             />
                                         )}
                                     />
                                 }
-                                label="Registro Activo"
+                                label="Activo"
                             />
                         </Grid>
                     </Grid>
                 </DialogContent>
-                <DialogActions sx={{ p: 3, pt: 0 }}>
+
+                <DialogActions sx={{ p: 2 }}>
                     <Button onClick={onClose} color="inherit">
                         Cancelar
                     </Button>
                     <Button 
                         type="submit" 
                         variant="contained"
-                        disabled={isSubmitting || mutation.isPending}
+                        disabled={isSubmitting}
                     >
-                        {isEdit ? 'Actualizar' : 'Crear'}
+                        {isSubmitting ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Guardar')}
                     </Button>
                 </DialogActions>
             </form>

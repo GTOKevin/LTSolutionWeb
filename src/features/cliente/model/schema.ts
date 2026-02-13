@@ -9,7 +9,7 @@ export const createClienteSchema = z.object({
     contactoPrincipal: z.string().min(1, 'Contacto Principal es requerido'),
     telefono: z.string().regex(TELEFONO_PERU_REGEX, 'Debe ser un celular válido (9 dígitos)').optional().or(z.literal('')),
     email: z.string().email('Email inválido').optional().or(z.literal('')),
-    activo: z.boolean().default(true),
+    activo: z.boolean(),
 });
 
 export type CreateClienteSchema = z.infer<typeof createClienteSchema>;
@@ -20,7 +20,7 @@ export const createContactoSchema = z.object({
     telefonoPrincipal: z.string().min(1, 'Teléfono Principal es requerido'),
     telefonoSecundario: z.string().optional(),
     rol: z.string().optional(),
-    activo: z.boolean().default(true),
+    activo: z.boolean(),
 });
 
 export type CreateContactoSchema = z.infer<typeof createContactoSchema>;

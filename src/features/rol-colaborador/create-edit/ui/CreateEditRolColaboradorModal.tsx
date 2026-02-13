@@ -15,15 +15,10 @@ import {
     DialogActions
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { rolColaboradorApi } from '@entities/rol-colaborador/api/rol-colaborador.api';
-import { rolColaboradorSchema, type RolColaboradorSchema } from '../../model/schema';
-import { useEffect, useState } from 'react';
+import { Controller } from 'react-hook-form';
 import type { RolColaborador } from '@entities/rol-colaborador/model/types';
-import { handleBackendErrors } from '@shared/utils/form-validation';
 import { handleLettersOnlyKeyDown } from '@shared/utils/input-validators';
+import { useRolColaboradorForm } from '../../hooks/useRolColaboradorForm';
 
 interface CreateEditRolColaboradorModalProps {
     open: boolean;
@@ -34,75 +29,22 @@ interface CreateEditRolColaboradorModalProps {
 
 export function CreateEditRolColaboradorModal({ open, onClose, rolToEdit, onSuccess }: CreateEditRolColaboradorModalProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     
-    const isEdit = !!rolToEdit;
+    const {
+        form,
+        errorMessage,
+        setErrorMessage,
+        onSubmit,
+        isEdit,
+        isSubmitting
+    } = useRolColaboradorForm({ open, onClose, onSuccess, rolToEdit });
 
     const {
         register,
         handleSubmit,
-        reset,
-        setError,
         control,
-        formState: { errors, isSubmitting }
-    } = useForm({
-        resolver: zodResolver(rolColaboradorSchema),
-        defaultValues: {
-            nombre: '',
-            descripcion: '',
-            activo: true
-        }
-    });
-
-    useEffect(() => {
-        if (open) {
-            setErrorMessage(null);
-            if (rolToEdit) {
-                reset({
-                    nombre: rolToEdit.nombre,
-                    descripcion: rolToEdit.descripcion || '',
-                    activo: rolToEdit.activo
-                });
-            } else {
-                reset({
-                    nombre: '',
-                    descripcion: '',
-                    activo: true
-                });
-            }
-        }
-    }, [open, rolToEdit, reset]);
-
-    const mutation = useMutation({
-        mutationFn: async (data: RolColaboradorSchema) => {
-            if (isEdit && rolToEdit) {
-                await rolColaboradorApi.update(rolToEdit.rolColaboradorID, data);
-                return rolToEdit.rolColaboradorID;
-            }
-            const response = await rolColaboradorApi.create(data);
-            return response.data;
-        },
-        onSuccess: (id: number) => {
-            queryClient.invalidateQueries({ queryKey: ['roles-colaborador'] });
-            onSuccess(id);
-            onClose();
-        },
-        onError: (error: any) => {
-            if (error?.response?.status === 409) {
-                setErrorMessage('El nombre del rol ya se encuentra registrado.');
-            } else {
-                const genericError = handleBackendErrors<RolColaboradorSchema>(error, setError);
-                if (genericError) {
-                    setErrorMessage(genericError);
-                }
-            }
-        }
-    });
-
-    const onSubmit = (data: RolColaboradorSchema) => {
-        mutation.mutate(data);
-    };
+        formState: { errors }
+    } = form;
 
     return (
         <Dialog 
@@ -200,27 +142,19 @@ export function CreateEditRolColaboradorModal({ open, onClose, rolToEdit, onSucc
                     </Grid>
                 </form>
             </DialogContent>
+            
             <DialogActions sx={{ p: 3, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                <Button 
-                    onClick={onClose}
-                    variant="outlined"
-                    sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
-                >
+                <Button onClick={onClose} color="inherit" sx={{ borderRadius: 2 }}>
                     Cancelar
                 </Button>
                 <Button 
-                    type="submit"
+                    type="submit" 
                     form="rol-colaborador-form"
-                    variant="contained"
-                    disabled={mutation.isPending || isSubmitting}
-                    sx={{ 
-                        borderRadius: 2, 
-                        textTransform: 'none', 
-                        fontWeight: 600,
-                        px: 4
-                    }}
+                    variant="contained" 
+                    disabled={isSubmitting}
+                    sx={{ borderRadius: 2, px: 4 }}
                 >
-                    {mutation.isPending ? 'Guardando...' : 'Guardar'}
+                    {isEdit ? 'Guardar Cambios' : 'Crear Rol'}
                 </Button>
             </DialogActions>
         </Dialog>

@@ -18,15 +18,10 @@ import {
     Alert,
     Snackbar
 } from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { clienteApi } from '@entities/cliente/api/cliente.api';
-import { createClienteSchema, type CreateClienteSchema } from '../../model/schema';
-import { useEffect, useState } from 'react';
+import { Controller } from 'react-hook-form';
 import type { Cliente } from '@entities/cliente/model/types';
 import { ClienteContactosList } from '../../contactos/ui/ClienteContactosModal';
-import { handleBackendErrors } from '@shared/utils/form-validation';
+import { useClienteForm } from '../../hooks/useClienteForm';
 
 interface CreateEditClienteModalProps {
     open: boolean;
@@ -65,114 +60,29 @@ function CustomTabPanel(props: TabPanelProps) {
 
 export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess, viewOnly = false }: CreateEditClienteModalProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
-    const [activeTab, setActiveTab] = useState(0);
-    const [createdClientId, setCreatedClientId] = useState<number | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
     
-    const isEdit = !!clienteToEdit;
-    const effectiveClienteId = clienteToEdit?.clienteID || createdClientId;
-    const canEditContacts = !!effectiveClienteId;
+    const {
+        form,
+        activeTab,
+        errorMessage,
+        openSnackbar,
+        setErrorMessage,
+        setOpenSnackbar,
+        handleTabChange,
+        onSubmit,
+        isEdit,
+        createdClientId,
+        effectiveClienteId,
+        canEditContacts,
+        mutation
+    } = useClienteForm({ open, onClose, onSuccess, clienteToEdit });
 
     const {
         register,
         handleSubmit,
-        reset,
         control,
-        setError,
         formState: { errors, isSubmitting, isDirty }
-    } = useForm({
-        resolver: zodResolver(createClienteSchema),
-        defaultValues: {
-            activo: true
-        }
-    });
-
-    useEffect(() => {
-        if (open) {
-            setActiveTab(0);
-            setCreatedClientId(null);
-            setErrorMessage(null);
-            setOpenSnackbar(false);
-            // Clear any previous errors
-            // reset() clears values but we want to clear errors too if needed, though reset usually handles it.
-            if (clienteToEdit) {
-                reset({
-                    ruc: clienteToEdit.ruc,
-                    razonSocial: clienteToEdit.razonSocial,
-                    direccionLegal: clienteToEdit.direccionLegal || '',
-                    direccionFiscal: clienteToEdit.direccionFiscal || '',
-                    contactoPrincipal: clienteToEdit.contactoPrincipal,
-                    telefono: clienteToEdit.telefono || '',
-                    email: clienteToEdit.email || '',
-                    activo: clienteToEdit.activo
-                });
-            } else {
-                reset({
-                    ruc: '',
-                    razonSocial: '',
-                    direccionLegal: '',
-                    direccionFiscal: '',
-                    contactoPrincipal: '',
-                    telefono: '',
-                    email: '',
-                    activo: true
-                });
-            }
-        }
-    }, [open, clienteToEdit, reset]);
-
-    const mutation = useMutation({
-            mutationFn: async (data: CreateClienteSchema) => {
-            if (isEdit && clienteToEdit) {
-                 await clienteApi.update(clienteToEdit.clienteID, data);
-                 return clienteToEdit.clienteID;
-            }
-            // If we have a createdClientId, we are effectively editing it, but the prop isEdit is false.
-            // However, the form submits to this mutation.
-            // If we already created it (createdClientId exists) and user clicks save again on tab 0, 
-            // we should probably update it.
-            if (createdClientId) {
-                 await clienteApi.update(createdClientId, data);
-                 return createdClientId;
-            }
-            const response = await clienteApi.create(data);
-            return response.data;
-        },
-        onSuccess: (id:number) => {
-            queryClient.invalidateQueries({ queryKey: ['clientes'] });
-            onSuccess(id);
-            
-            if (!isEdit && !createdClientId) {
-                // First time creation
-                setCreatedClientId(id);
-                // Enable contacts tab and switch to it? Or just enable?
-                // User requirement: "una vez creado el cliente, se debe habilitar el submenu de Contactos"
-                // Let's switch to it to show progress.
-                setActiveTab(1); 
-            } else {
-                // Edit mode or subsequent save
-                onClose();
-            }
-        },
-        onError: (error: any) => {
-            console.warn("Mutation Error:", error);
-            const genericError = handleBackendErrors<CreateClienteSchema>(error, setError);
-            if (genericError) {
-                setErrorMessage(genericError);
-                setOpenSnackbar(true);
-            }
-        }
-    });
-
-    const onSubmit = (data: CreateClienteSchema) => {
-        mutation.mutate(data);
-    };
-
-    const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-        setActiveTab(newValue);
-    };
+    } = form;
 
     return (
         <>

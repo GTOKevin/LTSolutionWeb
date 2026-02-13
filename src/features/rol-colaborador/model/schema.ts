@@ -9,7 +9,7 @@ export const rolColaboradorSchema = z.object({
         .max(200, 'La descripción no puede exceder los 200 caracteres')
         .optional()
         .or(z.literal('')),
-    activo: z.boolean().default(true)
+    activo: z.boolean()
 });
 
 export type RolColaboradorSchema = z.infer<typeof rolColaboradorSchema>;

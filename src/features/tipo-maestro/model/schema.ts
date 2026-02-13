@@ -11,7 +11,7 @@ export const tipoMaestroSchema = z.object({
     seccion: z.string()
         .min(1, 'La sección es requerida')
         .max(50, 'La sección no puede exceder los 50 caracteres'),
-    activo: z.boolean().default(true),
+    activo: z.boolean(),
 });
 
 export type TipoMaestroSchema = z.infer<typeof tipoMaestroSchema>;
