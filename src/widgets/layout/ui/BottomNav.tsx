@@ -23,7 +23,7 @@ export function BottomNav() {
     // Determine value based on path
     const getValue = () => {
         const path = location.pathname;
-        if (path === '/app') return 0;
+        if (path === '/app' || path.startsWith('/app/dashboard')) return 0;
         if (path.startsWith('/app/clientes')) return 1;
         if (path.startsWith('/app/cotizaciones')) return 2;
         if (path.startsWith('/app/flota')) return 3;
@@ -49,7 +49,7 @@ export function BottomNav() {
                 value={getValue()}
                 onChange={(_, newValue) => {
                     switch (newValue) {
-                        case 0: navigate('/app'); break;
+                        case 0: navigate('/app/dashboard'); break;
                         case 1: navigate('/app/clientes'); break;
                         case 2: navigate('/app/cotizaciones'); break;
                         case 3: navigate('/app/flota'); break;

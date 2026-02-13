@@ -4,6 +4,8 @@ import { CircularProgress, Box } from '@mui/material';
 import { useAuthStore } from '@shared/store/auth.store';
 import { ProtectedRoute } from '@shared/lib/guards/ProtectedRoute';
 import { PublicRoute } from '@shared/lib/guards/PublicRoute';
+import { PermissionGuard } from '@shared/lib/guards/PermissionGuard';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 import { AppLayout } from '@widgets/layout/ui/AppLayout';
 
 // Lazy loaded pages
@@ -74,16 +76,56 @@ export function RouterProvider() {
                         }
                     >
                         <Route index element={<Navigate to="dashboard" replace />} />
-                        <Route path="dashboard" element={<DashboardPage />} />
-                        <Route path="clientes" element={<ClientesPage />} />
-                        <Route path="flota" element={<FlotasPage />} />
-                        <Route path="cotizaciones" element={<CotizacionesPage />} />
-                        <Route path="colaboradores" element={<ColaboradoresPage />} />
-                        <Route path="mantenimientos" element={<MantenimientosPage />} />
-                        <Route path="usuarios" element={<UsuariosPage />} />
-                        <Route path="roles-usuario" element={<RolesPage />} />
-                        <Route path="roles-colaborador" element={<RolesColaboradorPage />} />
-                        <Route path="maestros" element={<MaestrosPage />} />
+                        <Route path="dashboard" element={
+                            <PermissionGuard permission={PERMISSIONS.DASHBOARD.VER}>
+                                <DashboardPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="clientes" element={
+                            <PermissionGuard permission={PERMISSIONS.CLIENTES.VER}>
+                                <ClientesPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="flota" element={
+                            <PermissionGuard permission={PERMISSIONS.FLOTA.VER}>
+                                <FlotasPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="cotizaciones" element={
+                            <PermissionGuard permission={PERMISSIONS.COTIZACIONES.VER}>
+                                <CotizacionesPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="colaboradores" element={
+                            <PermissionGuard permission={PERMISSIONS.COLABORADORES.VER}>
+                                <ColaboradoresPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="mantenimientos" element={
+                            <PermissionGuard permission={PERMISSIONS.MANTENIMIENTOS.VER}>
+                                <MantenimientosPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="usuarios" element={
+                            <PermissionGuard permission={PERMISSIONS.SISTEMA.USUARIOS.VER}>
+                                <UsuariosPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="roles-usuario" element={
+                            <PermissionGuard permission={PERMISSIONS.SISTEMA.ROLES.VER}>
+                                <RolesPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="roles-colaborador" element={
+                            <PermissionGuard permission={PERMISSIONS.SISTEMA.ROLES.VER}>
+                                <RolesColaboradorPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="maestros" element={
+                            <PermissionGuard permission={PERMISSIONS.SISTEMA.MAESTROS.VER}>
+                                <MaestrosPage />
+                            </PermissionGuard>
+                        } />
                     </Route>
 
                     {/* Catch all */}

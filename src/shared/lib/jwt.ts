@@ -2,6 +2,7 @@ interface JWTPayload {
     sub: string; // UserId
     roleId: string;
     role: string;
+    permissions?: string; // JWT usually sends this as JSON string if serialized
     exp: number;
     iss?: string;
     aud?: string;
@@ -41,10 +42,23 @@ export function getUserFromToken(token: string) {
     const payload = parseJWT(token);
     if (!payload) return null;
 
+    let permissions: string[] = [];
+    if (payload.permissions) {
+        try {
+            // It might come as a JSON string from backend or array depending on claim type
+            permissions = typeof payload.permissions === 'string' 
+                ? JSON.parse(payload.permissions) 
+                : payload.permissions;
+        } catch {
+            permissions = [];
+        }
+    }
+
     return {
         userId: payload.sub,
         roleId: payload.roleId,
         role: payload.role,
+        permissions,
         name: payload.name || null,
         email: payload.email || null
     };

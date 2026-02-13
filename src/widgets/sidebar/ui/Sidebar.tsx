@@ -2,7 +2,6 @@ import {
     Box,
     Drawer,
     List,
-    ListItem,
     ListItemButton,
     ListItemIcon,
     ListItemText,
@@ -13,81 +12,25 @@ import {
     useTheme,
     alpha,
     Menu,
-    MenuItem,
+    MenuItem as MuiMenuItem,
     Divider
 } from '@mui/material';
 import {
-    Dashboard as DashboardIcon,
-    LocalShipping as TruckIcon,
-    DirectionsCar as CarIcon,
-    Groups as GroupsIcon,
-    Settings as SettingsIcon,
-    Description as ReportIcon,
     ExpandLess,
     ExpandMore,
     MoreVert as MoreVertIcon,
-    Inventory as InventoryIcon,
-    MonetizationOn as MonetizationOnIcon,
-    Person as PersonIcon,
-    Security as SecurityIcon,
-    Category as CategoryIcon,
-    Business as BusinessIcon,
-    Receipt as ReceiptIcon,
-    Build as BuildIcon,
     AccountCircle,
     Key,
-    Logout
+    Logout,
+    LocalShipping as TruckIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { useAuthStore } from '@shared/store/auth.store';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { SIDEBAR_MENU, type MenuItem } from '../model/sidebar.config';
 
 export const DRAWER_WIDTH = 280;
-
-interface MenuItem {
-    text: string;
-    path?: string;
-    icon: React.ReactNode;
-    children?: MenuItem[];
-    section?: string;
-}
-
-const menuItems: MenuItem[] = [
-    { text: 'Dashboard', path: '/app', icon: <DashboardIcon /> },
-    {
-        text: 'Gestión Comercial',
-        icon: <BusinessIcon />,
-        children: [
-            { text: 'Clientes', path: '/app/clientes', icon: <GroupsIcon /> },
-            { text: 'Cotizaciones', path: '/app/cotizaciones', icon: <ReportIcon /> }, 
-            { text: 'Facturas', path: '/app/facturas', icon: <ReceiptIcon /> },
-        ]
-    },
-    {
-        text: 'Operaciones',
-        icon: <TruckIcon />,
-        children: [
-             { text: 'Flota', path: '/app/flota', icon: <CarIcon /> },
-             { text: 'Mantenimientos', path: '/app/mantenimientos', icon: <BuildIcon /> },
-             { text: 'Mercadería', path: '/app/mercaderia', icon: <InventoryIcon /> },
-             { text: 'Colaboradores', path: '/app/colaboradores', icon: <GroupsIcon /> },
-             { text: 'Gastos', path: '/app/gastos', icon: <MonetizationOnIcon /> },
-        ]
-    },
-    {
-        text: 'Configuración',
-        icon: <SettingsIcon />,
-        section: 'Administración',
-        children: [
-            { text: 'Usuarios', path: '/app/usuarios', icon: <PersonIcon /> },
-            { text: 'Roles Usuario', path: '/app/roles-usuario', icon: <SecurityIcon /> },
-            { text: 'Roles Colaborador', path: '/app/roles-colaborador', icon: <SecurityIcon /> },
-            { text: 'Maestros', path: '/app/maestros', icon: <CategoryIcon /> },
-        ]
-    },
-    { text: 'Reportes', path: '/app/reportes', icon: <ReportIcon /> }
-];
 
 
 export function Sidebar() {
@@ -98,6 +41,76 @@ export function Sidebar() {
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const openMenu = Boolean(anchorEl);
+
+    // Permission check helper logic
+    const hasPermission = (requiredPermission?: string | string[]) => {
+        if (!requiredPermission) return true;
+        if (!user || !user.permissions) return false;
+        if (user.role === 'Administrador') return true;
+        
+        if (Array.isArray(requiredPermission)) {
+            return requiredPermission.some(p => user.permissions?.includes(p));
+        }
+        return user.permissions.includes(requiredPermission);
+    };
+
+    // Filter menu items based on permissions
+    const filteredMenu = useMemo(() => {
+        return SIDEBAR_MENU.reduce<MenuItem[]>((acc, item) => {
+            // Check if parent has permission
+            if (!hasPermission(item.permission)) return acc;
+
+            // If it has children, filter them too
+            if (item.children) {
+                const filteredChildren = item.children.filter(child => 
+                    hasPermission(child.permission)
+                );
+                
+                // If after filtering children none remain, and it was a category (no path), skip it
+                if (filteredChildren.length === 0 && !item.path) {
+                    return acc;
+                }
+                
+                // Return item with filtered children
+                acc.push({
+                    ...item,
+                    children: filteredChildren
+                });
+            } else {
+                // No children, just add if permission passed
+                acc.push(item);
+            }
+            return acc;
+        }, []);
+    }, [user]);
+
+    const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>(() => {
+        const initialOpen: Record<string, boolean> = {};
+        filteredMenu.forEach(item => {
+            if (item.children) {
+                // Check if any child matches current path
+                const isActive = item.children.some(child => 
+                    location.pathname === child.path || location.pathname.startsWith(`${child.path}/`)
+                );
+                if (isActive) {
+                    initialOpen[item.text] = true;
+                }
+            }
+        });
+        return initialOpen;
+    });
+
+    const handleSubmenuClick = (text: string) => {
+        setOpenSubmenus(prev => ({
+            ...prev,
+            [text]: !prev[text]
+        }));
+    };
+
+    const handleNavigation = (path: string) => {
+        navigate(path);
+        // On mobile we might want to close sidebar, but keeping logic simple for now
+    };
 
     const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -112,164 +125,147 @@ export function Sidebar() {
         logout();
         navigate('/login');
     };
-    
-    // Calculate initial open state based on current location
-    const getInitialOpenState = () => {
-        const state: Record<string, boolean> = {};
-        menuItems.forEach(item => {
-            if (item.children) {
-                // Check if any child matches the current path
-                const hasActiveChild = item.children.some(child => 
-                    child.path && (location.pathname === child.path || location.pathname.startsWith(`${child.path}/`))
-                );
-                if (hasActiveChild) {
-                    state[item.text] = true;
-                }
-            }
-        });
-        return state;
-    };
-    
-    const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>(getInitialOpenState);
 
-    const handleSubmenuClick = (text: string) => {
-        setOpenSubmenus(prev => ({ ...prev, [text]: !prev[text] }));
+    const isPathActive = (path?: string) => {
+        if (!path) return false;
+        if (location.pathname === path) return true;
+        return location.pathname.startsWith(`${path}/`);
     };
 
-    const handleNavigation = (path: string) => {
-        navigate(path);
-        if (window.innerWidth < 900) {
-             setSidebarOpen(false);
-        }
-    };
-
-    const renderMenuItem = (item: MenuItem, depth = 0) => {
-        // Improved active state logic: exact match or starts with path (for nested routes)
-        const isSelected = item.path 
-            ? (location.pathname === item.path || location.pathname.startsWith(`${item.path}/`))
-            : false;
-            
-        const hasChildren = item.children && item.children.length > 0;
-        const isOpen = openSubmenus[item.text];
-
-        // Custom colors from design
-        const inactiveColor = '#475569';
-        const activeColor = theme.palette.primary.main;
-        const hoverBg = alpha(theme.palette.common.white, 0.05);
-        const selectedBg = alpha(theme.palette.primary.main, 0.12); // Slightly stronger background
-
-        if (hasChildren) {
-            return (
-                <Box key={item.text}>
-                    {item.section && (
-                        <Box sx={{ px: 3, py: 2 }}>
-                            <Typography 
-                                variant="caption" 
-                                sx={{ 
-                                    color: '#5a6b7c', 
-                                    fontWeight: 600, 
-                                    textTransform: 'uppercase', 
-                                    letterSpacing: '0.05em' 
-                                }}
-                            >
-                                {item.section}
-                            </Typography>
-                        </Box>
-                    )}
-                    <ListItem disablePadding sx={{ display: 'block', mb: 0.5 }}>
-                        <ListItemButton
-                            onClick={() => handleSubmenuClick(item.text)}
-                            sx={{
-                                minHeight: 44,
-                                mx: 1.5,
-                                borderRadius: 2,
-                                justifyContent: 'initial',
-                                px: 2,
-                                color: isOpen ? theme.palette.text.primary : inactiveColor,
-                                '&:hover': {
-                                    backgroundColor: hoverBg,
-                                    color: theme.palette.text.primary,
-                                },
-                            }}
-                        >
-                            <ListItemIcon
-                                sx={{
-                                    minWidth: 0,
-                                    mr: 1.5,
-                                    justifyContent: 'center',
-                                    color: 'inherit'
-                                }}
-                            >
-                                {item.icon}
-                            </ListItemIcon>
-                            <ListItemText 
-                                primary={item.text} 
-                                primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: 500 }} 
-                            />
-                            {isOpen ? <ExpandLess sx={{ fontSize: 20 }} /> : <ExpandMore sx={{ fontSize: 20 }} />}
-                        </ListItemButton>
-                    </ListItem>
-                    <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                        <List component="div" disablePadding>
-                            {item.children?.map(child => renderMenuItem(child, depth + 1))}
-                        </List>
-                    </Collapse>
+    const renderMenuItem = (item: MenuItem) => (
+        <Box key={item.text}>
+            {item.section && (
+                <Box sx={{ px: 3, py: 2 }}>
+                    <Typography 
+                        variant="caption" 
+                        sx={{ 
+                            color: '#5a6b7c', 
+                            fontWeight: 600, 
+                            textTransform: 'uppercase', 
+                            letterSpacing: '0.05em' 
+                        }}
+                    >
+                        {item.section}
+                    </Typography>
                 </Box>
-            );
-        }
-
-        return (
-            <ListItem key={item.path || item.text} disablePadding sx={{ display: 'block', mb: 0.5 }}>
-                <ListItemButton
-                    selected={isSelected}
-                    onClick={() => item.path && handleNavigation(item.path)}
-                    sx={{
-                        minHeight: 44,
-                        mx: 1.5,
+            )}
+            {/* Parent Menu Item */}
+            {item.children ? (
+                <ListItemButton 
+                    onClick={() => handleSubmenuClick(item.text)}
+                    sx={{ 
                         borderRadius: 2,
-                        justifyContent: 'initial',
-                        px: 2,
-                        color: isSelected ? activeColor : inactiveColor,
-                        backgroundColor: isSelected ? selectedBg : 'transparent',
-                        borderLeft: isSelected ? `3px solid ${activeColor}` : '3px solid transparent', // Add border indicator
+                        mb: 0.5,
+                        mx: 1.5,
+                        color: openSubmenus[item.text] ? 'primary.main' : 'text.secondary',
+                        bgcolor: openSubmenus[item.text] ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
                         '&:hover': {
-                            backgroundColor: isSelected ? alpha(activeColor, 0.2) : hoverBg,
-                            color: theme.palette.text.primary,
-                            '& .MuiListItemIcon-root': {
-                                color: isSelected ? activeColor : theme.palette.text.primary
-                            }
-                        },
-                        '&.Mui-selected': {
-                             backgroundColor: selectedBg,
-                             color: activeColor,
-                             '&:hover': {
-                                 backgroundColor: alpha(activeColor, 0.2),
-                             }
+                            bgcolor: alpha(theme.palette.primary.main, 0.04),
+                            color: 'primary.main'
                         }
                     }}
                 >
-                    <ListItemIcon
-                        sx={{
-                            minWidth: 0,
-                            mr: 1.5,
-                            justifyContent: 'center',
-                            color: isSelected ? activeColor : 'inherit',
-                            transition: 'color 0.2s'
-                        }}
-                    >
+                    <ListItemIcon sx={{ 
+                        minWidth: 40,
+                        color: 'inherit'
+                    }}>
                         {item.icon}
                     </ListItemIcon>
                     <ListItemText 
                         primary={item.text} 
                         primaryTypographyProps={{ 
-                            fontSize: '0.875rem', 
-                            fontWeight: isSelected ? 700 : 500 
-                        }} 
+                            fontWeight: openSubmenus[item.text] ? 600 : 500,
+                            fontSize: '0.95rem'
+                        }}
+                    />
+                    {openSubmenus[item.text] ? <ExpandLess /> : <ExpandMore />}
+                </ListItemButton>
+            ) : (
+                <ListItemButton 
+                    onClick={() => item.path && handleNavigation(item.path)}
+                    selected={isPathActive(item.path)}
+                    sx={{ 
+                        borderRadius: 2,
+                        mb: 0.5,
+                        mx: 1.5,
+                        color: isPathActive(item.path) ? 'primary.main' : 'text.secondary',
+                        bgcolor: isPathActive(item.path) ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                        '&.Mui-selected': {
+                            bgcolor: alpha(theme.palette.primary.main, 0.12),
+                            color: 'primary.main',
+                            '&:hover': {
+                                bgcolor: alpha(theme.palette.primary.main, 0.16),
+                            }
+                        },
+                        '&:hover': {
+                            bgcolor: alpha(theme.palette.primary.main, 0.04),
+                            color: 'primary.main'
+                        }
+                    }}
+                >
+                    <ListItemIcon sx={{ 
+                        minWidth: 40,
+                        color: 'inherit'
+                    }}>
+                        {item.icon}
+                    </ListItemIcon>
+                    <ListItemText 
+                        primary={item.text} 
+                        primaryTypographyProps={{ 
+                            fontWeight: isPathActive(item.path) ? 600 : 500,
+                            fontSize: '0.95rem'
+                        }}
                     />
                 </ListItemButton>
-            </ListItem>
-        );
-    };
+            )}
+
+            {/* Submenu Children */}
+            {item.children && (
+                <Collapse in={openSubmenus[item.text]} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                        {item.children.map((child) => (
+                            <ListItemButton 
+                                key={child.text}
+                                onClick={() => child.path && handleNavigation(child.path)}
+                                selected={isPathActive(child.path)}
+                                sx={{ 
+                                    pl: 4, 
+                                    borderRadius: 2,
+                                    mb: 0.5,
+                                    mx: 1.5,
+                                    color: isPathActive(child.path) ? 'primary.main' : 'text.secondary',
+                                    bgcolor: isPathActive(child.path) ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                                    '&.Mui-selected': {
+                                        bgcolor: alpha(theme.palette.primary.main, 0.12),
+                                        color: 'primary.main',
+                                    },
+                                    '&:hover': {
+                                        bgcolor: alpha(theme.palette.primary.main, 0.04),
+                                        color: 'primary.main'
+                                    }
+                                }}
+                            >
+                                <ListItemIcon sx={{ 
+                                    minWidth: 36,
+                                    color: 'inherit',
+                                    mr: 1 
+                                }}>
+                                    {child.icon}
+                                </ListItemIcon>
+                                <ListItemText 
+                                    primary={child.text} 
+                                    primaryTypographyProps={{ 
+                                        fontWeight: isPathActive(child.path) ? 600 : 400,
+                                        fontSize: '0.9rem'
+                                    }}
+                                />
+                            </ListItemButton>
+                        ))}
+                    </List>
+                </Collapse>
+            )}
+        </Box>
+    );
 
     const drawerContent = (
         <Box sx={{ 
@@ -320,8 +316,8 @@ export function Sidebar() {
                     borderRadius: 4 
                 }
             }}>
-                <List>
-                    {menuItems.map(item => renderMenuItem(item))}
+                <List component="nav" disablePadding>
+                    {filteredMenu.map(renderMenuItem)}
                 </List>
             </Box>
 
@@ -391,25 +387,25 @@ export function Sidebar() {
                         }
                     }}
                 >
-                    <MenuItem onClick={handleMenuClose}>
+                    <MuiMenuItem onClick={handleMenuClose}>
                         <ListItemIcon>
                             <AccountCircle fontSize="small" />
                         </ListItemIcon>
                         <ListItemText>Mi Perfil</ListItemText>
-                    </MenuItem>
-                    <MenuItem onClick={handleMenuClose}>
+                    </MuiMenuItem>
+                    <MuiMenuItem onClick={handleMenuClose}>
                         <ListItemIcon>
                             <Key fontSize="small" />
                         </ListItemIcon>
                         <ListItemText>Cambiar contraseña</ListItemText>
-                    </MenuItem>
+                    </MuiMenuItem>
                     <Divider />
-                    <MenuItem onClick={handleLogout} sx={{ color: theme.palette.error.main }}>
+                    <MuiMenuItem onClick={handleLogout} sx={{ color: theme.palette.error.main }}>
                         <ListItemIcon>
                             <Logout fontSize="small" sx={{ color: theme.palette.error.main }} />
                         </ListItemIcon>
                         <ListItemText>Cerrar sesión</ListItemText>
-                    </MenuItem>
+                    </MuiMenuItem>
                 </Menu>
             </Box>
         </Box>

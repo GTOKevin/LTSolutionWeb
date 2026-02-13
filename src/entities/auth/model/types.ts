@@ -19,6 +19,7 @@ export interface User {
     userId: string;
     roleId: string;
     role: string;
+    permissions: string[];
     name: string | null;
     email: string | null;
 }
