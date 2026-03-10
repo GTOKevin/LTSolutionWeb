@@ -6,21 +6,17 @@ import {
     IconButton,
     Typography,
     alpha,
-    useTheme,
-    Dialog,
-    DialogContent,
-    DialogActions
+    useTheme
 } from '@mui/material';
 import {
     CloudUpload as UploadIcon,
     Delete as DeleteIcon,
     Visibility as ViewIcon,
-    Image as ImageIcon,
-    Download as DownloadIcon,
-    Close as CloseIcon
+    Image as ImageIcon
 } from '@mui/icons-material';
 import imageCompression from 'browser-image-compression';
 import { archivoApi } from '@shared/api/archivo.api';
+import { DocumentPreviewDialog } from './DocumentPreviewDialog';
 
 interface ImageUploadProps {
     value?: string;
@@ -77,7 +73,7 @@ export function ImageUpload({
             // }
 
             const response = await archivoApi.upload(compressedFile, folder);
-            onChange(response.data.url);
+            onChange(response.url);
         } catch (error) {
             console.error('Error uploading file:', error);
         } finally {
@@ -102,28 +98,6 @@ export function ImageUpload({
         if (path.startsWith('http')) return path;
         const baseUrl = API_URL.replace(/\/api\/?$/, '');
         return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-    };
-
-    const handleDownload = async () => {
-        if (!value) return;
-        const fullUrl = getFullUrl(value);
-        try {
-            const response = await fetch(fullUrl);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            const filename = value.split('/').pop() || 'imagen';
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('Error downloading:', error);
-            // Fallback
-            window.open(fullUrl, '_blank');
-        }
     };
 
     return (
@@ -244,37 +218,11 @@ export function ImageUpload({
             </Box>
 
             {/* Modal de Previsualización */}
-            <Dialog 
+            <DocumentPreviewDialog 
                 open={previewOpen} 
                 onClose={() => setPreviewOpen(false)}
-                maxWidth="lg"
-                fullWidth
-            >
-                <DialogActions sx={{ p: 1, borderBottom: `1px solid ${theme.palette.divider}` }}>
-                    <Typography variant="subtitle1" sx={{ flex: 1, px: 2, fontWeight: 600 }}>
-                        Vista Previa
-                    </Typography>
-                    <Button onClick={handleDownload} startIcon={<DownloadIcon />} variant="outlined" size="small" sx={{ mr: 1 }}>
-                        Descargar
-                    </Button>
-                    <IconButton onClick={() => setPreviewOpen(false)} size="small">
-                        <CloseIcon />
-                    </IconButton>
-                </DialogActions>
-                <DialogContent sx={{ p: 0, bgcolor: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-                    {value && (
-                        <img 
-                            src={getFullUrl(value)} 
-                            alt="Full preview" 
-                            style={{ 
-                                maxWidth: '100%', 
-                                maxHeight: '80vh', 
-                                objectFit: 'contain' 
-                            }} 
-                        />
-                    )}
-                </DialogContent>
-            </Dialog>
+                previewUrl={value ? getFullUrl(value) : null}
+            />
         </Box>
     );
 }

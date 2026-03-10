@@ -7,12 +7,15 @@ export const TIPO_MAESTRO = {
     TIPO_LICENCIA: 'LICENCIA',
     TIPO_PAGO: 'PAGO',
     TIPO_PRODUCTO: 'PRODUCTO',
-    TIPO_SERVICIO: 'MANTENIMIENTO'
-}
+    TIPO_SERVICIO: 'MANTENIMIENTO',
+    TIPO_GUIA: 'GUIA',
+    TIPO_INCIDENTE: 'INCIDENTE'
+}as const;
 
 export const ESTADO_SECCIONES = {
-    USUARIO: 'Usuario',
-    MANTENIMIENTO:'MANTENIMIENTO'
+    USUARIO: 'USUARIO',
+    MANTENIMIENTO:'MANTENIMIENTO',
+    VIAJE:'VIAJE'
 } as const;
 
 export const TIPOS_COMBUSTIBLE = [
@@ -32,6 +35,20 @@ export const ESTADO_MANTENIMIENTO_NAMES = {
     COMPLETADO: ['finalizado', 'completado'],
     CANCELADO: ['cancelado']
 };
+
+export const ESTADO_VIAJE_COD = {
+    Agendado: "AGE",
+    Transito: "TRA",
+    Cancelado: "CAN",
+    Completado: "COMP"
+} as const;
+
+export const TIPO_FLOTA={
+    CAMIONES:"N3",
+    CARRETAS:"O4",
+    LIVIANOS:"N1",
+    TODOS:""
+}as const;
 
 export const PLACA_PERU_REGEX = /^[A-Z0-9]{3}-[0-9]{3,4}$/;
 

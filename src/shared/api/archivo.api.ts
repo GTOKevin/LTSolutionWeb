@@ -5,19 +5,20 @@ export interface UploadResponse {
 }
 
 export const archivoApi = {
-    upload: (file: File, folder: string = 'general') => {
+    upload: async (file: File, folder: string = 'general'): Promise<UploadResponse> => {
         const formData = new FormData();
         formData.append('file', file);
-        
-        return httpClient.post<UploadResponse>(`/Archivo/upload?folder=${folder}`, formData, {
+
+        const response = await httpClient.post<UploadResponse>(`/Archivo/upload?folder=${folder}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
         });
+        return response.data;
     },
-
-    delete: (url: string) => {
-        return httpClient.delete<void>(`/Archivo/delete`, {
+    
+    delete: async (url: string): Promise<void> => {
+        await httpClient.delete(`/Archivo/delete`, {
             params: { url }
         });
     }

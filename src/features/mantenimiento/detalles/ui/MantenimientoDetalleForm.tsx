@@ -13,7 +13,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { tipoProductoApi } from '@entities/tipo-producto/api/tipo-producto.api';
-import { monedaApi } from '@entities/moneda/api/moneda.api';
+import { monedaApi } from '@/shared/api/moneda.api';
 import { createMantenimientoDetalleSchema, type CreateMantenimientoDetalleSchema } from '../../model/schema';
 import { useEffect, useState } from 'react';
 

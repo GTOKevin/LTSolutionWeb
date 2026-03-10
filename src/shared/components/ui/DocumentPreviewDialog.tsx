@@ -79,7 +79,7 @@ export function DocumentPreviewDialog({ open, onClose, previewUrl, title = 'Vist
             </DialogActions>
             <DialogContent sx={{ 
                 p: 0, 
-                bgcolor: alpha(theme.palette.action.hover, 0.1), 
+                bgcolor: '#000', 
                 display: 'flex', 
                 justifyContent: 'center', 
                 alignItems: 'center', 
@@ -97,7 +97,7 @@ export function DocumentPreviewDialog({ open, onClose, previewUrl, title = 'Vist
                         }} 
                     />
                 ) : (
-                    <Typography color="text.secondary">No se pudo cargar la imagen</Typography>
+                    <Typography sx={{ color: 'grey.500' }}>No se pudo cargar la imagen</Typography>
                 )}
             </DialogContent>
         </Dialog>

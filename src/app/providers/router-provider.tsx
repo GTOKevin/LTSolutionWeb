@@ -22,6 +22,7 @@ const UsuariosPage = lazy(() => import('@/pages/usuarios').then(module => ({ def
 const RolesPage = lazy(() => import('@/pages/roles').then(module => ({ default: module.RolesPage })));
 const RolesColaboradorPage = lazy(() => import('@/pages/roles-colaborador').then(module => ({ default: module.RolesColaboradorPage })));
 const MaestrosPage = lazy(() => import('@/pages/maestros').then(module => ({ default: module.MaestrosPage })));
+const ViajesPage = lazy(() => import('@pages/viajes').then(module => ({ default: module.ViajesPage })));
 
 function LoadingFallback() {
     return (
@@ -84,6 +85,11 @@ export function RouterProvider() {
                         <Route path="clientes" element={
                             <PermissionGuard permission={PERMISSIONS.CLIENTES.VER}>
                                 <ClientesPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="viajes" element={
+                            <PermissionGuard permission={PERMISSIONS.VIAJES.VER}>
+                                <ViajesPage />
                             </PermissionGuard>
                         } />
                         <Route path="flota" element={

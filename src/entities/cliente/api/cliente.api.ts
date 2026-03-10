@@ -1,6 +1,6 @@
 import  { httpClient } from '@shared/api/http';
 import type { Cliente, ClienteContacto, CreateClienteDto, CreateClienteContactoDto, ClienteParams } from '../model/types';
-import type { PagedResponse } from '@/shared/model/types';
+import type { PagedResponse, SelectItem } from '@/shared/model/types';
 
 export const clienteApi = {
     getById: (id: number) => httpClient.get<Cliente>(`/Cliente/${id}`),
@@ -9,7 +9,7 @@ export const clienteApi = {
         httpClient.get<PagedResponse<Cliente>>('/Cliente', { params }),
 
     getSelect: (search?: string, limit: number = 20) =>
-        httpClient.get<Cliente[]>('/Cliente/select', { params: { search, limit } }),
+        httpClient.get<SelectItem[]>('/Cliente/select', { params: { search, limit } }),
 
     getContactos: (clienteId?: number, search?: string, activo?: boolean, page: number = 1, size: number = 20) =>
         httpClient.get<PagedResponse<ClienteContacto>>('/Cliente/contactos', { 

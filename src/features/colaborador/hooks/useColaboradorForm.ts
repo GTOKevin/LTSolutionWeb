@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { colaboradorApi } from '@entities/colaborador/api/colaborador.api';
 import { maestroApi } from '@shared/api/maestro.api';
 import { rolColaboradorApi } from '@entities/rol-colaborador/api/rol-colaborador.api';
-import { monedaApi } from '@entities/moneda/api/moneda.api';
+import { monedaApi } from '@/shared/api/moneda.api';
 import { createColaboradorSchema, type CreateColaboradorSchema } from '../model/schema';
 import { useEffect, useState } from 'react';
 import type { Colaborador } from '@entities/colaborador/model/types';

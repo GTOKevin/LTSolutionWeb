@@ -16,7 +16,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { colaboradorPagoApi } from '@entities/colaborador-pago/api/colaborador-pago.api';
 import { maestroApi } from '@shared/api/maestro.api';
-import { monedaApi } from '@entities/moneda/api/moneda.api';
+import { monedaApi } from '@/shared/api/moneda.api';
 import { TIPO_MAESTRO } from '@/shared/constants/constantes';
 import type { ColaboradorPago } from '@entities/colaborador-pago/model/types';
 import { createColaboradorPagoSchema, type CreateColaboradorPagoSchema } from '../model/schema';
