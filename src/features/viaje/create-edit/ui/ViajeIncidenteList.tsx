@@ -1,34 +1,36 @@
 import { 
     Box, Button, IconButton, Table, TableBody, TableCell, 
     TableHead, TableRow, Typography, Paper, TextField, MenuItem, Grid,
-    useTheme, alpha, Chip, Tooltip
+    useTheme, alpha, Chip, Tooltip, CircularProgress, Alert
 } from '@mui/material';
 import { 
     Delete as DeleteIcon,
     ReportProblem as ReportProblemIcon,
     History as HistoryIcon,
     Warning as WarningIcon,
-    Image as ImageIcon
+    Image as ImageIcon,
+    Save as SaveIcon
 } from '@mui/icons-material';
-import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useState, useEffect } from 'react';
-import type { CreateViajeIncidenteDto } from '@/entities/viaje/model/types';
+import type { CreateViajeIncidenteDto, ViajeIncidente } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
 import { UbigeoSelect } from '@/shared/components/ui/UbigeoSelect';
 import { ImageUpload } from '@/shared/components/ui/ImageUpload';
+import { useViajeIncidentes, useCreateViajeIncidente, useDeleteViajeIncidente } from '@/features/viaje/hooks/useViajeIncidentes';
 
 interface Props {
+    viajeId?: number;
     viewOnly?: boolean;
     tiposIncidente: SelectItem[];
 }
 
-export function ViajeIncidenteList({ viewOnly, tiposIncidente }: Props) {
+export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente }: Props) {
     const theme = useTheme();
-    const { control } = useFormContext();
-    const { fields, append, remove } = useFieldArray({
-        control,
-        name: "viajeIncidentes"
-    });
+    
+    // Query & Mutations
+    const { data: incidentes = [], isLoading } = useViajeIncidentes(viajeId);
+    const createMutation = useCreateViajeIncidente();
+    const deleteMutation = useDeleteViajeIncidente();
 
     const [newItem, setNewItem] = useState<CreateViajeIncidenteDto>({
         fechaHora: new Date().toISOString(),
@@ -53,23 +55,37 @@ export function ViajeIncidenteList({ viewOnly, tiposIncidente }: Props) {
         }
     }, [date, time]);
 
-    const handleAdd = () => {
+    const handleAdd = async () => {
+        if (!viajeId) return;
         if (!newItem.tipoIncidenteID || !newItem.ubigeoID || !newItem.fechaHora) return;
         
-        append(newItem);
-        
-        // Reset form
-        const now = new Date();
-        setDate(now.toISOString().split('T')[0]);
-        setTime(now.toTimeString().slice(0, 5));
-        setNewItem({
-            fechaHora: now.toISOString(),
-            tipoIncidenteID: 0,
-            descripcion: '',
-            ubigeoID: 0,
-            lugar: '',
-            rutaFoto: ''
-        });
+        try {
+            await createMutation.mutateAsync({ viajeId, data: newItem });
+            
+            // Reset form
+            const now = new Date();
+            setDate(now.toISOString().split('T')[0]);
+            setTime(now.toTimeString().slice(0, 5));
+            setNewItem({
+                fechaHora: now.toISOString(),
+                tipoIncidenteID: 0,
+                descripcion: '',
+                ubigeoID: 0,
+                lugar: '',
+                rutaFoto: ''
+            });
+        } catch (error) {
+            console.error("Error creating incidente:", error);
+        }
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!viajeId) return;
+        try {
+            await deleteMutation.mutateAsync({ id, viajeId });
+        } catch (error) {
+            console.error("Error deleting incidente:", error);
+        }
     };
 
     const getIncidenteColor = (text: string = '') => {
@@ -81,6 +97,14 @@ export function ViajeIncidenteList({ viewOnly, tiposIncidente }: Props) {
         if (lower.includes('bloqueo')) return theme.palette.warning;
         return theme.palette.primary;
     };
+
+    if (!viajeId && !viewOnly) {
+        return (
+            <Alert severity="info" sx={{ mt: 2 }}>
+                Debe guardar el viaje (información general) antes de registrar incidentes.
+            </Alert>
+        );
+    }
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -228,8 +252,8 @@ export function ViajeIncidenteList({ viewOnly, tiposIncidente }: Props) {
                                     variant="contained" 
                                     color="primary"
                                     onClick={handleAdd}
-                                    disabled={!newItem.tipoIncidenteID || !newItem.ubigeoID}
-                                    startIcon={<WarningIcon />}
+                                    disabled={!newItem.tipoIncidenteID || !newItem.ubigeoID || createMutation.isPending}
+                                    startIcon={createMutation.isPending ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                                     sx={{ 
                                         fontWeight: 'bold',
                                         px: 4,
@@ -238,7 +262,7 @@ export function ViajeIncidenteList({ viewOnly, tiposIncidente }: Props) {
                                         '&:hover': { boxShadow: theme.shadows[4] }
                                     }}
                                 >
-                                    Reportar Incidente
+                                    {createMutation.isPending ? 'Guardando...' : 'Reportar Incidente'}
                                 </Button>
                             </Grid>
                         </Grid>
@@ -254,6 +278,7 @@ export function ViajeIncidenteList({ viewOnly, tiposIncidente }: Props) {
                         <Typography variant="subtitle1" fontWeight="bold" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
                             Incidentes Registrados
                         </Typography>
+                        {isLoading && <CircularProgress size={20} sx={{ ml: 2 }} />}
                     </Box>
                 </Box>
 
@@ -277,14 +302,14 @@ export function ViajeIncidenteList({ viewOnly, tiposIncidente }: Props) {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {fields.map((item: any, index) => {
+                            {incidentes.map((item: ViajeIncidente) => {
                                 const tipo = tiposIncidente.find(t => t.id === item.tipoIncidenteID);
-                                const tipoText = tipo?.text || 'Otro';
+                                const tipoText = tipo?.text || item.tipoIncidente?.descripcion || 'Otro';
                                 const colorPalette = getIncidenteColor(tipoText);
                                 const fecha = new Date(item.fechaHora);
 
                                 return (
-                                    <TableRow key={item.id} hover>
+                                    <TableRow key={item.viajeIncidenteID} hover>
                                         <TableCell>
                                             <Typography variant="body2" fontWeight="medium" color="text.primary">
                                                 {fecha.toLocaleDateString()}
@@ -342,7 +367,8 @@ export function ViajeIncidenteList({ viewOnly, tiposIncidente }: Props) {
                                                 <IconButton 
                                                     size="small" 
                                                     color="error" 
-                                                    onClick={() => remove(index)}
+                                                    onClick={() => handleDelete(item.viajeIncidenteID)}
+                                                    disabled={deleteMutation.isPending}
                                                     sx={{ 
                                                         bgcolor: alpha(theme.palette.error.main, 0.05),
                                                         '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.1) }
@@ -355,7 +381,7 @@ export function ViajeIncidenteList({ viewOnly, tiposIncidente }: Props) {
                                     </TableRow>
                                 );
                             })}
-                            {fields.length === 0 && (
+                            {!isLoading && incidentes.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
                                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, color: 'text.secondary' }}>

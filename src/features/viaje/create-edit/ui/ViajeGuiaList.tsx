@@ -13,7 +13,9 @@ import {
     Grid, 
     useTheme,
     alpha,
-    Tooltip
+    Tooltip,
+    Alert,
+    CircularProgress
 } from '@mui/material';
 import { 
     AddCircle as AddCircleIcon,
@@ -25,27 +27,28 @@ import {
     DoNotDisturb as NoFileIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material';
-import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useState } from 'react';
-import type { CreateViajeGuiaDto } from '@/entities/viaje/model/types';
+import type { CreateViajeGuiaDto, ViajeGuia } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
 import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
+import { useViajeGuias, useCreateViajeGuia, useDeleteViajeGuia } from '@/features/viaje/hooks/useViajeGuias';
 
 interface Props {
+    viajeId?: number;
     viewOnly?: boolean;
     tiposGuia: SelectItem[];
 }
 
 const API_URL = import.meta.env.VITE_IMG_URL_BASE || 'https://localhost:44332';
 
-export function ViajeGuiaList({ viewOnly, tiposGuia }: Props) {
+export function ViajeGuiaList({ viajeId, viewOnly, tiposGuia }: Props) {
     const theme = useTheme();
-    const { control, register, formState: { errors } } = useFormContext();
-    const { fields, append, remove, update } = useFieldArray({
-        control,
-        name: "viajeGuia"
-    });
+    
+    // Query & Mutations
+    const { data: guias = [], isLoading } = useViajeGuias(viajeId);
+    const createMutation = useCreateViajeGuia();
+    const deleteMutation = useDeleteViajeGuia();
 
     const [newItem, setNewItem] = useState<CreateViajeGuiaDto>({
         tipoGuiaID: 0,
@@ -63,15 +66,32 @@ export function ViajeGuiaList({ viewOnly, tiposGuia }: Props) {
         return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
     };
 
-    const handleAdd = () => {
+    const handleAdd = async () => {
+        if (!viajeId) return;
         if (!newItem.tipoGuiaID || !newItem.serie || !newItem.numero) return;
-        append(newItem);
-        setNewItem({
-            tipoGuiaID: 0,
-            serie: '',
-            numero: '',
-            rutaArchivo: ''
-        });
+
+        try {
+            await createMutation.mutateAsync({ viajeId, data: newItem });
+            
+            // Reset form
+            setNewItem({
+                tipoGuiaID: 0,
+                serie: '',
+                numero: '',
+                rutaArchivo: ''
+            });
+        } catch (error) {
+            console.error("Error creating guia:", error);
+        }
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!viajeId) return;
+        try {
+            await deleteMutation.mutateAsync({ id, viajeId });
+        } catch (error) {
+            console.error("Error deleting guia:", error);
+        }
     };
 
     const handlePreview = (path: string) => {
@@ -99,6 +119,14 @@ export function ViajeGuiaList({ viewOnly, tiposGuia }: Props) {
         if (text.toLowerCase().includes('transportista')) return alpha(theme.palette.success.main, 0.1);
         return alpha(theme.palette.text.secondary, 0.1);
     };
+
+    if (!viajeId && !viewOnly) {
+        return (
+            <Alert severity="info" sx={{ mt: 2 }}>
+                Debe guardar el viaje (información general) antes de registrar guías.
+            </Alert>
+        );
+    }
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -220,9 +248,9 @@ export function ViajeGuiaList({ viewOnly, tiposGuia }: Props) {
                                     fullWidth
                                     variant="contained"
                                     size="large"
-                                    startIcon={<SaveIcon />}
+                                    startIcon={createMutation.isPending ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                                     onClick={handleAdd}
-                                    disabled={!newItem.tipoGuiaID || !newItem.serie || !newItem.numero}
+                                    disabled={!newItem.tipoGuiaID || !newItem.serie || !newItem.numero || createMutation.isPending}
                                     sx={{ 
                                         mt: 1,
                                         py: 1.5,
@@ -232,7 +260,7 @@ export function ViajeGuiaList({ viewOnly, tiposGuia }: Props) {
                                         boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
                                     }}
                                 >
-                                    Registrar Guía
+                                    {createMutation.isPending ? 'Guardando...' : 'Registrar Guía'}
                                 </Button>
                             </Box>
                         </Grid>
@@ -265,6 +293,7 @@ export function ViajeGuiaList({ viewOnly, tiposGuia }: Props) {
                         <Typography variant="subtitle1" fontWeight="bold">
                             Guías Registradas
                         </Typography>
+                        {isLoading && <CircularProgress size={20} sx={{ ml: 2 }} />}
                     </Box>
                     <Box sx={{ 
                         px: 1, 
@@ -274,7 +303,7 @@ export function ViajeGuiaList({ viewOnly, tiposGuia }: Props) {
                         color: 'text.secondary'
                     }}>
                         <Typography variant="caption" fontWeight="bold">
-                            Total: {fields.length} registros
+                            Total: {guias.length} registros
                         </Typography>
                     </Box>
                 </Box>
@@ -297,14 +326,12 @@ export function ViajeGuiaList({ viewOnly, tiposGuia }: Props) {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {fields.map((field, index) => {
-                                // Cast field to any because useFieldArray types can be tricky with DTOs
-                                const item = field as unknown as CreateViajeGuiaDto;
+                            {guias.map((item: ViajeGuia) => {
                                 const tipo = tiposGuia.find(t => t.id === item.tipoGuiaID);
-                                const tipoText = tipo?.text || 'Desconocido';
+                                const tipoText = tipo?.text || item.tipoGuia?.descripcion || 'Desconocido';
                                 
                                 return (
-                                    <TableRow key={field.id} hover>
+                                    <TableRow key={item.viajeGuiaID} hover>
                                         <TableCell>
                                             <Box sx={{ 
                                                 display: 'inline-flex', 
@@ -353,11 +380,12 @@ export function ViajeGuiaList({ viewOnly, tiposGuia }: Props) {
                                                         <IconButton 
                                                             size="small" 
                                                             color="error" 
+                                                            disabled={deleteMutation.isPending}
                                                             sx={{ 
                                                                 border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
                                                                 bgcolor: alpha(theme.palette.error.main, 0.05)
                                                             }}
-                                                            onClick={() => remove(index)}
+                                                            onClick={() => handleDelete(item.viajeGuiaID)}
                                                         >
                                                             <DeleteIcon fontSize="small" />
                                                         </IconButton>
@@ -368,7 +396,7 @@ export function ViajeGuiaList({ viewOnly, tiposGuia }: Props) {
                                     </TableRow>
                                 );
                             })}
-                            {fields.length === 0 && (
+                            {!isLoading && guias.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                                         No hay guías registradas

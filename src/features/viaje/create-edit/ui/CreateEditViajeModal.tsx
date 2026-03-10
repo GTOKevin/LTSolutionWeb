@@ -521,6 +521,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                 tiposMedida={tiposMedida || []} 
                                 tiposPeso={tiposPeso || []} 
                                 mercaderias={mercaderias || []}
+                                viajeId={viaje?.viajeID}
                             />
                         </TabPanel>
 
@@ -528,6 +529,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                             <ViajeGuiaList
                                 viewOnly={isViewOnly}
                                 tiposGuia={tiposGuia || []}
+                                viajeId={viaje?.viajeID}
                             />
                         </TabPanel>
 
@@ -536,6 +538,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                 viewOnly={isViewOnly} 
                                 tiposGasto={tiposGasto || []} 
                                 monedas={monedas || []}
+                                viajeId={viaje?.viajeID}
                             />
                         </TabPanel>
 
@@ -543,6 +546,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                             <ViajeIncidenteList
                                 viewOnly={isViewOnly}
                                 tiposIncidente={tiposIncidente || []}
+                                viajeId={viaje?.viajeID}
                             />
                         </TabPanel>
 

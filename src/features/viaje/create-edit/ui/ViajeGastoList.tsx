@@ -1,38 +1,36 @@
 import { 
     Box, Button, IconButton, Table, TableBody, TableCell, TableContainer, 
     TableHead, TableRow, Typography, Paper, TextField, Grid, MenuItem, Checkbox, FormControlLabel,
-    useTheme, alpha, Card, CardContent, Divider, useMediaQuery
+    useTheme, alpha, Card, CardContent, Divider, useMediaQuery, Alert, CircularProgress
 } from '@mui/material';
 import { 
     AddCircle as AddCircleIcon, 
     Delete as DeleteIcon, 
-    Edit as EditIcon,
-    ReceiptLong as ReceiptIcon,
+    Receipt as ReceiptIcon,
     CalendarToday as CalendarIcon,
     ConfirmationNumber as TicketIcon,
-    AttachMoney as MoneyIcon,
-    Save as SaveIcon,
-    Close as CloseIcon
+    Save as SaveIcon
 } from '@mui/icons-material';
-import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useState } from 'react';
-import type { CreateViajeGastoDto } from '@/entities/viaje/model/types';
+import type { CreateViajeGastoDto, ViajeGasto } from '@/entities/viaje/model/types';
 import type{ SelectItem } from '@/shared/model/types';
+import { useViajeGastos, useCreateViajeGasto, useDeleteViajeGasto } from '@/features/viaje/hooks/useViajeGastos';
 
 interface Props {
+    viajeId?: number;
     viewOnly?: boolean;
     tiposGasto: SelectItem[];
     monedas: SelectItem[]; 
 }
 
-export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
+export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas }: Props) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const { control } = useFormContext();
-    const { fields, append, remove } = useFieldArray({
-        control,
-        name: "viajeGastos"
-    });
+    
+    // Query & Mutations
+    const { data: gastos = [], isLoading } = useViajeGastos(viajeId);
+    const createMutation = useCreateViajeGasto();
+    const deleteMutation = useDeleteViajeGasto();
 
     const [newItem, setNewItem] = useState<CreateViajeGastoDto>({
         gastoID: 0,
@@ -44,28 +42,44 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
         descripcion: ''
     });
 
-    const handleAdd = () => {
+    const handleAdd = async () => {
+        if (!viajeId) return;
         if (!newItem.gastoID || !newItem.monto || !newItem.monedaID) return;
-        append(newItem);
-        // Reset form but keep defaults
-        setNewItem({
-            gastoID: 0,
-            fechaGasto: new Date().toISOString().split('T')[0],
-            monedaID: 1,
-            monto: 0,
-            comprobante: false,
-            numeroComprobante: '',
-            descripcion: ''
-        });
+
+        try {
+            await createMutation.mutateAsync({ viajeId, data: newItem });
+            
+            // Reset form but keep defaults
+            setNewItem({
+                gastoID: 0,
+                fechaGasto: new Date().toISOString().split('T')[0],
+                monedaID: 1,
+                monto: 0,
+                comprobante: false,
+                numeroComprobante: '',
+                descripcion: ''
+            });
+        } catch (error) {
+            console.error("Error creating gasto:", error);
+        }
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!viajeId) return;
+        try {
+            await deleteMutation.mutateAsync({ id, viajeId });
+        } catch (error) {
+            console.error("Error deleting gasto:", error);
+        }
     };
 
     // Calculate totals
-    const totalPEN = fields.reduce((acc, item: any) => {
+    const totalPEN = gastos.reduce((acc: number, item: ViajeGasto) => {
         const moneda = monedas.find(m => m.id === item.monedaID);
         return acc + (moneda?.extra === 'PEN' || item.monedaID === 1 ? Number(item.monto) : 0);
     }, 0);
 
-    const totalUSD = fields.reduce((acc, item: any) => {
+    const totalUSD = gastos.reduce((acc: number, item: ViajeGasto) => {
         const moneda = monedas.find(m => m.id === item.monedaID);
         return acc + (moneda?.extra === 'USD' || item.monedaID === 2 ? Number(item.monto) : 0);
     }, 0);
@@ -82,6 +96,14 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
     const getGastoBg = (text: string = '') => {
         return alpha(getGastoColor(text), 0.1);
     };
+
+    if (!viajeId && !viewOnly) {
+        return (
+            <Alert severity="info" sx={{ mt: 2 }}>
+                Debe guardar el viaje (información general) antes de registrar gastos.
+            </Alert>
+        );
+    }
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: isMobile ? 10 : 0 }}>
@@ -235,8 +257,8 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
                                 fullWidth
                                 variant="contained" 
                                 onClick={handleAdd}
-                                startIcon={<SaveIcon />}
-                                disabled={!newItem.gastoID || !newItem.monto}
+                                startIcon={createMutation.isPending ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+                                disabled={!newItem.gastoID || !newItem.monto || createMutation.isPending}
                                 sx={{ 
                                     height: 40, 
                                     textTransform: 'none', 
@@ -245,7 +267,7 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
                                     boxShadow: theme.shadows[2]
                                 }}
                             >
-                                Registrar Gasto
+                                {createMutation.isPending ? 'Guardando...' : 'Registrar Gasto'}
                             </Button>
                         </Grid>
                     </Grid>
@@ -258,6 +280,7 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
                     <Typography variant="subtitle1" fontWeight="bold">
                         Gastos Registrados
                     </Typography>
+                    {isLoading && <CircularProgress size={20} sx={{ ml: 2 }} />}
                 </Box>
                 <Box sx={{ 
                     px: 1.5, py: 0.5, 
@@ -267,7 +290,7 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
                     fontSize: '0.75rem',
                     fontWeight: 'bold'
                 }}>
-                    Total: {fields.length} registros
+                    Total: {gastos.length} registros
                 </Box>
             </Box>
 
@@ -292,13 +315,13 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {fields.map((item: any, index) => {
+                            {gastos.map((item: ViajeGasto) => {
                                 const tipo = tiposGasto.find(t => t.id === item.gastoID);
                                 const moneda = monedas.find(m => m.id === item.monedaID);
-                                const tipoText = tipo?.text || 'Otro';
+                                const tipoText = tipo?.text || item.gasto?.descripcion || 'Otro';
                                 
                                 return (
-                                    <TableRow key={item.id} hover>
+                                    <TableRow key={item.viajeGastoID} hover>
                                         <TableCell>
                                             <Box sx={{ 
                                                 display: 'inline-block',
@@ -327,7 +350,8 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
                                                     <IconButton 
                                                         size="small" 
                                                         color="error" 
-                                                        onClick={() => remove(index)}
+                                                        disabled={deleteMutation.isPending}
+                                                        onClick={() => handleDelete(item.viajeGastoID)}
                                                         sx={{ 
                                                             border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
                                                             bgcolor: alpha(theme.palette.error.main, 0.05)
@@ -341,7 +365,7 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
                                     </TableRow>
                                 );
                             })}
-                            {fields.length === 0 && (
+                            {!isLoading && gastos.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={5} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                                         No hay gastos registrados
@@ -351,7 +375,7 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
                         </TableBody>
                         
                         {/* Summary Footer for Desktop */}
-                        {fields.length > 0 && (
+                        {gastos.length > 0 && (
                             <TableBody>
                                 <TableRow sx={{ bgcolor: alpha(theme.palette.background.default, 0.5) }}>
                                     <TableCell colSpan={3} align="right">
@@ -378,13 +402,13 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
                 </Paper>
             ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {fields.map((item: any, index) => {
+                    {gastos.map((item: ViajeGasto) => {
                         const tipo = tiposGasto.find(t => t.id === item.gastoID);
                         const moneda = monedas.find(m => m.id === item.monedaID);
-                        const tipoText = tipo?.text || 'Otro';
+                        const tipoText = tipo?.text || item.gasto?.descripcion || 'Otro';
                         
                         return (
-                            <Card key={item.id} elevation={0} sx={{ 
+                            <Card key={item.viajeGastoID} elevation={0} sx={{ 
                                 borderRadius: 3, 
                                 border: `1px solid ${theme.palette.divider}`,
                                 borderLeft: `4px solid ${getGastoColor(tipoText)}`
@@ -407,7 +431,8 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
                                                 <IconButton 
                                                     size="small" 
                                                     color="error" 
-                                                    onClick={() => remove(index)}
+                                                    disabled={deleteMutation.isPending}
+                                                    onClick={() => handleDelete(item.viajeGastoID)}
                                                     sx={{ 
                                                         p: 0.5,
                                                         bgcolor: alpha(theme.palette.error.main, 0.05),
@@ -441,7 +466,7 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
                             </Card>
                         );
                     })}
-                    {fields.length === 0 && (
+                    {!isLoading && gastos.length === 0 && (
                         <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
                             No hay gastos registrados
                         </Typography>
@@ -450,7 +475,7 @@ export function ViajeGastoList({ viewOnly, tiposGasto, monedas }: Props) {
             )}
 
             {/* Mobile Fixed Summary Bar */}
-            {isMobile && fields.length > 0 && (
+            {isMobile && gastos.length > 0 && (
                 <Paper 
                     elevation={4}
                     sx={{ 

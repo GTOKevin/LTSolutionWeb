@@ -16,7 +16,9 @@ import {
     useTheme,
     alpha,
     InputAdornment,
-    Tooltip
+    Tooltip,
+    Alert,
+    CircularProgress
 } from '@mui/material';
 import { 
     Add as AddIcon, 
@@ -28,27 +30,29 @@ import {
     Save as SaveIcon,
     Close as CloseIcon
 } from '@mui/icons-material';
-import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useState } from 'react';
-import type { CreateViajeMercaderiaDto } from '@/entities/viaje/model/types';
+import type { CreateViajeMercaderiaDto, ViajeMercaderia } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
+import { useViajeMercaderias, useCreateViajeMercaderia, useUpdateViajeMercaderia, useDeleteViajeMercaderia } from '@/features/viaje/hooks/useViajeMercaderias';
 
 interface Props {
+    viajeId?: number;
     viewOnly?: boolean;
     tiposMedida: SelectItem[];
     tiposPeso: SelectItem[];
     mercaderias: SelectItem[];
 }
 
-export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercaderias }: Props) {
+export function ViajeMercaderiaList({ viajeId, viewOnly, tiposMedida, tiposPeso, mercaderias }: Props) {
     const theme = useTheme();
-    const { control } = useFormContext();
-    const { fields, append, remove, update } = useFieldArray({
-        control,
-        name: "viajeMercaderia"
-    });
+    
+    // Query & Mutations
+    const { data: mercaderiaList = [], isLoading } = useViajeMercaderias(viajeId);
+    const createMutation = useCreateViajeMercaderia();
+    const updateMutation = useUpdateViajeMercaderia();
+    const deleteMutation = useDeleteViajeMercaderia();
 
-    const [editIndex, setEditIndex] = useState<number | null>(null);
+    const [editId, setEditId] = useState<number | null>(null);
     
     // Local state for new item form
     const [newItem, setNewItem] = useState<CreateViajeMercaderiaDto>({
@@ -62,40 +66,63 @@ export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercader
         peso: 0
     });
 
-    const handleAdd = () => {
+    const handleAdd = async () => {
+        if (!viajeId) return;
         // Validaciones básicas
         if (newItem.mercaderiaID === 0 && !newItem.descripcion) return;
 
-        if (editIndex !== null) {
-            update(editIndex, newItem);
-            setEditIndex(null);
-        } else {
-            append(newItem);
+        try {
+            if (editId !== null) {
+                await updateMutation.mutateAsync({ id: editId, data: newItem, viajeId });
+                setEditId(null);
+            } else {
+                await createMutation.mutateAsync({ viajeId, data: newItem });
+            }
+            
+            // Reset form
+            setNewItem({
+                mercaderiaID: 0,
+                descripcion: '',
+                tipoMedidaID: 0,
+                alto: 0,
+                largo: 0,
+                ancho: 0,
+                tipoPesoID: 0,
+                peso: 0
+            });
+        } catch (error) {
+            console.error("Error saving mercaderia:", error);
         }
-        
-        // Reset form
-        setNewItem({
-            mercaderiaID: 0,
-            descripcion: '',
-            tipoMedidaID: 0,
-            alto: 0,
-            largo: 0,
-            ancho: 0,
-            tipoPesoID: 0,
-            peso: 0
-        });
     };
 
-    const handleEdit = (index: number, item: any) => {
-        setEditIndex(index);
-        setNewItem(item);
+    const handleEdit = (item: ViajeMercaderia) => {
+        setEditId(item.viajeMercaderiaID);
+        setNewItem({
+            mercaderiaID: item.mercaderiaID,
+            descripcion: item.descripcion || '',
+            tipoMedidaID: item.tipoMedidaID,
+            alto: item.alto || 0,
+            largo: item.largo || 0,
+            ancho: item.ancho || 0,
+            tipoPesoID: item.tipoPesoID,
+            peso: item.peso || 0
+        });
         // Scroll to form if needed
         const formElement = document.getElementById('mercaderia-form');
         if (formElement) formElement.scrollIntoView({ behavior: 'smooth' });
     };
 
+    const handleDelete = async (id: number) => {
+        if (!viajeId) return;
+        try {
+            await deleteMutation.mutateAsync({ id, viajeId });
+        } catch (error) {
+            console.error("Error deleting mercaderia:", error);
+        }
+    };
+
     const handleCancel = () => {
-        setEditIndex(null);
+        setEditId(null);
         setNewItem({
             mercaderiaID: 0,
             descripcion: '',
@@ -109,11 +136,21 @@ export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercader
     };
 
     // Calcular totales y máximos
-    const totalPeso = fields.reduce((acc, item: any) => acc + (Number(item.peso) || 0), 0);
+    const totalPeso = mercaderiaList.reduce((acc: number, item: ViajeMercaderia) => acc + (Number(item.peso) || 0), 0);
     // Calcular dimensiones máximas para la plataforma (Largo se suma, Ancho y Alto son máximos)
-    const totalLargo = fields.reduce((acc, item: any) => acc + (Number(item.largo) || 0), 0);
-    const maxAncho = fields.length > 0 ? Math.max(...fields.map((item: any) => Number(item.ancho) || 0)) : 0;
-    const maxAlto = fields.length > 0 ? Math.max(...fields.map((item: any) => Number(item.alto) || 0)) : 0;
+    const totalLargo = mercaderiaList.reduce((acc: number, item: ViajeMercaderia) => acc + (Number(item.largo) || 0), 0);
+    const maxAncho = mercaderiaList.length > 0 ? Math.max(...mercaderiaList.map((item: ViajeMercaderia) => Number(item.ancho) || 0)) : 0;
+    const maxAlto = mercaderiaList.length > 0 ? Math.max(...mercaderiaList.map((item: ViajeMercaderia) => Number(item.alto) || 0)) : 0;
+
+    const isPending = createMutation.isPending || updateMutation.isPending;
+
+    if (!viajeId && !viewOnly) {
+        return (
+            <Alert severity="info" sx={{ mt: 2 }}>
+                Debe guardar el viaje (información general) antes de registrar mercadería.
+            </Alert>
+        );
+    }
 
     return (
         <Box>
@@ -133,7 +170,7 @@ export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercader
                     <Box display="flex" alignItems="center" gap={1} mb={3}>
                         <AddIcon color="primary" />
                         <Typography variant="h6" fontSize="1rem" fontWeight="bold">
-                            {editIndex !== null ? 'Editar Mercadería' : 'Registro de Mercadería'}
+                            {editId !== null ? 'Editar Mercadería' : 'Registro de Mercadería'}
                         </Typography>
                     </Box>
 
@@ -281,7 +318,7 @@ export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercader
                         </Grid>
                         
                         <Grid size={{xs:12, md:6}} display="flex" alignItems="end" alignSelf="flex-end" gap={1}>
-                            {editIndex !== null && (
+                            {editId !== null && (
                                 <Button 
                                     variant="outlined" 
                                     color="inherit"
@@ -297,7 +334,8 @@ export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercader
                                 color="primary" 
                                 fullWidth 
                                 onClick={handleAdd}
-                                startIcon={editIndex !== null ? <SaveIcon /> : <AddIcon />}
+                                disabled={isPending}
+                                startIcon={isPending ? <CircularProgress size={20} color="inherit" /> : (editId !== null ? <SaveIcon /> : <AddIcon />)}
                                 sx={{ 
                                     height: 48, 
                                     borderRadius: 2, 
@@ -305,7 +343,7 @@ export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercader
                                     fontWeight: 'bold'
                                 }}
                             >
-                                {editIndex !== null ? 'Guardar' : 'Agregar'}
+                                {isPending ? 'Guardando...' : (editId !== null ? 'Guardar' : 'Agregar')}
                             </Button>
                         </Grid>
                     </Grid>
@@ -314,7 +352,11 @@ export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercader
 
             {/* Listado de Mercadería */}
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} px={1}>
-                <Typography variant="subtitle1" fontWeight="bold">Ítems Registrados ({fields.length})</Typography>
+                <Box display="flex" alignItems="center" gap={1}>
+                    <Typography variant="subtitle1" fontWeight="bold">Ítems Registrados</Typography>
+                    {isLoading && <CircularProgress size={20} />}
+                </Box>
+                <Typography variant="caption" color="text.secondary">({mercaderiaList.length} ítems)</Typography>
             </Box>
 
             <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
@@ -328,13 +370,13 @@ export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercader
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {fields.map((item: any, index) => {
+                        {mercaderiaList.map((item: ViajeMercaderia) => {
                             const medida = tiposMedida.find(t => t.id === item.tipoMedidaID)?.text || '';
                             const pesoUnit = tiposPeso.find(t => t.id === item.tipoPesoID)?.text || '';
                             const mercaderiaNombre = mercaderias.find(m => m.id === item.mercaderiaID)?.text;
 
                             return (
-                                <TableRow key={item.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                <TableRow key={item.viajeMercaderiaID} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                     <TableCell sx={{ py: 2 }}>
                                         <Box display="flex" flexDirection="column">
                                             <Typography variant="body2" fontWeight="bold" color="text.primary">
@@ -394,7 +436,7 @@ export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercader
                                                 <Tooltip title="Editar">
                                                     <IconButton 
                                                         size="small" 
-                                                        onClick={() => handleEdit(index, item)}
+                                                        onClick={() => handleEdit(item)}
                                                         sx={{ 
                                                             color: 'text.secondary', 
                                                             bgcolor: alpha(theme.palette.primary.main, 0.05),
@@ -409,7 +451,8 @@ export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercader
                                                     <IconButton 
                                                         size="small" 
                                                         color="error" 
-                                                        onClick={() => remove(index)}
+                                                        disabled={deleteMutation.isPending}
+                                                        onClick={() => handleDelete(item.viajeMercaderiaID)}
                                                         sx={{ 
                                                             color: 'text.secondary', 
                                                             bgcolor: alpha(theme.palette.error.main, 0.05),
@@ -426,7 +469,7 @@ export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercader
                                 </TableRow>
                             );
                         })}
-                        {fields.length === 0 && (
+                        {!isLoading && mercaderiaList.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={4} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                                     <Typography variant="body2">No hay mercadería registrada</Typography>
@@ -439,7 +482,7 @@ export function ViajeMercaderiaList({ viewOnly, tiposMedida, tiposPeso, mercader
             </TableContainer>
 
             {/* Footer Totales */}
-            {fields.length > 0 && (
+            {mercaderiaList.length > 0 && (
                 <Box mt={3} display="flex" justifyContent="flex-end" flexWrap="wrap" gap={2}>
                     <Paper 
                         variant="outlined" 
