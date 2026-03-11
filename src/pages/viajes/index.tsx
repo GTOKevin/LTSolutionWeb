@@ -5,7 +5,6 @@ import {
     TextField, 
     InputAdornment, 
     Paper, 
-    TablePagination, 
     Typography, 
     Grid, 
     MenuItem,
@@ -264,25 +263,15 @@ export function ViajesPage() {
             </Paper>
 
             <ViajesTable 
-                viajes={data?.items || []}
+                data={data}
+                isLoading={isLoading}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
                 onEdit={handleEdit}
                 onView={handleView}
                 onDelete={handleDelete}
-            />
-
-            <TablePagination
-                component="div"
-                count={data?.total || 0}
-                page={page}
-                onPageChange={handleChangePage}
-                rowsPerPage={rowsPerPage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                labelRowsPerPage="Filas por página"
-                sx={{ 
-                    borderTop: `1px solid ${theme.palette.divider}`,
-                    bgcolor: 'background.paper',
-                    borderRadius: '0 0 12px 12px'
-                }}
             />
 
             <CreateEditViajeModal

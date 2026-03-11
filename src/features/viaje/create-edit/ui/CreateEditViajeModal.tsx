@@ -7,12 +7,12 @@ import { useEffect, useState } from 'react';
 import { useViajeOptions } from '../../hooks/useViajeOptions';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
 import { UbigeoSelect } from '@/shared/components/ui/UbigeoSelect';
-import { ViajeMercaderiaList } from './ViajeMercaderiaList';
-import { ViajeGastoList } from './ViajeGastoList';
-import { ViajeGuiaList } from './ViajeGuiaList';
-import { ViajeIncidenteList } from './ViajeIncidenteList';
-import { ViajePermisoList } from './ViajePermisoList';
-import { ViajeEscoltaList } from './ViajeEscoltaList';
+import { ViajeMercaderia } from '../../ui/ViajeMercaderia/ViajeMercaderia';
+import { ViajeGasto } from '../../ui/ViajeGasto/ViajeGasto';
+import { ViajeGuia } from '../../ui/ViajeGuia/ViajeGuia';
+import { ViajeIncidente } from '../../ui/ViajeIncidente/ViajeIncidente';
+import { ViajePermiso } from '../../ui/ViajePermiso/ViajePermiso';
+import { ViajeEscolta } from '../../ui/ViajeEscolta/ViajeEscolta';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -128,6 +128,8 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                     })) || [],
                     viajePermisos: viaje.viajePermisos?.map(p => ({
                         ...p,
+                        fechaVigencia: p.fechaVigencia ? String(p.fechaVigencia).split('T')[0] : undefined,
+                        fechaVencimiento: p.fechaVencimiento ? String(p.fechaVencimiento).split('T')[0] : undefined,
                         rutaArchivo: p.rutaArchivo ?? undefined
                     })) || [],
                     viajeEscolta: viaje.viajeEscolta?.map(e => ({
@@ -172,7 +174,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+        <Dialog open={open} onClose={onClose} maxWidth="xl"  fullWidth>
             <DialogTitle>{viaje ? (isViewOnly ? 'Detalle de Viaje' : 'Editar Viaje') : 'Nuevo Viaje'}</DialogTitle>
             <DialogContent>
                 <FormProvider {...methods}>
@@ -516,17 +518,17 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                         </TabPanel>
 
                         <TabPanel value={activeTab} index={1}>
-                            <ViajeMercaderiaList 
+                            <ViajeMercaderia 
                                 viewOnly={isViewOnly} 
                                 tiposMedida={tiposMedida || []} 
                                 tiposPeso={tiposPeso || []} 
                                 mercaderias={mercaderias || []}
-                                viajeId={viaje?.viajeID}
+                                viajeId={viaje?.viajeID || 0}
                             />
                         </TabPanel>
 
                         <TabPanel value={activeTab} index={2}>
-                            <ViajeGuiaList
+                            <ViajeGuia
                                 viewOnly={isViewOnly}
                                 tiposGuia={tiposGuia || []}
                                 viajeId={viaje?.viajeID}
@@ -534,7 +536,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                         </TabPanel>
 
                         <TabPanel value={activeTab} index={3}>
-                            <ViajeGastoList 
+                            <ViajeGasto 
                                 viewOnly={isViewOnly} 
                                 tiposGasto={tiposGasto || []} 
                                 monedas={monedas || []}
@@ -543,36 +545,24 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                         </TabPanel>
 
                         <TabPanel value={activeTab} index={4}>
-                            <ViajeIncidenteList
+                            <ViajeIncidente
                                 viewOnly={isViewOnly}
                                 tiposIncidente={tiposIncidente || []}
-                                viajeId={viaje?.viajeID}
+                                viajeId={viaje?.viajeID || 0}
                             />
                         </TabPanel>
 
-                        {/* Tabs for Permiso and Escolta, indexes need to adjust dynamically if I want strict indexing, but MUI Tabs usually work with explicit values.
-                            However, the TabPanel check uses explicit index.
-                            If I conditionally render tabs, the indexes of the tabs change visually but the value passed to onChange corresponds to the order.
-                            Wait, MUI Tabs uses child index by default if value is not provided, but I'm managing value.
-                            If I insert tabs conditionally, I must match the value.
-                            Let's use static indexes for conditional tabs but handle the selection logic or just always render them but disabled?
-                            Or, easier: render the tabs always but disabled if switch is off?
-                            User requirement implies "Requiere Escolta" switch toggles functionality.
-                            Let's keep it simple: always show the tabs but maybe disable them if switch is off, OR show them only if switch is on.
-                            If I show them only if switch is on, the index logic gets tricky.
-                            Let's assign specific values to tabs instead of 0,1,2,3...
-                            Actually, `value` in Tabs is whatever I want.
-                        */}
                         {requierePermiso && (
                             <TabPanel value={activeTab} index={5}>
-                                <ViajePermisoList viewOnly={isViewOnly} />
+                                <ViajePermiso viajeId={viaje?.viajeID} viewOnly={isViewOnly} />
                             </TabPanel>
                         )}
 
                         {requiereEscolta && (
                             <TabPanel value={activeTab} index={6}>
-                                <ViajeEscoltaList 
+                                <ViajeEscolta 
                                     viewOnly={isViewOnly} 
+                                    viajeId={viaje?.viajeID}
                                     flotas={tractos || []} // Assuming tractos list is suitable for escolta vehicles or I should merge carretas too? Escolta usually uses smaller vehicles (camionetas), which might be in Flota but not filtered as Tracto.
                                     // For now using tractos as placeholder or I should request 'all' flotas.
                                     colaboradores={colaboradores || []}

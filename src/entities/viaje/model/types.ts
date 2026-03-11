@@ -1,3 +1,5 @@
+import type { PagedResponse } from '@/shared/model/types';
+
 export interface ViajeMercaderia {
     viajeMercaderiaID: number;
     viajeID: number;
@@ -80,7 +82,7 @@ export interface ViajePermiso {
     viajePermisoID: number;
     viajeID: number;
     fechaVigencia: string;
-    fechaVencimiento: string;
+    fechaVencimiento: string | null;
     rutaArchivo: string | null;
 }
 
@@ -243,7 +245,7 @@ export interface CreateViajeIncidenteDto {
 
 export interface CreateViajePermisoDto {
     fechaVigencia: string;
-    fechaVencimiento: string;
+    fechaVencimiento?: string;
     rutaArchivo?: string;
 }
 
@@ -343,9 +345,4 @@ export interface ViajeListItem {
     mercaderiaDescripcion?: string;
 }
 
-export interface PagedViajes {
-    items: ViajeListItem[];
-    page: number;
-    size: number;
-    total: number;
-}
+export type PagedViajes = PagedResponse<ViajeListItem>;
