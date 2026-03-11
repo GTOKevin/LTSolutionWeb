@@ -75,6 +75,11 @@ export function ViajesPage() {
     };
 
     const handleEdit = async (item: ViajeListItem) => {
+        if (item.estadoNombre?.toUpperCase() === 'COMPLETADO') {
+            handleView(item);
+            return;
+        }
+
         try {
             const fullViaje = await viajeApi.getById(item.viajeID);
             setViajeToEdit(fullViaje);

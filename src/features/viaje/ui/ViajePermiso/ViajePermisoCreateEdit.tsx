@@ -8,10 +8,13 @@ import {
     Cancel as CancelIcon,
     AddCircle as AddCircleIcon
 } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
-import type { CreateViajePermisoDto, ViajePermiso } from '@/entities/viaje/model/types';
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { ViajePermiso } from '@/entities/viaje/model/types';
 import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { useCreateViajePermiso, useUpdateViajePermiso } from '@/features/viaje/hooks/useViajePermisos';
+import { viajePermisoSchema, type ViajePermisoFormData } from '../../model/schema';
 
 interface Props {
     viajeId: number;
@@ -24,69 +27,56 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
     const createMutation = useCreateViajePermiso();
     const updateMutation = useUpdateViajePermiso();
 
-    const [newItem, setNewItem] = useState<CreateViajePermisoDto>({
-        fechaVigencia: new Date().toISOString().split('T')[0],
-        fechaVencimiento: undefined,
-        rutaArchivo: ''
-    });
-
-    // Local state for dates to handle nulls properly
-    const [fechaVigencia, setFechaVigencia] = useState(new Date().toISOString().split('T')[0]);
-    const [fechaVencimiento, setFechaVencimiento] = useState('');
-
     const isEditing = !!permiso;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
+    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajePermisoFormData>({
+        resolver: zodResolver(viajePermisoSchema),
+        defaultValues: {
+            fechaVigencia: new Date().toISOString().split('T')[0],
+            fechaVencimiento: undefined,
+            rutaArchivo: ''
+        }
+    });
+
     useEffect(() => {
         if (permiso) {
-            setNewItem({
-                fechaVigencia: permiso.fechaVigencia,
-                fechaVencimiento: permiso.fechaVencimiento ?? undefined,
+            reset({
+                fechaVigencia: String(permiso.fechaVigencia).split('T')[0],
+                fechaVencimiento: permiso.fechaVencimiento ? String(permiso.fechaVencimiento).split('T')[0] : undefined,
                 rutaArchivo: permiso.rutaArchivo || ''
             });
-            setFechaVigencia(String(permiso.fechaVigencia));
-            setFechaVencimiento(permiso.fechaVencimiento ? String(permiso.fechaVencimiento) : '');
         } else {
-            const today = new Date().toISOString().split('T')[0];
-            setNewItem({
-                fechaVigencia: today,
+            reset({
+                fechaVigencia: new Date().toISOString().split('T')[0],
                 fechaVencimiento: undefined,
                 rutaArchivo: ''
             });
-            setFechaVigencia(today);
-            setFechaVencimiento('');
         }
-    }, [permiso]);
+    }, [permiso, reset]);
 
-    useEffect(() => {
-        setNewItem(prev => ({
-            ...prev,
-            fechaVigencia: fechaVigencia,
-            fechaVencimiento: fechaVencimiento ? fechaVencimiento : undefined
-        }));
-    }, [fechaVigencia, fechaVencimiento]);
-
-    const handleSave = async () => {
+    const onSubmit = async (data: ViajePermisoFormData) => {
         if (!viajeId) return;
-        if (!newItem.fechaVigencia) return;
 
         try {
+            const payload = {
+                ...data,
+                fechaVencimiento: data.fechaVencimiento || undefined,
+                rutaArchivo: data.rutaArchivo || undefined
+            };
+
             if (isEditing && permiso) {
                 await updateMutation.mutateAsync({ 
                     id: permiso.viajePermisoID, 
-                    data: newItem, 
+                    data: payload, 
                     viajeId 
                 });
             } else {
-                await createMutation.mutateAsync({ viajeId, data: newItem });
+                await createMutation.mutateAsync({ viajeId, data: payload });
             }
             
-            // Reset form
-            const today = new Date().toISOString().split('T')[0];
-            setFechaVigencia(today);
-            setFechaVencimiento('');
-            setNewItem({
-                fechaVigencia: today,
+            reset({
+                fechaVigencia: new Date().toISOString().split('T')[0],
                 fechaVencimiento: undefined,
                 rutaArchivo: ''
             });
@@ -135,33 +125,49 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
             </Box>
 
             <Grid container spacing={3}>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{xs:12, md:6}}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <TextField
-                            label="Fecha Vigencia"
-                            type="date"
-                            fullWidth
-                            InputLabelProps={{ shrink: true }}
-                            value={fechaVigencia}
-                            onChange={e => setFechaVigencia(e.target.value)}
-                            sx={{ bgcolor: 'background.paper' }}
+                        <Controller
+                            name="fechaVigencia"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    label="Fecha Vigencia"
+                                    type="date"
+                                    fullWidth
+                                    InputLabelProps={{ shrink: true }}
+                                    sx={{ bgcolor: 'background.paper' }}
+                                    error={!!errors.fechaVigencia}
+                                    helperText={errors.fechaVigencia?.message}
+                                />
+                            )}
                         />
-                        <TextField
-                            label="Fecha Vencimiento"
-                            type="date"
-                            fullWidth
-                            InputLabelProps={{ shrink: true }}
-                            value={fechaVencimiento}
-                            onChange={e => setFechaVencimiento(e.target.value)}
-                            sx={{ bgcolor: 'background.paper' }}
+                        <Controller
+                            name="fechaVencimiento"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    value={field.value || ''}
+                                    label="Fecha Vencimiento"
+                                    type="date"
+                                    fullWidth
+                                    InputLabelProps={{ shrink: true }}
+                                    sx={{ bgcolor: 'background.paper' }}
+                                    error={!!errors.fechaVencimiento}
+                                    helperText={errors.fechaVencimiento?.message}
+                                />
+                            )}
                         />
                         
                         <Button
+                            type="button"
+                            onClick={handleSubmit(onSubmit)}
                             variant="contained"
                             color={isEditing ? "warning" : "primary"}
                             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
-                            onClick={handleSave}
-                            disabled={!newItem.fechaVigencia || isLoading}
+                            disabled={isLoading}
                             sx={{ 
                                 mt: 2,
                                 py: 1.5,
@@ -176,12 +182,21 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
                     </Box>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{xs:12, md:6}}>
                     <Box sx={{ height: '100%' }}>
-                        <ImageUpload
-                            value={newItem.rutaArchivo}
-                            onChange={(path) => setNewItem({ ...newItem, rutaArchivo: path })}
-                            label="Documento / Permiso (Imagen o PDF)"
+                         <Typography variant="caption" sx={{ mb: 1, display: 'block' }}>
+                            Documento / Permiso (Imagen o PDF)
+                        </Typography>
+                        <Controller
+                            name="rutaArchivo"
+                            control={control}
+                            render={({ field }) => (
+                                <ImageUpload
+                                    value={field.value}
+                                    onChange={(base64) => field.onChange(base64)}
+                                    label="Documento / Permiso (Imagen o PDF)"
+                                />
+                            )}
                         />
                     </Box>
                 </Grid>

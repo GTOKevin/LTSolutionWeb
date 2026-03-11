@@ -8,10 +8,13 @@ import {
     Edit as EditIcon,
     Cancel as CancelIcon
 } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import type { CreateViajeGastoDto, ViajeGasto } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
 import { useCreateViajeGasto, useUpdateViajeGasto } from '@/features/viaje/hooks/useViajeGastos';
+import { viajeGastoSchema, type ViajeGastoFormData } from '../../model/schema';
 
 interface Props {
     viajeId: number;
@@ -26,22 +29,27 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
     const createMutation = useCreateViajeGasto();
     const updateMutation = useUpdateViajeGasto();
 
-    const [newItem, setNewItem] = useState<CreateViajeGastoDto>({
-        gastoID: 0,
-        fechaGasto: new Date().toISOString().split('T')[0],
-        monedaID: 1, // Default PEN
-        monto: 0,
-        comprobante: false,
-        numeroComprobante: '',
-        descripcion: ''
-    });
-
     const isEditing = !!gasto;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
+    const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<ViajeGastoFormData>({
+        resolver: zodResolver(viajeGastoSchema),
+        defaultValues: {
+            gastoID: 0,
+            fechaGasto: new Date().toISOString().split('T')[0],
+            monedaID: 1, // Default PEN
+            monto: 0,
+            comprobante: false,
+            numeroComprobante: '',
+            descripcion: ''
+        }
+    });
+
+    const hasComprobante = watch('comprobante');
+
     useEffect(() => {
         if (gasto) {
-            setNewItem({
+            reset({
                 gastoID: gasto.gastoID,
                 fechaGasto: gasto.fechaGasto ? String(gasto.fechaGasto).split('T')[0] : new Date().toISOString().split('T')[0],
                 monedaID: gasto.monedaID,
@@ -51,7 +59,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                 descripcion: gasto.descripcion || ''
             });
         } else {
-            setNewItem({
+            reset({
                 gastoID: 0,
                 fechaGasto: new Date().toISOString().split('T')[0],
                 monedaID: 1,
@@ -61,25 +69,31 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                 descripcion: ''
             });
         }
-    }, [gasto]);
+    }, [gasto, reset]);
 
-    const handleSave = async () => {
+    const onSubmit = async (data: ViajeGastoFormData) => {
         if (!viajeId) return;
-        if (!newItem.gastoID || !newItem.monto || !newItem.monedaID) return;
 
         try {
+            const payload: CreateViajeGastoDto = {
+                ...data,
+                // Ensure optional fields match the DTO
+                numeroComprobante: data.numeroComprobante || undefined,
+                descripcion: data.descripcion || undefined
+            };
+
             if (isEditing && gasto) {
                 await updateMutation.mutateAsync({ 
                     id: gasto.viajeGastoID, 
-                    data: newItem, 
+                    data: payload, 
                     viajeId 
                 });
             } else {
-                await createMutation.mutateAsync({ viajeId, data: newItem });
+                await createMutation.mutateAsync({ viajeId, data: payload });
             }
             
             // Reset form but keep defaults
-            setNewItem({
+            reset({
                 gastoID: 0,
                 fechaGasto: new Date().toISOString().split('T')[0],
                 monedaID: 1,
@@ -135,132 +149,189 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
             <Grid container spacing={2}>
                 <Grid size={{xs:12, sm:6, md:3}}>
                     <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
-                        Tipo de Gasto
-                    </Typography>
-                    <TextField
-                        select
-                        fullWidth
-                        size="small"
-                        value={newItem.gastoID}
-                        onChange={(e) => setNewItem({ ...newItem, gastoID: Number(e.target.value) })}
-                        SelectProps={{ displayEmpty: true }}
-                        sx={{ bgcolor: 'background.paper' }}
-                    >
-                        <MenuItem value={0} disabled>Seleccione tipo</MenuItem>
-                        {tiposGasto.map((tipo) => (
-                            <MenuItem key={tipo.id} value={tipo.id}>{tipo.text}</MenuItem>
-                        ))}
-                    </TextField>
-                </Grid>
-
-                <Grid size={{xs:12, sm:6, md:3}}>
-                    <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
-                        Fecha Gasto
-                    </Typography>
-                    <TextField
-                        type="date"
-                        fullWidth
-                        size="small"
-                        value={newItem.fechaGasto}
-                        onChange={(e) => setNewItem({ ...newItem, fechaGasto: e.target.value })}
-                        sx={{ bgcolor: 'background.paper' }}
-                    />
-                </Grid>
-
-                <Grid size={{xs:12, md:3}}>
-                    <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
-                        Moneda
-                    </Typography>
-                    <TextField
-                        select
-                        fullWidth
-                        size="small"
-                        value={newItem.monedaID}
-                        onChange={(e) => setNewItem({ ...newItem, monedaID: Number(e.target.value) })}
-                        sx={{ bgcolor: 'background.paper' }}
-                    >
-                        {monedas.map((moneda) => (
-                            <MenuItem key={moneda.id} value={moneda.id}>{moneda.text}</MenuItem>
-                        ))}
-                    </TextField>
-                </Grid>
-
-                <Grid size={{xs:12, sm:6, md:3}}>
-                    <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
-                        Monto
-                    </Typography>
-                    <TextField
-                        type="number"
-                        fullWidth
-                        size="small"
-                        placeholder="0.00"
-                        value={newItem.monto}
-                        onChange={(e) => setNewItem({ ...newItem, monto: Number(e.target.value) })}
-                        sx={{ bgcolor: 'background.paper' }}
-                    />
-                </Grid>
-
-                <Grid size={{xs:12, md:3}}>
-                    <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
-                        Comprobante
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox 
-                                    checked={newItem.comprobante} 
-                                    onChange={(e) => setNewItem({ ...newItem, comprobante: e.target.checked })}
+                            Tipo de Gasto
+                        </Typography>
+                        <Controller
+                            name="gastoID"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    select
+                                    fullWidth
                                     size="small"
-                                />
-                            }
-                            label={<Typography variant="body2">¿Tiene comprobante?</Typography>}
+                                    value={field.value || 0}
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                    SelectProps={{ displayEmpty: true }}
+                                    error={!!errors.gastoID}
+                                    helperText={errors.gastoID?.message}
+                                    sx={{ bgcolor: 'background.paper' }}
+                                >
+                                    <MenuItem value={0} disabled>Seleccione tipo</MenuItem>
+                                    {tiposGasto.map((tipo) => (
+                                        <MenuItem key={tipo.id} value={tipo.id}>{tipo.text}</MenuItem>
+                                    ))}
+                                </TextField>
+                            )}
                         />
-                        {newItem.comprobante && (
-                            <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="N° Comprobante"
-                                value={newItem.numeroComprobante}
-                                onChange={(e) => setNewItem({ ...newItem, numeroComprobante: e.target.value })}
-                                sx={{ bgcolor: 'background.paper' }}
-                            />
-                        )}
-                    </Box>
-                </Grid>
+                    </Grid>
 
-                <Grid size={{xs:12, sm:6}}>
-                    <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
-                        Descripción (Opcional)
-                    </Typography>
-                    <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="Detalles adicionales..."
-                        value={newItem.descripcion}
-                        onChange={(e) => setNewItem({ ...newItem, descripcion: e.target.value })}
-                        sx={{ bgcolor: 'background.paper' }}
-                    />
+                    <Grid size={{xs:12, sm:6, md:3}}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
+                            Fecha Gasto
+                        </Typography>
+                        <Controller
+                            name="fechaGasto"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    type="date"
+                                    fullWidth
+                                    size="small"
+                                    error={!!errors.fechaGasto}
+                                    helperText={errors.fechaGasto?.message}
+                                    sx={{ bgcolor: 'background.paper' }}
+                                />
+                            )}
+                        />
+                    </Grid>
+
+                    <Grid size={{xs:12, md:3}}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
+                            Moneda
+                        </Typography>
+                        <Controller
+                            name="monedaID"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    select
+                                    fullWidth
+                                    size="small"
+                                    value={field.value || 0}
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                    error={!!errors.monedaID}
+                                    helperText={errors.monedaID?.message}
+                                    sx={{ bgcolor: 'background.paper' }}
+                                >
+                                    {monedas.map((moneda) => (
+                                        <MenuItem key={moneda.id} value={moneda.id}>{moneda.text}</MenuItem>
+                                    ))}
+                                </TextField>
+                            )}
+                        />
+                    </Grid>
+
+                    <Grid size={{xs:12, sm:6, md:3}}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
+                            Monto
+                        </Typography>
+                        <Controller
+                            name="monto"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    type="number"
+                                    fullWidth
+                                    size="small"
+                                    placeholder="0.00"
+                                    value={field.value === 0 ? '' : field.value}
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                    error={!!errors.monto}
+                                    helperText={errors.monto?.message}
+                                    sx={{ bgcolor: 'background.paper' }}
+                                />
+                            )}
+                        />
+                    </Grid>
+
+                    <Grid size={{xs:12, md:3}}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
+                            Comprobante
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                            <Controller
+                                name="comprobante"
+                                control={control}
+                                render={({ field }) => (
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox 
+                                                checked={!!field.value} 
+                                                onChange={(e) => field.onChange(e.target.checked)}
+                                                size="small"
+                                            />
+                                        }
+                                        label={<Typography variant="body2">¿Tiene comprobante?</Typography>}
+                                    />
+                                )}
+                            />
+                            {hasComprobante && (
+                                <Controller
+                                    name="numeroComprobante"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            fullWidth
+                                            size="small"
+                                            placeholder="N° Comprobante"
+                                            value={field.value || ''}
+                                            error={!!errors.numeroComprobante}
+                                            helperText={errors.numeroComprobante?.message}
+                                            sx={{ bgcolor: 'background.paper' }}
+                                        />
+                                    )}
+                                />
+                            )}
+                        </Box>
+                    </Grid>
+
+                    <Grid size={{xs:12, sm:6}}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
+                            Descripción (Opcional)
+                        </Typography>
+                        <Controller
+                            name="descripcion"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    fullWidth
+                                    size="small"
+                                    placeholder="Detalles adicionales..."
+                                    value={field.value || ''}
+                                    error={!!errors.descripcion}
+                                    helperText={errors.descripcion?.message}
+                                    sx={{ bgcolor: 'background.paper' }}
+                                />
+                            )}
+                        />
+                    </Grid>
+                    
+                    <Grid size={{xs:12}} sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+                        <Button
+                            type="button"
+                            onClick={handleSubmit(onSubmit)}
+                            variant="contained"
+                            color={isEditing ? "warning" : "primary"}
+                            startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+                            disabled={isLoading}
+                            sx={{ 
+                                px: 4,
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 'bold',
+                                boxShadow: theme.shadows[2]
+                            }}
+                        >
+                            {isEditing ? "Guardar Cambios" : "Registrar Gasto"}
+                        </Button>
+                    </Grid>
                 </Grid>
-                
-                <Grid size={{xs:12}} sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
-                    <Button
-                        variant="contained"
-                        color={isEditing ? "warning" : "primary"}
-                        startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
-                        onClick={handleSave}
-                        disabled={!newItem.gastoID || !newItem.monto || !newItem.monedaID || isLoading}
-                        sx={{ 
-                            px: 4,
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontWeight: 'bold',
-                            boxShadow: theme.shadows[2]
-                        }}
-                    >
-                        {isEditing ? "Guardar Cambios" : "Registrar Gasto"}
-                    </Button>
-                </Grid>
-            </Grid>
         </Paper>
     );
 }

@@ -10,10 +10,13 @@ import {
     MonitorWeight, 
     Search as SearchIcon
 } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
-import type { CreateViajeMercaderiaDto, ViajeMercaderia } from '@/entities/viaje/model/types';
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { ViajeMercaderia } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
 import { useCreateViajeMercaderia, useUpdateViajeMercaderia } from '@/features/viaje/hooks/useViajeMercaderias';
+import { viajeMercaderiaSchema, type ViajeMercaderiaFormData } from '../../model/schema';
 
 interface Props {
     viajeId: number;
@@ -31,21 +34,26 @@ export function ViajeMercaderiaCreateEdit({
     const createMutation = useCreateViajeMercaderia();
     const updateMutation = useUpdateViajeMercaderia();
 
-    // Local state for new item form
-    const [newItem, setNewItem] = useState<CreateViajeMercaderiaDto>({
-        mercaderiaID: 0, 
-        descripcion: '',
-        tipoMedidaID: 0,
-        alto: 0,
-        largo: 0,
-        ancho: 0,
-        tipoPesoID: 0,
-        peso: 0
+    const isEditing = !!editItem;
+    const isLoading = createMutation.isPending || updateMutation.isPending;
+
+    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajeMercaderiaFormData>({
+        resolver: zodResolver(viajeMercaderiaSchema),
+        defaultValues: {
+            mercaderiaID: 0, 
+            descripcion: '',
+            tipoMedidaID: 0,
+            alto: 0,
+            largo: 0,
+            ancho: 0,
+            tipoPesoID: 0,
+            peso: 0
+        }
     });
 
     useEffect(() => {
         if (editItem) {
-            setNewItem({
+            reset({
                 mercaderiaID: editItem.mercaderiaID,
                 descripcion: editItem.descripcion || '',
                 tipoMedidaID: editItem.tipoMedidaID,
@@ -58,25 +66,42 @@ export function ViajeMercaderiaCreateEdit({
             // Scroll to form if needed
             const formElement = document.getElementById('mercaderia-form');
             if (formElement) formElement.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            reset({
+                mercaderiaID: 0, 
+                descripcion: '',
+                tipoMedidaID: 0,
+                alto: 0,
+                largo: 0,
+                ancho: 0,
+                tipoPesoID: 0,
+                peso: 0
+            });
         }
-    }, [editItem]);
+    }, [editItem, reset]);
 
-    const handleSave = async () => {
+    const onSubmit = async (data: ViajeMercaderiaFormData) => {
         if (!viajeId) return;
-        // Validaciones básicas
-        if (newItem.mercaderiaID === 0 && !newItem.descripcion) return;
 
         try {
+            const payload = {
+                ...data,
+                descripcion: data.descripcion || undefined,
+                alto: data.alto || undefined,
+                largo: data.largo || undefined,
+                ancho: data.ancho || undefined,
+                peso: data.peso || undefined
+            };
+
             if (editItem) {
-                await updateMutation.mutateAsync({ id: editItem.viajeMercaderiaID, data: newItem, viajeId });
+                await updateMutation.mutateAsync({ id: editItem.viajeMercaderiaID, data: payload, viajeId });
                 onCancelEdit();
             } else {
-                await createMutation.mutateAsync({ viajeId, data: newItem });
+                await createMutation.mutateAsync({ viajeId, data: payload });
             }
             
-            // Reset form
-            setNewItem({
-                mercaderiaID: 0,
+            reset({
+                mercaderiaID: 0, 
                 descripcion: '',
                 tipoMedidaID: 0,
                 alto: 0,
@@ -89,22 +114,6 @@ export function ViajeMercaderiaCreateEdit({
             console.error("Error saving mercaderia:", error);
         }
     };
-
-    const handleCancel = () => {
-        onCancelEdit();
-        setNewItem({
-            mercaderiaID: 0,
-            descripcion: '',
-            tipoMedidaID: 0,
-            alto: 0,
-            largo: 0,
-            ancho: 0,
-            tipoPesoID: 0,
-            peso: 0
-        });
-    };
-
-    const isPending = createMutation.isPending || updateMutation.isPending;
 
     return (
         <Paper 
@@ -127,175 +136,229 @@ export function ViajeMercaderiaCreateEdit({
 
             <Grid container spacing={2}>
                 {/* Fila 1: Producto, Descripción */}
-                <Grid size={{xs:12,md:4}}>
+                <Grid size={{xs:12, md:4}}>
                     <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>
                         Producto
                     </Typography>
-                    <TextField
-                        select
-                        fullWidth
-                        size="small"
-                        value={newItem.mercaderiaID}
-                        onChange={(e) => {
-                            const id = Number(e.target.value);
-                            const selected = mercaderias.find(m => m.id === id);
-                            setNewItem({
-                                ...newItem, 
-                                mercaderiaID: id,
-                                descripcion: selected ? selected.text : newItem.descripcion
-                            });
-                        }}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon fontSize="small" color="action" />
-                                </InputAdornment>
-                            ),
-                            
-                        }}
-                    >
-                        <MenuItem value={0} disabled sx={{ color: 'text.secondary' }}>Seleccionar producto...</MenuItem>
-                        {mercaderias.map(m => (
-                            <MenuItem key={m.id} value={m.id}>{m.text}</MenuItem>
-                        ))}
-                    </TextField>
+                    <Controller
+                        name="mercaderiaID"
+                        control={control}
+                        render={({ field }) => (
+                            <TextField
+                                {...field}
+                                select
+                                fullWidth
+                                size="small"
+                                onChange={(e) => {
+                                    const id = Number(e.target.value);
+                                    field.onChange(id);
+                                    const selected = mercaderias.find(m => m.id === id);
+                                    if (selected) {
+                                        setValue('descripcion', selected.text);
+                                    }
+                                }}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchIcon fontSize="small" color="action" />
+                                        </InputAdornment>
+                                    ),
+                                }}
+                                error={!!errors.mercaderiaID}
+                                helperText={errors.mercaderiaID?.message}
+                            >
+                                <MenuItem value={0} disabled sx={{ color: 'text.secondary' }}>Seleccionar producto...</MenuItem>
+                                {mercaderias.map(m => (
+                                    <MenuItem key={m.id} value={m.id}>{m.text}</MenuItem>
+                                ))}
+                            </TextField>
+                        )}
+                    />
                 </Grid>
-                <Grid size={{xs:12,md:8}}>
+                <Grid size={{xs:12, md:8}}>
                     <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>
                         Descripción Detallada
                     </Typography>
-                    <TextField 
-                        fullWidth 
-                        size="small"
-                        placeholder="Ingrese especificaciones, marcas o modelos..."
-                        value={newItem.descripcion} 
-                        onChange={e => setNewItem({...newItem, descripcion: e.target.value})}
+                    <Controller
+                        name="descripcion"
+                        control={control}
+                        render={({ field }) => (
+                            <TextField 
+                                {...field}
+                                fullWidth 
+                                size="small"
+                                placeholder="Ingrese especificaciones, marcas o modelos..."
+                                error={!!errors.descripcion}
+                                helperText={errors.descripcion?.message}
+                            />
+                        )}
                     />
                 </Grid>
 
                 {/* Fila 2: Dimensiones y Peso */}
-                <Grid size={{xs:12,md:7}}>
+                <Grid size={{xs:12, md:7}}>
                     <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2, bgcolor: 'background.paper' }}>
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 1, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.65rem', letterSpacing: '0.05em' }}>
                             <Straighten fontSize="inherit" /> Dimensiones
                         </Typography>
                         <Box display="flex" alignItems="center" gap={1}>
-                            <TextField
-                                placeholder="Largo"
-                                type="number"
-                                size="small"
-                                fullWidth
-                                value={newItem.largo || ''}
-                                onChange={e => setNewItem({...newItem, largo: Number(e.target.value)})}
-                                InputProps={{ sx: { textAlign: 'center', '& input': { textAlign: 'center' } } }}
-                                variant="standard"
+                            <Controller
+                                name="largo"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        placeholder="Largo"
+                                        type="number"
+                                        size="small"
+                                        fullWidth
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                        InputProps={{ sx: { textAlign: 'center', '& input': { textAlign: 'center' } } }}
+                                        variant="standard"
+                                        error={!!errors.largo}
+                                    />
+                                )}
                             />
                             <Typography color="text.secondary" variant="caption">×</Typography>
-                            <TextField
-                                placeholder="Ancho"
-                                type="number"
-                                size="small"
-                                fullWidth
-                                value={newItem.ancho || ''}
-                                onChange={e => setNewItem({...newItem, ancho: Number(e.target.value)})}
-                                InputProps={{ sx: { textAlign: 'center', '& input': { textAlign: 'center' } } }}
-                                variant="standard"
+                            <Controller
+                                name="ancho"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        placeholder="Ancho"
+                                        type="number"
+                                        size="small"
+                                        fullWidth
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                        InputProps={{ sx: { textAlign: 'center', '& input': { textAlign: 'center' } } }}
+                                        variant="standard"
+                                        error={!!errors.ancho}
+                                    />
+                                )}
                             />
                             <Typography color="text.secondary" variant="caption">×</Typography>
-                            <TextField
-                                placeholder="Alto"
-                                type="number"
-                                size="small"
-                                fullWidth
-                                value={newItem.alto || ''}
-                                onChange={e => setNewItem({...newItem, alto: Number(e.target.value)})}
-                                InputProps={{ sx: { textAlign: 'center', '& input': { textAlign: 'center' } } }}
-                                variant="standard"
+                            <Controller
+                                name="alto"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        placeholder="Alto"
+                                        type="number"
+                                        size="small"
+                                        fullWidth
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                        InputProps={{ sx: { textAlign: 'center', '& input': { textAlign: 'center' } } }}
+                                        variant="standard"
+                                        error={!!errors.alto}
+                                    />
+                                )}
                             />
-                            <Box width={80}>
-                                <TextField
-                                    select
-                                    size="small"
-                                    fullWidth
-                                    value={newItem.tipoMedidaID}
-                                    onChange={e => setNewItem({...newItem, tipoMedidaID: Number(e.target.value)})}
-                                    variant="standard"
-                                    InputProps={{ disableUnderline: true, sx: { fontWeight: 'bold', color: 'primary.main', textAlign: 'center', fontSize: '0.875rem' } }}
-                                >
-                                    <MenuItem value={0} disabled>Unidad</MenuItem>
-                                    {tiposMedida.map(t => (
-                                        <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
-                                    ))}
-                                </TextField>
+                            <Box sx={{ minWidth: 100, ml: 1 }}>
+                                <Controller
+                                    name="tipoMedidaID"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            select
+                                            fullWidth
+                                            size="small"
+                                            variant="standard"
+                                            error={!!errors.tipoMedidaID}
+                                        >
+                                            {tiposMedida.map(t => (
+                                                <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
+                                            ))}
+                                        </TextField>
+                                    )}
+                                />
                             </Box>
                         </Box>
+                        {(errors.largo || errors.ancho || errors.alto || errors.tipoMedidaID) && (
+                             <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
+                                {errors.tipoMedidaID?.message || "Revise las dimensiones"}
+                            </Typography>
+                        )}
                     </Paper>
                 </Grid>
 
-                <Grid size={{xs:12,md:5}}>
+                <Grid size={{xs:12, md:5}}>
                     <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2, bgcolor: 'background.paper' }}>
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 1, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.65rem', letterSpacing: '0.05em' }}>
-                            <MonitorWeight fontSize="inherit" /> Peso Total
+                            <MonitorWeight fontSize="inherit" /> Peso
                         </Typography>
                         <Box display="flex" alignItems="center" gap={1}>
-                            <TextField
-                                placeholder="0.00"
-                                type="number"
-                                size="small"
-                                fullWidth
-                                value={newItem.peso || ''}
-                                onChange={e => setNewItem({...newItem, peso: Number(e.target.value)})}
-                                variant="standard"
-                                InputProps={{ sx: { textAlign: 'right', '& input': { textAlign: 'right' } } }}
+                            <Controller
+                                name="peso"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        placeholder="Peso Total"
+                                        type="number"
+                                        size="small"
+                                        fullWidth
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                        variant="standard"
+                                        InputProps={{ sx: { textAlign: 'center', '& input': { textAlign: 'center' } } }}
+                                        error={!!errors.peso}
+                                    />
+                                )}
                             />
-                            <Box width={60}>
-                                <TextField
-                                    select
-                                    size="small"
-                                    fullWidth
-                                    value={newItem.tipoPesoID}
-                                    onChange={e => setNewItem({...newItem, tipoPesoID: Number(e.target.value)})}
-                                    variant="standard"
-                                    InputProps={{ disableUnderline: true, sx: { fontWeight: 'bold', color: 'primary.main', fontSize: '0.875rem' } }}
-                                >
-                                    <MenuItem value={0} disabled>Unidad</MenuItem>
-                                    {tiposPeso.map(t => (
-                                        <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
-                                    ))}
-                                </TextField>
+                            <Box sx={{ minWidth: 100, ml: 1 }}>
+                                <Controller
+                                    name="tipoPesoID"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            select
+                                            fullWidth
+                                            size="small"
+                                            variant="standard"
+                                            error={!!errors.tipoPesoID}
+                                        >
+                                            {tiposPeso.map(t => (
+                                                <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
+                                            ))}
+                                        </TextField>
+                                    )}
+                                />
                             </Box>
                         </Box>
+                        {(errors.peso || errors.tipoPesoID) && (
+                             <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
+                                {errors.tipoPesoID?.message || errors.peso?.message}
+                            </Typography>
+                        )}
                     </Paper>
                 </Grid>
-                
-                <Grid size={{xs:12,md:6}} display="flex" alignItems="end" alignSelf="flex-end" gap={1}>
-                    {editItem && (
+
+                <Grid size={{xs:12}}>
+                    <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
+                        {editItem && (
+                            <Button 
+                                variant="outlined" 
+                                color="inherit" 
+                                onClick={onCancelEdit}
+                                startIcon={<CloseIcon />}
+                            >
+                                Cancelar
+                            </Button>
+                        )}
                         <Button 
-                            variant="outlined" 
-                            color="inherit"
-                            onClick={handleCancel}
-                            fullWidth
-                            sx={{ height: 48, borderRadius: 2 }}
+                            type="button"
+                            onClick={handleSubmit(onSubmit)}
+                            variant="contained" 
+                            color={editItem ? "warning" : "primary"}
+                            startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : (editItem ? <SaveIcon /> : <AddIcon />)}
+                            disabled={isLoading}
                         >
-                            <CloseIcon />
+                            {editItem ? 'Actualizar' : 'Agregar a la Lista'}
                         </Button>
-                    )}
-                    <Button 
-                        variant="contained" 
-                        color="primary" 
-                        fullWidth 
-                        onClick={handleSave}
-                        disabled={isPending}
-                        startIcon={isPending ? <CircularProgress size={20} color="inherit" /> : (editItem ? <SaveIcon /> : <AddIcon />)}
-                        sx={{ 
-                            height: 48, 
-                            borderRadius: 2, 
-                            boxShadow: theme.shadows[4],
-                            fontWeight: 'bold'
-                        }}
-                    >
-                        {isPending ? 'Guardando...' : (editItem ? 'Guardar' : 'Agregar')}
-                    </Button>
+                    </Box>
                 </Grid>
             </Grid>
         </Paper>

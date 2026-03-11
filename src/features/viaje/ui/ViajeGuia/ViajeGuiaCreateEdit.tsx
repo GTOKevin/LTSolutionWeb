@@ -18,11 +18,14 @@ import {
     Edit as EditIcon,
     Cancel as CancelIcon
 } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
-import type { CreateViajeGuiaDto, ViajeGuia } from '@/entities/viaje/model/types';
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { ViajeGuia } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
 import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { useCreateViajeGuia, useUpdateViajeGuia } from '@/features/viaje/hooks/useViajeGuias';
+import { viajeGuiaSchema, type ViajeGuiaFormData } from '../../model/schema';
 
 interface Props {
     viajeId: number;
@@ -36,51 +39,60 @@ export function ViajeGuiaCreateEdit({ viajeId, tiposGuia, guia, onCancel }: Prop
     const createMutation = useCreateViajeGuia();
     const updateMutation = useUpdateViajeGuia();
 
-    const [newItem, setNewItem] = useState<CreateViajeGuiaDto>({
-        tipoGuiaID: 0,
-        serie: '',
-        numero: '',
-        rutaArchivo: ''
-    });
-
     const isEditing = !!guia;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
+    const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<ViajeGuiaFormData>({
+        resolver: zodResolver(viajeGuiaSchema),
+        defaultValues: {
+            tipoGuiaID: 0,
+            serie: '',
+            numero: '',
+            rutaArchivo: ''
+        }
+    });
+
+    const tipoGuiaID = watch('tipoGuiaID');
+
     useEffect(() => {
         if (guia) {
-            setNewItem({
+            reset({
                 tipoGuiaID: guia.tipoGuiaID,
                 serie: guia.serie,
                 numero: guia.numero,
                 rutaArchivo: guia.rutaArchivo || ''
             });
         } else {
-            setNewItem({
+            reset({
                 tipoGuiaID: 0,
                 serie: '',
                 numero: '',
                 rutaArchivo: ''
             });
         }
-    }, [guia]);
+    }, [guia, reset]);
 
-    const handleSave = async () => {
+    const onSubmit = async (data: ViajeGuiaFormData) => {
         if (!viajeId) return;
-        if (!newItem.tipoGuiaID || !newItem.serie || !newItem.numero) return;
 
         try {
+            // Transform undefined/empty optional fields if necessary (though schema handles validation)
+            const payload = {
+                ...data,
+                rutaArchivo: data.rutaArchivo || undefined
+            };
+
             if (isEditing && guia) {
                 await updateMutation.mutateAsync({ 
                     id: guia.viajeGuiaID, 
-                    data: newItem, 
+                    data: payload, 
                     viajeId 
                 });
             } else {
-                await createMutation.mutateAsync({ viajeId, data: newItem });
+                await createMutation.mutateAsync({ viajeId, data: payload });
             }
             
-            // Reset form
-            setNewItem({
+            reset({
                 tipoGuiaID: 0,
                 serie: '',
                 numero: '',
@@ -150,115 +162,143 @@ export function ViajeGuiaCreateEdit({ viajeId, tiposGuia, guia, onCancel }: Prop
                             <Typography variant="caption" fontWeight="bold" sx={{ mb: 1, display: 'block', color: 'text.secondary' }}>
                                 Tipo de Guía
                             </Typography>
-                            <Box 
-                                sx={{ 
-                                    display: 'flex', 
-                                    gap: 1, 
-                                    p: 0.5, 
-                                    bgcolor: alpha(theme.palette.background.default, 0.5), 
-                                    borderRadius: 2 
-                                }}
-                            >
-                                {tiposGuia.map((tipo) => {
-                                    const isSelected = newItem.tipoGuiaID === tipo.id;
-                                    const color = getGuideTypeColor(tipo.text);
-                                    
-                                    return (
-                                        <Box 
-                                            key={tipo.id}
-                                            onClick={() => setNewItem({ ...newItem, tipoGuiaID: tipo.id })}
-                                            sx={{
-                                                flex: 1,
-                                                cursor: 'pointer',
-                                                py: 1.5,
-                                                px: 2,
-                                                borderRadius: 1.5,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: 1,
-                                                bgcolor: isSelected ? 'background.paper' : 'transparent',
-                                                color: isSelected ? color : 'text.secondary',
-                                                boxShadow: isSelected ? theme.shadows[1] : 'none',
-                                                transition: 'all 0.2s',
-                                                '&:hover': {
-                                                    color: isSelected ? color : 'text.primary'
-                                                }
-                                            }}
-                                        >
-                                            {getGuideTypeIcon(tipo.text)}
-                                            <Typography variant="body2" fontWeight={isSelected ? 'bold' : 'medium'}>
-                                                {tipo.text}
-                                            </Typography>
-                                        </Box>
-                                    );
-                                })}
-                            </Box>
+                            <Controller
+                                name="tipoGuiaID"
+                                control={control}
+                                render={({ field }) => (
+                                    <Box 
+                                        sx={{ 
+                                            display: 'flex', 
+                                            gap: 1, 
+                                            p: 0.5, 
+                                            bgcolor: alpha(theme.palette.background.default, 0.5), 
+                                            borderRadius: 2,
+                                            border: errors.tipoGuiaID ? `1px solid ${theme.palette.error.main}` : 'none'
+                                        }}
+                                    >
+                                        {tiposGuia.map((tipo) => {
+                                            const isSelected = field.value === tipo.id;
+                                            const color = getGuideTypeColor(tipo.text);
+                                            
+                                            return (
+                                                <Box 
+                                                    key={tipo.id}
+                                                    onClick={() => field.onChange(tipo.id)}
+                                                    sx={{
+                                                        flex: 1,
+                                                        p: 1.5,
+                                                        borderRadius: 1.5,
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        alignItems: 'center',
+                                                        gap: 0.5,
+                                                        transition: 'all 0.2s',
+                                                        bgcolor: isSelected ? alpha(color, 0.1) : 'transparent',
+                                                        border: `1px solid ${isSelected ? color : 'transparent'}`,
+                                                        '&:hover': {
+                                                            bgcolor: alpha(color, 0.05)
+                                                        }
+                                                    }}
+                                                >
+                                                    <Box sx={{ color: isSelected ? color : 'text.secondary' }}>
+                                                        {getGuideTypeIcon(tipo.text)}
+                                                    </Box>
+                                                    <Typography 
+                                                        variant="caption" 
+                                                        fontWeight={isSelected ? "bold" : "medium"}
+                                                        color={isSelected ? color : 'text.secondary'}
+                                                        align="center"
+                                                        sx={{ lineHeight: 1.2 }}
+                                                    >
+                                                        {tipo.text.replace('GUIA', '').trim()}
+                                                    </Typography>
+                                                </Box>
+                                            );
+                                        })}
+                                    </Box>
+                                )}
+                            />
+                            {errors.tipoGuiaID && (
+                                <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
+                                    {errors.tipoGuiaID.message}
+                                </Typography>
+                            )}
                         </Box>
 
-                        {/* Serie y Número */}
-                        <Grid container spacing={2}>
-                            <Grid size={{xs:4}}>
-                                <Typography variant="caption" fontWeight="bold" sx={{ mb: 0.5, display: 'block', color: 'text.secondary' }}>
-                                    Serie
-                                </Typography>
-                                <TextField
-                                    fullWidth
-                                    size="small"
-                                    placeholder="T001"
-                                    value={newItem.serie}
-                                    onChange={(e) => setNewItem({ ...newItem, serie: e.target.value })}
-                                    InputProps={{
-                                        sx: { borderRadius: 2 }
-                                    }}
-                                />
-                            </Grid>
-                            <Grid size={{xs:8}}>
-                                <Typography variant="caption" fontWeight="bold" sx={{ mb: 0.5, display: 'block', color: 'text.secondary' }}>
-                                    Número
-                                </Typography>
-                                <TextField
-                                    fullWidth
-                                    size="small"
-                                    placeholder="00000000"
-                                    value={newItem.numero}
-                                    onChange={(e) => setNewItem({ ...newItem, numero: e.target.value })}
-                                    InputProps={{
-                                        sx: { borderRadius: 2 }
-                                    }}
-                                />
-                            </Grid>
-                        </Grid>
-
-                        <Button
-                            fullWidth
-                            variant="contained"
-                            size="large"
-                            color={isEditing ? "warning" : "primary"}
-                            startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
-                            onClick={handleSave}
-                            disabled={!newItem.tipoGuiaID || !newItem.serie || !newItem.numero || isLoading}
-                            sx={{ 
-                                mt: 1,
-                                py: 1.5,
-                                borderRadius: 2,
-                                textTransform: 'none',
-                                fontWeight: 'bold',
-                                boxShadow: `0 4px 12px ${alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.2)}`
-                            }}
-                        >
-                            {isEditing ? "Guardar Cambios" : "Agregar Guía"}
-                        </Button>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Controller
+                                name="serie"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label="Serie"
+                                        placeholder="001"
+                                        fullWidth
+                                        size="small"
+                                        error={!!errors.serie}
+                                        helperText={errors.serie?.message}
+                                        sx={{ flex: 1 }}
+                                    />
+                                )}
+                            />
+                            <Controller
+                                name="numero"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label="Número"
+                                        placeholder="000123"
+                                        fullWidth
+                                        size="small"
+                                        error={!!errors.numero}
+                                        helperText={errors.numero?.message}
+                                        sx={{ flex: 2 }}
+                                    />
+                                )}
+                            />
+                        </Box>
                     </Box>
                 </Grid>
 
                 <Grid size={{xs:12, lg:6}}>
                     <Box sx={{ height: '100%' }}>
-                        <ImageUpload
-                            value={newItem.rutaArchivo}
-                            onChange={(path) => setNewItem({ ...newItem, rutaArchivo: path })}
-                            label="Foto de la Guía"
+                        <Typography variant="caption" fontWeight="bold" sx={{ mb: 1, display: 'block', color: 'text.secondary' }}>
+                            Documento Escaneado (Opcional)
+                        </Typography>
+                        <Controller
+                            name="rutaArchivo"
+                            control={control}
+                            render={({ field }) => (
+                                <ImageUpload
+                                    value={field.value || undefined}
+                                    onChange={(base64) => field.onChange(base64)}
+                                    label="Documento / Guía (Imagen o PDF)"
+                                />
+                            )}
                         />
+                    </Box>
+                </Grid>
+
+                <Grid size={{xs:12}}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2, borderTop: `1px dashed ${theme.palette.divider}` }}>
+                        <Button
+                            type="button"
+                            onClick={handleSubmit(onSubmit)}
+                            variant="contained"
+                            startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+                            disabled={isLoading}
+                            sx={{ 
+                                px: 4,
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            {isEditing ? "Actualizar Guía" : "Guardar Guía"}
+                        </Button>
                     </Box>
                 </Grid>
             </Grid>
