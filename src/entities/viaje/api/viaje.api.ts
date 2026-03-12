@@ -34,13 +34,5 @@ export const viajeApi = {
 
     delete: async (id: number) => {
         await http.delete(`/viaje/${id}`);
-    },
-    
-    // Sub-resources deletion if needed specifically, though Update usually handles collections
-    // But sometimes we might have specific endpoints. 
-    // Based on backend analysis, removal of items was done via specific commands like RemoveViajeGastoCommand
-    // If those are exposed as endpoints, we should add them.
-    // For now, assuming standard CRUD via UpdateViaje which seemed to handle collection replacements in the backend handler.
-    // Re-checking backend: UpdateViajeHandler clears collections and re-adds them. 
-    // So update(id, data) is sufficient for managing sub-items.
+    }
 };

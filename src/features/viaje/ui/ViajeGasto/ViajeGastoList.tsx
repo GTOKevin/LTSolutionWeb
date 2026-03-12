@@ -21,7 +21,9 @@ import type { ViajeGasto } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
 import { useViajeGastos, useDeleteViajeGasto } from '@/features/viaje/hooks/useViajeGastos';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
+import { TableLoading } from '@/shared/components/ui/TableLoading';
 import { TableActions } from '@/shared/components/ui/TableActions';
+import { formatDateShort } from '@/shared/utils/date-utils';
 
 interface Props {
     viajeId: number;
@@ -159,7 +161,7 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                                         </Box>
                                     </TableCell>
                                     <TableCell sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
-                                        {item.fechaGasto}
+                                        {formatDateShort(item.fechaGasto)}
                                     </TableCell>
                                     <TableCell sx={{ color: 'text.secondary' }}>
                                         {item.comprobante ? item.numeroComprobante : 'Sin comprobante'}
@@ -216,7 +218,11 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                 </>
             ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {gastos.map((item: ViajeGasto) => {
+                    {isLoading ? (
+                        <TableLoading />
+                    ) : (
+                        <>
+                            {gastos.map((item: ViajeGasto) => {
                         const tipo = tiposGasto.find(t => t.id === item.gastoID);
                         const moneda = monedas.find(m => m.id === item.monedaID);
                         const tipoText = tipo?.text || item.gasto?.descripcion || 'Otro';
@@ -254,7 +260,7 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                                                 <CalendarIcon sx={{ fontSize: 14 }} />
-                                                <Typography variant="caption">{item.fechaGasto}</Typography>
+                                                <Typography variant="caption">{formatDateShort(item.fechaGasto)}</Typography>
                                             </Box>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                                                 <TicketIcon sx={{ fontSize: 14 }} />
@@ -270,12 +276,14 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                                 </CardContent>
                             </Card>
                         );
-                    })}
-                    {!isLoading && gastos.length === 0 && (
-                        <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
-                            No hay gastos registrados
-                        </Typography>
-                    )}
+                        })}
+                        {!isLoading && gastos.length === 0 && (
+                            <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
+                                No hay gastos registrados
+                            </Typography>
+                        )}
+                    </>
+                )}
                 </Box>
             )}
 

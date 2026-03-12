@@ -20,6 +20,7 @@ import { useViajeIncidentes, useDeleteViajeIncidente } from '@/features/viaje/ho
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
+import { formatDate, formatTime } from '@/shared/utils/date-utils';
 
 interface Props {
     viajeId: number;
@@ -131,16 +132,15 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
                     const tipo = tiposIncidente.find(t => t.id === item.tipoIncidenteID);
                     const tipoText = tipo?.text || item.tipoIncidente?.descripcion || 'Otro';
                     const colorPalette = getIncidenteColor(tipoText);
-                    const fecha = new Date(item.fechaHora);
 
                     return (
                         <>
                             <TableCell>
                                 <Typography variant="body2" fontWeight="medium" color="text.primary">
-                                    {fecha.toLocaleDateString()}
+                                    {formatDate(item.fechaHora)}
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary">
-                                    {fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    {formatTime(item.fechaHora)}
                                 </Typography>
                             </TableCell>
                             <TableCell>

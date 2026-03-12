@@ -261,7 +261,7 @@ export interface CreateViajeDto {
     cotizacionID?: number;
     clienteID: number;
     tractoID: number;
-    carretaID?: number;
+    carretaID: number;
     colaboradorID: number;
     origenID: number;
     destinoID: number;
@@ -285,13 +285,6 @@ export interface CreateViajeDto {
     tipoPesoID: number;
     peso?: number;
 
-    // Collections
-    viajeMercaderia?: CreateViajeMercaderiaDto[];
-    viajeGastos?: CreateViajeGastoDto[];
-    viajeGuia?: CreateViajeGuiaDto[];
-    viajeIncidentes?: CreateViajeIncidenteDto[];
-    viajePermisos?: CreateViajePermisoDto[];
-    viajeEscolta?: CreateViajeEscoltaDto[];
 }
 
 export interface UpdateViajeDto extends CreateViajeDto {

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TEXTO_SEGURO_REGEX } from '@/shared/constants/constantes';
+import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
 
 export const createMantenimientoSchema = z.object({
     flotaID: z.coerce.number().min(1, 'Vehículo es requerido'),
@@ -9,14 +9,14 @@ export const createMantenimientoSchema = z.object({
     motivoIngreso: z.string()
         .min(1, 'Motivo de Ingreso es requerido')
         .max(500, 'Máximo 500 caracteres')
-        .refine(val => TEXTO_SEGURO_REGEX.test(val), {
-            message: 'Caracteres no permitidos'
+        .refine(val => INPUT_VAL.ALPHA_NUMERICO_ESPECIAL.test(val), {
+            message: ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL
         }),
-    diagnosticoMecanico: z.string().optional().nullable().refine(val => !val || TEXTO_SEGURO_REGEX.test(val), {
-        message: 'Caracteres no permitidos'
+    diagnosticoMecanico: z.string().optional().nullable().refine(val => !val || INPUT_VAL.ALPHA_NUMERICO_ESPECIAL.test(val), {
+        message: ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL
     }),
-    solucion: z.string().optional().nullable().refine(val => !val || TEXTO_SEGURO_REGEX.test(val), {
-        message: 'Caracteres no permitidos'
+    solucion: z.string().optional().nullable().refine(val => !val || INPUT_VAL.ALPHA_NUMERICO_ESPECIAL.test(val), {
+        message: ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL
     }),
     kmIngreso: z.coerce.number().min(0, 'Kilometraje inválido'),
     kmSalida: z.coerce.number().optional().nullable(),
@@ -58,7 +58,7 @@ export type CreateMantenimientoSchema = z.infer<typeof createMantenimientoSchema
 
 export const createMantenimientoDetalleSchema = z.object({
     tipoProductoID: z.coerce.number().min(1, 'Tipo de Producto es requerido'),
-    descripcion: z.string().optional().nullable().refine(val => !val || TEXTO_SEGURO_REGEX.test(val), {
+    descripcion: z.string().optional().nullable().refine(val => !val || INPUT_VAL.TEXTO_SEGURO_REGEX.test(val), {
         message: 'Caracteres no permitidos'
     }),
     cantidad: z.coerce.number().min(1, 'Cantidad debe ser mayor a 0'),

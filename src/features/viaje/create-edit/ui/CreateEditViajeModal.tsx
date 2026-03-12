@@ -7,6 +7,9 @@ import { useEffect, useState } from 'react';
 import { useViajeOptions } from '../../hooks/useViajeOptions';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
 import { UbigeoSelect } from '@/shared/components/ui/UbigeoSelect';
+import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
+import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
+import { handleAddressKeyDown } from '@/shared/utils/input-validators';
 import { ViajeMercaderia } from '../../ui/ViajeMercaderia/ViajeMercaderia';
 import { ViajeGasto } from '../../ui/ViajeGasto/ViajeGasto';
 import { ViajeGuia } from '../../ui/ViajeGuia/ViajeGuia';
@@ -25,6 +28,8 @@ interface Props {
 
 export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false }: Props) {
     const [activeTab, setActiveTab] = useState(0);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [pendingData, setPendingData] = useState<CreateViajeDto | null>(null);
     const queryClient = useQueryClient();
     
     const { 
@@ -38,17 +43,11 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
         defaultValues: {
             estadoID: 1,
             requiereEscolta: false,
-            requierePermiso: false,
-            viajeMercaderia: [],
-            viajeGastos: [],
-            viajeGuia: [],
-            viajeIncidentes: [],
-            viajePermisos: [],
-            viajeEscolta: []
+            requierePermiso: false
         }
     });
 
-    const { register, handleSubmit, reset, formState: { errors }, control, setValue, watch } = methods;
+    const { register, handleSubmit, reset, formState: { errors }, control, watch } = methods;
     
     // Watch fields to toggle tabs visibility or status
     const requiereEscolta = watch('requiereEscolta');
@@ -75,7 +74,6 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
     useEffect(() => {
         if (open) {
             if (viaje) {
-                console.log("Viaje Modal:",viaje);
                 reset({
                     ...viaje,
                     clienteID: viaje.clienteID || 0,
@@ -86,11 +84,11 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                     estadoID: viaje.estadoID || 1,
                     direccionOrigen: viaje.direccionOrigen ?? undefined,
                     direccionDestino: viaje.direccionDestino ?? undefined,
-                    fechaCarga: viaje.fechaCarga ? String(viaje.fechaCarga).split('T')[0] : '',
-                    fechaPartida: viaje.fechaPartida ? String(viaje.fechaPartida).split('T')[0] : undefined,
-                    fechaLlegada: viaje.fechaLlegada ? String(viaje.fechaLlegada).split('T')[0] : undefined,
-                    fechaDescarga: viaje.fechaDescarga ? String(viaje.fechaDescarga).split('T')[0] : undefined,
-                    fechaLlegadaBase: viaje.fechaLlegadaBase ? String(viaje.fechaLlegadaBase).split('T')[0] : undefined,
+                    fechaCarga: viaje.fechaCarga ? toInputDate(viaje.fechaCarga) : '',
+                    fechaPartida: viaje.fechaPartida ? toInputDate(viaje.fechaPartida) : undefined,
+                    fechaLlegada: viaje.fechaLlegada ? toInputDate(viaje.fechaLlegada) : undefined,
+                    fechaDescarga: viaje.fechaDescarga ? toInputDate(viaje.fechaDescarga) : undefined,
+                    fechaLlegadaBase: viaje.fechaLlegadaBase ? toInputDate(viaje.fechaLlegadaBase) : undefined,
                     kmInicio: viaje.kmInicio ?? undefined,
                     kmLlegada: viaje.kmLlegada ?? undefined,
                     kmLlegadaBase: viaje.kmLlegadaBase ?? undefined,
@@ -101,58 +99,14 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                     largo: viaje.largo ?? undefined,
                     alto: viaje.alto ?? undefined,
                     ancho: viaje.ancho ?? undefined,
-                    peso: viaje.peso ?? undefined,
-                    
-                    // Ensure arrays
-                    viajeMercaderia: viaje.viajeMercaderia?.map(m => ({
-                        ...m,
-                        descripcion: m.descripcion ?? undefined,
-                        alto: m.alto ?? undefined,
-                        largo: m.largo ?? undefined,
-                        ancho: m.ancho ?? undefined,
-                        peso: m.peso ?? undefined
-                    })) || [],
-                    viajeGastos: viaje.viajeGastos?.map(g => ({
-                        ...g,
-                        numeroComprobante: g.numeroComprobante ?? undefined,
-                        descripcion: g.descripcion ?? undefined
-                    })) || [],
-                    viajeGuia: viaje.viajeGuia?.map(g => ({
-                        ...g,
-                        rutaArchivo: g.rutaArchivo ?? undefined
-                    })) || [],
-                    viajeIncidentes: viaje.viajeIncidentes?.map(i => ({
-                        ...i,
-                        lugar: i.lugar ?? undefined,
-                        rutaFoto: i.rutaFoto ?? undefined
-                    })) || [],
-                    viajePermisos: viaje.viajePermisos?.map(p => ({
-                        ...p,
-                        fechaVigencia: p.fechaVigencia ? String(p.fechaVigencia).split('T')[0] : undefined,
-                        fechaVencimiento: p.fechaVencimiento ? String(p.fechaVencimiento).split('T')[0] : undefined,
-                        rutaArchivo: p.rutaArchivo ?? undefined
-                    })) || [],
-                    viajeEscolta: viaje.viajeEscolta?.map(e => ({
-                        ...e,
-                        flotaID: e.flotaID ?? undefined,
-                        colaboradorID: e.colaboradorID ?? undefined,
-                        tercero: e.tercero ?? undefined,
-                        nombreConductor: e.nombreConductor ?? undefined,
-                        empresa: e.empresa ?? undefined
-                    })) || []
+                    peso: viaje.peso ?? undefined
                 });
             } else {
                 reset({
                     estadoID: 1,
                     requiereEscolta: false,
                     requierePermiso: false,
-                    fechaCarga: new Date().toISOString().split('T')[0],
-                    viajeMercaderia: [],
-                    viajeGastos: [],
-                    viajeGuia: [],
-                    viajeIncidentes: [],
-                    viajePermisos: [],
-                    viajeEscolta: [],
+                    fechaCarga: getCurrentDateISO(),
                     clienteID: 0,
                     colaboradorID: 0,
                     tractoID: 0,
@@ -166,7 +120,19 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
     }, [open, viaje, reset]);
 
     const onSubmit = (data: CreateViajeDto) => {
-        mutation.mutate(data);
+        // ID 204 corresponds to 'Completado', ID 203 to 'Cancelado'
+        if (data.estadoID === 204 || data.estadoID === 203) {
+            setPendingData(data);
+            setShowConfirmDialog(true);
+        } else {
+            mutation.mutate(data);
+        }
+    };
+
+    const handleConfirmSave = () => {
+        if (pendingData) {
+            mutation.mutate(pendingData);
+        }
     };
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -174,7 +140,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="xl"  fullWidth>
+        <Dialog open={open} maxWidth="xl" fullWidth>
             <DialogTitle>{viaje ? (isViewOnly ? 'Detalle de Viaje' : 'Editar Viaje') : 'Nuevo Viaje'}</DialogTitle>
             <DialogContent>
                 <FormProvider {...methods}>
@@ -319,6 +285,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                             size="small" 
                                             sx={{ mt: 1 }}
                                             {...register('direccionOrigen')}
+                                            onKeyDown={handleAddressKeyDown}
                                         />
                                     </Box>
                                 </Grid>
@@ -345,6 +312,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                             size="small" 
                                             sx={{ mt: 1 }}
                                             {...register('direccionDestino')}
+                                            onKeyDown={handleAddressKeyDown}
                                         />
                                     </Box>
                                 </Grid>
@@ -514,6 +482,17 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         )}
                                     />
                                 </Grid>
+                                <Grid size={{ xs: 12 }} display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
+                                    {!isViewOnly && (
+                                        <Button 
+                                            type="submit" 
+                                            variant="contained"
+                                            disabled={mutation.isPending}
+                                        >
+                                            {mutation.isPending ? 'Guardando...' : 'Guardar'}
+                                        </Button>
+                                    )}
+                                </Grid>
                             </Grid>
                         </TabPanel>
 
@@ -573,18 +552,20 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                 </FormProvider>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Cancelar</Button>
-                {!isViewOnly && (
-                    <Button 
-                        type="submit" 
-                        form="viaje-form" 
-                        variant="contained"
-                        disabled={mutation.isPending}
-                    >
-                        {mutation.isPending ? 'Guardando...' : 'Guardar'}
-                    </Button>
-                )}
+                <Button  onClick={onClose}>Cerrar</Button>
             </DialogActions>
+
+            <ConfirmDialog
+                open={showConfirmDialog}
+                severity={pendingData?.estadoID === 203 ? 'error' : 'info'}
+                title={pendingData?.estadoID === 203 ? 'Confirmar Cancelación' : 'Confirmar Finalización'}
+                content={pendingData?.estadoID === 203 
+                    ? "Una vez cancelado el viaje no podrá editarse." 
+                    : "Una vez completado el registro no podrá editarse, ¿desea continuar con el registro?"}
+                onClose={() => setShowConfirmDialog(false)}
+                onConfirm={handleConfirmSave}
+                isLoading={mutation.isPending}
+            />
         </Dialog>
     );
 }

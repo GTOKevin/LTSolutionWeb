@@ -1,20 +1,44 @@
 import { z } from 'zod';
+import { ALPHA_ESPECIAL_ERROR_MSG, ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
 
 export const viajeEscoltaSchema = z.object({
     tercero: z.boolean().optional(),
     flotaID: z.number().optional(),
     colaboradorID: z.number().optional(),
-    nombreConductor: z.string().optional(),
-    empresa: z.string().optional()
-}).refine((data) => {
+    nombreConductor: z.string().regex(INPUT_VAL.LETRAS_ESPACIO, ERROR_MESSAGES.LETRAS_ESPACIO).optional(),
+    empresa: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPACIOS, ERROR_MESSAGES.ALPHA_NUMERICO_ESPACIOS).optional()
+}).superRefine((data, ctx) => {
     if (data.tercero) {
-        return !!data.nombreConductor?.trim() && !!data.empresa?.trim();
+        if (!data.nombreConductor?.trim()) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "El nombre del conductor es requerido",
+                path: ["nombreConductor"]
+            });
+        }
+        if (!data.empresa?.trim()) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "La empresa es requerida",
+                path: ["empresa"]
+            });
+        }
     } else {
-        return !!data.flotaID && !!data.colaboradorID;
+        if (!data.flotaID || data.flotaID === 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "El vehículo escolta es requerido",
+                path: ["flotaID"]
+            });
+        }
+        if (!data.colaboradorID || data.colaboradorID === 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "El personal de seguridad es requerido",
+                path: ["colaboradorID"]
+            });
+        }
     }
-}, {
-    message: "Complete los campos requeridos según el tipo de escolta",
-    path: ["root"] 
 });
 
 export const viajeGastoSchema = z.object({
@@ -24,7 +48,7 @@ export const viajeGastoSchema = z.object({
     monto: z.number().min(0.5, 'El monto mínimo es 0.50'),
     comprobante: z.boolean(),
     numeroComprobante: z.string().optional(),
-    descripcion: z.string().regex(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_]*$/, 'Caracteres inválidos').optional()
+    descripcion: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL).optional()
 });
 
 export const viajeGuiaSchema = z.object({
@@ -37,15 +61,15 @@ export const viajeGuiaSchema = z.object({
 export const viajeIncidenteSchema = z.object({
     fechaHora: z.string().min(1, 'Fecha y hora requeridas'),
     tipoIncidenteID: z.number().min(1, 'El tipo de incidente es requerido'),
-    descripcion: z.string().min(1, 'Requerido').regex(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s.,\-_]+$/, 'Caracteres inválidos'),
+    descripcion: z.string().min(1, 'Requerido').regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL),
     ubigeoID: z.number().min(1, 'La ubicación es requerida'),
-    lugar: z.string().min(1, 'Requerido').regex(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s.,\-_]+$/, 'Caracteres inválidos'),
+    lugar: z.string().min(1, 'Requerido').regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL),
     rutaFoto: z.string().min(1, 'La foto es requerida')
 });
 
 export const viajeMercaderiaSchema = z.object({
     mercaderiaID: z.number(),
-    descripcion: z.string().regex(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_\/()[\]]*$/, 'Caracteres inválidos (Solo letras, números y ,._-/()[] )').optional(),
+    descripcion: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ALPHA_ESPECIAL_ERROR_MSG).optional(),
     tipoMedidaID: z.number().min(1, 'El tipo de medida es requerido'),
     alto: z.number().min(0, 'Debe ser mayor o igual a 0').optional(),
     largo: z.number().min(0, 'Debe ser mayor o igual a 0').optional(),
@@ -66,6 +90,13 @@ export const viajePermisoSchema = z.object({
     fechaVigencia: z.string().min(1, 'La fecha de vigencia es requerida'),
     fechaVencimiento: z.string().min(1, 'La fecha de vencimiento es requerida'),
     rutaArchivo: z.string().min(1, 'El archivo es requerido')
+}).refine((data) => {
+    const vigencia = new Date(data.fechaVigencia);
+    const vencimiento = new Date(data.fechaVencimiento);
+    return vencimiento >= vigencia;
+}, {
+    message: "La fecha de vencimiento debe ser igual o mayor a la fecha de vigencia",
+    path: ["fechaVencimiento"]
 });
 
 export const viajeSchema = z.object({
@@ -78,11 +109,12 @@ export const viajeSchema = z.object({
     tipoMedidaID: z.number().min(1, 'El tipo de medida es requerido'),
     tipoPesoID: z.number().min(1, 'El tipo de peso es requerido'),
     
-    // Optional fields need to be handled if they are part of the form but not required
+    carretaID: z.number().min(1, 'La carreta es requerida'),
+
+    // Optional fields
     cotizacionID: z.number().optional(),
-    carretaID: z.number().optional(),
-    direccionOrigen: z.string().regex(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_\/()[\]]*$/, 'Caracteres inválidos (Solo letras, números y ,._-/()[] )').optional(),
-    direccionDestino: z.string().regex(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_\/()[\]]*$/, 'Caracteres inválidos (Solo letras, números y ,._-/()[] )').optional(),
+    direccionOrigen: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ALPHA_ESPECIAL_ERROR_MSG).optional(),
+    direccionDestino: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ALPHA_ESPECIAL_ERROR_MSG).optional(),
     fechaPartida: z.string().optional(),
     fechaLlegada: z.string().optional(),
     fechaDescarga: z.string().optional(),
@@ -96,15 +128,7 @@ export const viajeSchema = z.object({
     largo: z.number().optional(),
     alto: z.number().optional(),
     ancho: z.number().optional(),
-    peso: z.number().optional(),
-
-    // Arrays
-    viajeMercaderia: z.array(z.any()).optional().default([]),
-    viajeGastos: z.array(z.any()).optional().default([]),
-    viajeGuia: z.array(z.any()).optional().default([]),
-    viajeIncidentes: z.array(z.any()).optional().default([]),
-    viajePermisos: z.array(z.any()).optional().default([]),
-    viajeEscolta: z.array(z.any()).optional().default([])
+    peso: z.number().optional()
 });
 
 export type ViajeFormData = z.infer<typeof viajeSchema>;

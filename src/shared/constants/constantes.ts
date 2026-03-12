@@ -50,11 +50,27 @@ export const TIPO_FLOTA={
     TODOS:""
 }as const;
 
-export const PLACA_PERU_REGEX = /^[A-Z0-9]{3}-[0-9]{3,4}$/;
+export const INPUT_VAL={
+    PLACA_PERU_REGEX : /^[A-Z0-9]{3}-[0-9]{3,4}$/,
+    TEXTO_SEGURO_REGEX : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\-_.,\s]+$/,
+    ALPHA_NUMERICO_ESPECIAL : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_\/()[\]]*$/,
+    ALPHA_NUMERICO_ESPACIOS : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]*$/,
+    LETRAS_ESPACIO: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/,
+    DECIMAL_10_2_REGEX : /^\d{1,8}(\.\d{1,2})?$/,
+    TELEFONO_PERU_REGEX : /^9\d{8}$/
+}
+export const ERROR_MESSAGES = {
+    PLACA_INVALIDA: 'Debe ser una placa válida (XXX-1234 o XXX-123)',
+    TEXTO_SEGURO: 'Caracteres inválidos (Solo letras, números y ,._- )',
+    ALPHA_NUMERICO_ESPECIAL: 'Caracteres inválidos (Solo letras, números y ,._-/()[] )',
+    ALPHA_NUMERICO_ESPACIOS: 'Caracteres inválidos (Solo letras, números y espacios)',
+    LETRAS_ESPACIO: 'Caracteres inválidos (Solo letras y espacios)',
+    DECIMAL_10_2: 'Debe ser un número decimal con máximo 10 dígitos y 2 decimales',
+    TELEFONO_PERU: 'Debe ser un celular válido (9 dígitos)'
+}
 
-export const TEXTO_SEGURO_REGEX = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\-_.,\s]+$/;
-export const DECIMAL_10_2_REGEX = /^\d{1,8}(\.\d{1,2})?$/;
-export const TELEFONO_PERU_REGEX = /^9\d{8}$/;
+export const ALPHA_ESPECIAL_ERROR_MSG = 'Caracteres inválidos (Solo letras, números y ,._-/()[] )';
+
 
 export const ROWS_PER_PAGE_OPTIONS = [5, 10, 25, 50];
 

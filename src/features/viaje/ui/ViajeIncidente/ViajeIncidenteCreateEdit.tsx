@@ -1,6 +1,8 @@
 import { 
     Box, Button, Typography, TextField, MenuItem, Grid,
-    useTheme, CircularProgress
+    useTheme, CircularProgress,
+    Paper,
+    alpha
 } from '@mui/material';
 import { 
     ReportProblem as ReportProblemIcon,
@@ -17,6 +19,7 @@ import { UbigeoSelect } from '@/shared/components/ui/UbigeoSelect';
 import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { useCreateViajeIncidente, useUpdateViajeIncidente } from '@/features/viaje/hooks/useViajeIncidentes';
 import { viajeIncidenteSchema, type ViajeIncidenteFormData } from '../../model/schema';
+import { getCurrentDateISO, getCurrentTimeISO, toInputDate, toInputTime, combineDateTime } from '@/shared/utils/date-utils';
 
 interface Props {
     viajeId: number;
@@ -34,8 +37,8 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
     // Local state for separate date and time inputs
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    const [time, setTime] = useState(new Date().toTimeString().slice(0, 5));
+    const [date, setDate] = useState(getCurrentDateISO());
+    const [time, setTime] = useState(getCurrentTimeISO());
 
     const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajeIncidenteFormData>({
         resolver: zodResolver(viajeIncidenteSchema),
@@ -51,17 +54,8 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
 
     useEffect(() => {
         if (incidente) {
-            const fecha = new Date(incidente.fechaHora);
-            // Handle timezone offset if needed, or assume UTC/Local consistency. 
-            // Using local time for inputs
-            const yyyy = fecha.getFullYear();
-            const mm = String(fecha.getMonth() + 1).padStart(2, '0');
-            const dd = String(fecha.getDate()).padStart(2, '0');
-            const hh = String(fecha.getHours()).padStart(2, '0');
-            const min = String(fecha.getMinutes()).padStart(2, '0');
-
-            setDate(`${yyyy}-${mm}-${dd}`);
-            setTime(`${hh}:${min}`);
+            setDate(toInputDate(incidente.fechaHora));
+            setTime(toInputTime(incidente.fechaHora));
 
             reset({
                 fechaHora: incidente.fechaHora,
@@ -72,18 +66,11 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
                 rutaFoto: incidente.rutaFoto || ''
             });
         } else {
-            const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
+            setDate(getCurrentDateISO());
+            setTime(getCurrentTimeISO());
             
-            setDate(`${yyyy}-${mm}-${dd}`);
-            setTime(`${hh}:${min}`);
-
             reset({
-                fechaHora: now.toISOString(),
+                fechaHora: new Date().toISOString(),
                 tipoIncidenteID: 0,
                 descripcion: '',
                 ubigeoID: 0,
@@ -97,8 +84,10 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
         // Combine date and time into ISO string when either changes
         try {
             if (date && time) {
-                const combined = new Date(`${date}T${time}:00`);
-                setValue('fechaHora', combined.toISOString(), { shouldValidate: true });
+                const combined = combineDateTime(date, time);
+                if (combined) {
+                    setValue('fechaHora', combined, { shouldValidate: true });
+                }
             }
         } catch (e) {
             console.error("Invalid date/time format");
@@ -120,18 +109,11 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
             }
             
             // Reset form
-            const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-
-            setDate(`${yyyy}-${mm}-${dd}`);
-            setTime(`${hh}:${min}`);
+            setDate(getCurrentDateISO());
+            setTime(getCurrentTimeISO());
 
             reset({
-                fechaHora: now.toISOString(),
+                fechaHora: new Date().toISOString(),
                 tipoIncidenteID: 0,
                 descripcion: '',
                 ubigeoID: 0,
@@ -146,20 +128,28 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
     };
 
     return (
-        <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Paper
+            elevation={0}
+            sx={{
+                p: 3,
+                borderRadius: 3,
+                border: `1px solid ${theme.palette.divider}`,
+                bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
+            }}
+        >
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Box sx={{ 
-                        bgcolor: isEditing ? theme.palette.warning.main : 'transparent',
-                        color: isEditing ? 'white' : 'text.secondary',
-                        p: isEditing ? 0.5 : 0,
-                        borderRadius: 1,
+                        bgcolor: isEditing ? theme.palette.warning.main : theme.palette.primary.main,
+                        color: 'white',
+                        p: 0.5,
+                        borderRadius: '50%',
                         display: 'flex'
                     }}>
-                        {isEditing ? <EditIcon /> : <ReportProblemIcon />}
+                        {isEditing ? <EditIcon fontSize="small" /> : <ReportProblemIcon fontSize="small" />}
                     </Box>
-                    <Typography variant="subtitle1" fontWeight="bold" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                        {isEditing ? "Editar Incidente" : "Registro de Nuevo Incidente"}
+                    <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
+                        {isEditing ? "Editar Incidente" : "Agregar Incidente"}
                     </Typography>
                 </Box>
                 {isEditing && (
@@ -169,7 +159,7 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
                         onClick={onCancel}
                         startIcon={<CancelIcon />}
                     >
-                        Cancelar
+                        Cancelar Edición
                     </Button>
                 )}
             </Box>
@@ -318,6 +308,6 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
                     </Box>
                 </Grid>
             </Grid>
-        </Box>
+        </Paper>
     );
 }

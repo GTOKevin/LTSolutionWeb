@@ -26,6 +26,7 @@ import { viajeApi } from '@entities/viaje/api/viaje.api';
 import { ViajesTable } from '@features/viaje/list/ui/ViajesTable';
 import { CreateEditViajeModal } from '@features/viaje/create-edit/ui/CreateEditViajeModal';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
+import { LoadingModal } from '@shared/components/ui/LoadingModal';
 import { StatsCard } from '@shared/components/ui/StatsCard';
 import type { Viaje, ViajeListItem } from '@entities/viaje/model/types';
 
@@ -43,6 +44,8 @@ export function ViajesPage() {
     
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [viajeToDelete, setViajeToDelete] = useState<ViajeListItem | null>(null);
+
+    const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(searchTerm), 500);
@@ -69,9 +72,13 @@ export function ViajesPage() {
     });
 
     const handleCreate = () => {
-        setViajeToEdit(null);
-        setIsViewOnly(false);
-        setModalOpen(true);
+        setLoadingMessage("Mostrando nuevo viaje...");
+        setTimeout(() => {
+            setViajeToEdit(null);
+            setIsViewOnly(false);
+            setModalOpen(true);
+            setLoadingMessage(null);
+        }, 500);
     };
 
     const handleEdit = async (item: ViajeListItem) => {
@@ -81,23 +88,29 @@ export function ViajesPage() {
         }
 
         try {
+            setLoadingMessage("Obteniendo viaje...");
             const fullViaje = await viajeApi.getById(item.viajeID);
             setViajeToEdit(fullViaje);
             setIsViewOnly(false);
             setModalOpen(true);
         } catch (error) {
             console.error("Error fetching viaje details:", error);
+        } finally {
+            setLoadingMessage(null);
         }
     };
 
     const handleView = async (item: ViajeListItem) => {
         try {
+            setLoadingMessage("Obteniendo viaje...");
             const fullViaje = await viajeApi.getById(item.viajeID);
             setViajeToEdit(fullViaje);
             setIsViewOnly(true);
             setModalOpen(true);
         } catch (error) {
             console.error("Error fetching viaje details:", error);
+        } finally {
+            setLoadingMessage(null);
         }
     };
 
@@ -292,6 +305,11 @@ export function ViajesPage() {
                 content={`¿Estás seguro de que deseas eliminar el viaje #${viajeToDelete?.viajeID}?`}
                 onConfirm={() => viajeToDelete && deleteMutation.mutate(viajeToDelete.viajeID)}
                 onClose={() => setDeleteDialogOpen(false)}
+            />
+
+            <LoadingModal
+                open={!!loadingMessage}
+                message={loadingMessage || ''}
             />
         </Box>
     );

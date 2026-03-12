@@ -15,6 +15,7 @@ import {
 
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 import type { PagedResponse } from '@/shared/model/types';
+import { TableLoading } from './TableLoading';
 
 export interface Column {
     id: string;
@@ -94,8 +95,8 @@ export function SharedTable<T>({
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={columns.length} align="center" sx={{ py: 4 }}>
-                                    Cargando datos...
+                                <TableCell colSpan={columns.length} align="center" sx={{ p: 0 }}>
+                                    <TableLoading />
                                 </TableCell>
                             </TableRow>
                         ) : data?.items.map((item) => (

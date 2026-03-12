@@ -1,10 +1,11 @@
+import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
 import { z } from 'zod';
 
 export const tipoMaestroSchema = z.object({
     nombre: z.string()
         .min(1, 'El nombre es requerido')
         .max(100, 'El nombre no puede exceder los 100 caracteres')
-        .regex(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-_,]+$/, 'El nombre solo puede contener letras, números, espacios y los caracteres -_,'),
+        .regex(INPUT_VAL.ALPHA_NUMERICO_ESPACIOS, ERROR_MESSAGES.ALPHA_NUMERICO_ESPACIOS),
     codigo: z.string()
         .regex(/^[a-zA-Z0-9]*$/, 'El código solo puede contener letras y números')
         .optional(),

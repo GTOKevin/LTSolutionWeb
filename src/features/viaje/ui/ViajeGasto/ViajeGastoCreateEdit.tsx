@@ -15,6 +15,7 @@ import type { CreateViajeGastoDto, ViajeGasto } from '@/entities/viaje/model/typ
 import type { SelectItem } from '@/shared/model/types';
 import { useCreateViajeGasto, useUpdateViajeGasto } from '@/features/viaje/hooks/useViajeGastos';
 import { viajeGastoSchema, type ViajeGastoFormData } from '../../model/schema';
+import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
 
 interface Props {
     viajeId: number;
@@ -36,7 +37,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
         resolver: zodResolver(viajeGastoSchema),
         defaultValues: {
             gastoID: 0,
-            fechaGasto: new Date().toISOString().split('T')[0],
+            fechaGasto: getCurrentDateISO(),
             monedaID: 1, // Default PEN
             monto: 0,
             comprobante: false,
@@ -51,7 +52,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
         if (gasto) {
             reset({
                 gastoID: gasto.gastoID,
-                fechaGasto: gasto.fechaGasto ? String(gasto.fechaGasto).split('T')[0] : new Date().toISOString().split('T')[0],
+                fechaGasto: gasto.fechaGasto ? toInputDate(gasto.fechaGasto) : getCurrentDateISO(),
                 monedaID: gasto.monedaID,
                 monto: Number(gasto.monto),
                 comprobante: gasto.comprobante,
@@ -61,7 +62,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
         } else {
             reset({
                 gastoID: 0,
-                fechaGasto: new Date().toISOString().split('T')[0],
+                fechaGasto: getCurrentDateISO(),
                 monedaID: 1,
                 monto: 0,
                 comprobante: false,
@@ -95,7 +96,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
             // Reset form but keep defaults
             reset({
                 gastoID: 0,
-                fechaGasto: new Date().toISOString().split('T')[0],
+                fechaGasto: getCurrentDateISO(),
                 monedaID: 1,
                 monto: 0,
                 comprobante: false,
@@ -116,7 +117,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                 p: 3, 
                 borderRadius: 3, 
                 border: `1px solid ${theme.palette.divider}`,
-                bgcolor: alpha(theme.palette.primary.main, 0.02)
+                bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
             }}
         >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
@@ -131,7 +132,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                         {isEditing ? <EditIcon fontSize="small" /> : <AddCircleIcon fontSize="small" />}
                     </Box>
                     <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
-                        {isEditing ? "Editar Gasto" : "Registro de Nuevo Gasto"}
+                        {isEditing ? "Editar Gasto" : "Agregar Gasto"}
                     </Typography>
                 </Box>
                 {isEditing && (

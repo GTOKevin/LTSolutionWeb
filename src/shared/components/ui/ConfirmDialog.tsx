@@ -67,8 +67,12 @@ export function ConfirmDialog({
                 </DialogContentText>
             </DialogContent>
             <DialogActions sx={{ p: 2 }}>
-                <Button onClick={onClose} color="inherit" disabled={isLoading}>
-                    {cancelText}
+                <Button onClick={onClose} 
+                        variant="contained" 
+                        color="inherit" 
+                        disabled={isLoading}
+                        sx={{ boxShadow: 'none' }}>
+                        {cancelText}
                 </Button>
                 <Button 
                     onClick={onConfirm} 

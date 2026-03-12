@@ -8,7 +8,10 @@ import {
     Close as CloseIcon,
     Straighten, 
     MonitorWeight, 
-    Search as SearchIcon
+    Search as SearchIcon,
+    AddCircle as AddCircleIcon,
+    Edit as EditIcon,
+    Cancel as CancelIcon
 } from '@mui/icons-material';
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -17,6 +20,7 @@ import type { ViajeMercaderia } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
 import { useCreateViajeMercaderia, useUpdateViajeMercaderia } from '@/features/viaje/hooks/useViajeMercaderias';
 import { viajeMercaderiaSchema, type ViajeMercaderiaFormData } from '../../model/schema';
+import { handleAddressKeyDown } from '@/shared/utils/input-validators';
 
 interface Props {
     viajeId: number;
@@ -118,20 +122,40 @@ export function ViajeMercaderiaCreateEdit({
     return (
         <Paper 
             id="mercaderia-form"
-            variant="outlined" 
+            elevation={0} 
             sx={{ 
                 p: 3, 
                 mb: 4, 
                 borderRadius: 3, 
-                bgcolor: alpha(theme.palette.background.default, 0.4),
-                borderColor: theme.palette.divider
+                border: `1px solid ${theme.palette.divider}`,
+                bgcolor: alpha(editItem ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
             }}
         >
-            <Box display="flex" alignItems="center" gap={1} mb={3}>
-                <AddIcon color="primary" />
-                <Typography variant="h6" fontSize="1rem" fontWeight="bold">
-                    {editItem ? 'Editar Mercadería' : 'Registro de Mercadería'}
-                </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ 
+                        p: 0.5, 
+                        borderRadius: '50%', 
+                        bgcolor: editItem ? theme.palette.warning.main : theme.palette.primary.main,
+                        color: 'white',
+                        display: 'flex'
+                    }}>
+                        {editItem ? <EditIcon fontSize="small" /> : <AddCircleIcon fontSize="small" />}
+                    </Box>
+                    <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
+                        {editItem ? "Editar Mercadería" : "Agregar Mercadería"}
+                    </Typography>
+                </Box>
+                {editItem && (
+                    <Button 
+                        size="small" 
+                        color="inherit" 
+                        onClick={onCancelEdit}
+                        startIcon={<CancelIcon />}
+                    >
+                        Cancelar Edición
+                    </Button>
+                )}
             </Box>
 
             <Grid container spacing={2}>
@@ -190,6 +214,7 @@ export function ViajeMercaderiaCreateEdit({
                                 placeholder="Ingrese especificaciones, marcas o modelos..."
                                 error={!!errors.descripcion}
                                 helperText={errors.descripcion?.message}
+                                onKeyDown={handleAddressKeyDown}
                             />
                         )}
                     />

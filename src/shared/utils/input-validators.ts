@@ -1,4 +1,5 @@
 import React from 'react';
+import { INPUT_VAL } from '@/shared/constants/constantes';
 
 /**
  * Validates and restricts input to only allow letters and spaces.
@@ -27,6 +28,34 @@ export const handleLettersOnlyKeyDown = (e: React.KeyboardEvent<HTMLDivElement>)
  */
 export const handleNoSpacesKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === ' ') {
+        e.preventDefault();
+    }
+};
+
+/**
+ * Validates and restricts input to allow letters, numbers, spaces and common address characters.
+ * Allowed: a-z, A-Z, 0-9, accents, ñ, spaces, and , . - _ / ( ) [ ]
+ * 
+ * Usage: <TextField onKeyDown={handleAddressKeyDown} ... />
+ */
+export const handleAddressKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key.length > 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+    
+    if (!INPUT_VAL.ALPHA_NUMERICO_ESPECIAL.test(e.key)) {
+        e.preventDefault();
+    }
+};
+
+/**
+ * Validates and restricts input to only allow letters, numbers and spaces.
+ * Useful for fields like names and surnames (nombres y apellidos).
+ * 
+ * Usage: <TextField onKeyDown={handleAlphaNumericSpacesKeyDown} ... />
+ */
+export const handleAlphaNumericSpacesKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key.length > 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+    
+    if (!INPUT_VAL.ALPHA_NUMERICO_ESPACIOS.test(e.key)) {
         e.preventDefault();
     }
 };

@@ -15,6 +15,7 @@ import type { ViajePermiso } from '@/entities/viaje/model/types';
 import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { useCreateViajePermiso, useUpdateViajePermiso } from '@/features/viaje/hooks/useViajePermisos';
 import { viajePermisoSchema, type ViajePermisoFormData } from '../../model/schema';
+import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
 
 interface Props {
     viajeId: number;
@@ -33,7 +34,7 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
     const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajePermisoFormData>({
         resolver: zodResolver(viajePermisoSchema),
         defaultValues: {
-            fechaVigencia: new Date().toISOString().split('T')[0],
+            fechaVigencia: getCurrentDateISO(),
             fechaVencimiento: undefined,
             rutaArchivo: ''
         }
@@ -42,13 +43,13 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
     useEffect(() => {
         if (permiso) {
             reset({
-                fechaVigencia: String(permiso.fechaVigencia).split('T')[0],
-                fechaVencimiento: permiso.fechaVencimiento ? String(permiso.fechaVencimiento).split('T')[0] : undefined,
+                fechaVigencia: permiso.fechaVigencia ? toInputDate(permiso.fechaVigencia) : getCurrentDateISO(),
+                fechaVencimiento: permiso.fechaVencimiento ? toInputDate(permiso.fechaVencimiento) : undefined,
                 rutaArchivo: permiso.rutaArchivo || ''
             });
         } else {
             reset({
-                fechaVigencia: new Date().toISOString().split('T')[0],
+                fechaVigencia: getCurrentDateISO(),
                 fechaVencimiento: undefined,
                 rutaArchivo: ''
             });
@@ -76,7 +77,7 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
             }
             
             reset({
-                fechaVigencia: new Date().toISOString().split('T')[0],
+                fechaVigencia: getCurrentDateISO(),
                 fechaVencimiento: undefined,
                 rutaArchivo: ''
             });

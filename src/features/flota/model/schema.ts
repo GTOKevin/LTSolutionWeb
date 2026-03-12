@@ -1,42 +1,42 @@
 import { z } from 'zod';
-import { TIPOS_COMBUSTIBLE, PLACA_PERU_REGEX, TEXTO_SEGURO_REGEX, DECIMAL_10_2_REGEX } from '@/shared/constants/constantes';
+import { TIPOS_COMBUSTIBLE, INPUT_VAL, ERROR_MESSAGES } from '@/shared/constants/constantes';
 
 export const createFlotaSchema = z.object({
     tipoFlota: z.coerce.number().min(1, 'Tipo de Flota es requerido'),
     marca: z.string().optional(),
-    modelo: z.string().optional().refine(val => !val || TEXTO_SEGURO_REGEX.test(val), {
-        message: 'Caracteres no permitidos (solo letras, números, - _ . ,)'
+    modelo: z.string().optional().refine(val => !val || INPUT_VAL.TEXTO_SEGURO_REGEX.test(val), {
+        message: ERROR_MESSAGES.TEXTO_SEGURO
     }),
     placa: z.string()
         .min(1, 'Placa es requerida')
         .transform(val => val.toUpperCase())
-        .refine(val => PLACA_PERU_REGEX.test(val), {
-            message: 'Formato inválido (Ej: ABC-123)'
+        .refine(val => INPUT_VAL.PLACA_PERU_REGEX.test(val), {
+            message: ERROR_MESSAGES.PLACA_INVALIDA
         }),
     anio: z.coerce.number().min(1900, 'Año inválido').max(new Date().getFullYear() + 1, 'Año inválido'),
-    color: z.string().optional().refine(val => !val || TEXTO_SEGURO_REGEX.test(val), {
-        message: 'Caracteres no permitidos (solo letras, números, - _ . ,)'
+    color: z.string().optional().refine(val => !val || INPUT_VAL.TEXTO_SEGURO_REGEX.test(val), {
+        message: ERROR_MESSAGES.TEXTO_SEGURO
     }),
     ejes: z.coerce.number().min(0, 'Ejes no puede ser negativo'),
     tipoPesoID: z.coerce.number().min(1, 'Tipo de Peso es requerido'),
-    pesoBruto: z.coerce.number().optional().refine(val => !val || DECIMAL_10_2_REGEX.test(val.toString()), {
-        message: 'Formato inválido (Máx 2 decimales)'
+    pesoBruto: z.coerce.number().optional().refine(val => !val || INPUT_VAL.DECIMAL_10_2_REGEX.test(val.toString()), {
+        message: ERROR_MESSAGES.DECIMAL_10_2
     }),
-    pesoNeto: z.coerce.number().optional().refine(val => !val || DECIMAL_10_2_REGEX.test(val.toString()), {
-        message: 'Formato inválido (Máx 2 decimales)'
+    pesoNeto: z.coerce.number().optional().refine(val => !val || INPUT_VAL.DECIMAL_10_2_REGEX.test(val.toString()), {
+        message: ERROR_MESSAGES.DECIMAL_10_2
     }),
-    cargaUtil: z.coerce.number().optional().refine(val => !val || DECIMAL_10_2_REGEX.test(val.toString()), {
-        message: 'Formato inválido (Máx 2 decimales)'
+    cargaUtil: z.coerce.number().optional().refine(val => !val || INPUT_VAL.DECIMAL_10_2_REGEX.test(val.toString()), {
+        message: ERROR_MESSAGES.DECIMAL_10_2
     }),
     tipoMedidaID: z.coerce.number().min(1, 'Tipo de Medida es requerido'),
-    largo: z.coerce.number().optional().refine(val => !val || DECIMAL_10_2_REGEX.test(val.toString()), {
-        message: 'Formato inválido (Máx 2 decimales)'
+    largo: z.coerce.number().optional().refine(val => !val || INPUT_VAL.DECIMAL_10_2_REGEX.test(val.toString()), {
+        message: ERROR_MESSAGES.DECIMAL_10_2
     }),
-    alto: z.coerce.number().optional().refine(val => !val || DECIMAL_10_2_REGEX.test(val.toString()), {
-        message: 'Formato inválido (Máx 2 decimales)'
+    alto: z.coerce.number().optional().refine(val => !val || INPUT_VAL.DECIMAL_10_2_REGEX.test(val.toString()), {
+        message: ERROR_MESSAGES.DECIMAL_10_2
     }),
-    ancho: z.coerce.number().optional().refine(val => !val || DECIMAL_10_2_REGEX.test(val.toString()), {
-        message: 'Formato inválido (Máx 2 decimales)'
+    ancho: z.coerce.number().optional().refine(val => !val || INPUT_VAL.DECIMAL_10_2_REGEX.test(val.toString()), {
+        message: ERROR_MESSAGES.DECIMAL_10_2
     }),
     tipoCombustible: z.string()
         .min(1, 'Tipo de Combustible es requerido')

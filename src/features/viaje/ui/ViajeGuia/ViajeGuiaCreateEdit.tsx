@@ -124,22 +124,22 @@ export function ViajeGuiaCreateEdit({ viajeId, tiposGuia, guia, onCancel }: Prop
                 p: 3, 
                 border: `1px solid ${theme.palette.divider}`,
                 borderRadius: 3,
-                bgcolor: 'background.paper'
+                bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
             }}
         >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Box sx={{ 
-                        p: 1, 
-                        borderRadius: 1, 
-                        bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.1),
-                        color: isEditing ? 'warning.main' : 'primary.main',
+                        p: 0.5, 
+                        borderRadius: '50%', 
+                        bgcolor: isEditing ? theme.palette.warning.main : theme.palette.primary.main,
+                        color: 'white',
                         display: 'flex'
                     }}>
                         {isEditing ? <EditIcon fontSize="small" /> : <AddCircleIcon fontSize="small" />}
                     </Box>
                     <Typography variant="subtitle1" fontWeight="bold">
-                        {isEditing ? "Editar Guía" : "Registro de Nueva Guía"}
+                        {isEditing ? "Editar Guía" : "Agregar Guía"}
                     </Typography>
                 </Box>
                 {isEditing && (

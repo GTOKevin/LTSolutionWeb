@@ -19,6 +19,7 @@ import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
 import { useViajePermisos, useDeleteViajePermiso } from '@/features/viaje/hooks/useViajePermisos';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
+import { formatDateShort } from '@/shared/utils/date-utils';
 
 interface Props {
     viajeId: number;
@@ -126,8 +127,8 @@ export function ViajePermisoList({ viajeId, viewOnly, onEdit }: Props) {
                 renderRow={(item) => {
                     return (
                         <>
-                            <TableCell>{item.fechaVigencia}</TableCell>
-                            <TableCell>{item.fechaVencimiento || '-'}</TableCell>
+                            <TableCell>{formatDateShort(item.fechaVigencia)}</TableCell>
+                            <TableCell>{item.fechaVencimiento ? formatDateShort(item.fechaVencimiento) : '-'}</TableCell>
                             <TableCell align="center">
                                 {item.rutaArchivo ? (
                                     <Tooltip title="Ver Documento">
