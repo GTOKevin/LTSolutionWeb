@@ -34,14 +34,15 @@ const API_URL = import.meta.env.VITE_IMG_URL_BASE || 'https://localhost:44332';
 
 export function ViajeGuiaList({ viajeId, viewOnly, tiposGuia, onEdit }: Props) {
     const theme = useTheme();
-    
-    // Query & Mutations
-    const { data: guias = [], isLoading } = useViajeGuias(viajeId);
-    const deleteMutation = useDeleteViajeGuia();
 
     // Pagination State
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    // Query & Mutations
+    const { data, isLoading } = useViajeGuias(viajeId, page + 1, rowsPerPage);
+    const deleteMutation = useDeleteViajeGuia();
+    const guias = data?.items ?? [];
 
     const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
@@ -96,16 +97,6 @@ export function ViajeGuiaList({ viajeId, viewOnly, tiposGuia, onEdit }: Props) {
         return alpha(theme.palette.text.secondary, 0.1);
     };
 
-    // Client-side pagination
-    const paginatedGuias = guias.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const pagedData = {
-        items: paginatedGuias,
-        total: guias.length,
-        page: page + 1,
-        size: rowsPerPage,
-        totalPages: Math.ceil(guias.length / rowsPerPage)
-    };
-
     const columns: Column[] = [
         { id: 'tipo', label: 'Tipo de Guía' },
         { id: 'documento', label: 'Documento (Serie-N°)' },
@@ -131,13 +122,13 @@ export function ViajeGuiaList({ viajeId, viewOnly, tiposGuia, onEdit }: Props) {
                     color: 'text.secondary'
                 }}>
                     <Typography variant="caption" fontWeight="bold">
-                        Total: {guias.length} registros
+                        Total: {data?.total ?? 0} registros
                     </Typography>
                 </Box>
             </Box>
 
             <SharedTable
-                data={pagedData}
+                data={data}
                 isLoading={isLoading}
                 page={page}
                 rowsPerPage={rowsPerPage}

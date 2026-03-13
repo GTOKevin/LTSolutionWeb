@@ -10,7 +10,7 @@ import {
 import { ArrowForward } from '@mui/icons-material';
 import type { ViajeListItem } from '@entities/viaje/model/types';
 import type { PagedResponse } from '@/shared/model/types';
-import { ESTADO_VIAJE_COD } from '@/shared/constants/constantes';
+import { ESTADO_VIAJE_COD, ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 
@@ -104,6 +104,7 @@ export function ViajesTable({
             emptyMessage="No se encontraron viajes registrados."
             renderRow={(viaje) => {
                 const estado = getEstadoConfig(viaje.estadoCodigo, viaje.estadoNombre);
+                const isEditable = viaje.estadoID !== ESTADO_VIAJE_ID.CANCELADO && viaje.estadoID !== ESTADO_VIAJE_ID.COMPLETADO;
 
                 return (
                     <>
@@ -208,8 +209,10 @@ export function ViajesTable({
                                 onEdit={() => onEdit(viaje)}
                                 onDelete={() => onDelete(viaje)}
                                 viewTooltip="Ver detalle"
-                                editTooltip="Editar"
+                                editTooltip={isEditable ? "Editar" : "No editable"}
                                 deleteTooltip="Eliminar"
+                                disableEdit={!isEditable}
+                                disableDelete={!isEditable}
                             />
                         </TableCell>
                     </>

@@ -18,10 +18,16 @@ export interface PagedResponse<T> {
     totalPages: number;
 }
 
+export interface PagedFilters {
+    page: number;
+    size: number;
+    search?: string;
+}
+
 export interface SelectItem {
     id: number;
     text: string;
-    extra:string;
+    extra?:string;
 }
 
 export interface SelectStringItem {

@@ -33,7 +33,7 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
     // --- Queries ---
     const { data: flotas } = useQuery({
         queryKey: ['flotas-select'],
-        queryFn: () => flotaApi.getSelect(),
+        queryFn: () => flotaApi.getSelect({ search: '', limit: 50 }),
         enabled: open
     });
 

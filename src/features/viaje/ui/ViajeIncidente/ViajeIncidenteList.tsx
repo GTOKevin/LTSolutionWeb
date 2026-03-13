@@ -33,14 +33,15 @@ const API_URL = import.meta.env.VITE_IMG_URL_BASE || 'https://localhost:44332';
 
 export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }: Props) {
     const theme = useTheme();
-    
-    // Query & Mutations
-    const { data: incidentes = [], isLoading } = useViajeIncidentes(viajeId);
-    const deleteMutation = useDeleteViajeIncidente();
 
     // Pagination State
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    // Query & Mutations
+    const { data, isLoading } = useViajeIncidentes(viajeId, page + 1, rowsPerPage);
+    const deleteMutation = useDeleteViajeIncidente();
+    const incidentes = data?.items ?? [];
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -87,16 +88,6 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
         return theme.palette.primary;
     };
 
-    // Client-side pagination
-    const paginatedIncidentes = incidentes.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const pagedData = {
-        items: paginatedIncidentes,
-        total: incidentes.length,
-        page: page + 1,
-        size: rowsPerPage,
-        totalPages: Math.ceil(incidentes.length / rowsPerPage)
-    };
-
     const columns: Column[] = [
         { id: 'fecha', label: 'Fecha / Hora' },
         { id: 'tipo', label: 'Tipo' },
@@ -119,7 +110,7 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
             </Box>
 
             <SharedTable
-                data={pagedData}
+                data={data}
                 isLoading={isLoading}
                 page={page}
                 rowsPerPage={rowsPerPage}

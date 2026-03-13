@@ -1,11 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { viajeGastoApi } from '@/entities/viaje/api/viaje-gasto.api';
-import type { CreateViajeGastoDto } from '@/entities/viaje/model/types';
+import type { CreateViajeGastoDto, PagedViajeGastos } from '@/entities/viaje/model/types';
 
-export const useViajeGastos = (viajeId?: number) => {
+const EMPTY_PAGED_GASTOS: PagedViajeGastos = {
+    items: [],
+    total: 0,
+    page: 1,
+    size: 5,
+    totalPages: 0,
+    totalsByCurrency: [
+        { code: 'PEN', symbol: 'S/.', total: 0 },
+        { code: 'USD', symbol: '$', total: 0 },
+        { code: 'EUR', symbol: '€', total: 0 }
+    ]
+};
+
+export const useViajeGastos = (viajeId?: number, page = 1, size = 5) => {
     return useQuery({
-        queryKey: ['viaje-gastos', viajeId],
-        queryFn: () => viajeId ? viajeGastoApi.getByViaje(viajeId) : Promise.resolve([]),
+        queryKey: ['viaje-gastos', viajeId, page, size],
+        queryFn: () => viajeId ? viajeGastoApi.getByViaje(viajeId, { page, size }) : Promise.resolve(EMPTY_PAGED_GASTOS),
         enabled: !!viajeId
     });
 };

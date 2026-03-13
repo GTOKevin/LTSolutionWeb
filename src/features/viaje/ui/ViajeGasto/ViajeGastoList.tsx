@@ -9,7 +9,8 @@ import {
     useMediaQuery, 
     CircularProgress,
     TableCell,
-    Paper
+    Paper,
+    TablePagination
 } from '@mui/material';
 import { 
     Receipt as ReceiptIcon,
@@ -24,6 +25,7 @@ import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableLoading } from '@/shared/components/ui/TableLoading';
 import { TableActions } from '@/shared/components/ui/TableActions';
 import { formatDateShort } from '@/shared/utils/date-utils';
+import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 
 interface Props {
     viajeId: number;
@@ -36,14 +38,15 @@ interface Props {
 export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit }: Props) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    
-    // Query & Mutations
-    const { data: gastos = [], isLoading } = useViajeGastos(viajeId);
-    const deleteMutation = useDeleteViajeGasto();
 
     // Pagination State
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    // Query & Mutations
+    const { data, isLoading } = useViajeGastos(viajeId, page + 1, rowsPerPage);
+    const deleteMutation = useDeleteViajeGasto();
+    const gastos = data?.items ?? [];
 
     const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
@@ -63,16 +66,19 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
         }
     };
 
-    // Calculate totals
-    const totalPEN = gastos.reduce((acc: number, item: ViajeGasto) => {
-        const moneda = monedas.find(m => m.id === item.monedaID);
-        return acc + (moneda?.extra === 'PEN' || item.monedaID === 1 ? Number(item.monto) : 0);
-    }, 0);
+    const totalsByCurrency = data?.totalsByCurrency ?? [];
 
-    const totalUSD = gastos.reduce((acc: number, item: ViajeGasto) => {
-        const moneda = monedas.find(m => m.id === item.monedaID);
-        return acc + (moneda?.extra === 'USD' || item.monedaID === 2 ? Number(item.monto) : 0);
-    }, 0);
+    const getCurrencySummary = (code: string, defaultSymbol: string) => {
+        const currency = totalsByCurrency.find(item => item.code === code);
+        return {
+            symbol: currency?.symbol || defaultSymbol,
+            total: currency?.total ?? 0
+        };
+    };
+
+    const penSummary = getCurrencySummary('PEN', 'S/.');
+    const usdSummary = getCurrencySummary('USD', '$');
+    const eurSummary = getCurrencySummary('EUR', '€');
 
     const getGastoColor = (text: string = '') => {
         const lower = text.toLowerCase();
@@ -85,16 +91,6 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
 
     const getGastoBg = (text: string = '') => {
         return alpha(getGastoColor(text), 0.1);
-    };
-
-    // Client-side pagination
-    const paginatedGastos = gastos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const pagedData = {
-        items: paginatedGastos,
-        total: gastos.length,
-        page: page + 1,
-        size: rowsPerPage,
-        totalPages: Math.ceil(gastos.length / rowsPerPage)
     };
 
     const columns: Column[] = [
@@ -123,7 +119,7 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                     fontSize: '0.75rem',
                     fontWeight: 'bold'
                 }}>
-                    Total: {gastos.length} registros
+                    Total: {data?.total ?? 0} registros
                 </Box>
             </Box>
 
@@ -131,7 +127,7 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
             {!isMobile ? (
                 <>
                     <SharedTable
-                        data={pagedData}
+                        data={data}
                         isLoading={isLoading}
                         page={page}
                         rowsPerPage={rowsPerPage}
@@ -206,11 +202,15 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                             <Box sx={{ display: 'flex', gap: 3 }}>
                                 <Box>
                                     <Typography variant="caption" display="block" color="text.secondary" fontWeight="bold">PEN</Typography>
-                                    <Typography variant="subtitle2" fontWeight="bold">S/ {totalPEN.toFixed(2)}</Typography>
+                                    <Typography variant="subtitle2" fontWeight="bold">{penSummary.symbol} {penSummary.total.toFixed(2)}</Typography>
                                 </Box>
                                 <Box>
                                     <Typography variant="caption" display="block" color="text.secondary" fontWeight="bold">USD</Typography>
-                                    <Typography variant="subtitle2" fontWeight="bold">$ {totalUSD.toFixed(2)}</Typography>
+                                    <Typography variant="subtitle2" fontWeight="bold">{usdSummary.symbol} {usdSummary.total.toFixed(2)}</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="caption" display="block" color="text.secondary" fontWeight="bold">EUR</Typography>
+                                    <Typography variant="subtitle2" fontWeight="bold">{eurSummary.symbol} {eurSummary.total.toFixed(2)}</Typography>
                                 </Box>
                             </Box>
                         </Paper>
@@ -284,6 +284,16 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                         )}
                     </>
                 )}
+                <TablePagination
+                    rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
+                    component="div"
+                    count={data?.total || 0}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    labelRowsPerPage="Filas por página"
+                />
                 </Box>
             )}
 
@@ -306,12 +316,17 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Box>
                             <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 'bold', letterSpacing: 1 }}>TOTAL (PEN)</Typography>
-                            <Typography variant="h6" fontWeight="900">S/ {totalPEN.toFixed(2)}</Typography>
+                            <Typography variant="h6" fontWeight="900">{penSummary.symbol} {penSummary.total.toFixed(2)}</Typography>
+                        </Box>
+                        <Divider orientation="vertical" flexItem sx={{ bgcolor: 'rgba(255,255,255,0.2)', mx: 1 }} />
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 'bold', letterSpacing: 1 }}>TOTAL (USD)</Typography>
+                            <Typography variant="subtitle1" fontWeight="bold">{usdSummary.symbol} {usdSummary.total.toFixed(2)}</Typography>
                         </Box>
                         <Divider orientation="vertical" flexItem sx={{ bgcolor: 'rgba(255,255,255,0.2)', mx: 1 }} />
                         <Box sx={{ textAlign: 'right' }}>
-                            <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 'bold', letterSpacing: 1 }}>TOTAL (USD)</Typography>
-                            <Typography variant="subtitle1" fontWeight="bold">$ {totalUSD.toFixed(2)}</Typography>
+                            <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 'bold', letterSpacing: 1 }}>TOTAL (EUR)</Typography>
+                            <Typography variant="subtitle1" fontWeight="bold">{eurSummary.symbol} {eurSummary.total.toFixed(2)}</Typography>
                         </Box>
                     </Box>
                 </Paper>

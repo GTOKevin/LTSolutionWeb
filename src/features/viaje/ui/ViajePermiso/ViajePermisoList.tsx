@@ -31,14 +31,15 @@ const API_URL = import.meta.env.VITE_IMG_URL_BASE || 'https://localhost:44332';
 
 export function ViajePermisoList({ viajeId, viewOnly, onEdit }: Props) {
     const theme = useTheme();
-    
-    // Query & Mutations
-    const { data: permisos = [], isLoading } = useViajePermisos(viajeId);
-    const deleteMutation = useDeleteViajePermiso();
 
     // Pagination State
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    // Query & Mutations
+    const { data, isLoading } = useViajePermisos(viajeId, page + 1, rowsPerPage);
+    const deleteMutation = useDeleteViajePermiso();
+    const permisos = data?.items ?? [];
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -75,16 +76,6 @@ export function ViajePermisoList({ viajeId, viewOnly, onEdit }: Props) {
         setPreviewUrl(null);
     };
 
-    // Client-side pagination
-    const paginatedFields = permisos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const pagedData = {
-        items: paginatedFields,
-        total: permisos.length,
-        page: page + 1,
-        size: rowsPerPage,
-        totalPages: Math.ceil(permisos.length / rowsPerPage)
-    };
-
     const columns: Column[] = [
         { id: 'vigencia', label: 'Fecha Vigencia' },
         { id: 'vencimiento', label: 'Fecha Vencimiento' },
@@ -110,12 +101,12 @@ export function ViajePermisoList({ viajeId, viewOnly, onEdit }: Props) {
                     fontSize: '0.75rem',
                     fontWeight: 'bold'
                 }}>
-                    Total: {permisos.length}
+                    Total: {data?.total ?? 0}
                 </Box>
             </Box>
 
             <SharedTable
-                data={pagedData}
+                data={data}
                 isLoading={isLoading}
                 page={page}
                 rowsPerPage={rowsPerPage}

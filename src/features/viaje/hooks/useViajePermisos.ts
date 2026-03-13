@@ -1,11 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { viajePermisoApi } from '@/entities/viaje/api/viaje-permiso.api';
-import type { CreateViajePermisoDto } from '@/entities/viaje/model/types';
+import type { CreateViajePermisoDto, PagedViajePermisos } from '@/entities/viaje/model/types';
 
-export const useViajePermisos = (viajeId?: number) => {
+const EMPTY_PAGED_PERMISOS: PagedViajePermisos = {
+    items: [],
+    total: 0,
+    page: 1,
+    size: 5,
+    totalPages: 0
+};
+
+export const useViajePermisos = (viajeId?: number, page = 1, size = 5) => {
     return useQuery({
-        queryKey: ['viaje-permisos', viajeId],
-        queryFn: () => viajeId ? viajePermisoApi.getByViaje(viajeId) : Promise.resolve([]),
+        queryKey: ['viaje-permisos', viajeId, page, size],
+        queryFn: () => viajeId ? viajePermisoApi.getByViaje(viajeId, { page, size }) : Promise.resolve(EMPTY_PAGED_PERMISOS),
         enabled: !!viajeId
     });
 };

@@ -1,12 +1,13 @@
 import { httpClient } from '@shared/api/http';
-import type { PagedResponse } from '@/shared/model/types';
+import type { PagedResponse, SelectItem } from '@/shared/model/types';
 import type { 
     Flota, 
     FlotaDocumento, 
     CreateFlotaDto, 
     CreateFlotaDocumentoDto, 
     FlotaParams, 
-    FlotaDocumentoParams 
+    FlotaDocumentoParams, 
+    FlotaParamsSelect
 } from '../model/types';
 
 export const flotaApi = {
@@ -14,6 +15,8 @@ export const flotaApi = {
 
     getAll: (params: FlotaParams) => 
         httpClient.get<PagedResponse<Flota>>('/Flota', { params }),
+
+    getSelect: (params: FlotaParamsSelect) => httpClient.get<SelectItem[]>(`/Flota/select`,{params}),
 
     getDocumentos: (params: FlotaDocumentoParams) =>
         httpClient.get<PagedResponse<FlotaDocumento>>('/Flota/documentos', { params }),

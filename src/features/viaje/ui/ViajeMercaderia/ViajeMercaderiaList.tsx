@@ -29,14 +29,15 @@ interface Props {
 
 export function ViajeMercaderiaList({ viajeId, viewOnly, tiposMedida, tiposPeso, mercaderias, onEdit }: Props) {
     const theme = useTheme();
-    
-    // Query & Mutations
-    const { data: mercaderiaList = [], isLoading } = useViajeMercaderias(viajeId);
-    const deleteMutation = useDeleteViajeMercaderia();
 
     // Pagination State
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    // Query & Mutations
+    const { data, isLoading } = useViajeMercaderias(viajeId, page + 1, rowsPerPage);
+    const deleteMutation = useDeleteViajeMercaderia();
+    const mercaderiaList = data?.items ?? [];
 
     const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
@@ -63,16 +64,6 @@ export function ViajeMercaderiaList({ viajeId, viewOnly, tiposMedida, tiposPeso,
     const maxAncho = mercaderiaList.length > 0 ? Math.max(...mercaderiaList.map((item: ViajeMercaderia) => Number(item.ancho) || 0)) : 0;
     const maxAlto = mercaderiaList.length > 0 ? Math.max(...mercaderiaList.map((item: ViajeMercaderia) => Number(item.alto) || 0)) : 0;
 
-    // Client-side pagination
-    const paginatedMercaderia = mercaderiaList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const pagedData = {
-        items: paginatedMercaderia,
-        total: mercaderiaList.length,
-        page: page + 1,
-        size: rowsPerPage,
-        totalPages: Math.ceil(mercaderiaList.length / rowsPerPage)
-    };
-
     const columns: Column[] = [
         { id: 'descripcion', label: 'Descripción Principal' },
         { id: 'dimensiones', label: 'Dimensiones (L x A x A)' },
@@ -88,11 +79,11 @@ export function ViajeMercaderiaList({ viajeId, viewOnly, tiposMedida, tiposPeso,
                     <Typography variant="subtitle1" fontWeight="bold">Ítems Registrados</Typography>
                     {isLoading && <CircularProgress size={20} />}
                 </Box>
-                <Typography variant="caption" color="text.secondary">({mercaderiaList.length} ítems)</Typography>
+                <Typography variant="caption" color="text.secondary">({data?.total ?? 0} ítems)</Typography>
             </Box>
 
             <SharedTable
-                data={pagedData}
+                data={data}
                 isLoading={isLoading}
                 page={page}
                 rowsPerPage={rowsPerPage}

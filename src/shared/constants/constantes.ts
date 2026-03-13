@@ -43,6 +43,11 @@ export const ESTADO_VIAJE_COD = {
     Completado: "COMP"
 } as const;
 
+export const ESTADO_VIAJE_ID = {
+    CANCELADO: 203,
+    COMPLETADO: 204
+} as const;
+
 export const TIPO_FLOTA={
     CAMIONES:"N3",
     CARRETAS:"O4",

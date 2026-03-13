@@ -18,13 +18,14 @@ interface Props {
 
 export function ViajeEscoltaList({ viajeId, viewOnly, flotas, colaboradores, onEdit }: Props) {
     const theme = useTheme();
-    
-    // Query & Mutations
-    const { data: escoltas = [], isLoading } = useViajeEscoltas(viajeId);
-    const deleteMutation = useDeleteViajeEscolta();
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    // Query & Mutations
+    const { data, isLoading } = useViajeEscoltas(viajeId, page + 1, rowsPerPage);
+    const deleteMutation = useDeleteViajeEscolta();
+    const escoltas = data?.items ?? [];
 
     const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
@@ -68,16 +69,6 @@ export function ViajeEscoltaList({ viajeId, viewOnly, flotas, colaboradores, onE
         { id: 'acciones', label: 'Acciones', align: 'right' }
     ];
 
-    // Client-side pagination
-    const paginatedFields = escoltas.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const pagedData = {
-        items: paginatedFields,
-        total: escoltas.length,
-        page: page + 1,
-        size: rowsPerPage,
-        totalPages: Math.ceil(escoltas.length / rowsPerPage)
-    };
-
     return (
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -96,12 +87,12 @@ export function ViajeEscoltaList({ viajeId, viewOnly, flotas, colaboradores, onE
                     fontSize: '0.75rem',
                     fontWeight: 'bold'
                 }}>
-                    Total: {escoltas.length}
+                    Total: {data?.total ?? 0}
                 </Box>
             </Box>
 
             <SharedTable
-                data={pagedData}
+                data={data}
                 isLoading={isLoading}
                 page={page}
                 rowsPerPage={rowsPerPage}

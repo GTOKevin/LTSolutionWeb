@@ -1,11 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { viajeGuiaApi } from '@/entities/viaje/api/viaje-guia.api';
-import type { CreateViajeGuiaDto } from '@/entities/viaje/model/types';
+import type { CreateViajeGuiaDto, PagedViajeGuias } from '@/entities/viaje/model/types';
 
-export const useViajeGuias = (viajeId?: number) => {
+const EMPTY_PAGED_GUIAS: PagedViajeGuias = {
+    items: [],
+    total: 0,
+    page: 1,
+    size: 5,
+    totalPages: 0
+};
+
+export const useViajeGuias = (viajeId?: number, page = 1, size = 5) => {
     return useQuery({
-        queryKey: ['viaje-guias', viajeId],
-        queryFn: () => viajeId ? viajeGuiaApi.getByViaje(viajeId) : Promise.resolve([]),
+        queryKey: ['viaje-guias', viajeId, page, size],
+        queryFn: () => viajeId ? viajeGuiaApi.getByViaje(viajeId, { page, size }) : Promise.resolve(EMPTY_PAGED_GUIAS),
         enabled: !!viajeId
     });
 };

@@ -286,6 +286,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                             sx={{ mt: 1 }}
                                             {...register('direccionOrigen')}
                                             onKeyDown={handleAddressKeyDown}
+                                            disabled={isViewOnly}
                                         />
                                     </Box>
                                 </Grid>
@@ -313,6 +314,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                             sx={{ mt: 1 }}
                                             {...register('direccionDestino')}
                                             onKeyDown={handleAddressKeyDown}
+                                            disabled={isViewOnly}
                                         />
                                     </Box>
                                 </Grid>
@@ -329,6 +331,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         size="small"
                                         InputLabelProps={{ shrink: true }}
                                         {...register('fechaPartida')}
+                                        disabled={isViewOnly}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 6, md: 3 }}>
@@ -339,6 +342,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         size="small"
                                         InputLabelProps={{ shrink: true }}
                                         {...register('fechaLlegada')}
+                                        disabled={isViewOnly}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 6, md: 3 }}>
@@ -349,6 +353,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         size="small"
                                         InputLabelProps={{ shrink: true }}
                                         {...register('fechaDescarga')}
+                                        disabled={isViewOnly}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 6, md: 3 }}>
@@ -359,6 +364,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         size="small"
                                         InputLabelProps={{ shrink: true }}
                                         {...register('fechaLlegadaBase')}
+                                        disabled={isViewOnly}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 6, md: 4 }}>
@@ -368,6 +374,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         fullWidth
                                         size="small"
                                         {...register('kmInicio', { valueAsNumber: true })}
+                                        disabled={isViewOnly}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 6, md: 4 }}>
@@ -377,6 +384,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         fullWidth
                                         size="small"
                                         {...register('kmLlegada', { valueAsNumber: true })}
+                                        disabled={isViewOnly}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 6, md: 4 }}>
@@ -386,6 +394,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         fullWidth
                                         size="small"
                                         {...register('kmLlegadaBase', { valueAsNumber: true })}
+                                        disabled={isViewOnly}
                                     />
                                 </Grid>
 
@@ -403,6 +412,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         defaultValue={viaje?.viajeID ? viaje.tipoMedidaID : 0}
                                         error={!!errors.tipoMedidaID}
                                         helperText={errors.tipoMedidaID?.message}
+                                        disabled={isViewOnly}
                                     >
                                         {tiposMedida?.map(t => <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>)}
                                     </TextField>
@@ -417,6 +427,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         defaultValue={viaje?.viajeID ? viaje.tipoPesoID : 0}
                                         error={!!errors.tipoPesoID}
                                         helperText={errors.tipoPesoID?.message}
+                                        disabled={isViewOnly}
                                     >
                                         {tiposPeso?.map(t => <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>)}
                                     </TextField>
@@ -429,6 +440,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         size="small"
                                         inputProps={{ step: "0.01" }}
                                         {...register('peso', { valueAsNumber: true })}
+                                        disabled={isViewOnly}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 12 }}>
@@ -441,6 +453,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                             size="small"
                                             inputProps={{ step: "0.01" }}
                                             {...register('largo', { valueAsNumber: true })}
+                                            disabled={isViewOnly}
                                         />
                                         <TextField
                                             label="Ancho"
@@ -449,6 +462,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                             size="small"
                                             inputProps={{ step: "0.01" }}
                                             {...register('ancho', { valueAsNumber: true })}
+                                            disabled={isViewOnly}
                                         />
                                         <TextField
                                             label="Alto"
@@ -457,6 +471,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                             size="small"
                                             inputProps={{ step: "0.01" }}
                                             {...register('alto', { valueAsNumber: true })}
+                                            disabled={isViewOnly}
                                         />
                                     </Box>
                                 </Grid>
@@ -466,7 +481,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         control={control}
                                         render={({ field }) => (
                                             <FormControlLabel
-                                                control={<Switch checked={field.value} onChange={field.onChange} />}
+                                                control={<Switch checked={field.value} onChange={field.onChange} disabled={isViewOnly} />}
                                                 label="Requiere Escolta"
                                             />
                                         )}
@@ -476,7 +491,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         control={control}
                                         render={({ field }) => (
                                             <FormControlLabel
-                                                control={<Switch checked={field.value} onChange={field.onChange} />}
+                                                control={<Switch checked={field.value} onChange={field.onChange} disabled={isViewOnly} />}
                                                 label="Requiere Permisos"
                                             />
                                         )}
@@ -552,7 +567,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                 </FormProvider>
             </DialogContent>
             <DialogActions>
-                <Button  onClick={onClose}>Cerrar</Button>
+                <Button  onClick={onClose} variant="contained" color="inherit" >Cerrar</Button>
             </DialogActions>
 
             <ConfirmDialog

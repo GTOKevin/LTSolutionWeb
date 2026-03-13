@@ -89,3 +89,8 @@ export interface FlotaDocumentoParams {
     page?: number;
     size?: number;
 }
+
+export interface FlotaParamsSelect {
+    search?: string;
+    limit?: number;
+}

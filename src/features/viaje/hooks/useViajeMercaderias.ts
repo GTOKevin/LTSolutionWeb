@@ -1,11 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { viajeMercaderiaApi } from '@/entities/viaje/api/viaje-mercaderia.api';
-import type { CreateViajeMercaderiaDto } from '@/entities/viaje/model/types';
+import type { CreateViajeMercaderiaDto, PagedViajeMercaderias } from '@/entities/viaje/model/types';
 
-export const useViajeMercaderias = (viajeId?: number) => {
+const EMPTY_PAGED_MERCADERIAS: PagedViajeMercaderias = {
+    items: [],
+    total: 0,
+    page: 1,
+    size: 5,
+    totalPages: 0
+};
+
+export const useViajeMercaderias = (viajeId?: number, page = 1, size = 5) => {
     return useQuery({
-        queryKey: ['viaje-mercaderias', viajeId],
-        queryFn: () => viajeId ? viajeMercaderiaApi.getByViaje(viajeId) : Promise.resolve([]),
+        queryKey: ['viaje-mercaderias', viajeId, page, size],
+        queryFn: () => viajeId ? viajeMercaderiaApi.getByViaje(viajeId, { page, size }) : Promise.resolve(EMPTY_PAGED_MERCADERIAS),
         enabled: !!viajeId
     });
 };

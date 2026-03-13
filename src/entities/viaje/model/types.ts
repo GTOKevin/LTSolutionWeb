@@ -1,4 +1,4 @@
-import type { PagedResponse } from '@/shared/model/types';
+import type { PagedFilters, PagedResponse } from '@/shared/model/types';
 
 export interface ViajeMercaderia {
     viajeMercaderiaID: number;
@@ -291,16 +291,14 @@ export interface UpdateViajeDto extends CreateViajeDto {
     viajeID: number;
 }
 
-export interface ViajeFilters {
-    page: number;
-    size: number;
-    search?: string;
+export interface ViajeFilters extends PagedFilters {
     fechaInicio?: string;
     fechaFin?: string;
     clienteID?: number;
     colaboradorID?: number;
     estadoID?: number;
 }
+
 
 export interface ViajeListItem {
     viajeID: number;
@@ -339,3 +337,16 @@ export interface ViajeListItem {
 }
 
 export type PagedViajes = PagedResponse<ViajeListItem>;
+export type PagedViajeEscoltas = PagedResponse<ViajeEscolta>;
+export interface ViajeGastoCurrencyTotal {
+    code: string;
+    symbol: string;
+    total: number;
+}
+export interface PagedViajeGastos extends PagedResponse<ViajeGasto> {
+    totalsByCurrency: ViajeGastoCurrencyTotal[];
+}
+export type PagedViajeGuias = PagedResponse<ViajeGuia>;
+export type PagedViajeIncidentes = PagedResponse<ViajeIncidente>;
+export type PagedViajeMercaderias = PagedResponse<ViajeMercaderia>;
+export type PagedViajePermisos = PagedResponse<ViajePermiso>;

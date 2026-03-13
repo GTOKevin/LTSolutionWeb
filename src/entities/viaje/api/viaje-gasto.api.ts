@@ -1,9 +1,13 @@
 import { httpClient as http } from '@/shared/api/http';
-import type { CreateViajeGastoDto, ViajeGasto } from '../model/types';
+import type { CreateViajeGastoDto, PagedViajeGastos } from '../model/types';
+import type { PagedFilters } from '@/shared/model/types';
 
 export const viajeGastoApi = {
-    getByViaje: async (viajeId: number) => {
-        const response = await http.get<ViajeGasto[]>(`/viajegasto/byviaje/${viajeId}`);
+    getByViaje: async (viajeId: number, filters: PagedFilters) => {
+        const params = new URLSearchParams();
+        params.append('page', filters.page.toString());
+        params.append('size', filters.size.toString());
+        const response = await http.get<PagedViajeGastos>(`/viajegasto/byviaje/${viajeId}?${params.toString()}`);
         return response.data;
     },
 
