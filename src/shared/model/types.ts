@@ -28,6 +28,7 @@ export interface SelectItem {
     id: number;
     text: string;
     extra?:string;
+    extraTwo?: string;
 }
 
 export interface SelectStringItem {

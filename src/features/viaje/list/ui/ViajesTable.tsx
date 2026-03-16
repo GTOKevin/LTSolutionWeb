@@ -5,14 +5,18 @@ import {
     useTheme,
     Avatar,
     Stack,
-    TableCell
+    TableCell,
+    Tooltip,
+    IconButton
 } from '@mui/material';
-import { ArrowForward } from '@mui/icons-material';
+import { ArrowForward, LockOpen } from '@mui/icons-material';
 import type { ViajeListItem } from '@entities/viaje/model/types';
 import type { PagedResponse } from '@/shared/model/types';
-import { ESTADO_VIAJE_COD, ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
+import { formatDateShort } from '@/shared/utils/date-utils';
+import { ESTADO_VIAJE_COD, ROL_USUARIO_ID } from '@/shared/constants/constantes';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
+import { useAuthStore } from '@/shared/store/auth.store';
 
 interface Props {
     data?: PagedResponse<ViajeListItem>;
@@ -24,6 +28,9 @@ interface Props {
     onEdit: (viaje: ViajeListItem) => void;
     onDelete: (viaje: ViajeListItem) => void;
     onView: (viaje: ViajeListItem) => void;
+    onExportExcel: (viaje: ViajeListItem) => void;
+    onExportPdf: (viaje: ViajeListItem) => void;
+    onReopen?: (viaje: ViajeListItem) => void;
 }
 
 export function ViajesTable({ 
@@ -35,13 +42,18 @@ export function ViajesTable({
     onRowsPerPageChange,
     onEdit, 
     onDelete, 
-    onView 
+    onView,
+    onExportExcel,
+    onExportPdf,
+    onReopen
 }: Props) {
     const theme = useTheme();
+    const user = useAuthStore((state) => state.user);
 
     const columns: Column[] = [
         { id: 'cliente', label: 'Cliente' },
         { id: 'ruta', label: 'Ruta' },
+        { id: 'fechaPartida', label: 'Fecha Partida' },
         { id: 'recursos', label: 'Recursos (Activos)' },
         { id: 'carga', label: 'Carga' },
         { id: 'estado', label: 'Estado', align: 'center' },
@@ -104,7 +116,20 @@ export function ViajesTable({
             emptyMessage="No se encontraron viajes registrados."
             renderRow={(viaje) => {
                 const estado = getEstadoConfig(viaje.estadoCodigo, viaje.estadoNombre);
-                const isEditable = viaje.estadoID !== ESTADO_VIAJE_ID.CANCELADO && viaje.estadoID !== ESTADO_VIAJE_ID.COMPLETADO;
+                
+                // Logic for Edit/Delete
+                const isAdminOrManager = user && (Number(user.roleId) === ROL_USUARIO_ID.ADMINISTRADOR || Number(user.roleId) === ROL_USUARIO_ID.GERENTE_GENERAL);
+                
+                // Editable if NOT Closed
+                // If Closed, nobody edits (must reopen first).
+                let isEditable = !viaje.cerrado;
+
+                // Logic for Reports
+                // Only show reports if Cerrado is true (completed and closed)
+                const showReports = viaje.cerrado;
+
+                // Logic for Reopen
+                const showReopen = viaje.cerrado && isAdminOrManager;
 
                 return (
                     <>
@@ -128,6 +153,11 @@ export function ViajesTable({
                                     {viaje.destinoDescripcion.split('-')[2]?.trim() || viaje.destinoDescripcion}
                                 </Typography>
                             </Stack>
+                        </TableCell>
+                        <TableCell>
+                            <Typography variant="body2" fontWeight={600} color="text.primary">
+                                {viaje.fechaPartida ? formatDateShort(viaje.fechaPartida) : 'N/A'}
+                            </Typography>
                         </TableCell>
                         <TableCell>
                             <Stack direction="row" spacing={2} alignItems="center">
@@ -204,16 +234,38 @@ export function ViajesTable({
                             </Box>
                         </TableCell>
                         <TableCell align="right">
-                            <TableActions
-                                onView={() => onView(viaje)}
-                                onEdit={() => onEdit(viaje)}
-                                onDelete={() => onDelete(viaje)}
-                                viewTooltip="Ver detalle"
-                                editTooltip={isEditable ? "Editar" : "No editable"}
-                                deleteTooltip="Eliminar"
-                                disableEdit={!isEditable}
-                                disableDelete={!isEditable}
-                            />
+                            <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
+                                {showReopen && (
+                                    <Tooltip title="Reabrir Viaje">
+                                        <IconButton 
+                                            size="small" 
+                                            color="warning" 
+                                            onClick={(e) => { 
+                                                e.stopPropagation(); 
+                                                onReopen && onReopen(viaje); 
+                                            }}
+                                            sx={{ 
+                                                bgcolor: alpha(theme.palette.warning.main, 0.1),
+                                                '&:hover': {
+                                                    bgcolor: alpha(theme.palette.warning.main, 0.2),
+                                                }
+                                            }}
+                                        >
+                                            <LockOpen fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
+                                <TableActions
+                                    onView={() => onView(viaje)}
+                                    onEdit={isEditable ? () => onEdit(viaje) : undefined}
+                                    onDelete={isEditable ? () => onDelete(viaje) : undefined}
+                                    onExportExcel={showReports ? () => onExportExcel(viaje) : undefined}
+                                    onExportPdf={showReports ? () => onExportPdf(viaje) : undefined}
+                                    viewTooltip="Ver detalle"
+                                    editTooltip="Editar"
+                                    deleteTooltip="Eliminar"
+                                />
+                            </Stack>
                         </TableCell>
                     </>
                 );

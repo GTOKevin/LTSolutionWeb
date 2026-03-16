@@ -1,6 +1,7 @@
 import { createTheme, CssBaseline, ThemeProvider as MuiThemeProvider } from '@mui/material';
 import { useMemo } from 'react';
 import { useThemeStore } from '../../shared/store/theme.store';
+import { themePalette } from '../../shared/config/theme/palette';
 
 interface ThemeProviderProps {
     children: React.ReactNode;
@@ -16,43 +17,43 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                     mode,
                     primary: {
                         // Industrial deep blue - professional and trustworthy for logistics
-                        main: mode === 'light' ? '#0d47a1' : '#1976d2',
-                        light: '#5472d3',
-                        dark: '#002171',
-                        contrastText: '#ffffff',
+                        main: mode === 'light' ? themePalette.primary.main : '#1976d2',
+                        light: themePalette.primary.light,
+                        dark: themePalette.primary.dark,
+                        contrastText: themePalette.primary.contrastText,
                     },
                     secondary: {
                         // Safety orange/amber - for alerts and dangerous goods
-                        main: mode === 'light' ? '#ff6f00' : '#ffa726',
-                        light: '#ffa040',
-                        dark: '#c43e00',
-                        contrastText: '#000000',
+                        main: mode === 'light' ? themePalette.secondary.main : '#ffa726',
+                        light: themePalette.secondary.light,
+                        dark: themePalette.secondary.dark,
+                        contrastText: themePalette.secondary.contrastText,
                     },
                     warning: {
                         // High visibility yellow for warnings
-                        main: '#ffd600',
-                        light: '#ffff52',
-                        dark: '#c7a500',
+                        main: themePalette.warning.main,
+                        light: themePalette.warning.light,
+                        dark: themePalette.warning.dark,
                     },
                     error: {
                         // Strong red for critical alerts
-                        main: '#d32f2f',
-                        light: '#ef5350',
-                        dark: '#c62828',
+                        main: themePalette.error.main,
+                        light: themePalette.error.light,
+                        dark: themePalette.error.dark,
                     },
                     success: {
                         // Industrial green for success states
-                        main: '#388e3c',
-                        light: '#66bb6a',
-                        dark: '#2e7d32',
+                        main: themePalette.success.main,
+                        light: themePalette.success.light,
+                        dark: themePalette.success.dark,
                     },
                     background: {
-                        default: mode === 'light' ? '#f0f2f5' : '#0a0e1a',
-                        paper: mode === 'light' ? '#ffffff' : '#1a1f2e',
+                        default: mode === 'light' ? themePalette.background.light.default : themePalette.background.dark.default,
+                        paper: mode === 'light' ? themePalette.background.light.paper : themePalette.background.dark.paper,
                     },
                     text: {
-                        primary: mode === 'light' ? '#1a1a1a' : '#e0e0e0',
-                        secondary: mode === 'light' ? '#5f6368' : '#9e9e9e',
+                        primary: mode === 'light' ? themePalette.text.light.primary : themePalette.text.dark.primary,
+                        secondary: mode === 'light' ? themePalette.text.light.secondary : themePalette.text.dark.secondary,
                     },
                 },
                 typography: {

@@ -39,14 +39,6 @@ export function StatsCard({ title, value, icon, trend, color }: StatsCardProps) 
                     {value}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    {trend > 0 ? (
-                        <TrendingUp sx={{ fontSize: 16, color: theme.palette.success.main }} />
-                    ) : (
-                        <TrendingDown sx={{ fontSize: 16, color: theme.palette.error.main }} />
-                    )}
-                    <Typography variant="caption" fontWeight="bold" color={trend > 0 ? 'success.main' : 'error.main'}>
-                        {Math.abs(trend)}%
-                    </Typography>
                     <Typography variant="caption" color="text.secondary">
                         {trend > 0 ? 'este mes' : 'esta semana'}
                     </Typography>

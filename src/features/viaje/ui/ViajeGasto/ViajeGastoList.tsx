@@ -3,29 +3,33 @@ import {
     Typography, 
     useTheme, 
     alpha, 
-    Card, 
-    CardContent, 
     Divider, 
     useMediaQuery, 
     CircularProgress,
     TableCell,
     Paper,
-    TablePagination
+    Button,
+    Stack,
+    Tooltip,
+    Snackbar,
+    Alert
 } from '@mui/material';
 import { 
     Receipt as ReceiptIcon,
-    CalendarToday as CalendarIcon,
-    ConfirmationNumber as TicketIcon
+    PictureAsPdf as PdfIcon,
+    TableView as ExcelIcon
 } from '@mui/icons-material';
 import { useState } from 'react';
 import type { ViajeGasto } from '@/entities/viaje/model/types';
+import { viajeGastoApi } from '@/entities/viaje/api/viaje-gasto.api';
 import type { SelectItem } from '@/shared/model/types';
 import { useViajeGastos, useDeleteViajeGasto } from '@/features/viaje/hooks/useViajeGastos';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableLoading } from '@/shared/components/ui/TableLoading';
 import { TableActions } from '@/shared/components/ui/TableActions';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
+
+import { ViajeGastoMobileList } from './ViajeGastoMobileList';
 
 interface Props {
     viajeId: number;
@@ -42,11 +46,58 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
     // Pagination State
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [isExportingExcel, setIsExportingExcel] = useState(false);
+    const [isExportingPdf, setIsExportingPdf] = useState(false);
+    const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
 
     // Query & Mutations
     const { data, isLoading } = useViajeGastos(viajeId, page + 1, rowsPerPage);
     const deleteMutation = useDeleteViajeGasto();
     const gastos = data?.items ?? [];
+
+    const handleExportExcel = async () => {
+        try {
+            setIsExportingExcel(true);
+            const blob = await viajeGastoApi.getReportExcel(viajeId);
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Gastos_Viaje_${viajeId}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+            setSnackbar({ open: true, message: 'Reporte Excel descargado correctamente', severity: 'success' });
+        } catch (error) {
+            console.error('Error exporting Excel:', error);
+            setSnackbar({ open: true, message: 'Error al descargar reporte Excel', severity: 'error' });
+        } finally {
+            setIsExportingExcel(false);
+        }
+    };
+
+    const handleExportPdf = async () => {
+        try {
+            setIsExportingPdf(true);
+            const blob = await viajeGastoApi.getReportPdf(viajeId);
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Gastos_Viaje_${viajeId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+            setSnackbar({ open: true, message: 'Reporte PDF descargado correctamente', severity: 'success' });
+        } catch (error) {
+            console.error('Error exporting PDF:', error);
+            setSnackbar({ open: true, message: 'Error al descargar reporte PDF', severity: 'error' });
+        } finally {
+            setIsExportingPdf(false);
+        }
+    };
 
     const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
@@ -97,30 +148,76 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
         { id: 'tipo', label: 'Tipo de Gasto' },
         { id: 'fecha', label: 'Fecha Gasto' },
         { id: 'comprobante', label: 'Comprobante' },
+        { id: 'combustible', label: 'Combustible' },
+        { id: 'galones', label: 'Galones' },
         { id: 'monto', label: 'Monto' },
         { id: 'acciones', label: 'Acciones', align: 'center' }
     ];
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: isMobile ? 10 : 0 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: { xs: 2, sm: 0 }
+            }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' } }}>
                     <ReceiptIcon color="action" />
                     <Typography variant="subtitle1" fontWeight="bold">
                         Gastos Registrados
                     </Typography>
                     {isLoading && <CircularProgress size={20} sx={{ ml: 2 }} />}
                 </Box>
-                <Box sx={{ 
-                    px: 1.5, py: 0.5, 
-                    borderRadius: 1, 
-                    bgcolor: alpha(theme.palette.secondary.main, 0.1),
-                    color: 'text.secondary',
-                    fontSize: '0.75rem',
-                    fontWeight: 'bold'
-                }}>
-                    Total: {data?.total ?? 0} registros
-                </Box>
+                <Stack 
+                    direction="row" 
+                    spacing={1} 
+                    alignItems="center"
+                    sx={{ width: { xs: '100%', sm: 'auto' } }}
+                >
+                    <Tooltip title="Exportar a Excel">
+                        <span style={{ flex: isMobile ? 1 : 'none', width: isMobile ? '100%' : 'auto' }}>
+                            <Button
+                                fullWidth={isMobile}
+                                variant="outlined"
+                                color="success"
+                                size="small"
+                                startIcon={isExportingExcel ? <CircularProgress size={16} /> : <ExcelIcon />}
+                                disabled={isExportingExcel || gastos.length === 0}
+                                onClick={handleExportExcel}
+                            >
+                                Excel
+                            </Button>
+                        </span>
+                    </Tooltip>
+                    <Tooltip title="Exportar a PDF">
+                        <span style={{ flex: isMobile ? 1 : 'none', width: isMobile ? '100%' : 'auto' }}>
+                            <Button
+                                fullWidth={isMobile}
+                                variant="outlined"
+                                color="error"
+                                size="small"
+                                startIcon={isExportingPdf ? <CircularProgress size={16} /> : <PdfIcon />}
+                                disabled={isExportingPdf || gastos.length === 0}
+                                onClick={handleExportPdf}
+                            >
+                                PDF
+                            </Button>
+                        </span>
+                    </Tooltip>
+                    <Box sx={{ 
+                        px: 1.5, py: 0.5, 
+                        borderRadius: 1, 
+                        bgcolor: alpha(theme.palette.secondary.main, 0.1),
+                        color: 'text.secondary',
+                        fontSize: '0.75rem',
+                        fontWeight: 'bold',
+                        display: { xs: 'none', sm: 'block' }
+                    }}>
+                        Total: {data?.total ?? 0} registros
+                    </Box>
+                </Stack>
             </Box>
 
             {/* Desktop Table View */}
@@ -162,15 +259,19 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                                     <TableCell sx={{ color: 'text.secondary' }}>
                                         {item.comprobante ? item.numeroComprobante : 'Sin comprobante'}
                                     </TableCell>
+                                    <TableCell sx={{ color: 'text.secondary' }}>
+                                        {item.combustible ? 'SÍ' : 'NO'}
+                                    </TableCell>
+                                    <TableCell sx={{ color: 'text.secondary' }}>
+                                        {item.galones ? Number(item.galones).toFixed(2) : '-'}
+                                    </TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: 'text.primary' }}>
                                         {moneda?.extra || 'PEN'} {Number(item.monto).toFixed(2)}
                                     </TableCell>
                                     <TableCell align="center">
                                         <TableActions
-                                            onEdit={() => onEdit?.(item)}
-                                            onDelete={() => handleDelete(item.viajeGastoID)}
-                                            disableEdit={viewOnly}
-                                            disableDelete={viewOnly || deleteMutation.isPending}
+                                            onEdit={!viewOnly ? () => onEdit?.(item) : undefined}
+                                            onDelete={!viewOnly ? () => handleDelete(item.viajeGastoID) : undefined}
                                             editTooltip="Editar gasto"
                                             deleteTooltip="Eliminar gasto"
                                         />
@@ -217,84 +318,23 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                     )}
                 </>
             ) : (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {isLoading ? (
-                        <TableLoading />
-                    ) : (
-                        <>
-                            {gastos.map((item: ViajeGasto) => {
-                        const tipo = tiposGasto.find(t => t.id === item.gastoID);
-                        const moneda = monedas.find(m => m.id === item.monedaID);
-                        const tipoText = tipo?.text || item.gasto?.descripcion || 'Otro';
-                        
-                        return (
-                            <Card key={item.viajeGastoID} elevation={0} sx={{ 
-                                borderRadius: 3, 
-                                border: `1px solid ${theme.palette.divider}`,
-                                borderLeft: `4px solid ${getGastoColor(tipoText)}`
-                            }}>
-                                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                                        <Box sx={{ 
-                                            px: 1.5, py: 0.5, 
-                                            borderRadius: 1, 
-                                            bgcolor: getGastoBg(tipoText),
-                                            color: getGastoColor(tipoText),
-                                            fontSize: '0.65rem',
-                                            fontWeight: 'bold',
-                                            textTransform: 'uppercase'
-                                        }}>
-                                            {tipoText}
-                                        </Box>
-                                        <TableActions
-                                            onEdit={() => onEdit?.(item)}
-                                            onDelete={() => handleDelete(item.viajeGastoID)}
-                                            disableEdit={viewOnly}
-                                            disableDelete={viewOnly || deleteMutation.isPending}
-                                            editTooltip="Editar gasto"
-                                            deleteTooltip="Eliminar gasto"
-                                        />
-                                    </Box>
-                                    
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
-                                                <CalendarIcon sx={{ fontSize: 14 }} />
-                                                <Typography variant="caption">{formatDateShort(item.fechaGasto)}</Typography>
-                                            </Box>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
-                                                <TicketIcon sx={{ fontSize: 14 }} />
-                                                <Typography variant="caption">
-                                                    {item.comprobante ? item.numeroComprobante : 'S/C'}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                        <Typography variant="subtitle1" fontWeight="900">
-                                            {moneda?.extra || 'PEN'} {Number(item.monto).toFixed(2)}
-                                        </Typography>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        );
-                        })}
-                        {!isLoading && gastos.length === 0 && (
-                            <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
-                                No hay gastos registrados
-                            </Typography>
-                        )}
-                    </>
-                )}
-                <TablePagination
-                    rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
-                    component="div"
-                    count={data?.total || 0}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    labelRowsPerPage="Filas por página"
-                />
-                </Box>
+                isLoading ? (
+                    <TableLoading />
+                ) : (
+                    <ViajeGastoMobileList 
+                        items={gastos}
+                        total={data?.total || 0}
+                        page={page}
+                        rowsPerPage={rowsPerPage}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        viewOnly={viewOnly}
+                        tiposGasto={tiposGasto}
+                        monedas={monedas}
+                        onEdit={onEdit}
+                        onDelete={handleDelete}
+                    />
+                )
             )}
 
             {/* Mobile Fixed Summary Bar */}
@@ -331,6 +371,16 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                     </Box>
                 </Paper>
             )}
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={4000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })} sx={{ width: '100%' }}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }

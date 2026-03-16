@@ -33,7 +33,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
     const isEditing = !!gasto;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<ViajeGastoFormData>({
+    const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ViajeGastoFormData>({
         resolver: zodResolver(viajeGastoSchema),
         defaultValues: {
             gastoID: 0,
@@ -42,11 +42,45 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
             monto: 0,
             comprobante: false,
             numeroComprobante: '',
-            descripcion: ''
+            descripcion: '',
+            combustible: false,
+            galones: 0
         }
     });
 
     const hasComprobante = watch('comprobante');
+    const isCombustible = watch('combustible');
+    const selectedGastoID = watch('gastoID');
+
+    // Determine if currency should be restricted to Soles (Combustible/Peaje)
+    const selectedGasto = tiposGasto.find(t => t.id === selectedGastoID);
+    const selectedGastoText = selectedGasto?.text.toLowerCase() || '';
+    const isRestrictedCurrency = selectedGastoText.includes('combustible') || 
+                                 selectedGastoText.includes('diesel') || 
+                                 selectedGastoText.includes('petroleo') || 
+                                 selectedGastoText.includes('peaje');
+
+    useEffect(() => {
+        if (selectedGastoID && tiposGasto.length > 0) {
+            const gasto = tiposGasto.find(t => t.id === selectedGastoID);
+            if (gasto) {
+                const text = gasto.text.toLowerCase();
+                const isFuel = text.includes('combustible') || text.includes('diesel') || text.includes('petroleo');
+                const isToll = text.includes('peaje');
+                
+                setValue('combustible', isFuel);
+
+                // Force Soles (ID 1) if Fuel or Toll
+                if (isFuel || isToll) {
+                    setValue('monedaID', 1);
+                }
+
+                if (!isFuel) {
+                    setValue('galones', 0);
+                }
+            }
+        }
+    }, [selectedGastoID, tiposGasto, setValue]);
 
     useEffect(() => {
         if (gasto) {
@@ -57,7 +91,9 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                 monto: Number(gasto.monto),
                 comprobante: gasto.comprobante,
                 numeroComprobante: gasto.numeroComprobante || '',
-                descripcion: gasto.descripcion || ''
+                descripcion: gasto.descripcion || '',
+                combustible: gasto.combustible || false,
+                galones: Number(gasto.galones || 0)
             });
         } else {
             reset({
@@ -67,7 +103,9 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                 monto: 0,
                 comprobante: false,
                 numeroComprobante: '',
-                descripcion: ''
+                descripcion: '',
+                combustible: false,
+                galones: 0
             });
         }
     }, [gasto, reset]);
@@ -216,6 +254,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                                     error={!!errors.monedaID}
                                     helperText={errors.monedaID?.message}
                                     sx={{ bgcolor: 'background.paper' }}
+                                    disabled={isRestrictedCurrency}
                                 >
                                     {monedas.map((moneda) => (
                                         <MenuItem key={moneda.id} value={moneda.id}>{moneda.text}</MenuItem>
@@ -248,6 +287,32 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                             )}
                         />
                     </Grid>
+
+                    {isCombustible && (
+                        <Grid size={{xs:12, sm:6, md:3}}>
+                            <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
+                                Galones
+                            </Typography>
+                            <Controller
+                                name="galones"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        type="number"
+                                        fullWidth
+                                        size="small"
+                                        placeholder="0.00"
+                                        value={field.value === 0 ? '' : field.value}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                        error={!!errors.galones}
+                                        helperText={errors.galones?.message}
+                                        sx={{ bgcolor: 'background.paper' }}
+                                    />
+                                )}
+                            />
+                        </Grid>
+                    )}
 
                     <Grid size={{xs:12, md:3}}>
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>

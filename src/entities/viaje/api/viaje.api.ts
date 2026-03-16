@@ -10,9 +10,11 @@ export const viajeApi = {
         if (filters.search) params.append('search', filters.search);
         if (filters.fechaInicio) params.append('fechaInicio', filters.fechaInicio);
         if (filters.fechaFin) params.append('fechaFin', filters.fechaFin);
-        if (filters.clienteID) params.append('clienteID', filters.clienteID.toString());
-        if (filters.colaboradorID) params.append('colaboradorID', filters.colaboradorID.toString());
-        if (filters.estadoID) params.append('estadoID', filters.estadoID.toString());
+        if (filters.clienteID) params.append('clienteId', filters.clienteID.toString());
+        if (filters.colaboradorID) params.append('colaboradorId', filters.colaboradorID.toString());
+        if (filters.tractoID) params.append('tractoId', filters.tractoID.toString());
+        if (filters.carretaID) params.append('carretaId', filters.carretaID.toString());
+        if (filters.estadoID) params.append('estadoId', filters.estadoID.toString());
 
         const response = await http.get<PagedViajes>(`/viaje?${params.toString()}`);
         return response.data;
@@ -29,10 +31,34 @@ export const viajeApi = {
     },
 
     update: async (id: number, data: UpdateViajeDto) => {
-        await http.put(`/viaje/${id}`, data);
+        const response = await http.put(`/viaje/${id}`, data);
+        return response.data;
     },
 
     delete: async (id: number) => {
         await http.delete(`/viaje/${id}`);
+    },
+
+    getGeneralExcelReport: async (id: number) => {
+        const response = await http.get(`/viaje/${id}/report/excel`, {
+            responseType: 'blob'
+        });
+        return response.data;
+    },
+
+    getGeneralPdfReport: async (id: number) => {
+        const response = await http.get(`/viaje/${id}/report/pdf`, {
+            responseType: 'blob'
+        });
+        return response.data;
+    },
+
+    getGeneralReportData: async (id: number) => {
+        const response = await http.get<import('../model/types').ViajeGeneralReportDto>(`/viaje/${id}/report/data`);
+        return response.data;
+    },
+
+    reopen: async (id: number) => {
+        await http.post(`/viaje/${id}/reabrir`);
     }
 };

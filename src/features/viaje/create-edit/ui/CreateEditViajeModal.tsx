@@ -18,6 +18,7 @@ import { ViajePermiso } from '../../ui/ViajePermiso/ViajePermiso';
 import { ViajeEscolta } from '../../ui/ViajeEscolta/ViajeEscolta';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
 
 interface Props {
     open: boolean;
@@ -41,7 +42,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
     const methods = useForm<CreateViajeDto>({
         resolver: zodResolver(viajeSchema) as any, // Cast to any or appropriate type because Zod's .optional() creates | undefined which sometimes conflicts with | null in strict mode, though we fixed schema. The remaining conflict might be due to deep nesting or complex types.
         defaultValues: {
-            estadoID: 1,
+            estadoID: 0,
             requiereEscolta: false,
             requierePermiso: false
         }
@@ -52,14 +53,46 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
     // Watch fields to toggle tabs visibility or status
     const requiereEscolta = watch('requiereEscolta');
     const requierePermiso = watch('requierePermiso');
+    const selectedTractoID = watch('tractoID');
+    const selectedCarretaID = watch('carretaID');
+
+    // Update Ejes when Tracto changes
+    useEffect(() => {
+        if (selectedTractoID && tractos) {
+            const tracto = tractos.find(t => t.id === selectedTractoID);
+            if (tracto && tracto.extraTwo !== undefined) {
+                 methods.setValue('ejesTracto', parseInt(tracto.extraTwo));
+            }
+        }
+    }, [selectedTractoID, tractos, methods]);
+
+    // Update Ejes when Carreta changes
+    useEffect(() => {
+        if (selectedCarretaID && carretas) {
+            const carreta = carretas.find(c => c.id === selectedCarretaID);
+            if (carreta && carreta.extraTwo !== undefined) {
+                 methods.setValue('ejesCarreta', parseInt(carreta.extraTwo));
+            }
+        }
+    }, [selectedCarretaID, carretas, methods]);
 
     // Mutation for create/update
     const mutation = useMutation<number | void, Error, CreateViajeDto>({
         mutationFn: (data: CreateViajeDto) => {
+            // Convert empty strings to null/undefined for date fields to avoid JSON serialization errors
+            const cleanData = {
+                ...data,
+                fechaLlegada: data.fechaLlegada || undefined,
+                fechaPartida: data.fechaPartida || undefined,
+                fechaDescarga: data.fechaDescarga || undefined,
+                fechaLlegadaBase: data.fechaLlegadaBase || undefined,
+                // Ensure optional number fields are undefined if 0 or empty (depending on logic, here kept as is if schema allows)
+            };
+
             if (viaje?.viajeID) {
-                return viajeApi.update(viaje.viajeID, { ...data, viajeID: viaje.viajeID });
+                return viajeApi.update(viaje.viajeID, { ...cleanData, viajeID: viaje.viajeID });
             }
-            return viajeApi.create(data);
+            return viajeApi.create(cleanData);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['viajes'] });
@@ -73,6 +106,12 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
 
     useEffect(() => {
         if (open) {
+            // Refetch options to ensure fresh data
+            queryClient.invalidateQueries({ queryKey: ['clientes-select'] });
+            queryClient.invalidateQueries({ queryKey: ['flota-select-tracto'] });
+            queryClient.invalidateQueries({ queryKey: ['flota-select-carreta'] });
+            queryClient.invalidateQueries({ queryKey: ['colaboradores-select'] });
+
             if (viaje) {
                 reset({
                     ...viaje,
@@ -81,7 +120,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                     cotizacionID: viaje.cotizacionID ?? undefined,
                     tractoID: viaje.tractoID || 0,
                     carretaID: viaje.carretaID || 0,
-                    estadoID: viaje.estadoID || 1,
+                    estadoID: viaje.estadoID || 0,
                     direccionOrigen: viaje.direccionOrigen ?? undefined,
                     direccionDestino: viaje.direccionDestino ?? undefined,
                     fechaCarga: viaje.fechaCarga ? toInputDate(viaje.fechaCarga) : '',
@@ -99,11 +138,13 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                     largo: viaje.largo ?? undefined,
                     alto: viaje.alto ?? undefined,
                     ancho: viaje.ancho ?? undefined,
-                    peso: viaje.peso ?? undefined
+                    peso: viaje.peso ?? undefined,
+                    ejesTracto: viaje.ejesTracto || 0,
+                    ejesCarreta: viaje.ejesCarreta || 0
                 });
             } else {
                 reset({
-                    estadoID: 1,
+                    estadoID: 0,
                     requiereEscolta: false,
                     requierePermiso: false,
                     fechaCarga: getCurrentDateISO(),
@@ -111,17 +152,28 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                     colaboradorID: 0,
                     tractoID: 0,
                     carretaID: 0,
+                    ejesTracto: 0,
+                    ejesCarreta: 0,
                     tipoMedidaID: 0,
-                    tipoPesoID: 0
+                    tipoPesoID: 0,
+                    largo: 0,
+                    alto: 0,
+                    ancho: 0,
+                    peso: 0,
+                    kmInicio: 0,
+                    kmLlegada: 0,
+                    kmLlegadaBase: 0,
                 });
             }
             setActiveTab(0);
+            setShowConfirmDialog(false);
+            setPendingData(null);
         }
     }, [open, viaje, reset]);
 
     const onSubmit = (data: CreateViajeDto) => {
         // ID 204 corresponds to 'Completado', ID 203 to 'Cancelado'
-        if (data.estadoID === 204 || data.estadoID === 203) {
+        if (data.estadoID === ESTADO_VIAJE_ID.COMPLETADO || data.estadoID === ESTADO_VIAJE_ID.CANCELADO) {
             setPendingData(data);
             setShowConfirmDialog(true);
         } else {
@@ -131,7 +183,15 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
 
     const handleConfirmSave = () => {
         if (pendingData) {
-            mutation.mutate(pendingData);
+            // Apply same cleaning logic
+            const cleanData = {
+                ...pendingData,
+                fechaLlegada: pendingData.fechaLlegada || undefined,
+                fechaPartida: pendingData.fechaPartida || undefined,
+                fechaDescarga: pendingData.fechaDescarga || undefined,
+                fechaLlegadaBase: pendingData.fechaLlegadaBase || undefined
+            };
+            mutation.mutate(cleanData);
         }
     };
 
@@ -195,7 +255,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                     </TextField>
                                 </Grid>
                                 
-                                <Grid size={{ xs: 12, md: 4 }}>
+                                <Grid size={{ xs: 12, md: 3 }}>
                                     <TextField
                                         select
                                         label="Tracto"
@@ -212,7 +272,19 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         ))}
                                     </TextField>
                                 </Grid>
-                                <Grid size={{ xs: 12, md: 4 }}>
+                                <Grid size={{ xs: 12, md: 3 }}>
+                                    <TextField
+                                        label="Ejes Tracto"
+                                        type="number"
+                                        fullWidth
+                                        {...register('ejesTracto', { valueAsNumber: true })}
+                                        error={!!errors.ejesTracto}
+                                        helperText={errors.ejesTracto?.message}
+                                        disabled={isViewOnly}
+                                    />
+                                </Grid>
+
+                                <Grid size={{ xs: 12, md: 3 }}>
                                     <TextField
                                         select
                                         label="Carreta"
@@ -229,7 +301,18 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         ))}
                                     </TextField>
                                 </Grid>
-                                <Grid size={{ xs: 12, md: 4 }}>
+                                <Grid size={{ xs: 12, md: 3 }}>
+                                    <TextField
+                                        label="Ejes Carreta"
+                                        type="number"
+                                        fullWidth
+                                        {...register('ejesCarreta', { valueAsNumber: true })}
+                                        error={!!errors.ejesCarreta}
+                                        helperText={errors.ejesCarreta?.message}
+                                        disabled={isViewOnly}
+                                    />
+                                </Grid>
+                                <Grid size={{ xs: 12, md: 6 }}>
                                     <TextField
                                         label="Fecha Carga"
                                         type="date"
@@ -241,7 +324,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         disabled={isViewOnly}
                                     />
                                 </Grid>
-                                <Grid size={{ xs: 12, md: 4 }}>
+                                <Grid size={{ xs: 12, md: 6 }}>
                                     <TextField
                                         select
                                         label="Estado"
@@ -374,6 +457,8 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
                                         fullWidth
                                         size="small"
                                         {...register('kmInicio', { valueAsNumber: true })}
+                                        error={!!errors.kmInicio}
+                                        helperText={errors.kmInicio?.message}
                                         disabled={isViewOnly}
                                     />
                                 </Grid>
@@ -572,9 +657,9 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
 
             <ConfirmDialog
                 open={showConfirmDialog}
-                severity={pendingData?.estadoID === 203 ? 'error' : 'info'}
-                title={pendingData?.estadoID === 203 ? 'Confirmar Cancelación' : 'Confirmar Finalización'}
-                content={pendingData?.estadoID === 203 
+                severity={pendingData?.estadoID === ESTADO_VIAJE_ID.CANCELADO ? 'error' : 'info'}
+                title={pendingData?.estadoID === ESTADO_VIAJE_ID.CANCELADO ? 'Confirmar Cancelación' : 'Confirmar Finalización'}
+                content={pendingData?.estadoID === ESTADO_VIAJE_ID.CANCELADO 
                     ? "Una vez cancelado el viaje no podrá editarse." 
                     : "Una vez completado el registro no podrá editarse, ¿desea continuar con el registro?"}
                 onClose={() => setShowConfirmDialog(false)}

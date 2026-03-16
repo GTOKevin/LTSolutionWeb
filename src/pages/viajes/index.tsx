@@ -1,25 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
     Box, 
     Button, 
-    TextField, 
-    InputAdornment, 
-    Paper, 
     Typography, 
-    Grid, 
-    MenuItem,
-    IconButton,
-    useTheme,
-    alpha
+    Grid,
+    useTheme
 } from '@mui/material';
+import { pdf } from '@react-pdf/renderer';
+import { ViajeGeneralPdf } from '@features/viaje/reports/ui/ViajeGeneralPdf';
+import { ViajeGeneralExcelGenerator } from '@features/viaje/reports/lib/ViajeGeneralExcelGenerator';
 import { 
     Add as AddIcon, 
-    Search as SearchIcon, 
     CalendarMonth, 
     NearMe, 
-    TaskAlt,
-    FilterList,
-    CalendarToday
+    TaskAlt
 } from '@mui/icons-material';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { viajeApi } from '@entities/viaje/api/viaje.api';
@@ -28,15 +22,21 @@ import { CreateEditViajeModal } from '@features/viaje/create-edit/ui/CreateEditV
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { LoadingModal } from '@shared/components/ui/LoadingModal';
 import { StatsCard } from '@shared/components/ui/StatsCard';
-import type { Viaje, ViajeListItem } from '@entities/viaje/model/types';
+import { ViajesFilters } from '@features/viaje/list/ui/ViajesFilters';
+import { ViajesMobileList } from '@features/viaje/list/ui/ViajesMobileList';
+import type { Viaje, ViajeListItem, ViajeFilters as ViajeFiltersType } from '@entities/viaje/model/types';
+import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
 
 export function ViajesPage() {
     const theme = useTheme();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [filterEstado, setFilterEstado] = useState('TODOS');
+    const [filters, setFilters] = useState<ViajeFiltersType>({
+        page: 1,
+        size: 10,
+        fechaInicio: getFirstDayOfCurrentMonthISO(),
+        fechaFin: getLastDayOfCurrentMonthISO()
+    });
     
     const [modalOpen, setModalOpen] = useState(false);
     const [viajeToEdit, setViajeToEdit] = useState<Viaje | null>(null);
@@ -45,20 +45,17 @@ export function ViajesPage() {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [viajeToDelete, setViajeToDelete] = useState<ViajeListItem | null>(null);
 
+    const [reopenDialogOpen, setReopenDialogOpen] = useState(false);
+    const [viajeToReopen, setViajeToReopen] = useState<ViajeListItem | null>(null);
+
     const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedSearch(searchTerm), 500);
-        return () => clearTimeout(timer);
-    }, [searchTerm]);
-
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ['viajes', page, rowsPerPage, debouncedSearch, filterEstado],
+        queryKey: ['viajes', page, rowsPerPage, filters],
         queryFn: () => viajeApi.getAll({
+            ...filters,
             page: page + 1,
-            size: rowsPerPage,
-            search: debouncedSearch,
-            estadoID: filterEstado !== 'TODOS' ? Number(filterEstado) : undefined
+            size: rowsPerPage
         })
     });
 
@@ -67,6 +64,15 @@ export function ViajesPage() {
         onSuccess: () => {
             setDeleteDialogOpen(false);
             setViajeToDelete(null);
+            refetch();
+        }
+    });
+
+    const reopenMutation = useMutation({
+        mutationFn: viajeApi.reopen,
+        onSuccess: () => {
+            setReopenDialogOpen(false);
+            setViajeToReopen(null);
             refetch();
         }
     });
@@ -82,7 +88,7 @@ export function ViajesPage() {
     };
 
     const handleEdit = async (item: ViajeListItem) => {
-        if (item.estadoNombre?.toUpperCase() === 'COMPLETADO') {
+        if (item.cerrado) {
             handleView(item);
             return;
         }
@@ -117,6 +123,44 @@ export function ViajesPage() {
     const handleDelete = (item: ViajeListItem) => {
         setViajeToDelete(item);
         setDeleteDialogOpen(true);
+    };
+
+    const handleReopen = (item: ViajeListItem) => {
+        setViajeToReopen(item);
+        setReopenDialogOpen(true);
+    };
+
+    const handleExportExcel = async (item: ViajeListItem) => {
+        try {
+            setLoadingMessage("Generando reporte Excel...");
+            const reportData = await viajeApi.getGeneralReportData(item.viajeID);
+            const generator = new ViajeGeneralExcelGenerator(reportData);
+            await generator.generateAndDownload();
+        } catch (error) {
+            console.error("Error exporting Excel:", error);
+        } finally {
+            setLoadingMessage(null);
+        }
+    };
+
+    const handleExportPdf = async (item: ViajeListItem) => {
+        try {
+            setLoadingMessage("Generando reporte PDF...");
+            const reportData = await viajeApi.getGeneralReportData(item.viajeID);
+            const blob = await pdf(<ViajeGeneralPdf data={reportData} />).toBlob();
+            
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Viaje_${item.viajeID}_General.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error("Error exporting PDF:", error);
+        } finally {
+            setLoadingMessage(null);
+        }
     };
 
     const handleChangePage = (event: unknown, newPage: number) => {
@@ -170,7 +214,7 @@ export function ViajesPage() {
                 <Grid size={{xs:12, md:4}}>
                     <StatsCard
                         title="Agendados"
-                        value="12"
+                        value={data?.totalAgendados?.toString() || "0"}
                         icon={<CalendarMonth sx={{ fontSize: 24 }} />}
                         trend={0} 
                         color={theme.palette.info.main}
@@ -179,108 +223,43 @@ export function ViajesPage() {
                 <Grid size={{xs:12, md:4}}>
                     <StatsCard
                         title="En Tránsito"
-                        value="08"
+                        value={data?.totalEnTransito?.toString() || "0"}
                         icon={<NearMe sx={{ fontSize: 24 }} />}
-                        trend={5}
+                        trend={0}
                         color={theme.palette.warning.main}
                     />
                 </Grid>
                 <Grid size={{xs:12, md:4}}>
                     <StatsCard
                         title="Completados"
-                        value="45"
+                        value={data?.totalCompletados?.toString() || "0"}
                         icon={<TaskAlt sx={{ fontSize: 24 }} />}
-                        trend={12}
+                        trend={0}
                         color={theme.palette.success.main}
                     />
                 </Grid>
             </Grid>
 
             {/* Filters */}
-            <Paper 
-                elevation={0}
-                sx={{ 
-                    p: 2.5, 
-                    mb: 3, 
-                    borderRadius: 3, 
-                    border: `1px solid ${theme.palette.divider}`,
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 2,
-                    alignItems: 'flex-end'
-                }}
-            >
-                <Box sx={{ flex: 1, minWidth: '240px' }}>
-                    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ ml: 1, mb: 0.5, display: 'block', textTransform: 'uppercase' }}>
-                        Búsqueda Rápida
-                    </Typography>
-                    <TextField
-                        placeholder="#ID, Cliente o Conductor..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        fullWidth
-                        size="small"
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon sx={{ color: 'text.secondary' }} />
-                                </InputAdornment>
-                            ),
-                            sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) }
-                        }}
-                    />
-                </Box>
-                <Box sx={{ width: '200px' }}>
-                    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ ml: 1, mb: 0.5, display: 'block', textTransform: 'uppercase' }}>
-                        Estado
-                    </Typography>
-                    <TextField
-                        select
-                        fullWidth
-                        size="small"
-                        value={filterEstado}
-                        onChange={(e) => setFilterEstado(e.target.value)}
-                        InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
-                    >
-                        <MenuItem value="TODOS">Todos los estados</MenuItem>
-                        <MenuItem value="201">Agendado</MenuItem> {/* Assuming IDs from context or mocking */}
-                        <MenuItem value="202">En Tránsito</MenuItem>
-                        <MenuItem value="203">Completado</MenuItem>
-                        <MenuItem value="204">Cancelado</MenuItem>
-                    </TextField>
-                </Box>
-                <Box sx={{ width: '200px' }}>
-                    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ ml: 1, mb: 0.5, display: 'block', textTransform: 'uppercase' }}>
-                        Rango de Fechas
-                    </Typography>
-                    <TextField
-                        placeholder="Hoy"
-                        fullWidth
-                        size="small"
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <CalendarToday sx={{ color: 'text.secondary', fontSize: 20 }} />
-                                </InputAdornment>
-                            ),
-                            sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) }
-                        }}
-                    />
-                </Box>
-                <IconButton 
-                    sx={{ 
-                        bgcolor: alpha(theme.palette.text.secondary, 0.1), 
-                        borderRadius: 2, 
-                        p: 1,
-                        height: 40,
-                        width: 40
-                    }}
-                >
-                    <FilterList />
-                </IconButton>
-            </Paper>
+            <ViajesFilters onSearch={setFilters} />
 
-            <ViajesTable 
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <ViajesTable 
+                    data={data}
+                    isLoading={isLoading}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    onEdit={handleEdit}
+                    onView={handleView}
+                    onDelete={handleDelete}
+                    onExportExcel={handleExportExcel}
+                    onExportPdf={handleExportPdf}
+                    onReopen={handleReopen}
+                />
+            </Box>
+            <ViajesMobileList
                 data={data}
                 isLoading={isLoading}
                 page={page}
@@ -290,6 +269,9 @@ export function ViajesPage() {
                 onEdit={handleEdit}
                 onView={handleView}
                 onDelete={handleDelete}
+                onExportExcel={handleExportExcel}
+                onExportPdf={handleExportPdf}
+                onReopen={handleReopen}
             />
 
             <CreateEditViajeModal
@@ -305,6 +287,15 @@ export function ViajesPage() {
                 content={`¿Estás seguro de que deseas eliminar el viaje #${viajeToDelete?.viajeID}?`}
                 onConfirm={() => viajeToDelete && deleteMutation.mutate(viajeToDelete.viajeID)}
                 onClose={() => setDeleteDialogOpen(false)}
+            />
+
+            <ConfirmDialog
+                open={reopenDialogOpen}
+                title="Reabrir Viaje"
+                content={`¿Estás seguro de que deseas reabrir el viaje #${viajeToReopen?.viajeID}? Esto habilitará la edición nuevamente.`}
+                onConfirm={() => viajeToReopen && reopenMutation.mutate(viajeToReopen.viajeID)}
+                onClose={() => setReopenDialogOpen(false)}
+                isLoading={reopenMutation.isPending}
             />
 
             <LoadingModal

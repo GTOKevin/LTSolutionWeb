@@ -81,7 +81,7 @@ export function ConfirmDialog({
                     disabled={isLoading}
                     sx={{ boxShadow: 'none' }}
                 >
-                    {confirmText}
+                    {isLoading ? 'Procesando...' : confirmText}
                 </Button>
             </DialogActions>
         </Dialog>

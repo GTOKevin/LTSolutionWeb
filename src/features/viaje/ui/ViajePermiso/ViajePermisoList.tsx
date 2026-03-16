@@ -20,6 +20,7 @@ import { TableActions } from '@/shared/components/ui/TableActions';
 import { useViajePermisos, useDeleteViajePermiso } from '@/features/viaje/hooks/useViajePermisos';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
 import { formatDateShort } from '@/shared/utils/date-utils';
+import { ViajePermisoMobileList } from './ViajePermisoMobileList';
 
 interface Props {
     viajeId: number;
@@ -105,54 +106,67 @@ export function ViajePermisoList({ viajeId, viewOnly, onEdit }: Props) {
                 </Box>
             </Box>
 
-            <SharedTable
-                data={data}
-                isLoading={isLoading}
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <SharedTable
+                    data={data}
+                    isLoading={isLoading}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    columns={columns}
+                    keyExtractor={(item) => item.viajePermisoID}
+                    emptyMessage="No hay permisos registrados"
+                    renderRow={(item) => {
+                        return (
+                            <>
+                                <TableCell>{formatDateShort(item.fechaVigencia)}</TableCell>
+                                <TableCell>{item.fechaVencimiento ? formatDateShort(item.fechaVencimiento) : '-'}</TableCell>
+                                <TableCell align="center">
+                                    {item.rutaArchivo ? (
+                                        <Tooltip title="Ver Documento">
+                                            <IconButton 
+                                                size="small" 
+                                                sx={{ 
+                                                    bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                                    '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.1) }
+                                                }}
+                                                onClick={() => handlePreview(item.rutaArchivo!)}
+                                            >
+                                                <VisibilityIcon fontSize="small" color="primary" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    ) : (
+                                        <Tooltip title="Sin archivo">
+                                            <NoFileIcon fontSize="small" color="disabled" />
+                                        </Tooltip>
+                                    )}
+                                </TableCell>
+                                <TableCell align="right">
+                                    <TableActions
+                                        onEdit={!viewOnly ? () => onEdit?.(item) : undefined}
+                                        onDelete={!viewOnly ? () => handleDelete(item.viajePermisoID) : undefined}
+                                        editTooltip="Editar permiso"
+                                        deleteTooltip="Eliminar permiso"
+                                    />
+                                </TableCell>
+                            </>
+                        );
+                    }}
+                />
+            </Box>
+
+            <ViajePermisoMobileList 
+                items={permisos}
+                total={data?.total || 0}
                 page={page}
                 rowsPerPage={rowsPerPage}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
-                columns={columns}
-                keyExtractor={(item) => item.viajePermisoID}
-                emptyMessage="No hay permisos registrados"
-                renderRow={(item) => {
-                    return (
-                        <>
-                            <TableCell>{formatDateShort(item.fechaVigencia)}</TableCell>
-                            <TableCell>{item.fechaVencimiento ? formatDateShort(item.fechaVencimiento) : '-'}</TableCell>
-                            <TableCell align="center">
-                                {item.rutaArchivo ? (
-                                    <Tooltip title="Ver Documento">
-                                        <IconButton 
-                                            size="small" 
-                                            sx={{ 
-                                                bgcolor: alpha(theme.palette.primary.main, 0.05),
-                                                '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.1) }
-                                            }}
-                                            onClick={() => handlePreview(item.rutaArchivo!)}
-                                        >
-                                            <VisibilityIcon fontSize="small" color="primary" />
-                                        </IconButton>
-                                    </Tooltip>
-                                ) : (
-                                    <Tooltip title="Sin archivo">
-                                        <NoFileIcon fontSize="small" color="disabled" />
-                                    </Tooltip>
-                                )}
-                            </TableCell>
-                            <TableCell align="right">
-                                <TableActions
-                                    onEdit={() => onEdit?.(item)}
-                                    onDelete={() => handleDelete(item.viajePermisoID)}
-                                    disableEdit={viewOnly}
-                                    disableDelete={viewOnly || deleteMutation.isPending}
-                                    editTooltip="Editar permiso"
-                                    deleteTooltip="Eliminar permiso"
-                                />
-                            </TableCell>
-                        </>
-                    );
-                }}
+                viewOnly={viewOnly}
+                onEdit={onEdit}
+                onDelete={handleDelete}
+                onPreview={handlePreview}
             />
             <DocumentPreviewDialog 
                 open={!!previewUrl}

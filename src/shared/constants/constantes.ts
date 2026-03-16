@@ -44,8 +44,18 @@ export const ESTADO_VIAJE_COD = {
 } as const;
 
 export const ESTADO_VIAJE_ID = {
+    AGENDADO: 201,
+    TRANSITO: 202,
     CANCELADO: 203,
     COMPLETADO: 204
+} as const;
+
+export const ROL_USUARIO_ID = {
+    ADMINISTRADOR: 1,
+    GERENTE_GENERAL: 2,
+    ASISTENTE_LOGISTICA: 3,
+    RECURSOS_HUMANOS: 4,
+    CONDUCTOR: 5
 } as const;
 
 export const TIPO_FLOTA={

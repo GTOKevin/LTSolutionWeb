@@ -1,5 +1,94 @@
 import type { PagedFilters, PagedResponse } from '@/shared/model/types';
 
+export interface ViajeIncidenteDetailDto {
+    fechaHora: string;
+    tipo: string;
+    lugar: string;
+    descripcion: string;
+    rutaFoto?: string;
+}
+
+export interface ViajeIncidenteReportDto {
+    viajeId: number;
+    tracto: string;
+    carreta: string;
+    cliente: string;
+    conductor: string;
+    origen: string;
+    destino: string;
+    fechaPartida: string;
+    fechaDescarga: string;
+    fechaLlegadaBase: string;
+    mercaderias: string[];
+    guias: string[];
+    incidentes: ViajeIncidenteDetailDto[];
+}
+
+export interface ViajeGuiaReportItemDto {
+    tipoGuiaNombre: string;
+    serie: string;
+    numero: string;
+}
+
+export interface ViajeEscoltaReportItemDto {
+    placa: string;
+    conductor: string;
+    tipo: string;
+}
+
+export interface ViajeMercaderiaReportItemDto {
+    nombre: string;
+    descripcion: string;
+    medidas: string;
+    peso: string;
+}
+
+export interface ViajeGastoReportItemDto {
+    tipoGasto: string;
+    descripcion: string;
+    fechaGasto: string;
+    numeroComprobante: string;
+    galones: number | null;
+    moneda: string;
+    monto: number;
+}
+
+export interface ViajeIncidenteReportItemDto {
+    tipo: string;
+    descripcion: string;
+    fechaHora: string;
+    lugar: string;
+}
+
+export interface ViajeGeneralReportDto {
+    viajeId: number;
+    cliente: string;
+    conductor: string;
+    origen: string;
+    destino: string;
+    tracto: string;
+    carreta: string;
+    fechaPartida: string;
+    fechaLlegada: string;
+    fechaDescarga: string;
+    fechaLlegadaBase: string;
+    ejesTotales: number;
+    medidasTotales: string;
+    pesoTotal: string;
+    totalGastos: number;
+    totalGalonesCombustible: number;
+    totalCostoCombustible: number;
+    precioPromedioGalon: number;
+    diasViaje: number;
+    sueldoConductor: number;
+    costoTotalOperacion: number;
+    guias: ViajeGuiaReportItemDto[];
+    escoltas: ViajeEscoltaReportItemDto[];
+    mercaderias: ViajeMercaderiaReportItemDto[];
+    gastos: ViajeGastoReportItemDto[];
+    incidentes: ViajeIncidenteReportItemDto[];
+}
+
 export interface ViajeMercaderia {
     viajeMercaderiaID: number;
     viajeID: number;
@@ -35,6 +124,8 @@ export interface ViajeGasto {
     comprobante: boolean;
     numeroComprobante: string | null;
     descripcion: string | null;
+    combustible?: boolean | null;
+    galones?: number | null;
     gasto?: {
         gastoID: number;
         descripcion: string;
@@ -145,6 +236,8 @@ export interface Viaje {
     ancho: number | null;
     tipoPesoID: number;
     peso: number | null;
+    ejesTracto: number;
+    ejesCarreta: number | null;
     eliminado: boolean;
     
     // Navigation properties for display
@@ -224,6 +317,8 @@ export interface CreateViajeGastoDto {
     comprobante: boolean;
     numeroComprobante?: string;
     descripcion?: string;
+    combustible?: boolean;
+    galones?: number;
     // File handling might be separate or base64, but typically handled via FormData if file upload
 }
 
@@ -284,7 +379,8 @@ export interface CreateViajeDto {
     ancho?: number;
     tipoPesoID: number;
     peso?: number;
-
+    ejesTracto: number;
+    ejesCarreta?: number;
 }
 
 export interface UpdateViajeDto extends CreateViajeDto {
@@ -296,6 +392,8 @@ export interface ViajeFilters extends PagedFilters {
     fechaFin?: string;
     clienteID?: number;
     colaboradorID?: number;
+    tractoID?: number;
+    carretaID?: number;
     estadoID?: number;
 }
 
@@ -303,6 +401,7 @@ export interface ViajeFilters extends PagedFilters {
 export interface ViajeListItem {
     viajeID: number;
     fechaCarga: string;
+    fechaPartida?: string;
     requiereEscolta?: boolean;
     requierePermiso?: boolean;
 
@@ -334,9 +433,14 @@ export interface ViajeListItem {
 
     // Mercadería (Resumen)
     mercaderiaDescripcion?: string;
+    cerrado: boolean;
 }
 
-export type PagedViajes = PagedResponse<ViajeListItem>;
+export interface PagedViajes extends PagedResponse<ViajeListItem> {
+    totalAgendados: number;
+    totalEnTransito: number;
+    totalCompletados: number;
+}
 export type PagedViajeEscoltas = PagedResponse<ViajeEscolta>;
 export interface ViajeGastoCurrencyTotal {
     code: string;

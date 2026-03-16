@@ -1,5 +1,5 @@
 import { httpClient as http } from '@/shared/api/http';
-import type { CreateViajeIncidenteDto, PagedViajeIncidentes } from '../model/types';
+import type { CreateViajeIncidenteDto, PagedViajeIncidentes, ViajeIncidenteReportDto } from '../model/types';
 import type { PagedFilters } from '@/shared/model/types';
 
 export const viajeIncidenteApi = {
@@ -8,6 +8,11 @@ export const viajeIncidenteApi = {
         params.append('page', filters.page.toString());
         params.append('size', filters.size.toString());
         const response = await http.get<PagedViajeIncidentes>(`/viajeincidente/byviaje/${viajeId}?${params.toString()}`);
+        return response.data;
+    },
+
+    getReportData: async (viajeId: number) => {
+        const response = await http.get<ViajeIncidenteReportDto>(`/viajeincidente/report/${viajeId}`);
         return response.data;
     },
 

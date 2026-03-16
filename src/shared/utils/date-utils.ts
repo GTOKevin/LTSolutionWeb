@@ -176,5 +176,34 @@ export const formatTime = (dateInput: string | Date): string => {
     return `${hh}:${min}`;
 };
 
+/**
+ * Returns the first day of the current month (or offset month) in "YYYY-MM-DD" format.
+ * @param monthOffset Number of months to add/subtract from current month (default: 0)
+ */
+export const getFirstDayOfCurrentMonthISO = (monthOffset: number = 0): string => {
+    const date = new Date();
+    date.setDate(1); // Set to 1st to avoid rollover issues
+    date.setMonth(date.getMonth() + monthOffset);
+    
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    return `${yyyy}-${mm}-01`;
+};
+
+/**
+ * Returns the last day of the current month (or offset month) in "YYYY-MM-DD" format.
+ * @param monthOffset Number of months to add/subtract from current month (default: 0)
+ */
+export const getLastDayOfCurrentMonthISO = (monthOffset: number = 0): string => {
+    const now = new Date();
+    // Get the last day of the target month by using day 0 of the next month
+    const date = new Date(now.getFullYear(), now.getMonth() + 1 + monthOffset, 0);
+    
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+};
+
 // Alias for backward compatibility or simple usage
 export const formatDateOnly = formatDateShort;

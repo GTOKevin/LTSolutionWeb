@@ -26,5 +26,19 @@ export const viajeGastoApi = {
 
     delete: async (id: number) => {
         await http.delete(`/viajegasto/${id}`);
+    },
+
+    getReportExcel: async (viajeId: number) => {
+        const response = await http.get(`/viajegasto/report/${viajeId}/excel`, {
+            responseType: 'blob'
+        });
+        return response.data;
+    },
+
+    getReportPdf: async (viajeId: number) => {
+        const response = await http.get(`/viajegasto/report/${viajeId}/pdf`, {
+            responseType: 'blob'
+        });
+        return response.data;
     }
 };

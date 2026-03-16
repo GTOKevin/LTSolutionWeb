@@ -21,7 +21,7 @@ export function useViajeOptions() {
     const { data: tractos } = useQuery({
         queryKey: ['flota-select-tracto'],
         queryFn: async () => {
-            const response = await flotaApi.getSelectTipo(TIPO_FLOTA.CAMIONES, 20);
+            const response = await flotaApi.getSelectTipo(TIPO_FLOTA.CAMIONES, 50);
             return response.data ?? [];
         }
     });
@@ -29,7 +29,7 @@ export function useViajeOptions() {
     const { data: carretas } = useQuery({
         queryKey: ['flota-select-carreta'],
         queryFn: async () => {
-            const response = await flotaApi.getSelectTipo(TIPO_FLOTA.CARRETAS, 20);
+            const response = await flotaApi.getSelectTipo(TIPO_FLOTA.CARRETAS, 50);
             return response.data ?? [];
         }
     });

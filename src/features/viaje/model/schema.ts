@@ -48,7 +48,19 @@ export const viajeGastoSchema = z.object({
     monto: z.number().min(0.5, 'El monto mínimo es 0.50'),
     comprobante: z.boolean(),
     numeroComprobante: z.string().optional(),
-    descripcion: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL).optional()
+    descripcion: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL).optional(),
+    combustible: z.boolean().optional(),
+    galones: z.number().optional()
+}).superRefine((data, ctx) => {
+    if (data.combustible) {
+        if (!data.galones || data.galones < 0.50) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "El campo de Galones debe tener como minimo un valor de 0.50",
+                path: ["galones"]
+            });
+        }
+    }
 });
 
 export const viajeGuiaSchema = z.object({
@@ -108,7 +120,7 @@ export const viajeSchema = z.object({
     fechaCarga: z.string().min(1, 'La fecha de carga es requerida'),
     tipoMedidaID: z.number().min(1, 'El tipo de medida es requerido'),
     tipoPesoID: z.number().min(1, 'El tipo de peso es requerido'),
-    
+    estadoID: z.number().min(1, 'El estado es requerido'),
     carretaID: z.number().min(1, 'La carreta es requerida'),
 
     // Optional fields
@@ -119,16 +131,17 @@ export const viajeSchema = z.object({
     fechaLlegada: z.string().optional(),
     fechaDescarga: z.string().optional(),
     fechaLlegadaBase: z.string().optional(),
-    kmInicio: z.number().optional(),
-    kmLlegada: z.number().optional(),
-    kmLlegadaBase: z.number().optional(),
-    estadoID: z.number().default(1),
+    kmInicio: z.number().min(1, 'Mínimo 1').optional().default(0),
+    kmLlegada: z.number().optional().default(0),
+    kmLlegadaBase: z.number().optional().default(0),
     requiereEscolta: z.boolean().optional().default(false),
     requierePermiso: z.boolean().optional().default(false),
     largo: z.number().optional(),
     alto: z.number().optional(),
     ancho: z.number().optional(),
-    peso: z.number().optional()
+    peso: z.number().optional(),
+    ejesTracto: z.number().min(0, 'Mínimo 0').default(0),
+    ejesCarreta: z.number().optional().default(0)
 });
 
 export type ViajeFormData = z.infer<typeof viajeSchema>;

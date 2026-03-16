@@ -4,19 +4,17 @@ import {
     Paper, 
     useTheme,
     alpha,
-    Tooltip,
     CircularProgress,
     TableCell
 } from '@mui/material';
-import { 
-    Edit as EditIcon
-} from '@mui/icons-material';
 import { useState } from 'react';
 import type { ViajeMercaderia } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
 import { useViajeMercaderias, useDeleteViajeMercaderia } from '@/features/viaje/hooks/useViajeMercaderias';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
+
+import { ViajeMercaderiaMobileList } from './ViajeMercaderiaMobileList';
 
 interface Props {
     viajeId: number;
@@ -82,89 +80,104 @@ export function ViajeMercaderiaList({ viajeId, viewOnly, tiposMedida, tiposPeso,
                 <Typography variant="caption" color="text.secondary">({data?.total ?? 0} ítems)</Typography>
             </Box>
 
-            <SharedTable
-                data={data}
-                isLoading={isLoading}
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <SharedTable
+                    data={data}
+                    isLoading={isLoading}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    columns={columns}
+                    keyExtractor={(item) => item.viajeMercaderiaID}
+                    emptyMessage="No hay mercadería registrada"
+                    renderRow={(item) => {
+                        const medida = tiposMedida.find(t => t.id === item.tipoMedidaID)?.text || '';
+                        const pesoUnit = tiposPeso.find(t => t.id === item.tipoPesoID)?.text || '';
+                        const mercaderiaNombre = mercaderias.find(m => m.id === item.mercaderiaID)?.text;
+
+                        return (
+                            <>
+                                <TableCell>
+                                    <Box display="flex" flexDirection="column">
+                                        <Typography variant="body2" fontWeight="bold" color="text.primary">
+                                            {item.descripcion || mercaderiaNombre || 'Sin descripción'}
+                                        </Typography>
+                                        {mercaderiaNombre && item.descripcion && item.descripcion !== mercaderiaNombre && (
+                                            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                                                Categoría: {mercaderiaNombre}
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                </TableCell>
+                                <TableCell>
+                                    <Box display="flex" alignItems="center" gap={1} color="text.secondary" fontSize="0.875rem">
+                                        <Box 
+                                            component="span" 
+                                            sx={{ 
+                                                bgcolor: alpha(theme.palette.background.default, 1), 
+                                                px: 1, 
+                                                py: 0.5, 
+                                                borderRadius: 1, 
+                                                border: `1px solid ${theme.palette.divider}`,
+                                                fontSize: '0.75rem',
+                                                fontWeight: 500,
+                                                color: 'text.primary'
+                                            }}
+                                        >
+                                            {item.largo || 0} × {item.ancho || 0} × {item.alto || 0} {medida}
+                                        </Box>
+                                    </Box>
+                                </TableCell>
+                                <TableCell>
+                                    <Box display="flex" alignItems="center" gap={1}>
+                                        <Typography variant="body2" fontWeight="600">
+                                            {item.peso}
+                                        </Typography>
+                                        <Box 
+                                            component="span" 
+                                            sx={{ 
+                                                bgcolor: alpha(theme.palette.background.default, 1), 
+                                                px: 0.8, 
+                                                py: 0.3, 
+                                                borderRadius: 1, 
+                                                color: 'text.secondary',
+                                                fontSize: '0.7rem',
+                                                fontWeight: 'bold',
+                                                border: `1px solid ${theme.palette.divider}`
+                                            }}
+                                        >
+                                            {pesoUnit}
+                                        </Box>
+                                    </Box>
+                                </TableCell>
+                                <TableCell align="right">
+                                    <TableActions
+                                        onEdit={!viewOnly ? () => onEdit(item) : undefined}
+                                        onDelete={!viewOnly ? () => handleDelete(item.viajeMercaderiaID) : undefined}
+                                        editTooltip="Editar ítem"
+                                        deleteTooltip="Eliminar ítem"
+                                    />
+                                </TableCell>
+                            </>
+                        );
+                    }}
+                />
+            </Box>
+
+            <ViajeMercaderiaMobileList 
+                items={mercaderiaList}
+                total={data?.total || 0}
                 page={page}
                 rowsPerPage={rowsPerPage}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
-                columns={columns}
-                keyExtractor={(item) => item.viajeMercaderiaID}
-                emptyMessage="No hay mercadería registrada"
-                renderRow={(item) => {
-                    const medida = tiposMedida.find(t => t.id === item.tipoMedidaID)?.text || '';
-                    const pesoUnit = tiposPeso.find(t => t.id === item.tipoPesoID)?.text || '';
-                    const mercaderiaNombre = mercaderias.find(m => m.id === item.mercaderiaID)?.text;
-
-                    return (
-                        <>
-                            <TableCell>
-                                <Box display="flex" flexDirection="column">
-                                    <Typography variant="body2" fontWeight="bold" color="text.primary">
-                                        {item.descripcion || mercaderiaNombre || 'Sin descripción'}
-                                    </Typography>
-                                    {mercaderiaNombre && item.descripcion && item.descripcion !== mercaderiaNombre && (
-                                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                                            Categoría: {mercaderiaNombre}
-                                        </Typography>
-                                    )}
-                                </Box>
-                            </TableCell>
-                            <TableCell>
-                                <Box display="flex" alignItems="center" gap={1} color="text.secondary" fontSize="0.875rem">
-                                    <Box 
-                                        component="span" 
-                                        sx={{ 
-                                            bgcolor: alpha(theme.palette.background.default, 1), 
-                                            px: 1, 
-                                            py: 0.5, 
-                                            borderRadius: 1, 
-                                            border: `1px solid ${theme.palette.divider}`,
-                                            fontSize: '0.75rem',
-                                            fontWeight: 500,
-                                            color: 'text.primary'
-                                        }}
-                                    >
-                                        {item.largo || 0} × {item.ancho || 0} × {item.alto || 0} {medida}
-                                    </Box>
-                                </Box>
-                            </TableCell>
-                            <TableCell>
-                                <Box display="flex" alignItems="center" gap={1}>
-                                    <Typography variant="body2" fontWeight="600">
-                                        {item.peso}
-                                    </Typography>
-                                    <Box 
-                                        component="span" 
-                                        sx={{ 
-                                            bgcolor: alpha(theme.palette.background.default, 1), 
-                                            px: 0.8, 
-                                            py: 0.3, 
-                                            borderRadius: 1, 
-                                            color: 'text.secondary',
-                                            fontSize: '0.7rem',
-                                            fontWeight: 'bold',
-                                            border: `1px solid ${theme.palette.divider}`
-                                        }}
-                                    >
-                                        {pesoUnit}
-                                    </Box>
-                                </Box>
-                            </TableCell>
-                            <TableCell align="right">
-                                <TableActions
-                                    onEdit={() => onEdit(item)}
-                                    onDelete={() => handleDelete(item.viajeMercaderiaID)}
-                                    disableEdit={viewOnly}
-                                    disableDelete={viewOnly || deleteMutation.isPending}
-                                    editTooltip="Editar ítem"
-                                    deleteTooltip="Eliminar ítem"
-                                />
-                            </TableCell>
-                        </>
-                    );
-                }}
+                viewOnly={viewOnly}
+                tiposMedida={tiposMedida}
+                tiposPeso={tiposPeso}
+                mercaderias={mercaderias}
+                onEdit={onEdit}
+                onDelete={handleDelete}
             />
 
             {/* Footer Totales */}

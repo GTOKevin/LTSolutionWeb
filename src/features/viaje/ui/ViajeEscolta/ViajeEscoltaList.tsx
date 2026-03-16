@@ -7,6 +7,7 @@ import { TableActions } from '@/shared/components/ui/TableActions';
 import { TableCell } from '@mui/material';
 import { Security as SecurityIcon } from '@mui/icons-material';
 import { useViajeEscoltas, useDeleteViajeEscolta } from '@/features/viaje/hooks/useViajeEscoltas';
+import { ViajeEscoltaMobileList } from './ViajeEscoltaMobileList';
 
 interface Props {
     viajeId: number;
@@ -91,49 +92,63 @@ export function ViajeEscoltaList({ viajeId, viewOnly, flotas, colaboradores, onE
                 </Box>
             </Box>
 
-            <SharedTable
-                data={data}
-                isLoading={isLoading}
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <SharedTable
+                    data={data}
+                    isLoading={isLoading}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    columns={columns}
+                    keyExtractor={(item) => item.viajeEscoltaID}
+                    emptyMessage="No hay escoltas asignados"
+                    renderRow={(item) => {
+                        const info = getEscoltaInfo(item);
+                        
+                        return (
+                            <>
+                                <TableCell>
+                                    <Box sx={{ 
+                                        display: 'inline-block',
+                                        px: 1, py: 0.5, 
+                                        borderRadius: 1, 
+                                        bgcolor: info.tipo === 'Propio' ? alpha(theme.palette.primary.main, 0.1) : alpha(theme.palette.warning.main, 0.1),
+                                        color: info.tipo === 'Propio' ? 'primary.main' : 'warning.main',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 'bold'
+                                    }}>
+                                        {info.tipo}
+                                    </Box>
+                                </TableCell>
+                                <TableCell>{info.conductor}</TableCell>
+                                <TableCell>{info.vehiculo}</TableCell>
+                                <TableCell align="right">
+                                    <TableActions
+                                        onEdit={!viewOnly ? () => onEdit?.(item) : undefined}
+                                        onDelete={!viewOnly ? () => handleDelete(item.viajeEscoltaID) : undefined}
+                                        editTooltip="Editar escolta"
+                                        deleteTooltip="Eliminar escolta"
+                                    />
+                                </TableCell>
+                            </>
+                        );
+                    }}
+                />
+            </Box>
+
+            <ViajeEscoltaMobileList 
+                items={escoltas}
+                total={data?.total || 0}
                 page={page}
                 rowsPerPage={rowsPerPage}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
-                columns={columns}
-                keyExtractor={(item) => item.viajeEscoltaID}
-                emptyMessage="No hay escoltas asignados"
-                renderRow={(item) => {
-                    const info = getEscoltaInfo(item);
-                    
-                    return (
-                        <>
-                            <TableCell>
-                                <Box sx={{ 
-                                    display: 'inline-block',
-                                    px: 1, py: 0.5, 
-                                    borderRadius: 1, 
-                                    bgcolor: info.tipo === 'Propio' ? alpha(theme.palette.primary.main, 0.1) : alpha(theme.palette.warning.main, 0.1),
-                                    color: info.tipo === 'Propio' ? 'primary.main' : 'warning.main',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 'bold'
-                                }}>
-                                    {info.tipo}
-                                </Box>
-                            </TableCell>
-                            <TableCell>{info.conductor}</TableCell>
-                            <TableCell>{info.vehiculo}</TableCell>
-                            <TableCell align="right">
-                                <TableActions
-                                    onEdit={() => onEdit?.(item)}
-                                    onDelete={() => handleDelete(item.viajeEscoltaID)}
-                                    disableEdit={viewOnly}
-                                    disableDelete={viewOnly || deleteMutation.isPending}
-                                    editTooltip="Editar escolta"
-                                    deleteTooltip="Eliminar escolta"
-                                />
-                            </TableCell>
-                        </>
-                    );
-                }}
+                viewOnly={viewOnly}
+                flotas={flotas}
+                colaboradores={colaboradores}
+                onEdit={onEdit}
+                onDelete={handleDelete}
             />
         </Box>
     );

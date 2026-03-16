@@ -23,6 +23,8 @@ import { useViajeGuias, useDeleteViajeGuia } from '@/features/viaje/hooks/useVia
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
 
+import { ViajeGuiaMobileList } from './ViajeGuiaMobileList';
+
 interface Props {
     viajeId: number;
     viewOnly?: boolean;
@@ -127,76 +129,90 @@ export function ViajeGuiaList({ viajeId, viewOnly, tiposGuia, onEdit }: Props) {
                 </Box>
             </Box>
 
-            <SharedTable
-                data={data}
-                isLoading={isLoading}
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <SharedTable
+                    data={data}
+                    isLoading={isLoading}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    columns={columns}
+                    keyExtractor={(item) => item.viajeGuiaID}
+                    emptyMessage="No hay guías registradas"
+                    renderRow={(item) => {
+                        const tipo = tiposGuia.find(t => t.id === item.tipoGuiaID);
+                        const tipoText = tipo?.text || item.tipoGuia?.descripcion || 'Desconocido';
+                        
+                        return (
+                            <>
+                                <TableCell>
+                                    <Box sx={{ 
+                                        display: 'inline-flex', 
+                                        alignItems: 'center', 
+                                        gap: 1,
+                                        px: 1.5,
+                                        py: 0.5,
+                                        borderRadius: 10,
+                                        bgcolor: getGuideTypeBg(tipoText),
+                                        color: getGuideTypeColor(tipoText)
+                                    }}>
+                                        {getGuideTypeIcon(tipoText)}
+                                        <Typography variant="caption" fontWeight="bold">
+                                            {tipoText}
+                                        </Typography>
+                                    </Box>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography variant="body2" fontFamily="monospace">
+                                        {item.serie}-{item.numero}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell align="center">
+                                    {item.rutaArchivo ? (
+                                        <Tooltip title="Ver archivo">
+                                            <IconButton 
+                                                size="small" 
+                                                sx={{ color: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.1) }}
+                                                onClick={() => handlePreview(item.rutaArchivo!)}
+                                            >
+                                                <VisibilityIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    ) : (
+                                        <Tooltip title="Sin archivo">
+                                            <IconButton size="small" disabled sx={{ color: 'text.disabled' }}>
+                                                <NoFileIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    )}
+                                </TableCell>
+                                <TableCell align="right">
+                                    <TableActions
+                                        onEdit={!viewOnly ? () => onEdit?.(item) : undefined}
+                                        onDelete={!viewOnly ? () => handleDelete(item.viajeGuiaID) : undefined}
+                                        editTooltip="Editar guía"
+                                        deleteTooltip="Eliminar guía"
+                                    />
+                                </TableCell>
+                            </>
+                        );
+                    }}
+                />
+            </Box>
+
+            <ViajeGuiaMobileList
+                items={guias}
+                total={data?.total || 0}
                 page={page}
                 rowsPerPage={rowsPerPage}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
-                columns={columns}
-                keyExtractor={(item) => item.viajeGuiaID}
-                emptyMessage="No hay guías registradas"
-                renderRow={(item) => {
-                    const tipo = tiposGuia.find(t => t.id === item.tipoGuiaID);
-                    const tipoText = tipo?.text || item.tipoGuia?.descripcion || 'Desconocido';
-                    
-                    return (
-                        <>
-                            <TableCell>
-                                <Box sx={{ 
-                                    display: 'inline-flex', 
-                                    alignItems: 'center', 
-                                    gap: 1,
-                                    px: 1.5,
-                                    py: 0.5,
-                                    borderRadius: 10,
-                                    bgcolor: getGuideTypeBg(tipoText),
-                                    color: getGuideTypeColor(tipoText)
-                                }}>
-                                    {getGuideTypeIcon(tipoText)}
-                                    <Typography variant="caption" fontWeight="bold">
-                                        {tipoText}
-                                    </Typography>
-                                </Box>
-                            </TableCell>
-                            <TableCell>
-                                <Typography variant="body2" fontFamily="monospace">
-                                    {item.serie}-{item.numero}
-                                </Typography>
-                            </TableCell>
-                            <TableCell align="center">
-                                {item.rutaArchivo ? (
-                                    <Tooltip title="Ver archivo">
-                                        <IconButton 
-                                            size="small" 
-                                            sx={{ color: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.1) }}
-                                            onClick={() => handlePreview(item.rutaArchivo!)}
-                                        >
-                                            <VisibilityIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                ) : (
-                                    <Tooltip title="Sin archivo">
-                                        <IconButton size="small" disabled sx={{ color: 'text.disabled' }}>
-                                            <NoFileIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                )}
-                            </TableCell>
-                            <TableCell align="right">
-                                <TableActions
-                                    onEdit={() => onEdit?.(item)}
-                                    onDelete={() => handleDelete(item.viajeGuiaID)}
-                                    disableEdit={viewOnly}
-                                    disableDelete={viewOnly || deleteMutation.isPending}
-                                    editTooltip="Editar guía"
-                                    deleteTooltip="Eliminar guía"
-                                />
-                            </TableCell>
-                        </>
-                    );
-                }}
+                viewOnly={viewOnly}
+                tiposGuia={tiposGuia}
+                onEdit={onEdit}
+                onDelete={handleDelete}
+                onPreview={handlePreview}
             />
             
             <DocumentPreviewDialog 
