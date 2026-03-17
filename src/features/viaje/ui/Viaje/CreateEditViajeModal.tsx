@@ -10,15 +10,16 @@ import { UbigeoSelect } from '@/shared/components/ui/UbigeoSelect';
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
 import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
 import { handleAddressKeyDown } from '@/shared/utils/input-validators';
-import { ViajeMercaderia } from '../../ui/ViajeMercaderia/ViajeMercaderia';
-import { ViajeGasto } from '../../ui/ViajeGasto/ViajeGasto';
-import { ViajeGuia } from '../../ui/ViajeGuia/ViajeGuia';
-import { ViajeIncidente } from '../../ui/ViajeIncidente/ViajeIncidente';
-import { ViajePermiso } from '../../ui/ViajePermiso/ViajePermiso';
-import { ViajeEscolta } from '../../ui/ViajeEscolta/ViajeEscolta';
+import { ViajeMercaderia } from '../../ui/ViajeMercaderia/Index';
+import { ViajeGasto } from '../../ui/ViajeGasto/Index';
+import { ViajeGuia } from '../../ui/ViajeGuia/Index';
+import { ViajeIncidente } from '../../ui/ViajeIncidente/Index';
+import { ViajePermiso } from '../../ui/ViajePermiso/Index';
+import { ViajeEscolta } from '../../ui/ViajeEscolta/Index';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
+import { useToast } from '@/shared/components/ui/Toast';
 
 interface Props {
     open: boolean;
@@ -32,6 +33,7 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [pendingData, setPendingData] = useState<CreateViajeDto | null>(null);
     const queryClient = useQueryClient();
+    const { showToast } = useToast();
     
     const { 
         clientes, tractos, carretas, colaboradores, 
@@ -96,11 +98,19 @@ export function CreateEditViajeModal({ open, onClose, viaje, isViewOnly = false 
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['viajes'] });
+            showToast({ 
+                entity: 'Viaje',
+                action: viaje?.viajeID ? 'update' : 'create'
+            });
             onClose();
         },
         onError: (error) => {
             console.error("Error saving viaje:", error);
-            // Handle error feedback (toast/snackbar)
+            showToast({ 
+                entity: 'Viaje',
+                action: viaje?.viajeID ? 'update' : 'create',
+                isError: true
+            });
         }
     });
 

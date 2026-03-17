@@ -20,7 +20,7 @@ import { TableActions } from '@/shared/components/ui/TableActions';
 import { useViajePermisos, useDeleteViajePermiso } from '@/features/viaje/hooks/useViajePermisos';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import { ViajePermisoMobileList } from './ViajePermisoMobileList';
+import { ViajePermisoMobileList } from './Index';
 
 interface Props {
     viajeId: number;

@@ -7,7 +7,7 @@ import { TableActions } from '@/shared/components/ui/TableActions';
 import { TableCell } from '@mui/material';
 import { Security as SecurityIcon } from '@mui/icons-material';
 import { useViajeEscoltas, useDeleteViajeEscolta } from '@/features/viaje/hooks/useViajeEscoltas';
-import { ViajeEscoltaMobileList } from './ViajeEscoltaMobileList';
+import { ViajeEscoltaMobileList } from './Index';
 
 interface Props {
     viajeId: number;

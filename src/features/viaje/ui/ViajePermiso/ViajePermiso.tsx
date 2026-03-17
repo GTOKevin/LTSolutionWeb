@@ -1,8 +1,7 @@
 import { Box, Alert } from '@mui/material';
 import { useState } from 'react';
 import type { ViajePermiso } from '@/entities/viaje/model/types';
-import { ViajePermisoCreateEdit } from './ViajePermisoCreateEdit';
-import { ViajePermisoList } from './ViajePermisoList';
+import { ViajePermisoCreateEdit, ViajePermisoList } from './Index';
 
 interface Props {
     viajeId?: number;

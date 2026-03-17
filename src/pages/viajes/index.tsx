@@ -21,18 +21,17 @@ import {
 } from '@mui/icons-material';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { viajeApi } from '@entities/viaje/api/viaje.api';
-import { ViajesTable } from '@features/viaje/list/ui/ViajesTable';
-import { CreateEditViajeModal } from '@features/viaje/create-edit/ui/CreateEditViajeModal';
+import { CreateEditViajeModal, ViajesFilters ,ViajesMobileList, ViajesTable} from '@/features/viaje/ui/Viaje/Index';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { LoadingModal } from '@shared/components/ui/LoadingModal';
 import { StatsCard } from '@shared/components/ui/StatsCard';
-import { ViajesFilters } from '@features/viaje/list/ui/ViajesFilters';
-import { ViajesMobileList } from '@features/viaje/list/ui/ViajesMobileList';
 import type { Viaje, ViajeListItem, ViajeFilters as ViajeFiltersType } from '@entities/viaje/model/types';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
+import { useToast } from '@/shared/components/ui/Toast';
 
 export function ViajesPage() {
     const theme = useTheme();
+    const { showToast } = useToast();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [filters, setFilters] = useState<ViajeFiltersType>({
@@ -69,6 +68,10 @@ export function ViajesPage() {
             setDeleteDialogOpen(false);
             setViajeToDelete(null);
             refetch();
+            showToast({ entity: 'Viaje', action: 'delete' });
+        },
+        onError: () => {
+            showToast({ entity: 'Viaje', action: 'delete', isError: true });
         }
     });
 
@@ -78,6 +81,10 @@ export function ViajesPage() {
             setReopenDialogOpen(false);
             setViajeToReopen(null);
             refetch();
+            showToast({ entity: 'Viaje', action: 'reopen' });
+        },
+        onError: () => {
+            showToast({ entity: 'Viaje', action: 'reopen', isError: true });
         }
     });
 

@@ -26,7 +26,7 @@ import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
 import { formatDate, formatTime } from '@/shared/utils/date-utils';
-import { ViajeIncidenteMobileList } from './ViajeIncidenteMobileList';
+import { ViajeIncidenteMobileList } from './Index';
 
 interface Props {
     viajeId: number;

@@ -1,8 +1,7 @@
 import { Box, Alert } from '@mui/material';
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeGuia as ViajeGuiaModel } from '@/entities/viaje/model/types';
-import { ViajeGuiaCreateEdit } from './ViajeGuiaCreateEdit';
-import { ViajeGuiaList } from './ViajeGuiaList';
+import { ViajeGuiaList, ViajeGuiaCreateEdit } from './Index';
 import { useState } from 'react';
 
 interface Props {

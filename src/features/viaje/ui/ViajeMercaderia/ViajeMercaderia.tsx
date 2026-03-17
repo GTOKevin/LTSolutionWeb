@@ -2,8 +2,7 @@ import { Box, Alert } from '@mui/material';
 import { useState } from 'react';
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeMercaderia as ViajeMercaderiaType } from '@/entities/viaje/model/types';
-import { ViajeMercaderiaCreateEdit } from './ViajeMercaderiaCreateEdit';
-import { ViajeMercaderiaList } from './ViajeMercaderiaList';
+import { ViajeMercaderiaCreateEdit,ViajeMercaderiaList } from './Index';
 
 interface Props {
     viajeId: number;

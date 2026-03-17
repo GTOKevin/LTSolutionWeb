@@ -23,7 +23,7 @@ import { useViajeGuias, useDeleteViajeGuia } from '@/features/viaje/hooks/useVia
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
 
-import { ViajeGuiaMobileList } from './ViajeGuiaMobileList';
+import { ViajeGuiaMobileList } from './Index';
 
 interface Props {
     viajeId: number;

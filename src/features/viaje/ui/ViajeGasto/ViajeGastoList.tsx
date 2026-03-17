@@ -29,7 +29,7 @@ import { TableLoading } from '@/shared/components/ui/TableLoading';
 import { TableActions } from '@/shared/components/ui/TableActions';
 import { formatDateShort } from '@/shared/utils/date-utils';
 
-import { ViajeGastoMobileList } from './ViajeGastoMobileList';
+import { ViajeGastoMobileList } from './Index';
 
 interface Props {
     viajeId: number;
