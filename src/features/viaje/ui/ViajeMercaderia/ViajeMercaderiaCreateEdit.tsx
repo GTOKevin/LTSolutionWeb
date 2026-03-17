@@ -224,7 +224,7 @@ export function ViajeMercaderiaCreateEdit({
                 <Grid size={{xs:12, md:7}}>
                     <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2, bgcolor: 'background.paper' }}>
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 1, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.65rem', letterSpacing: '0.05em' }}>
-                            <Straighten fontSize="inherit" /> Dimensiones
+                            <Straighten fontSize="inherit" /> Dimensiones (Largo x Alto x Ancho)
                         </Typography>
                         <Box display="flex" alignItems="center" gap={1}>
                             <Controller

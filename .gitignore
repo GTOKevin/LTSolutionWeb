@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+LTSolution.API/wwwroot/uploads
 
 # Editor directories and files
 .vscode/*

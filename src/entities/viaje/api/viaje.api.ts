@@ -58,6 +58,28 @@ export const viajeApi = {
         return response.data;
     },
 
+    getReportList: async (filters: { 
+        fechaInicio: string; 
+        fechaFin: string;
+        clienteID?: number;
+        colaboradorID?: number;
+        tractoID?: number;
+        carretaID?: number;
+        search?: string;
+    }) => {
+        const params = new URLSearchParams();
+        params.append('fechaInicio', filters.fechaInicio);
+        params.append('fechaFin', filters.fechaFin);
+        if (filters.clienteID) params.append('clienteId', filters.clienteID.toString());
+        if (filters.colaboradorID) params.append('colaboradorId', filters.colaboradorID.toString());
+        if (filters.tractoID) params.append('tractoId', filters.tractoID.toString());
+        if (filters.carretaID) params.append('carretaId', filters.carretaID.toString());
+        if (filters.search) params.append('search', filters.search);
+
+        const response = await http.get<import('../model/types').ViajeListReportDto[]>(`/viaje/report/list?${params.toString()}`);
+        return response.data;
+    },
+
     reopen: async (id: number) => {
         await http.post(`/viaje/${id}/reabrir`);
     }

@@ -1,5 +1,28 @@
 import type { PagedFilters, PagedResponse } from '@/shared/model/types';
 
+export interface ViajeListReportDto {
+    cliente: string;
+    conductor: string;
+    tracto: string;
+    carreta: string;
+    origen: string;
+    destino: string;
+    mercaderia: string;
+    peso: string;
+    medidas: string;
+    guias: string;
+    kmRecorrido: number;
+    galonesConsumidos: number;
+    totalGastos: string;
+    diasTransporte: number;
+    diasDescarga: number;
+    diasViaje: number;
+    fechaPartida: string;
+    fechaLlegada: string;
+    fechaDescarga: string;
+    fechaLlegadaBase: string;
+}
+
 export interface ViajeIncidenteDetailDto {
     fechaHora: string;
     tipo: string;

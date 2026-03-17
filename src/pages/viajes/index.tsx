@@ -9,11 +9,15 @@ import {
 import { pdf } from '@react-pdf/renderer';
 import { ViajeGeneralPdf } from '@features/viaje/reports/ui/ViajeGeneralPdf';
 import { ViajeGeneralExcelGenerator } from '@features/viaje/reports/lib/ViajeGeneralExcelGenerator';
+import { ViajeListExcelGenerator } from '@features/viaje/reports/lib/ViajeListExcelGenerator';
+import { ViajeListPdf } from '@features/viaje/reports/ui/ViajeListPdf';
 import { 
     Add as AddIcon, 
     CalendarMonth, 
     NearMe, 
-    TaskAlt
+    TaskAlt,
+    PictureAsPdf,
+    TableView
 } from '@mui/icons-material';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { viajeApi } from '@entities/viaje/api/viaje.api';
@@ -130,6 +134,64 @@ export function ViajesPage() {
         setReopenDialogOpen(true);
     };
 
+    const handleExportListExcel = async () => {
+        try {
+            setLoadingMessage("Generando reporte Excel...");
+            if (!filters.fechaInicio || !filters.fechaFin) {
+                console.error("Fechas inválidas para reporte");
+                return;
+            }
+            const reportData = await viajeApi.getReportList({
+                fechaInicio: filters.fechaInicio,
+                fechaFin: filters.fechaFin,
+                clienteID: filters.clienteID,
+                colaboradorID: filters.colaboradorID,
+                tractoID: filters.tractoID,
+                carretaID: filters.carretaID,
+                search: filters.search
+            });
+            const generator = new ViajeListExcelGenerator(reportData, filters.fechaInicio, filters.fechaFin);
+            await generator.generateAndDownload();
+        } catch (error) {
+            console.error("Error exporting Excel list:", error);
+        } finally {
+            setLoadingMessage(null);
+        }
+    };
+
+    const handleExportListPdf = async () => {
+        try {
+            setLoadingMessage("Generando reporte PDF...");
+             if (!filters.fechaInicio || !filters.fechaFin) {
+                console.error("Fechas inválidas para reporte");
+                return;
+            }
+            const reportData = await viajeApi.getReportList({
+                fechaInicio: filters.fechaInicio,
+                fechaFin: filters.fechaFin,
+                clienteID: filters.clienteID,
+                colaboradorID: filters.colaboradorID,
+                tractoID: filters.tractoID,
+                carretaID: filters.carretaID,
+                search: filters.search
+            });
+            const blob = await pdf(<ViajeListPdf data={reportData} fechaInicio={filters.fechaInicio} fechaFin={filters.fechaFin} />).toBlob();
+            
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Reporte_Viajes_${filters.fechaInicio}_${filters.fechaFin}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error exporting PDF list:", error);
+        } finally {
+            setLoadingMessage(null);
+        }
+    };
+
     const handleExportExcel = async (item: ViajeListItem) => {
         try {
             setLoadingMessage("Generando reporte Excel...");
@@ -191,22 +253,56 @@ export function ViajesPage() {
                         Monitoreo y administración eficiente de la flota y rutas activas en tiempo real.
                     </Typography>
                 </Box>
-                <Button 
-                    variant="contained" 
-                    startIcon={<AddIcon />}
-                    onClick={handleCreate}
-                    sx={{ 
-                        boxShadow: theme.shadows[4],
-                        fontWeight: 700, 
-                        px: 3, 
-                        py: 1.2,
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        fontSize: '0.95rem'
-                    }}
-                >
-                    Nuevo Viaje
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button 
+                        variant="outlined" 
+                        startIcon={<PictureAsPdf />}
+                        onClick={handleExportListPdf}
+                        color="error"
+                        sx={{ 
+                            fontWeight: 700, 
+                            px: 3, 
+                            py: 1.2,
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontSize: '0.95rem'
+                        }}
+                    >
+                        PDF
+                    </Button>
+                    <Button 
+                        variant="outlined" 
+                        startIcon={<TableView />}
+                        onClick={handleExportListExcel}
+                        color="success"
+                        sx={{ 
+                            fontWeight: 700, 
+                            px: 3, 
+                            py: 1.2,
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontSize: '0.95rem'
+                        }}
+                    >
+                        Excel
+                    </Button>
+                    <Button 
+                        variant="contained" 
+                        startIcon={<AddIcon />}
+                        onClick={handleCreate}
+                        sx={{ 
+                            boxShadow: theme.shadows[4],
+                            fontWeight: 700, 
+                            px: 3, 
+                            py: 1.2,
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontSize: '0.95rem'
+                        }}
+                    >
+                        Nuevo Viaje
+                    </Button>
+                </Box>
             </Box>
 
             {/* KPI Cards */}
