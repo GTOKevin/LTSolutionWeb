@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { viajeEscoltaApi } from '@/entities/viaje/api/viaje-escolta.api';
 import type { CreateViajeEscoltaDto, PagedViajeEscoltas } from '@/entities/viaje/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
+import type { ApiError } from '@/shared/api/http';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
 
 const EMPTY_PAGED_ESCOLTAS: PagedViajeEscoltas = {
@@ -14,11 +16,13 @@ const EMPTY_PAGED_ESCOLTAS: PagedViajeEscoltas = {
 
 export const useViajeEscoltas = (viajeId?: number, page = 1, size = 5) => {
     return useQuery({
-        queryKey: viajeId ? [...VIAJE_QUERY_KEYS.escoltas(viajeId), page, size] : ['viaje-escoltas', undefined, page, size],
+        queryKey: VIAJE_QUERY_KEYS.escoltas(viajeId ?? 0, page, size),
         queryFn: () => viajeId ? viajeEscoltaApi.getByViaje(viajeId, { page, size }) : Promise.resolve(EMPTY_PAGED_ESCOLTAS),
         enabled: !!viajeId
     });
 };
+
+type ViajeMutationError = AxiosError<ApiError & { message?: string }>;
 
 export const useCreateViajeEscolta = () => {
     const queryClient = useQueryClient();
@@ -31,8 +35,8 @@ export const useCreateViajeEscolta = () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.escoltas(viajeId) });
             showToast({ entity: 'Escolta', action: 'create' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Escolta', action: 'create', isError: true, message });
             if (message) console.error("Validation error:", message);
         }
@@ -50,8 +54,8 @@ export const useUpdateViajeEscolta = () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.escoltas(viajeId) });
             showToast({ entity: 'Escolta', action: 'update' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Escolta', action: 'update', isError: true, message });
             if (message) console.error("Validation error:", message);
         }
@@ -69,8 +73,8 @@ export const useDeleteViajeEscolta = () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.escoltas(viajeId) });
             showToast({ entity: 'Escolta', action: 'delete' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Escolta', action: 'delete', isError: true, message });
             if (message) console.error("Validation error:", message);
         }

@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import type { ViajeIncidenteReportDto } from '@/entities/viaje/model/types';
 import { themePalette } from '@/shared/config/theme/palette';
+import { buildInternalFileUrl } from '@/shared/config/env';
 
 const styles = StyleSheet.create({
     page: {
@@ -121,17 +122,7 @@ interface Props {
     data: ViajeIncidenteReportDto;
 }
 
-const API_URL = import.meta.env.VITE_IMG_URL_BASE || 'https://localhost:44332';
-
 export const ViajeIncidentePdf = ({ data }: Props) => {
-    
-    const getFullUrl = (path?: string) => {
-        if (!path) return '';
-        if (path.startsWith('http')) return path;
-        const baseUrl = API_URL.replace(/\/api\/?$/, '');
-        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-    };
-
     return (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -191,14 +182,17 @@ export const ViajeIncidentePdf = ({ data }: Props) => {
                                 <Text style={styles.incidenteValue}>{incidente.descripcion}</Text>
                             </View>
 
-                            {incidente.rutaFoto && (
-                                <View style={styles.imageContainer}>
-                                    <Image 
-                                        src={getFullUrl(incidente.rutaFoto)} 
-                                        style={styles.image}
-                                    />
-                                </View>
-                            )}
+                            {(() => {
+                                const imageUrl = buildInternalFileUrl(incidente.rutaFoto);
+                                return imageUrl ? (
+                                    <View style={styles.imageContainer}>
+                                        <Image 
+                                            src={imageUrl} 
+                                            style={styles.image}
+                                        />
+                                    </View>
+                                ) : null;
+                            })()}
                         </View>
                     ))
                 ) : (

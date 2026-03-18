@@ -16,6 +16,7 @@ import {
 } from '@mui/icons-material';
 import imageCompression from 'browser-image-compression';
 import { archivoApi } from '@shared/api/archivo.api';
+import { buildInternalFileUrl } from '@/shared/config/env';
 import { DocumentPreviewDialog } from './DocumentPreviewDialog';
 
 interface ImageUploadProps {
@@ -28,8 +29,6 @@ interface ImageUploadProps {
     disabled?: boolean;
     viewOnly?: boolean;
 }
-
-const API_URL = import.meta.env.VITE_IMG_URL_BASE || 'https://localhost:44332';
 
 export function ImageUpload({
     value,
@@ -92,12 +91,6 @@ export function ImageUpload({
         } catch (error) {
             console.error('Error deleting file:', error);
         }
-    };
-
-    const getFullUrl = (path: string) => {
-        if (path.startsWith('http')) return path;
-        const baseUrl = API_URL.replace(/\/api\/?$/, '');
-        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
     };
 
     return (
@@ -163,7 +156,7 @@ export function ImageUpload({
                         onClick={() => setPreviewOpen(true)}
                     >
                         <img 
-                            src={getFullUrl(value)} 
+                            src={buildInternalFileUrl(value)} 
                             alt="Preview" 
                             style={{ 
                                 maxWidth: '100%', 
@@ -221,7 +214,7 @@ export function ImageUpload({
             <DocumentPreviewDialog 
                 open={previewOpen} 
                 onClose={() => setPreviewOpen(false)}
-                previewUrl={value ? getFullUrl(value) : null}
+                previewUrl={value ? buildInternalFileUrl(value) : null}
             />
         </Box>
     );

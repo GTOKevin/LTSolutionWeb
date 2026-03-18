@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { viajeMercaderiaApi } from '@/entities/viaje/api/viaje-mercaderia.api';
 import type { CreateViajeMercaderiaDto, PagedViajeMercaderias } from '@/entities/viaje/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
+import type { ApiError } from '@/shared/api/http';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
 
 const EMPTY_PAGED_MERCADERIAS: PagedViajeMercaderias = {
@@ -14,11 +16,13 @@ const EMPTY_PAGED_MERCADERIAS: PagedViajeMercaderias = {
 
 export const useViajeMercaderias = (viajeId?: number, page = 1, size = 5) => {
     return useQuery({
-        queryKey: viajeId ? [...VIAJE_QUERY_KEYS.mercaderias(viajeId), page, size] : ['viaje-mercaderias', undefined, page, size],
+        queryKey: VIAJE_QUERY_KEYS.mercaderias(viajeId ?? 0, page, size),
         queryFn: () => viajeId ? viajeMercaderiaApi.getByViaje(viajeId, { page, size }) : Promise.resolve(EMPTY_PAGED_MERCADERIAS),
         enabled: !!viajeId
     });
 };
+
+type ViajeMutationError = AxiosError<ApiError & { message?: string }>;
 
 export const useCreateViajeMercaderia = () => {
     const queryClient = useQueryClient();
@@ -31,8 +35,8 @@ export const useCreateViajeMercaderia = () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.mercaderias(viajeId) });
             showToast({ entity: 'Mercadería', action: 'create' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Mercadería', action: 'create', isError: true, message });
             if (message) console.error("Validation error:", message);
         }
@@ -50,8 +54,8 @@ export const useUpdateViajeMercaderia = () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.mercaderias(viajeId) });
             showToast({ entity: 'Mercadería', action: 'update' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Mercadería', action: 'update', isError: true, message });
             if (message) console.error("Validation error:", message);
         }
@@ -69,8 +73,8 @@ export const useDeleteViajeMercaderia = () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.mercaderias(viajeId) });
             showToast({ entity: 'Mercadería', action: 'delete' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Mercadería', action: 'delete', isError: true, message });
             if (message) console.error("Validation error:", message);
         }

@@ -6,15 +6,17 @@ import { ViajeListExcelGenerator } from '@features/viaje/reports/lib/ViajeListEx
 import { ViajeListPdf } from '@features/viaje/reports/ui/ViajeListPdf';
 import { viajeApi } from '@entities/viaje/api/viaje.api';
 import type { ViajeListItem, ViajeFilters as ViajeFiltersType } from '@entities/viaje/model/types';
+import { useToast } from '@/shared/components/ui/Toast';
 
 export function useViajeReports() {
     const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
+    const { showToast } = useToast();
 
     const handleExportListExcel = useCallback(async (filters: ViajeFiltersType) => {
         try {
             setLoadingMessage("Generando reporte Excel...");
             if (!filters.fechaInicio || !filters.fechaFin) {
-                console.error("Fechas inválidas para reporte");
+                showToast({ entity: 'Reporte de viajes', action: 'error', isError: true, message: 'Debe seleccionar un rango de fechas válido.' });
                 return;
             }
             const reportData = await viajeApi.getReportList({
@@ -30,16 +32,18 @@ export function useViajeReports() {
             await generator.generateAndDownload();
         } catch (error) {
             console.error("Error exporting Excel list:", error);
+            showToast({ entity: 'Reporte de viajes', action: 'error', isError: true, message: 'No se pudo exportar el listado en Excel.' });
         } finally {
             setLoadingMessage(null);
         }
-    }, []);
+    }, [showToast]);
 
     const handleExportListPdf = useCallback(async (filters: ViajeFiltersType) => {
+        let objectUrl: string | null = null;
         try {
             setLoadingMessage("Generando reporte PDF...");
              if (!filters.fechaInicio || !filters.fechaFin) {
-                console.error("Fechas inválidas para reporte");
+                showToast({ entity: 'Reporte de viajes', action: 'error', isError: true, message: 'Debe seleccionar un rango de fechas válido.' });
                 return;
             }
             const reportData = await viajeApi.getReportList({
@@ -53,20 +57,23 @@ export function useViajeReports() {
             });
             const blob = await pdf(<ViajeListPdf data={reportData} fechaInicio={filters.fechaInicio} fechaFin={filters.fechaFin} />).toBlob();
             
-            const url = window.URL.createObjectURL(blob);
+            objectUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.href = url;
+            link.href = objectUrl;
             link.setAttribute('download', `Reporte_Viajes_${filters.fechaInicio}_${filters.fechaFin}.pdf`);
             document.body.appendChild(link);
             link.click();
             link.remove();
-            window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error("Error exporting PDF list:", error);
+            showToast({ entity: 'Reporte de viajes', action: 'error', isError: true, message: 'No se pudo exportar el listado en PDF.' });
         } finally {
+            if (objectUrl) {
+                window.URL.revokeObjectURL(objectUrl);
+            }
             setLoadingMessage(null);
         }
-    }, []);
+    }, [showToast]);
 
     const handleExportExcel = useCallback(async (item: ViajeListItem) => {
         try {
@@ -76,30 +83,36 @@ export function useViajeReports() {
             await generator.generateAndDownload();
         } catch (error) {
             console.error("Error exporting Excel:", error);
+            showToast({ entity: 'Reporte de viajes', action: 'error', isError: true, message: 'No se pudo exportar el reporte detallado en Excel.' });
         } finally {
             setLoadingMessage(null);
         }
-    }, []);
+    }, [showToast]);
 
     const handleExportPdf = useCallback(async (item: ViajeListItem) => {
+        let objectUrl: string | null = null;
         try {
             setLoadingMessage("Generando reporte PDF...");
             const reportData = await viajeApi.getGeneralReportData(item.viajeID);
             const blob = await pdf(<ViajeGeneralPdf data={reportData} />).toBlob();
             
-            const url = window.URL.createObjectURL(blob);
+            objectUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.href = url;
+            link.href = objectUrl;
             link.setAttribute('download', `Viaje_${item.viajeID}_General.pdf`);
             document.body.appendChild(link);
             link.click();
             link.remove();
         } catch (error) {
             console.error("Error exporting PDF:", error);
+            showToast({ entity: 'Reporte de viajes', action: 'error', isError: true, message: 'No se pudo exportar el reporte detallado en PDF.' });
         } finally {
+            if (objectUrl) {
+                window.URL.revokeObjectURL(objectUrl);
+            }
             setLoadingMessage(null);
         }
-    }, []);
+    }, [showToast]);
 
     return {
         loadingMessage,

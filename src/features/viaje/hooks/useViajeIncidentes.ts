@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { viajeIncidenteApi } from '@/entities/viaje/api/viaje-incidente.api';
 import type { CreateViajeIncidenteDto, PagedViajeIncidentes } from '@/entities/viaje/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
+import type { ApiError } from '@/shared/api/http';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
 
 const EMPTY_PAGED_INCIDENTES: PagedViajeIncidentes = {
@@ -14,11 +16,13 @@ const EMPTY_PAGED_INCIDENTES: PagedViajeIncidentes = {
 
 export const useViajeIncidentes = (viajeId?: number, page = 1, size = 5) => {
     return useQuery({
-        queryKey: viajeId ? [...VIAJE_QUERY_KEYS.incidentes(viajeId), page, size] : ['viaje-incidentes', undefined, page, size],
+        queryKey: VIAJE_QUERY_KEYS.incidentes(viajeId ?? 0, page, size),
         queryFn: () => viajeId ? viajeIncidenteApi.getByViaje(viajeId, { page, size }) : Promise.resolve(EMPTY_PAGED_INCIDENTES),
         enabled: !!viajeId
     });
 };
+
+type ViajeMutationError = AxiosError<ApiError & { message?: string }>;
 
 export const useCreateViajeIncidente = () => {
     const queryClient = useQueryClient();
@@ -31,8 +35,8 @@ export const useCreateViajeIncidente = () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.incidentes(viajeId) });
             showToast({ entity: 'Incidente', action: 'create' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Incidente', action: 'create', isError: true, message });
             if (message) console.error("Validation error:", message);
         }
@@ -50,8 +54,8 @@ export const useUpdateViajeIncidente = () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.incidentes(viajeId) });
             showToast({ entity: 'Incidente', action: 'update' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Incidente', action: 'update', isError: true, message });
             if (message) console.error("Validation error:", message);
         }
@@ -69,8 +73,8 @@ export const useDeleteViajeIncidente = () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.incidentes(viajeId) });
             showToast({ entity: 'Incidente', action: 'delete' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Incidente', action: 'delete', isError: true, message });
             if (message) console.error("Validation error:", message);
         }

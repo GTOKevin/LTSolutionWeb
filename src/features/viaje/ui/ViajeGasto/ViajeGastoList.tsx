@@ -3,7 +3,6 @@ import {
     Typography, 
     useTheme, 
     alpha, 
-    Divider, 
     useMediaQuery, 
     CircularProgress,
     TableCell,
@@ -60,12 +59,13 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
     const gastos = data?.items ?? [];
 
     const handleExportExcel = async () => {
+        let objectUrl: string | null = null;
         try {
             setIsExportingExcel(true);
             const blob = await viajeGastoApi.getReportExcel(viajeId);
-            const url = window.URL.createObjectURL(new Blob([blob]));
+            objectUrl = window.URL.createObjectURL(new Blob([blob]));
             const link = document.createElement('a');
-            link.href = url;
+            link.href = objectUrl;
             link.setAttribute('download', `Gastos_Viaje_${viajeId}.xlsx`);
             document.body.appendChild(link);
             link.click();
@@ -75,17 +75,21 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
             console.error('Error exporting Excel:', error);
             setSnackbar({ open: true, message: 'Error al descargar reporte Excel', severity: 'error' });
         } finally {
+            if (objectUrl) {
+                window.URL.revokeObjectURL(objectUrl);
+            }
             setIsExportingExcel(false);
         }
     };
 
     const handleExportPdf = async () => {
+        let objectUrl: string | null = null;
         try {
             setIsExportingPdf(true);
             const blob = await viajeGastoApi.getReportPdf(viajeId);
-            const url = window.URL.createObjectURL(new Blob([blob]));
+            objectUrl = window.URL.createObjectURL(new Blob([blob]));
             const link = document.createElement('a');
-            link.href = url;
+            link.href = objectUrl;
             link.setAttribute('download', `Gastos_Viaje_${viajeId}.pdf`);
             document.body.appendChild(link);
             link.click();
@@ -95,6 +99,9 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
             console.error('Error exporting PDF:', error);
             setSnackbar({ open: true, message: 'Error al descargar reporte PDF', severity: 'error' });
         } finally {
+            if (objectUrl) {
+                window.URL.revokeObjectURL(objectUrl);
+            }
             setIsExportingPdf(false);
         }
     };
@@ -119,29 +126,24 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
 
     const totalsByCurrency = data?.totalsByCurrency ?? [];
 
-    const getCurrencySummary = (code: string, defaultSymbol: string) => {
-        const currency = totalsByCurrency.find(item => item.code === code);
-        return {
-            symbol: currency?.symbol || defaultSymbol,
-            total: currency?.total ?? 0
-        };
-    };
+    const hasCurrencyTotals = totalsByCurrency.length > 0;
 
-    const penSummary = getCurrencySummary('PEN', 'S/.');
-    const usdSummary = getCurrencySummary('USD', '$');
-    const eurSummary = getCurrencySummary('EUR', '€');
-
-    const getGastoColor = (text: string = '') => {
+    const getExpenseVisualMeta = (text: string = '') => {
         const lower = text.toLowerCase();
-        if (lower.includes('combustible')) return theme.palette.primary.main;
-        if (lower.includes('peaje')) return theme.palette.success.main;
-        if (lower.includes('viatico')) return theme.palette.warning.main;
-        if (lower.includes('mantenimiento')) return theme.palette.error.main;
-        return theme.palette.info.main;
-    };
+        const color = lower.includes('combustible')
+            ? theme.palette.primary.main
+            : lower.includes('peaje')
+                ? theme.palette.success.main
+                : lower.includes('viatico')
+                    ? theme.palette.warning.main
+                    : lower.includes('mantenimiento')
+                        ? theme.palette.error.main
+                        : theme.palette.info.main;
 
-    const getGastoBg = (text: string = '') => {
-        return alpha(getGastoColor(text), 0.1);
+        return {
+            color,
+            backgroundColor: alpha(color, 0.1)
+        };
     };
 
     const columns: Column[] = [
@@ -237,6 +239,7 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                             const tipo = tiposGasto.find(t => t.id === item.gastoID);
                             const moneda = monedas.find(m => m.id === item.monedaID);
                             const tipoText = tipo?.text || item.gasto?.descripcion || 'Otro';
+                            const expenseVisualMeta = getExpenseVisualMeta(tipoText);
 
                             return (
                                 <>
@@ -245,8 +248,8 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                                             display: 'inline-block',
                                             px: 1.5, py: 0.5, 
                                             borderRadius: 1, 
-                                            bgcolor: getGastoBg(tipoText),
-                                            color: getGastoColor(tipoText),
+                                            bgcolor: expenseVisualMeta.backgroundColor,
+                                            color: expenseVisualMeta.color,
                                             fontSize: '0.75rem',
                                             fontWeight: 'bold'
                                         }}>
@@ -301,18 +304,16 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                                 Total Gastos
                             </Typography>
                             <Box sx={{ display: 'flex', gap: 3 }}>
-                                <Box>
-                                    <Typography variant="caption" display="block" color="text.secondary" fontWeight="bold">PEN</Typography>
-                                    <Typography variant="subtitle2" fontWeight="bold">{penSummary.symbol} {penSummary.total.toFixed(2)}</Typography>
-                                </Box>
-                                <Box>
-                                    <Typography variant="caption" display="block" color="text.secondary" fontWeight="bold">USD</Typography>
-                                    <Typography variant="subtitle2" fontWeight="bold">{usdSummary.symbol} {usdSummary.total.toFixed(2)}</Typography>
-                                </Box>
-                                <Box>
-                                    <Typography variant="caption" display="block" color="text.secondary" fontWeight="bold">EUR</Typography>
-                                    <Typography variant="subtitle2" fontWeight="bold">{eurSummary.symbol} {eurSummary.total.toFixed(2)}</Typography>
-                                </Box>
+                                {totalsByCurrency.map((currency) => (
+                                    <Box key={currency.code}>
+                                        <Typography variant="caption" display="block" color="text.secondary" fontWeight="bold">
+                                            {currency.code}
+                                        </Typography>
+                                        <Typography variant="subtitle2" fontWeight="bold">
+                                            {currency.symbol} {currency.total.toFixed(2)}
+                                        </Typography>
+                                    </Box>
+                                ))}
                             </Box>
                         </Paper>
                     )}
@@ -331,6 +332,7 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                         viewOnly={viewOnly}
                         tiposGasto={tiposGasto}
                         monedas={monedas}
+                        getExpenseVisualMeta={getExpenseVisualMeta}
                         onEdit={onEdit}
                         onDelete={handleDelete}
                     />
@@ -338,7 +340,7 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
             )}
 
             {/* Mobile Fixed Summary Bar */}
-            {isMobile && gastos.length > 0 && (
+            {isMobile && gastos.length > 0 && hasCurrencyTotals && (
                 <Paper 
                     elevation={4}
                     sx={{ 
@@ -354,20 +356,16 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                     }}
                 >
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Box>
-                            <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 'bold', letterSpacing: 1 }}>TOTAL (PEN)</Typography>
-                            <Typography variant="h6" fontWeight="900">{penSummary.symbol} {penSummary.total.toFixed(2)}</Typography>
-                        </Box>
-                        <Divider orientation="vertical" flexItem sx={{ bgcolor: 'rgba(255,255,255,0.2)', mx: 1 }} />
-                        <Box sx={{ textAlign: 'center' }}>
-                            <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 'bold', letterSpacing: 1 }}>TOTAL (USD)</Typography>
-                            <Typography variant="subtitle1" fontWeight="bold">{usdSummary.symbol} {usdSummary.total.toFixed(2)}</Typography>
-                        </Box>
-                        <Divider orientation="vertical" flexItem sx={{ bgcolor: 'rgba(255,255,255,0.2)', mx: 1 }} />
-                        <Box sx={{ textAlign: 'right' }}>
-                            <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 'bold', letterSpacing: 1 }}>TOTAL (EUR)</Typography>
-                            <Typography variant="subtitle1" fontWeight="bold">{eurSummary.symbol} {eurSummary.total.toFixed(2)}</Typography>
-                        </Box>
+                        {totalsByCurrency.map((currency, index) => (
+                            <Box key={currency.code} sx={{ textAlign: index === 0 ? 'left' : index === totalsByCurrency.length - 1 ? 'right' : 'center' }}>
+                                <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 'bold', letterSpacing: 1 }}>
+                                    TOTAL ({currency.code})
+                                </Typography>
+                                <Typography variant={index === 0 ? 'h6' : 'subtitle1'} fontWeight="bold">
+                                    {currency.symbol} {currency.total.toFixed(2)}
+                                </Typography>
+                            </Box>
+                        ))}
                     </Box>
                 </Paper>
             )}

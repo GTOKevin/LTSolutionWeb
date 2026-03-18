@@ -37,6 +37,7 @@ interface Props {
     viewOnly?: boolean;
     tiposGasto: SelectItem[];
     monedas: SelectItem[];
+    getExpenseVisualMeta: (text: string) => { color: string; backgroundColor: string };
     onEdit?: (item: ViajeGasto) => void;
     onDelete?: (id: number) => void;
 }
@@ -51,6 +52,7 @@ export function ViajeGastoMobileList({
     viewOnly, 
     tiposGasto,
     monedas,
+    getExpenseVisualMeta,
     onEdit, 
     onDelete 
 }: Props) {
@@ -82,19 +84,6 @@ export function ViajeGastoMobileList({
         handleMenuClose();
     };
 
-    const getGastoColor = (text: string = '') => {
-        const lower = text.toLowerCase();
-        if (lower.includes('combustible')) return theme.palette.primary.main;
-        if (lower.includes('peaje')) return theme.palette.success.main;
-        if (lower.includes('viatico')) return theme.palette.warning.main;
-        if (lower.includes('mantenimiento')) return theme.palette.error.main;
-        return theme.palette.info.main;
-    };
-
-    const getGastoBg = (text: string = '') => {
-        return alpha(getGastoColor(text), 0.1);
-    };
-
     return (
         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
             <Stack spacing={2} sx={{ mb: 2 }}>
@@ -103,6 +92,7 @@ export function ViajeGastoMobileList({
                     const moneda = monedas.find(m => m.id === item.monedaID);
                     const tipoText = tipo?.text || item.gasto?.descripcion || 'Otro';
                     const monedaSymbol = moneda?.extra || 'PEN';
+                    const expenseVisualMeta = getExpenseVisualMeta(tipoText);
                     
                     return (
                         <Card 
@@ -112,7 +102,7 @@ export function ViajeGastoMobileList({
                                 border: `1px solid ${theme.palette.divider}`,
                                 borderRadius: 3,
                                 position: 'relative',
-                                borderLeft: `4px solid ${getGastoColor(tipoText)}`
+                                borderLeft: `4px solid ${expenseVisualMeta.color}`
                             }}
                         >
                             <CardContent sx={{ p: 2 }}>
@@ -124,8 +114,8 @@ export function ViajeGastoMobileList({
                                         px: 1.5,
                                         py: 0.5,
                                         borderRadius: 1,
-                                        bgcolor: getGastoBg(tipoText),
-                                        color: getGastoColor(tipoText),
+                                        bgcolor: expenseVisualMeta.backgroundColor,
+                                        color: expenseVisualMeta.color,
                                         fontWeight: 'bold',
                                         fontSize: '0.75rem',
                                         textTransform: 'uppercase'

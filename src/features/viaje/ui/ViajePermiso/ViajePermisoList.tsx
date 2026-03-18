@@ -20,6 +20,7 @@ import { TableActions } from '@/shared/components/ui/TableActions';
 import { useViajePermisos, useDeleteViajePermiso } from '@/features/viaje/hooks/useViajePermisos';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
 import { formatDateShort } from '@/shared/utils/date-utils';
+import { buildInternalFileUrl } from '@/shared/config/env';
 import { ViajePermisoMobileList } from './Index';
 
 interface Props {
@@ -27,8 +28,6 @@ interface Props {
     viewOnly?: boolean;
     onEdit?: (item: ViajePermiso) => void;
 }
-
-const API_URL = import.meta.env.VITE_IMG_URL_BASE || 'https://localhost:44332';
 
 export function ViajePermisoList({ viajeId, viewOnly, onEdit }: Props) {
     const theme = useTheme();
@@ -62,15 +61,9 @@ export function ViajePermisoList({ viajeId, viewOnly, onEdit }: Props) {
         }
     };
 
-    const getFullUrl = (path: string) => {
-        if (!path) return '';
-        if (path.startsWith('http')) return path;
-        const baseUrl = API_URL.replace(/\/api\/?$/, '');
-        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-    };
-    
     const handlePreview = (path: string) => {
-        setPreviewUrl(getFullUrl(path));
+        const fullUrl = buildInternalFileUrl(path);
+        setPreviewUrl(fullUrl || null);
     };
 
     const handleClosePreview = () => {

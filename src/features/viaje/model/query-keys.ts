@@ -1,6 +1,8 @@
+import type { ViajeFilters as ViajeFiltersType } from '@/entities/viaje/model/types';
+
 export const VIAJE_QUERY_KEYS = {
     lists: () => ['viajes'] as const,
-    list: (filters: any) => ['viajes', filters] as const,
+    list: (filters: ViajeFiltersType) => ['viajes', filters] as const,
     detail: (id: number) => ['viaje', id] as const,
     
     // Sub-modules

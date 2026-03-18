@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { viajeGastoApi } from '@/entities/viaje/api/viaje-gasto.api';
 import type { CreateViajeGastoDto, PagedViajeGastos } from '@/entities/viaje/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
+import type { ApiError } from '@/shared/api/http';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
 
 const EMPTY_PAGED_GASTOS: PagedViajeGastos = {
@@ -25,6 +27,8 @@ export const useViajeGastos = (viajeId?: number, page = 1, size = 5) => {
     });
 };
 
+type ViajeMutationError = AxiosError<ApiError & { message?: string }>;
+
 export const useCreateViajeGasto = () => {
     const queryClient = useQueryClient();
     const { showToast } = useToast();
@@ -36,8 +40,8 @@ export const useCreateViajeGasto = () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.gastos(viajeId) });
             showToast({ entity: 'Gasto', action: 'create' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Gasto', action: 'create', isError: true, message });
             if (message) console.error("Validation error:", message);
         }
@@ -55,8 +59,8 @@ export const useUpdateViajeGasto = () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.gastos(viajeId) });
             showToast({ entity: 'Gasto', action: 'update' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Gasto', action: 'update', isError: true, message });
             if (message) console.error("Validation error:", message);
         }
@@ -74,8 +78,8 @@ export const useDeleteViajeGasto = () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.gastos(viajeId) });
             showToast({ entity: 'Gasto', action: 'delete' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Gasto', action: 'delete', isError: true, message });
             if (message) console.error("Validation error:", message);
         }

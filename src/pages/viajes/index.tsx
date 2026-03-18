@@ -15,12 +15,14 @@ import {
     TableView
 } from '@mui/icons-material';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { viajeApi } from '@entities/viaje/api/viaje.api';
 import { CreateEditViajeModal, ViajesFilters ,ViajesMobileList, ViajesTable} from '@/features/viaje/ui/Viaje/Index';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { LoadingModal } from '@shared/components/ui/LoadingModal';
 import { StatsCard } from '@shared/components/ui/StatsCard';
 import type { Viaje, ViajeListItem, ViajeFilters as ViajeFiltersType } from '@entities/viaje/model/types';
+import type { ApiError } from '@/shared/api/http';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
 import { useToast } from '@/shared/components/ui/Toast';
 import { useViajeReports } from '@/features/viaje/hooks/useViajeReports';
@@ -36,6 +38,7 @@ export function ViajesPage() {
         handleExportExcel, 
         handleExportPdf 
     } = useViajeReports();
+    type ViajeMutationError = AxiosError<ApiError & { message?: string }>;
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -73,8 +76,8 @@ export function ViajesPage() {
             refetch();
             showToast({ entity: 'Viaje', action: 'delete' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Viaje', action: 'delete', isError: true, message });
             if (message) console.error("Validation error:", message);
         }
@@ -88,21 +91,18 @@ export function ViajesPage() {
             refetch();
             showToast({ entity: 'Viaje', action: 'reopen' });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.message;
+        onError: (error: ViajeMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Viaje', action: 'reopen', isError: true, message });
             if (message) console.error("Validation error:", message);
         }
     });
 
     const handleCreate = useCallback(() => {
-        setLoadingMessage("Mostrando nuevo viaje...");
-        setTimeout(() => {
-            setViajeToEdit(null);
-            setIsViewOnly(false);
-            setModalOpen(true);
-            setLoadingMessage(null);
-        }, 500);
+        setLoadingMessage(null);
+        setViajeToEdit(null);
+        setIsViewOnly(false);
+        setModalOpen(true);
     }, [setLoadingMessage]);
 
     const handleView = useCallback(async (item: ViajeListItem) => {
