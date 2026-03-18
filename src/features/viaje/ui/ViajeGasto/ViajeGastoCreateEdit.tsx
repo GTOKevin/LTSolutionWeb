@@ -1,13 +1,8 @@
 import { 
-    Box, Button, Typography, Paper, TextField, Grid, MenuItem, Checkbox, FormControlLabel,
+    Box, Button, Typography, Paper, TextField, Grid, Checkbox, FormControlLabel,
     useTheme, alpha, CircularProgress
 } from '@mui/material';
-import { 
-    AddCircle as AddCircleIcon, 
-    Save as SaveIcon,
-    Edit as EditIcon,
-    Cancel as CancelIcon
-} from '@mui/icons-material';
+import { Save as SaveIcon } from '@mui/icons-material';
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,6 +11,10 @@ import type { SelectItem } from '@/shared/model/types';
 import { useCreateViajeGasto, useUpdateViajeGasto } from '@/features/viaje/hooks/useViajeGastos';
 import { viajeGastoSchema, type ViajeGastoFormData } from '../../model/schema';
 import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
+import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
+import { FormSelect } from '@/shared/components/ui/FormSelect';
+import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
+import { MONEDA_ID } from '@/shared/constants/constantes';
 
 interface Props {
     viajeId: number;
@@ -33,12 +32,12 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
     const isEditing = !!gasto;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ViajeGastoFormData>({
+    const { control, register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ViajeGastoFormData>({
         resolver: zodResolver(viajeGastoSchema),
         defaultValues: {
             gastoID: 0,
             fechaGasto: getCurrentDateISO(),
-            monedaID: 1, // Default PEN
+            monedaID: MONEDA_ID.SOLES, // Default PEN
             monto: 0,
             comprobante: false,
             numeroComprobante: '',
@@ -51,6 +50,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
     const hasComprobante = watch('comprobante');
     const isCombustible = watch('combustible');
     const selectedGastoID = watch('gastoID');
+    const selectedMonedaID = watch('monedaID');
 
     // Determine if currency should be restricted to Soles (Combustible/Peaje)
     const selectedGasto = tiposGasto.find(t => t.id === selectedGastoID);
@@ -70,9 +70,9 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                 
                 setValue('combustible', isFuel);
 
-                // Force Soles (ID 1) if Fuel or Toll
+                // Force Soles if Fuel or Toll
                 if (isFuel || isToll) {
-                    setValue('monedaID', 1);
+                    setValue('monedaID', MONEDA_ID.SOLES);
                 }
 
                 if (!isFuel) {
@@ -99,7 +99,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
             reset({
                 gastoID: 0,
                 fechaGasto: getCurrentDateISO(),
-                monedaID: 1,
+                monedaID: MONEDA_ID.SOLES,
                 monto: 0,
                 comprobante: false,
                 numeroComprobante: '',
@@ -116,7 +116,6 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
         try {
             const payload: CreateViajeGastoDto = {
                 ...data,
-                // Ensure optional fields match the DTO
                 numeroComprobante: data.numeroComprobante || undefined,
                 descripcion: data.descripcion || undefined
             };
@@ -131,11 +130,10 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                 await createMutation.mutateAsync({ viajeId, data: payload });
             }
             
-            // Reset form but keep defaults
             reset({
                 gastoID: 0,
                 fechaGasto: getCurrentDateISO(),
-                monedaID: 1,
+                monedaID: MONEDA_ID.SOLES,
                 monto: 0,
                 comprobante: false,
                 numeroComprobante: '',
@@ -158,111 +156,59 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                 bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
             }}
         >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ 
-                        bgcolor: isEditing ? theme.palette.warning.main : theme.palette.primary.main, 
-                        color: 'white', 
-                        p: 0.5, 
-                        borderRadius: '50%', 
-                        display: 'flex' 
-                    }}>
-                        {isEditing ? <EditIcon fontSize="small" /> : <AddCircleIcon fontSize="small" />}
-                    </Box>
-                    <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
-                        {isEditing ? "Editar Gasto" : "Agregar Gasto"}
-                    </Typography>
-                </Box>
-                {isEditing && (
-                    <Button 
-                        size="small" 
-                        color="inherit" 
-                        onClick={onCancel}
-                        startIcon={<CancelIcon />}
-                    >
-                        Cancelar Edición
-                    </Button>
-                )}
-            </Box>
+            <SubFormHeader 
+                isEditing={isEditing}
+                titleAdd="Agregar Gasto"
+                titleEdit="Editar Gasto"
+                onCancel={onCancel}
+            />
 
             <Grid container spacing={2}>
                 <Grid size={{xs:12, sm:6, md:3}}>
                     <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
-                            Tipo de Gasto
-                        </Typography>
-                        <Controller
-                            name="gastoID"
-                            control={control}
-                            render={({ field }) => (
-                                <TextField
-                                    {...field}
-                                    select
-                                    fullWidth
-                                    size="small"
-                                    value={field.value || 0}
-                                    onChange={(e) => field.onChange(Number(e.target.value))}
-                                    SelectProps={{ displayEmpty: true }}
-                                    error={!!errors.gastoID}
-                                    helperText={errors.gastoID?.message}
-                                    sx={{ bgcolor: 'background.paper' }}
-                                >
-                                    <MenuItem value={0} disabled>Seleccione tipo</MenuItem>
-                                    {tiposGasto.map((tipo) => (
-                                        <MenuItem key={tipo.id} value={tipo.id}>{tipo.text}</MenuItem>
-                                    ))}
-                                </TextField>
-                            )}
-                        />
-                    </Grid>
+                        Tipo de Gasto
+                    </Typography>
+                    <FormSelect
+                        label=""
+                        registration={register('gastoID', { valueAsNumber: true })}
+                        options={tiposGasto}
+                        value={selectedGastoID || 0}
+                        onChange={(e) => setValue('gastoID', Number(e.target.value))}
+                        error={!!errors.gastoID}
+                        helperText={errors.gastoID?.message}
+                        sx={{ bgcolor: 'background.paper' }}
+                    />
+                </Grid>
 
-                    <Grid size={{xs:12, sm:6, md:3}}>
-                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
-                            Fecha Gasto
-                        </Typography>
-                        <Controller
-                            name="fechaGasto"
-                            control={control}
-                            render={({ field }) => (
-                                <TextField
-                                    {...field}
-                                    type="date"
-                                    fullWidth
-                                    size="small"
-                                    error={!!errors.fechaGasto}
-                                    helperText={errors.fechaGasto?.message}
-                                    sx={{ bgcolor: 'background.paper' }}
-                                />
-                            )}
-                        />
-                    </Grid>
+                <Grid size={{xs:12, sm:6, md:3}}>
+                    <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
+                        Fecha Gasto
+                    </Typography>
+                    <FormDatePicker
+                        label=""
+                        registration={register('fechaGasto')}
+                        error={!!errors.fechaGasto}
+                        helperText={errors.fechaGasto?.message}
+                        sx={{ bgcolor: 'background.paper' }}
+                    />
+                </Grid>
 
-                    <Grid size={{xs:12, md:3}}>
-                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
-                            Moneda
-                        </Typography>
-                        <Controller
-                            name="monedaID"
-                            control={control}
-                            render={({ field }) => (
-                                <TextField
-                                    {...field}
-                                    select
-                                    fullWidth
-                                    size="small"
-                                    value={field.value || 0}
-                                    onChange={(e) => field.onChange(Number(e.target.value))}
-                                    error={!!errors.monedaID}
-                                    helperText={errors.monedaID?.message}
-                                    sx={{ bgcolor: 'background.paper' }}
-                                    disabled={isRestrictedCurrency}
-                                >
-                                    {monedas.map((moneda) => (
-                                        <MenuItem key={moneda.id} value={moneda.id}>{moneda.text}</MenuItem>
-                                    ))}
-                                </TextField>
-                            )}
-                        />
-                    </Grid>
+                <Grid size={{xs:12, md:3}}>
+                    <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
+                        Moneda
+                    </Typography>
+                    <FormSelect
+                        label=""
+                        registration={register('monedaID', { valueAsNumber: true })}
+                        options={monedas}
+                        value={selectedMonedaID || 0}
+                        onChange={(e) => setValue('monedaID', Number(e.target.value))}
+                        disabled={isRestrictedCurrency}
+                        error={!!errors.monedaID}
+                        helperText={errors.monedaID?.message}
+                        sx={{ bgcolor: 'background.paper' }}
+                    />
+                </Grid>
 
                     <Grid size={{xs:12, sm:6, md:3}}>
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>

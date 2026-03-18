@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { 
     Box, 
     Button, 
@@ -6,11 +6,6 @@ import {
     Grid,
     useTheme
 } from '@mui/material';
-import { pdf } from '@react-pdf/renderer';
-import { ViajeGeneralPdf } from '@features/viaje/reports/ui/ViajeGeneralPdf';
-import { ViajeGeneralExcelGenerator } from '@features/viaje/reports/lib/ViajeGeneralExcelGenerator';
-import { ViajeListExcelGenerator } from '@features/viaje/reports/lib/ViajeListExcelGenerator';
-import { ViajeListPdf } from '@features/viaje/reports/ui/ViajeListPdf';
 import { 
     Add as AddIcon, 
     CalendarMonth, 
@@ -28,10 +23,20 @@ import { StatsCard } from '@shared/components/ui/StatsCard';
 import type { Viaje, ViajeListItem, ViajeFilters as ViajeFiltersType } from '@entities/viaje/model/types';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
 import { useToast } from '@/shared/components/ui/Toast';
+import { useViajeReports } from '@/features/viaje/hooks/useViajeReports';
 
 export function ViajesPage() {
     const theme = useTheme();
     const { showToast } = useToast();
+    const { 
+        loadingMessage, 
+        setLoadingMessage, 
+        handleExportListExcel, 
+        handleExportListPdf, 
+        handleExportExcel, 
+        handleExportPdf 
+    } = useViajeReports();
+
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [filters, setFilters] = useState<ViajeFiltersType>({
@@ -51,8 +56,6 @@ export function ViajesPage() {
     const [reopenDialogOpen, setReopenDialogOpen] = useState(false);
     const [viajeToReopen, setViajeToReopen] = useState<ViajeListItem | null>(null);
 
-    const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
-
     const { data, isLoading, refetch } = useQuery({
         queryKey: ['viajes', page, rowsPerPage, filters],
         queryFn: () => viajeApi.getAll({
@@ -70,8 +73,10 @@ export function ViajesPage() {
             refetch();
             showToast({ entity: 'Viaje', action: 'delete' });
         },
-        onError: () => {
-            showToast({ entity: 'Viaje', action: 'delete', isError: true });
+        onError: (error: any) => {
+            const message = error.response?.data?.message;
+            showToast({ entity: 'Viaje', action: 'delete', isError: true, message });
+            if (message) console.error("Validation error:", message);
         }
     });
 
@@ -83,12 +88,14 @@ export function ViajesPage() {
             refetch();
             showToast({ entity: 'Viaje', action: 'reopen' });
         },
-        onError: () => {
-            showToast({ entity: 'Viaje', action: 'reopen', isError: true });
+        onError: (error: any) => {
+            const message = error.response?.data?.message;
+            showToast({ entity: 'Viaje', action: 'reopen', isError: true, message });
+            if (message) console.error("Validation error:", message);
         }
     });
 
-    const handleCreate = () => {
+    const handleCreate = useCallback(() => {
         setLoadingMessage("Mostrando nuevo viaje...");
         setTimeout(() => {
             setViajeToEdit(null);
@@ -96,9 +103,23 @@ export function ViajesPage() {
             setModalOpen(true);
             setLoadingMessage(null);
         }, 500);
-    };
+    }, [setLoadingMessage]);
 
-    const handleEdit = async (item: ViajeListItem) => {
+    const handleView = useCallback(async (item: ViajeListItem) => {
+        try {
+            setLoadingMessage("Obteniendo viaje...");
+            const fullViaje = await viajeApi.getById(item.viajeID);
+            setViajeToEdit(fullViaje);
+            setIsViewOnly(true);
+            setModalOpen(true);
+        } catch (error) {
+            console.error("Error fetching viaje details:", error);
+        } finally {
+            setLoadingMessage(null);
+        }
+    }, [setLoadingMessage]);
+
+    const handleEdit = useCallback(async (item: ViajeListItem) => {
         if (item.cerrado) {
             handleView(item);
             return;
@@ -115,131 +136,29 @@ export function ViajesPage() {
         } finally {
             setLoadingMessage(null);
         }
-    };
+    }, [handleView, setLoadingMessage]);
 
-    const handleView = async (item: ViajeListItem) => {
-        try {
-            setLoadingMessage("Obteniendo viaje...");
-            const fullViaje = await viajeApi.getById(item.viajeID);
-            setViajeToEdit(fullViaje);
-            setIsViewOnly(true);
-            setModalOpen(true);
-        } catch (error) {
-            console.error("Error fetching viaje details:", error);
-        } finally {
-            setLoadingMessage(null);
-        }
-    };
-
-    const handleDelete = (item: ViajeListItem) => {
+    const handleDelete = useCallback((item: ViajeListItem) => {
         setViajeToDelete(item);
         setDeleteDialogOpen(true);
-    };
+    }, []);
 
-    const handleReopen = (item: ViajeListItem) => {
+    const handleReopen = useCallback((item: ViajeListItem) => {
         setViajeToReopen(item);
         setReopenDialogOpen(true);
-    };
+    }, []);
 
-    const handleExportListExcel = async () => {
-        try {
-            setLoadingMessage("Generando reporte Excel...");
-            if (!filters.fechaInicio || !filters.fechaFin) {
-                console.error("Fechas inválidas para reporte");
-                return;
-            }
-            const reportData = await viajeApi.getReportList({
-                fechaInicio: filters.fechaInicio,
-                fechaFin: filters.fechaFin,
-                clienteID: filters.clienteID,
-                colaboradorID: filters.colaboradorID,
-                tractoID: filters.tractoID,
-                carretaID: filters.carretaID,
-                search: filters.search
-            });
-            const generator = new ViajeListExcelGenerator(reportData, filters.fechaInicio, filters.fechaFin);
-            await generator.generateAndDownload();
-        } catch (error) {
-            console.error("Error exporting Excel list:", error);
-        } finally {
-            setLoadingMessage(null);
-        }
-    };
-
-    const handleExportListPdf = async () => {
-        try {
-            setLoadingMessage("Generando reporte PDF...");
-             if (!filters.fechaInicio || !filters.fechaFin) {
-                console.error("Fechas inválidas para reporte");
-                return;
-            }
-            const reportData = await viajeApi.getReportList({
-                fechaInicio: filters.fechaInicio,
-                fechaFin: filters.fechaFin,
-                clienteID: filters.clienteID,
-                colaboradorID: filters.colaboradorID,
-                tractoID: filters.tractoID,
-                carretaID: filters.carretaID,
-                search: filters.search
-            });
-            const blob = await pdf(<ViajeListPdf data={reportData} fechaInicio={filters.fechaInicio} fechaFin={filters.fechaFin} />).toBlob();
-            
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `Reporte_Viajes_${filters.fechaInicio}_${filters.fechaFin}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error("Error exporting PDF list:", error);
-        } finally {
-            setLoadingMessage(null);
-        }
-    };
-
-    const handleExportExcel = async (item: ViajeListItem) => {
-        try {
-            setLoadingMessage("Generando reporte Excel...");
-            const reportData = await viajeApi.getGeneralReportData(item.viajeID);
-            const generator = new ViajeGeneralExcelGenerator(reportData);
-            await generator.generateAndDownload();
-        } catch (error) {
-            console.error("Error exporting Excel:", error);
-        } finally {
-            setLoadingMessage(null);
-        }
-    };
-
-    const handleExportPdf = async (item: ViajeListItem) => {
-        try {
-            setLoadingMessage("Generando reporte PDF...");
-            const reportData = await viajeApi.getGeneralReportData(item.viajeID);
-            const blob = await pdf(<ViajeGeneralPdf data={reportData} />).toBlob();
-            
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `Viaje_${item.viajeID}_General.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        } catch (error) {
-            console.error("Error exporting PDF:", error);
-        } finally {
-            setLoadingMessage(null);
-        }
-    };
-
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = useCallback((event: unknown, newPage: number) => {
         setPage(newPage);
-    };
+    }, []);
 
-    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChangeRowsPerPage = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
-    };
+    }, []);
+
+    const onExportListExcel = useCallback(() => handleExportListExcel(filters), [filters, handleExportListExcel]);
+    const onExportListPdf = useCallback(() => handleExportListPdf(filters), [filters, handleExportListPdf]);
 
     return (
         <Box sx={{ p: 4, bgcolor: 'background.default', minHeight: '100vh' }}>
@@ -261,38 +180,6 @@ export function ViajesPage() {
                     </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button 
-                        variant="outlined" 
-                        startIcon={<PictureAsPdf />}
-                        onClick={handleExportListPdf}
-                        color="error"
-                        sx={{ 
-                            fontWeight: 700, 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontSize: '0.95rem'
-                        }}
-                    >
-                        PDF
-                    </Button>
-                    <Button 
-                        variant="outlined" 
-                        startIcon={<TableView />}
-                        onClick={handleExportListExcel}
-                        color="success"
-                        sx={{ 
-                            fontWeight: 700, 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontSize: '0.95rem'
-                        }}
-                    >
-                        Excel
-                    </Button>
                     <Button 
                         variant="contained" 
                         startIcon={<AddIcon />}
@@ -345,6 +232,44 @@ export function ViajesPage() {
 
             {/* Filters */}
             <ViajesFilters onSearch={setFilters} />
+
+            {/* Actions & Export (Above Table) */}
+            <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'flex-end', 
+                alignItems: 'center',
+                gap: 2,
+                mb: 2 
+            }}>
+                <Button 
+                    variant="outlined" 
+                    startIcon={<PictureAsPdf />}
+                    onClick={onExportListPdf}
+                    color="error"
+                    size="small"
+                    sx={{ 
+                        fontWeight: 600, 
+                        borderRadius: 2,
+                        textTransform: 'none'
+                    }}
+                >
+                    Exportar
+                </Button>
+                <Button 
+                    variant="outlined" 
+                    startIcon={<TableView />}
+                    onClick={onExportListExcel}
+                    color="success"
+                    size="small"
+                    sx={{ 
+                        fontWeight: 600, 
+                        borderRadius: 2,
+                        textTransform: 'none'
+                    }}
+                >
+                    Exportar
+                </Button>
+            </Box>
 
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 <ViajesTable 

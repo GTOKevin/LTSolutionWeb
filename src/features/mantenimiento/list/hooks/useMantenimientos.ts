@@ -36,9 +36,9 @@ export function useMantenimientos() {
 
     // --- Data Fetching ---
     // Catalogs
-    const { data: flotas } = useQuery({ 
-        queryKey: ['flotas-select'], 
-        queryFn: () => flotaApi.getSelect() 
+    const { data: flotas } = useQuery({
+        queryKey: ['flotas-select'],
+        queryFn: () => flotaApi.getSelect({  })
     });
     
     const { data: estados } = useQuery({ 

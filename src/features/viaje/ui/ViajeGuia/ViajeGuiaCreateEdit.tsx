@@ -10,13 +10,11 @@ import {
     CircularProgress
 } from '@mui/material';
 import { 
-    AddCircle as AddCircleIcon,
+
     Save as SaveIcon,
     Person as PersonIcon,
     LocalShipping as LocalShippingIcon,
-    ListAlt as ListAltIcon,
-    Edit as EditIcon,
-    Cancel as CancelIcon
+    ListAlt as ListAltIcon
 } from '@mui/icons-material';
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -26,6 +24,7 @@ import type { SelectItem } from '@/shared/model/types';
 import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { useCreateViajeGuia, useUpdateViajeGuia } from '@/features/viaje/hooks/useViajeGuias';
 import { viajeGuiaSchema, type ViajeGuiaFormData } from '../../model/schema';
+import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
 
 interface Props {
     viajeId: number;
@@ -127,32 +126,12 @@ export function ViajeGuiaCreateEdit({ viajeId, tiposGuia, guia, onCancel }: Prop
                 bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
             }}
         >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ 
-                        p: 0.5, 
-                        borderRadius: '50%', 
-                        bgcolor: isEditing ? theme.palette.warning.main : theme.palette.primary.main,
-                        color: 'white',
-                        display: 'flex'
-                    }}>
-                        {isEditing ? <EditIcon fontSize="small" /> : <AddCircleIcon fontSize="small" />}
-                    </Box>
-                    <Typography variant="subtitle1" fontWeight="bold">
-                        {isEditing ? "Editar Guía" : "Agregar Guía"}
-                    </Typography>
-                </Box>
-                {isEditing && (
-                    <Button 
-                        size="small" 
-                        color="inherit" 
-                        onClick={onCancel}
-                        startIcon={<CancelIcon />}
-                    >
-                        Cancelar Edición
-                    </Button>
-                )}
-            </Box>
+            <SubFormHeader 
+                isEditing={isEditing}
+                titleAdd="Agregar Guía"
+                titleEdit="Editar Guía"
+                onCancel={onCancel}
+            />
 
             <Grid container spacing={4}>
                 <Grid size={{xs:12, lg:6}}>

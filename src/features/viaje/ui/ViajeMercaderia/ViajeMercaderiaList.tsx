@@ -198,9 +198,9 @@ export function ViajeMercaderiaList({ viajeId, viewOnly, tiposMedida, tiposPeso,
                     >
                         <Box display="flex" flexDirection="column">
                             <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', lineHeight: 1, mb: 0.5 }}>
-                                Dimensiones Carga (L x A x A)
+                                Dimensiones Carga (Largo x Ancho x Alto)
                             </Typography>
-                            <Typography variant="body1" fontWeight="bold">
+                            <Typography textAlign="center" variant="body1" fontWeight="bold">
                                 {totalLargo} x {maxAncho} x {maxAlto}
                             </Typography>
                         </Box>

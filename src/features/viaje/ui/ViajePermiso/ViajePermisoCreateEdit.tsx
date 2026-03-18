@@ -1,12 +1,9 @@
 import { 
-    Box, Button, Typography, Paper, TextField, Grid,
+    Box, Button, Typography, Paper, Grid,
     useTheme, alpha, CircularProgress
 } from '@mui/material';
 import { 
-    Save as SaveIcon,
-    Edit as EditIcon,
-    Cancel as CancelIcon,
-    AddCircle as AddCircleIcon
+    Save as SaveIcon
 } from '@mui/icons-material';
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -16,6 +13,8 @@ import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { useCreateViajePermiso, useUpdateViajePermiso } from '@/features/viaje/hooks/useViajePermisos';
 import { viajePermisoSchema, type ViajePermisoFormData } from '../../model/schema';
 import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
+import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
+import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
 
 interface Props {
     viajeId: number;
@@ -98,32 +97,12 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
                 bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
             }}
         >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ 
-                        bgcolor: isEditing ? theme.palette.warning.main : theme.palette.primary.main, 
-                        color: 'white', 
-                        p: 0.5, 
-                        borderRadius: '50%', 
-                        display: 'flex' 
-                    }}>
-                        {isEditing ? <EditIcon fontSize="small" /> : <AddCircleIcon fontSize="small" />}
-                    </Box>
-                    <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
-                        {isEditing ? "Editar Permiso" : "Agregar Permiso"}
-                    </Typography>
-                </Box>
-                {isEditing && (
-                    <Button 
-                        size="small" 
-                        color="inherit" 
-                        onClick={onCancel}
-                        startIcon={<CancelIcon />}
-                    >
-                        Cancelar Edición
-                    </Button>
-                )}
-            </Box>
+            <SubFormHeader 
+                isEditing={isEditing}
+                titleAdd="Agregar Permiso"
+                titleEdit="Editar Permiso"
+                onCancel={onCancel}
+            />
 
             <Grid container spacing={3}>
                 <Grid size={{xs:12, md:6}}>
@@ -132,12 +111,9 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
                             name="fechaVigencia"
                             control={control}
                             render={({ field }) => (
-                                <TextField
+                                <FormDatePicker
                                     {...field}
                                     label="Fecha Vigencia"
-                                    type="date"
-                                    fullWidth
-                                    InputLabelProps={{ shrink: true }}
                                     sx={{ bgcolor: 'background.paper' }}
                                     error={!!errors.fechaVigencia}
                                     helperText={errors.fechaVigencia?.message}
@@ -148,13 +124,10 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
                             name="fechaVencimiento"
                             control={control}
                             render={({ field }) => (
-                                <TextField
+                                <FormDatePicker
                                     {...field}
                                     value={field.value || ''}
                                     label="Fecha Vencimiento"
-                                    type="date"
-                                    fullWidth
-                                    InputLabelProps={{ shrink: true }}
                                     sx={{ bgcolor: 'background.paper' }}
                                     error={!!errors.fechaVencimiento}
                                     helperText={errors.fechaVencimiento?.message}

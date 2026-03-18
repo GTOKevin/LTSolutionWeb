@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { viajeGuiaApi } from '@/entities/viaje/api/viaje-guia.api';
 import type { CreateViajeGuiaDto, PagedViajeGuias } from '@/entities/viaje/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
+import { VIAJE_QUERY_KEYS } from '../model/query-keys';
 
 const EMPTY_PAGED_GUIAS: PagedViajeGuias = {
     items: [],
@@ -13,7 +14,7 @@ const EMPTY_PAGED_GUIAS: PagedViajeGuias = {
 
 export const useViajeGuias = (viajeId?: number, page = 1, size = 5) => {
     return useQuery({
-        queryKey: ['viaje-guias', viajeId, page, size],
+        queryKey: viajeId ? [...VIAJE_QUERY_KEYS.guias(viajeId), page, size] : ['viaje-guias', undefined, page, size],
         queryFn: () => viajeId ? viajeGuiaApi.getByViaje(viajeId, { page, size }) : Promise.resolve(EMPTY_PAGED_GUIAS),
         enabled: !!viajeId
     });
@@ -27,11 +28,13 @@ export const useCreateViajeGuia = () => {
         mutationFn: ({ viajeId, data }: { viajeId: number; data: CreateViajeGuiaDto }) => 
             viajeGuiaApi.create(viajeId, data),
         onSuccess: (_, { viajeId }) => {
-            queryClient.invalidateQueries({ queryKey: ['viaje-guias', viajeId] });
+            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.guias(viajeId) });
             showToast({ entity: 'Guía', action: 'create' });
         },
-        onError: () => {
-            showToast({ entity: 'Guía', action: 'create', isError: true });
+        onError: (error: any) => {
+            const message = error.response?.data?.message;
+            showToast({ entity: 'Guía', action: 'create', isError: true, message });
+            if (message) console.error("Validation error:", message);
         }
     });
 };
@@ -41,14 +44,16 @@ export const useUpdateViajeGuia = () => {
     const { showToast } = useToast();
 
     return useMutation({
-        mutationFn: ({ id, data, viajeId }: { id: number; data: CreateViajeGuiaDto; viajeId: number }) => 
+        mutationFn: ({ id, data }: { id: number; data: CreateViajeGuiaDto; viajeId: number }) => 
             viajeGuiaApi.update(id, data),
         onSuccess: (_, { viajeId }) => {
-            queryClient.invalidateQueries({ queryKey: ['viaje-guias', viajeId] });
+            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.guias(viajeId) });
             showToast({ entity: 'Guía', action: 'update' });
         },
-        onError: () => {
-            showToast({ entity: 'Guía', action: 'update', isError: true });
+        onError: (error: any) => {
+            const message = error.response?.data?.message;
+            showToast({ entity: 'Guía', action: 'update', isError: true, message });
+            if (message) console.error("Validation error:", message);
         }
     });
 };
@@ -61,11 +66,13 @@ export const useDeleteViajeGuia = () => {
         mutationFn: ({ id }: { id: number; viajeId: number }) => 
             viajeGuiaApi.delete(id),
         onSuccess: (_, { viajeId }) => {
-            queryClient.invalidateQueries({ queryKey: ['viaje-guias', viajeId] });
+            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.guias(viajeId) });
             showToast({ entity: 'Guía', action: 'delete' });
         },
-        onError: () => {
-            showToast({ entity: 'Guía', action: 'delete', isError: true });
+        onError: (error: any) => {
+            const message = error.response?.data?.message;
+            showToast({ entity: 'Guía', action: 'delete', isError: true, message });
+            if (message) console.error("Validation error:", message);
         }
     });
 };

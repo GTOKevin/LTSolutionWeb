@@ -58,6 +58,12 @@ export const ROL_USUARIO_ID = {
     CONDUCTOR: 5
 } as const;
 
+export const MONEDA_ID = {
+    SOLES: 1,
+    DOLARES: 2,
+    EURO: 3
+} as const;
+
 export const TIPO_FLOTA={
     CAMIONES:"N3",
     CARRETAS:"O4",

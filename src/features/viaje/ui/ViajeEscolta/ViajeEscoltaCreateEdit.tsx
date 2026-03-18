@@ -15,6 +15,8 @@ import type { CreateViajeEscoltaDto, ViajeEscolta } from '@/entities/viaje/model
 import type { SelectItem } from '@/shared/model/types';
 import { useCreateViajeEscolta, useUpdateViajeEscolta } from '@/features/viaje/hooks/useViajeEscoltas';
 import { viajeEscoltaSchema, type ViajeEscoltaFormData } from '../../model/schema';
+import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
+import { FormSelect } from '@/shared/components/ui/FormSelect';
 
 interface Props {
     viajeId: number;
@@ -116,32 +118,12 @@ export function ViajeEscoltaCreateEdit({ viajeId, flotas, colaboradores, escolta
                 bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
             }}
         >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ 
-                        bgcolor: isEditing ? theme.palette.warning.main : theme.palette.primary.main, 
-                        color: 'white', 
-                        p: 0.5, 
-                        borderRadius: '50%', 
-                        display: 'flex' 
-                    }}>
-                        {isEditing ? <EditIcon fontSize="small" /> : <AddCircleIcon fontSize="small" />}
-                    </Box>
-                    <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
-                        {isEditing ? "Editar Escolta" : "Asignar Escolta"}
-                    </Typography>
-                </Box>
-                {isEditing && (
-                    <Button 
-                        size="small" 
-                        color="inherit" 
-                        onClick={onCancel}
-                        startIcon={<CancelIcon />}
-                    >
-                        Cancelar Edición
-                    </Button>
-                )}
-            </Box>
+            <SubFormHeader 
+                isEditing={isEditing}
+                titleAdd="Asignar Escolta"
+                titleEdit="Editar Escolta"
+                onCancel={onCancel}
+            />
 
             <Grid container spacing={2}>
                 <Grid size={{xs:12}}>
@@ -172,22 +154,15 @@ export function ViajeEscoltaCreateEdit({ viajeId, flotas, colaboradores, escolta
                                     name="flotaID"
                                     control={control}
                                     render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            select
-                                            fullWidth
-                                            size="small"
+                                        <FormSelect
+                                            label=""
+                                            options={flotas}
                                             value={field.value || 0}
                                             onChange={(e) => field.onChange(Number(e.target.value))}
                                             error={!!errors.flotaID || !!errors.root}
                                             helperText={errors.flotaID?.message}
                                             sx={{ bgcolor: 'background.paper' }}
-                                        >
-                                            <MenuItem value={0}>Seleccione</MenuItem>
-                                            {flotas.map(f => (
-                                                <MenuItem key={f.id} value={f.id}>{f.text}</MenuItem>
-                                            ))}
-                                        </TextField>
+                                        />
                                     )}
                                 />
                             </Grid>
@@ -199,22 +174,15 @@ export function ViajeEscoltaCreateEdit({ viajeId, flotas, colaboradores, escolta
                                     name="colaboradorID"
                                     control={control}
                                     render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            select
-                                            fullWidth
-                                            size="small"
+                                        <FormSelect
+                                            label=""
+                                            options={colaboradores}
                                             value={field.value || 0}
                                             onChange={(e) => field.onChange(Number(e.target.value))}
                                             error={!!errors.colaboradorID || !!errors.root}
                                             helperText={errors.colaboradorID?.message}
                                             sx={{ bgcolor: 'background.paper' }}
-                                        >
-                                            <MenuItem value={0}>Seleccione</MenuItem>
-                                            {colaboradores.map(c => (
-                                                <MenuItem key={c.id} value={c.id}>{c.text}</MenuItem>
-                                            ))}
-                                        </TextField>
+                                        />
                                     )}
                                 />
                             </Grid>

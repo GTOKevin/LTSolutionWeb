@@ -36,8 +36,6 @@ import { ColaboradorDocumentoForm } from './ColaboradorDocumentoForm';
 import { parseDateOnly, formatDateLong } from '@/shared/utils/date-utils';
 import { ROWS_DOC_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 
-const API_URL = import.meta.env.VITE_IMG_URL_BASE || 'https://localhost:44332';
-
 interface ColaboradorDocumentoListProps {
     colaboradorId: number;
     viewOnly?: boolean;

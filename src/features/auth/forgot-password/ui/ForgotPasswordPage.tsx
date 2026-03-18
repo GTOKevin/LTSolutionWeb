@@ -47,7 +47,7 @@ export function ForgotPasswordPage() {
             onSuccess: (response: any) => {
                 setSuccessMessage(response.message || 'Si el correo existe, se enviará un enlace de recuperación.');
             },
-            onError: (error: any) => {
+            onError: () => {
                 // Generic error message to prevent user enumeration
                 setErrorMessage('Si el correo existe, se enviará un enlace de recuperación.');
             },
