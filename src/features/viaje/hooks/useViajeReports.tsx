@@ -7,7 +7,7 @@ import { ViajeListPdf } from '@features/viaje/reports/ui/ViajeListPdf';
 import { viajeApi } from '@entities/viaje/api/viaje.api';
 import type { ViajeListItem, ViajeFilters as ViajeFiltersType } from '@entities/viaje/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
-import { notifyGenericError } from './mutation-error';
+import { notifyGenericError } from '@/shared/utils/api-errors';
 
 export function useViajeReports() {
     const [loadingMessage, setLoadingMessage] = useState<string | null>(null);

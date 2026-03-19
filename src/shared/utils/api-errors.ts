@@ -4,16 +4,16 @@ import type { ToastAction } from '@/shared/constants/toast.constants';
 import type { ApiError } from '@/shared/api/http';
 import { logger } from '@/shared/utils/logger';
 
-export type ViajeMutationError = AxiosError<ApiError & { message?: string }>;
+export type ApiMutationError = AxiosError<ApiError & { message?: string }>;
 
-export const getErrorMessage = (error: ViajeMutationError) =>
+export const getErrorMessage = (error: ApiMutationError) =>
     error.response?.data?.message || error.response?.data?.detail;
 
 export const notifyMutationError = (
     showToast: ToastContextType['showToast'],
     entity: string,
     action: ToastAction,
-    error: ViajeMutationError,
+    error: ApiMutationError,
     logContext?: string
 ) => {
     const message = getErrorMessage(error);

@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { tipoMaestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { tipoMaestroSchema, type TipoMaestroSchema } from '../model/schema';
 import type { TipoMaestro } from '@entities/tipo-maestro/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
+import { useCreateTipoMaestro, useUpdateTipoMaestro } from './useTipoMaestroCrud';
 
 interface UseTipoMaestroFormProps {
     open: boolean;
     onClose: () => void;
-    onSuccess: (id: number) => void;
+    onSuccess: (id?: number) => void;
     maestroToEdit: TipoMaestro | null;
 }
 
 export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: UseTipoMaestroFormProps) {
-    const queryClient = useQueryClient();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const isEdit = !!maestroToEdit;
@@ -31,6 +31,9 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
     });
 
     const { reset, setError } = form;
+
+    const createMutation = useCreateTipoMaestro();
+    const updateMutation = useUpdateTipoMaestro();
 
     // Fetch secciones for Autocomplete
     const { data: secciones } = useQuery({
@@ -60,31 +63,40 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
         }
     }, [open, maestroToEdit, reset]);
 
-    const mutation = useMutation({
-        mutationFn: async (data: TipoMaestroSchema) => {
-            if (isEdit && maestroToEdit) {
-                await tipoMaestroApi.update(maestroToEdit.tipoMaestroID, data);
-                return maestroToEdit.tipoMaestroID;
-            }
-            const response = await tipoMaestroApi.create(data);
-            return response.data;
-        },
-        onSuccess: (id: number) => {
-            queryClient.invalidateQueries({ queryKey: ['tipo-maestros'] });
-            queryClient.invalidateQueries({ queryKey: ['secciones-maestro'] }); // Invalidate sections as we might have added one
-            onSuccess(id);
-            onClose();
-        },
-        onError: (error: any) => {
-            const genericError = handleBackendErrors<TipoMaestroSchema>(error, setError);
-            if (genericError) {
-                setErrorMessage(genericError);
-            }
-        }
-    });
-
     const onSubmit = (data: TipoMaestroSchema) => {
-        mutation.mutate(data);
+        if (isEdit && maestroToEdit) {
+            updateMutation.mutate(
+                { id: maestroToEdit.tipoMaestroID, data },
+                {
+                    onSuccess: () => {
+                        onSuccess();
+                        onClose();
+                    },
+                    onError: (error: any) => {
+                        const genericError = handleBackendErrors<TipoMaestroSchema>(error, setError);
+                        if (genericError) {
+                            setErrorMessage(genericError);
+                        }
+                    }
+                }
+            );
+        } else {
+            createMutation.mutate(
+                data,
+                {
+                    onSuccess: () => {
+                        onSuccess();
+                        onClose();
+                    },
+                    onError: (error: any) => {
+                        const genericError = handleBackendErrors<TipoMaestroSchema>(error, setError);
+                        if (genericError) {
+                            setErrorMessage(genericError);
+                        }
+                    }
+                }
+            );
+        }
     };
 
     return {
@@ -94,6 +106,6 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
         secciones,
         onSubmit,
         isEdit,
-        isSubmitting: mutation.isPending
+        isSubmitting: createMutation.isPending || updateMutation.isPending
     };
 }

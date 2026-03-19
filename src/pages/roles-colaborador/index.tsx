@@ -3,8 +3,6 @@ import {
     Typography,
     Button,
     useTheme,
-    Snackbar,
-    Alert,
     TextField,
     InputAdornment
 } from '@mui/material';
@@ -29,9 +27,6 @@ export function RolesColaboradorPage() {
     
     const [modalOpen, setModalOpen] = useState(false);
     const [rolToEdit, setRolToEdit] = useState<RolColaborador | null>(null);
-    
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -60,9 +55,7 @@ export function RolesColaboradorPage() {
         setModalOpen(true);
     };
 
-    const handleSuccess = (_: number) => {
-        setSnackbarMessage(rolToEdit ? 'Rol de colaborador actualizado exitosamente.' : 'Rol de colaborador creado exitosamente.');
-        setSnackbarOpen(true);
+    const handleSuccess = () => {
         refetch();
     };
 
@@ -183,17 +176,6 @@ export function RolesColaboradorPage() {
                 rolToEdit={rolToEdit}
                 onSuccess={handleSuccess}
             />
-
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={() => setSnackbarOpen(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
             </Box>
         </Box>
     );

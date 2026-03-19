@@ -26,6 +26,7 @@ import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { useCreateViajeGuia, useUpdateViajeGuia } from '@/features/viaje/hooks/useViajeGuias';
 import { viajeGuiaSchema, type ViajeGuiaFormData } from '../../model/schema';
 import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
+import { handleBackendErrors } from '@/shared/utils/form-validation';
 
 interface Props {
     viajeId: number;
@@ -42,7 +43,7 @@ export function ViajeGuiaCreateEdit({ viajeId, tiposGuia, guia, onCancel }: Prop
     const isEditing = !!guia;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, handleSubmit, reset, formState: { errors } } = useForm<ViajeGuiaFormData>({
+    const { control, handleSubmit, reset, setError, formState: { errors } } = useForm<ViajeGuiaFormData>({
         resolver: zodResolver(viajeGuiaSchema),
         defaultValues: {
             tipoGuiaID: 0,
@@ -100,6 +101,7 @@ export function ViajeGuiaCreateEdit({ viajeId, tiposGuia, guia, onCancel }: Prop
             if (onCancel) onCancel();
         } catch (error) {
             logger.error("Error saving guia:", error);
+            handleBackendErrors<ViajeGuiaFormData>(error, setError);
         }
     };
 

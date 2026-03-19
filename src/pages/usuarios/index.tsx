@@ -3,8 +3,6 @@ import {
     Typography,
     Button,
     useTheme,
-    Snackbar,
-    Alert,
     Grid
 } from '@mui/material';
 import {
@@ -14,7 +12,7 @@ import {
     Block as BlockIcon,
     RemoveCircle as RemoveCircleIcon
 } from '@mui/icons-material';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { usuarioApi } from '@entities/usuario/api/usuario.api';
 import { rolUsuarioApi } from '@entities/rol-usuario/api/rol-usuario.api';
 import { estadoApi } from '@shared/api/estado.api';
@@ -27,6 +25,7 @@ import { UsuarioTable } from '../../features/usuario/list/ui/UsuarioTable';
 import { UsuarioMobileList } from '../../features/usuario/list/ui/UsuarioMobileList';
 import { UsuarioFilter } from '@/features/usuario/list/ui/UsuarioFilter';
 import { ESTADO_SECCIONES } from '@/shared/constants/constantes';
+import { useDeleteUsuario } from '@/features/usuario/hooks/useUsuarioCrud';
 
 import { StatsCard } from '@/shared/components/ui/StatsCard';
 
@@ -47,8 +46,6 @@ export function UsuariosPage() {
     const [usuarioToDelete, setUsuarioToDelete] = useState<Usuario | null>(null);
     const [changePasswordOpen, setChangePasswordOpen] = useState(false);
     const [usuarioToChangePassword, setUsuarioToChangePassword] = useState<Usuario | null>(null);
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
 
     const [viewOnlyMode, setViewOnlyMode] = useState(false);
 
@@ -81,22 +78,7 @@ export function UsuariosPage() {
         queryFn: () => estadoApi.getSelect(undefined, 20, ESTADO_SECCIONES.USUARIO)
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => usuarioApi.delete(id),
-        onSuccess: () => {
-            setDeleteConfirmOpen(false);
-            setUsuarioToDelete(null);
-            setSnackbarMessage(`Usuario ${usuarioToDelete?.nombre} eliminado.`);
-            setSnackbarOpen(true);
-            refetch();
-        },
-        onError: () => {
-             setDeleteConfirmOpen(false);
-             setUsuarioToDelete(null);
-             setSnackbarMessage('Error al eliminar usuario.');
-             setSnackbarOpen(true);
-        }
-    });
+    const deleteMutation = useDeleteUsuario();
 
     const handleApplyFilters = () => {
         setRoleFilter(draftRoleFilter);
@@ -133,7 +115,16 @@ export function UsuariosPage() {
 
     const handleConfirmDelete = () => {
         if (usuarioToDelete) {
-            deleteMutation.mutate(usuarioToDelete.usuarioID);
+            deleteMutation.mutate(usuarioToDelete.usuarioID, {
+                onSuccess: () => {
+                    setDeleteConfirmOpen(false);
+                    setUsuarioToDelete(null);
+                },
+                onError: () => {
+                    setDeleteConfirmOpen(false);
+                    setUsuarioToDelete(null);
+                }
+            });
         }
     };
 
@@ -143,8 +134,8 @@ export function UsuariosPage() {
     };
 
     const handlePasswordSuccess = () => {
-        setSnackbarMessage('Contraseña actualizada exitosamente.');
-        setSnackbarOpen(true);
+        // ChangePassword uses its own API call and notification, no need to do anything here except maybe close
+        setChangePasswordOpen(false);
     };
 
     const handleCloseModal = () => {
@@ -153,9 +144,7 @@ export function UsuariosPage() {
         setViewOnlyMode(false);
     };
 
-    const handleSuccess = (_: number) => {
-        setSnackbarMessage(usuarioToEdit ? 'Usuario actualizado exitosamente.' : 'Usuario creado exitosamente.');
-        setSnackbarOpen(true);
+    const handleSuccess = () => {
         refetch();
     };
 
@@ -333,17 +322,6 @@ export function UsuariosPage() {
                 confirmText="Eliminar"
                 isLoading={deleteMutation.isPending}
             />
-
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={() => setSnackbarOpen(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 }

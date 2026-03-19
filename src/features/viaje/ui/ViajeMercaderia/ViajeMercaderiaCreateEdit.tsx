@@ -21,6 +21,7 @@ import { viajeMercaderiaSchema, type ViajeMercaderiaFormData } from '../../model
 import { handleAddressKeyDown } from '@/shared/utils/input-validators';
 import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
+import { handleBackendErrors } from '@/shared/utils/form-validation';
 
 interface Props {
     viajeId: number;
@@ -41,7 +42,7 @@ export function ViajeMercaderiaCreateEdit({
     const isEditing = !!editItem;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajeMercaderiaFormData>({
+    const { control, handleSubmit, reset, setValue, setError, formState: { errors } } = useForm<ViajeMercaderiaFormData>({
         resolver: zodResolver(viajeMercaderiaSchema),
         defaultValues: {
             mercaderiaID: 0, 
@@ -116,6 +117,7 @@ export function ViajeMercaderiaCreateEdit({
             });
         } catch (error) {
             logger.error("Error saving mercaderia:", error);
+            handleBackendErrors<ViajeMercaderiaFormData>(error, setError);
         }
     };
 

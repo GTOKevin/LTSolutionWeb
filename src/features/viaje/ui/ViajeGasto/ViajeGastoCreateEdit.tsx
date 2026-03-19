@@ -16,6 +16,7 @@ import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
 import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
+import { handleBackendErrors } from '@/shared/utils/form-validation';
 import { MONEDA_ID } from '@/shared/constants/constantes';
 
 interface Props {
@@ -34,7 +35,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
     const isEditing = !!gasto;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ViajeGastoFormData>({
+    const { control, register, handleSubmit, reset, watch, setValue, setError, formState: { errors } } = useForm<ViajeGastoFormData>({
         resolver: zodResolver(viajeGastoSchema),
         defaultValues: {
             gastoID: 0,
@@ -140,6 +141,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
             if (onCancel) onCancel();
         } catch (error) {
             logger.error("Error saving gasto:", error);
+            handleBackendErrors<ViajeGastoFormData>(error, setError);
         }
     };
 

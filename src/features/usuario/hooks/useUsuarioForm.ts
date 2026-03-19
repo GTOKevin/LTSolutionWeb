@@ -1,7 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { usuarioApi } from '@entities/usuario/api/usuario.api';
+import { useQuery } from '@tanstack/react-query';
 import { rolUsuarioApi } from '@entities/rol-usuario/api/rol-usuario.api';
 import { estadoApi } from '@shared/api/estado.api';
 import { colaboradorApi } from '@entities/colaborador/api/colaborador.api';
@@ -9,16 +8,16 @@ import { createUsuarioSchemaFull, editUsuarioSchemaFull, type CreateUsuarioSchem
 import { useEffect, useState } from 'react';
 import type { Usuario, CreateUsuarioDto } from '@entities/usuario/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
+import { useCreateUsuario, useUpdateUsuario } from './useUsuarioCrud';
 
 interface UseUsuarioFormProps {
     usuarioToEdit?: Usuario | null;
-    onSuccess: (id: number) => void;
+    onSuccess: (id?: number) => void;
     onClose: () => void;
     open: boolean;
 }
 
 export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseUsuarioFormProps) {
-    const queryClient = useQueryClient();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
@@ -63,6 +62,9 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
 
     const { reset, setError, setValue } = form;
 
+    const createMutation = useCreateUsuario();
+    const updateMutation = useUpdateUsuario();
+
     // --- Effects ---
     useEffect(() => {
         if (open) {
@@ -92,48 +94,56 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
         }
     }, [open, usuarioToEdit, reset]);
 
-    // --- Mutations ---
-    const mutation = useMutation({
-        mutationFn: async (data: UsuarioFormSchema) => {
-            const commonData = {
-                nombre: data.nombre,
-                email: data.email,
-                rolUsuarioID: data.rolUsuarioID,
-                estadoID: data.estadoID,
-                colaboradorID: data.colaboradorID || undefined
-            };
+    const onSubmit = (data: UsuarioFormSchema) => {
+        const commonData = {
+            nombre: data.nombre,
+            email: data.email,
+            rolUsuarioID: data.rolUsuarioID,
+            estadoID: data.estadoID,
+            colaboradorID: data.colaboradorID || undefined
+        };
 
-            if (isEdit && usuarioToEdit) {
-                const updateData: CreateUsuarioDto = {
-                    ...commonData,
-                    clave: data.clave || '' 
-                };
-                await usuarioApi.update(usuarioToEdit.usuarioID, updateData);
-                return usuarioToEdit.usuarioID;
-            }
-            
+        if (isEdit && usuarioToEdit) {
+            const updateData: CreateUsuarioDto = {
+                ...commonData,
+                clave: data.clave || '' 
+            };
+            updateMutation.mutate(
+                { id: usuarioToEdit.usuarioID, data: updateData },
+                {
+                    onSuccess: () => {
+                        onSuccess();
+                        onClose();
+                    },
+                    onError: (error: unknown) => {
+                        const genericError = handleBackendErrors<CreateUsuarioSchema>(error, setError);
+                        if (genericError) {
+                            setErrorMessage(genericError);
+                        }
+                    }
+                }
+            );
+        } else {
             const createData: CreateUsuarioDto = {
                 ...commonData,
                 clave: data.clave!
             };
-            const response = await usuarioApi.create(createData);
-            return response;
-        },
-        onSuccess: (id) => {
-            queryClient.invalidateQueries({ queryKey: ['usuarios'] });
-            onSuccess(id);
-            onClose();
-        },
-        onError: (error: unknown) => {
-            const genericError = handleBackendErrors<CreateUsuarioSchema>(error, setError);
-            if (genericError) {
-                setErrorMessage(genericError);
-            }
+            createMutation.mutate(
+                createData,
+                {
+                    onSuccess: () => {
+                        onSuccess();
+                        onClose();
+                    },
+                    onError: (error: unknown) => {
+                        const genericError = handleBackendErrors<CreateUsuarioSchema>(error, setError);
+                        if (genericError) {
+                            setErrorMessage(genericError);
+                        }
+                    }
+                }
+            );
         }
-    });
-
-    const onSubmit = (data: UsuarioFormSchema) => {
-        mutation.mutate(data);
     };
 
     // --- Helpers ---
@@ -159,7 +169,7 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
 
     return {
         form,
-        mutation,
+        isSubmitting: createMutation.isPending || updateMutation.isPending,
         onSubmit,
         activeTab,
         setActiveTab,

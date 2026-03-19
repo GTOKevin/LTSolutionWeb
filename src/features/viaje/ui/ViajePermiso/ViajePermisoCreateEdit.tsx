@@ -16,6 +16,7 @@ import { viajePermisoSchema, type ViajePermisoFormData } from '../../model/schem
 import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
 import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
+import { handleBackendErrors } from '@/shared/utils/form-validation';
 
 interface Props {
     viajeId: number;
@@ -31,7 +32,7 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
     const isEditing = !!permiso;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, handleSubmit, reset, formState: { errors } } = useForm<ViajePermisoFormData>({
+    const { control, handleSubmit, reset, setError, formState: { errors } } = useForm<ViajePermisoFormData>({
         resolver: zodResolver(viajePermisoSchema),
         defaultValues: {
             fechaVigencia: getCurrentDateISO(),
@@ -85,6 +86,7 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
             if (onCancel) onCancel();
         } catch (error) {
             logger.error("Error saving permiso:", error);
+            handleBackendErrors<ViajePermisoFormData>(error, setError);
         }
     };
 

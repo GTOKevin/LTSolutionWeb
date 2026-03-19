@@ -30,7 +30,7 @@ interface CreateEditUsuarioModalProps {
     open: boolean;
     onClose: () => void;
     usuarioToEdit?: Usuario | null;
-    onSuccess: (id: number) => void;
+    onSuccess: (id?: number) => void;
     viewOnly?: boolean;
 }
 
@@ -42,8 +42,9 @@ export function CreateEditUsuarioModal({ open, onClose, usuarioToEdit, onSuccess
             register,
             handleSubmit,
             control,
-            formState: { errors, isSubmitting }
+            formState: { errors }
         },
+        isSubmitting,
         onSubmit,
         activeTab,
         setActiveTab,
