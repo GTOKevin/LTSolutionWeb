@@ -1,9 +1,8 @@
-import { Box, Alert } from '@mui/material';
 import { useState } from 'react';
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeMercaderia as ViajeMercaderiaType } from '@/entities/viaje/model/types';
-import { ViajeMercaderiaCreateEdit } from './ViajeMercaderiaCreateEdit';
-import { ViajeMercaderiaList } from './ViajeMercaderiaList';
+import { ViajeMercaderiaCreateEdit,ViajeMercaderiaList } from './Index';
+import { ViajeSubmoduleContainer } from '../ViajeSubmoduleContainer';
 
 interface Props {
     viajeId: number;
@@ -24,17 +23,12 @@ export function ViajeMercaderia({ viajeId, viewOnly, tiposMedida, tiposPeso, mer
         setEditItem(null);
     };
 
-    if (!viajeId && !viewOnly) {
-        return (
-            <Alert severity="info" sx={{ mt: 2 }}>
-                Debe guardar el viaje (información general) antes de registrar mercadería.
-            </Alert>
-        );
-    }
-
     return (
-        <Box>
-            {!viewOnly && (
+        <ViajeSubmoduleContainer
+            viajeId={viajeId}
+            viewOnly={viewOnly}
+            entityName="mercadería"
+            renderForm={() => (
                 <ViajeMercaderiaCreateEdit 
                     viajeId={viajeId} 
                     tiposMedida={tiposMedida}
@@ -44,15 +38,16 @@ export function ViajeMercaderia({ viajeId, viewOnly, tiposMedida, tiposPeso, mer
                     editItem={editItem}
                 />
             )}
-
-            <ViajeMercaderiaList 
-                viajeId={viajeId} 
-                viewOnly={viewOnly} 
-                tiposMedida={tiposMedida}
-                tiposPeso={tiposPeso}
-                mercaderias={mercaderias}
-                onEdit={handleEdit}
-            />
-        </Box>
+            renderList={() => (
+                <ViajeMercaderiaList 
+                    viajeId={viajeId} 
+                    viewOnly={viewOnly} 
+                    tiposMedida={tiposMedida}
+                    tiposPeso={tiposPeso}
+                    mercaderias={mercaderias}
+                    onEdit={handleEdit}
+                />
+            )}
+        />
     );
 }

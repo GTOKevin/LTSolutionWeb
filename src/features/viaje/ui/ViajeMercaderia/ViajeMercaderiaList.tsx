@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { 
     Box, 
     Typography, 
@@ -14,7 +15,7 @@ import { useViajeMercaderias, useDeleteViajeMercaderia } from '@/features/viaje/
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
 
-import { ViajeMercaderiaMobileList } from './ViajeMercaderiaMobileList';
+import { ViajeMercaderiaMobileList } from './Index';
 
 interface Props {
     viajeId: number;
@@ -51,7 +52,7 @@ export function ViajeMercaderiaList({ viajeId, viewOnly, tiposMedida, tiposPeso,
         try {
             await deleteMutation.mutateAsync({ id, viajeId });
         } catch (error) {
-            console.error("Error deleting mercaderia:", error);
+            logger.error("Error deleting mercaderia:", error);
         }
     };
 
@@ -198,9 +199,9 @@ export function ViajeMercaderiaList({ viajeId, viewOnly, tiposMedida, tiposPeso,
                     >
                         <Box display="flex" flexDirection="column">
                             <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', lineHeight: 1, mb: 0.5 }}>
-                                Dimensiones Carga (L x A x A)
+                                Dimensiones Carga (Largo x Ancho x Alto)
                             </Typography>
-                            <Typography variant="body1" fontWeight="bold">
+                            <Typography textAlign="center" variant="body1" fontWeight="bold">
                                 {totalLargo} x {maxAncho} x {maxAlto}
                             </Typography>
                         </Box>

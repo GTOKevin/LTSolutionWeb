@@ -1,5 +1,6 @@
+import { logger } from '@/shared/utils/logger';
 import { 
-    Box, Button, Typography, Paper, TextField, Grid, MenuItem,
+    Box, Button, Typography, Paper, TextField, Grid,
     useTheme, alpha, InputAdornment, CircularProgress
 } from '@mui/material';
 import { 
@@ -8,10 +9,7 @@ import {
     Close as CloseIcon,
     Straighten, 
     MonitorWeight, 
-    Search as SearchIcon,
-    AddCircle as AddCircleIcon,
-    Edit as EditIcon,
-    Cancel as CancelIcon
+    Search as SearchIcon
 } from '@mui/icons-material';
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -21,6 +19,8 @@ import type { SelectItem } from '@/shared/model/types';
 import { useCreateViajeMercaderia, useUpdateViajeMercaderia } from '@/features/viaje/hooks/useViajeMercaderias';
 import { viajeMercaderiaSchema, type ViajeMercaderiaFormData } from '../../model/schema';
 import { handleAddressKeyDown } from '@/shared/utils/input-validators';
+import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
+import { FormSelect } from '@/shared/components/ui/FormSelect';
 
 interface Props {
     viajeId: number;
@@ -115,7 +115,7 @@ export function ViajeMercaderiaCreateEdit({
                 peso: 0
             });
         } catch (error) {
-            console.error("Error saving mercaderia:", error);
+            logger.error("Error saving mercaderia:", error);
         }
     };
 
@@ -131,32 +131,12 @@ export function ViajeMercaderiaCreateEdit({
                 bgcolor: alpha(editItem ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
             }}
         >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ 
-                        p: 0.5, 
-                        borderRadius: '50%', 
-                        bgcolor: editItem ? theme.palette.warning.main : theme.palette.primary.main,
-                        color: 'white',
-                        display: 'flex'
-                    }}>
-                        {editItem ? <EditIcon fontSize="small" /> : <AddCircleIcon fontSize="small" />}
-                    </Box>
-                    <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
-                        {editItem ? "Editar Mercadería" : "Agregar Mercadería"}
-                    </Typography>
-                </Box>
-                {editItem && (
-                    <Button 
-                        size="small" 
-                        color="inherit" 
-                        onClick={onCancelEdit}
-                        startIcon={<CancelIcon />}
-                    >
-                        Cancelar Edición
-                    </Button>
-                )}
-            </Box>
+            <SubFormHeader 
+                isEditing={isEditing}
+                titleAdd="Agregar Mercadería"
+                titleEdit="Editar Mercadería"
+                onCancel={onCancelEdit}
+            />
 
             <Grid container spacing={2}>
                 {/* Fila 1: Producto, Descripción */}
@@ -168,11 +148,10 @@ export function ViajeMercaderiaCreateEdit({
                         name="mercaderiaID"
                         control={control}
                         render={({ field }) => (
-                            <TextField
-                                {...field}
-                                select
-                                fullWidth
-                                size="small"
+                            <FormSelect
+                                label=""
+                                options={mercaderias}
+                                value={field.value}
                                 onChange={(e) => {
                                     const id = Number(e.target.value);
                                     field.onChange(id);
@@ -190,12 +169,7 @@ export function ViajeMercaderiaCreateEdit({
                                 }}
                                 error={!!errors.mercaderiaID}
                                 helperText={errors.mercaderiaID?.message}
-                            >
-                                <MenuItem value={0} disabled sx={{ color: 'text.secondary' }}>Seleccionar producto...</MenuItem>
-                                {mercaderias.map(m => (
-                                    <MenuItem key={m.id} value={m.id}>{m.text}</MenuItem>
-                                ))}
-                            </TextField>
+                            />
                         )}
                     />
                 </Grid>
@@ -285,18 +259,14 @@ export function ViajeMercaderiaCreateEdit({
                                     name="tipoMedidaID"
                                     control={control}
                                     render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            select
-                                            fullWidth
-                                            size="small"
+                                        <FormSelect
+                                            label=""
+                                            options={tiposMedida}
+                                            value={field.value}
+                                            onChange={(e) => field.onChange(Number(e.target.value))}
                                             variant="standard"
                                             error={!!errors.tipoMedidaID}
-                                        >
-                                            {tiposMedida.map(t => (
-                                                <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
-                                            ))}
-                                        </TextField>
+                                        />
                                     )}
                                 />
                             </Box>
@@ -337,18 +307,14 @@ export function ViajeMercaderiaCreateEdit({
                                     name="tipoPesoID"
                                     control={control}
                                     render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            select
-                                            fullWidth
-                                            size="small"
+                                        <FormSelect
+                                            label=""
+                                            options={tiposPeso}
+                                            value={field.value}
+                                            onChange={(e) => field.onChange(Number(e.target.value))}
                                             variant="standard"
                                             error={!!errors.tipoPesoID}
-                                        >
-                                            {tiposPeso.map(t => (
-                                                <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
-                                            ))}
-                                        </TextField>
+                                        />
                                     )}
                                 />
                             </Box>

@@ -1,6 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { viajeIncidenteApi } from '@/entities/viaje/api/viaje-incidente.api';
 import type { CreateViajeIncidenteDto, PagedViajeIncidentes } from '@/entities/viaje/model/types';
+import { VIAJE_QUERY_KEYS } from '../model/query-keys';
+import { createViajeSubresourceHooks } from './useViajeSubresourceCrud';
 
 const EMPTY_PAGED_INCIDENTES: PagedViajeIncidentes = {
     items: [],
@@ -12,44 +14,18 @@ const EMPTY_PAGED_INCIDENTES: PagedViajeIncidentes = {
 
 export const useViajeIncidentes = (viajeId?: number, page = 1, size = 5) => {
     return useQuery({
-        queryKey: ['viaje-incidentes', viajeId, page, size],
+        queryKey: VIAJE_QUERY_KEYS.incidentes(viajeId ?? 0, page, size),
         queryFn: () => viajeId ? viajeIncidenteApi.getByViaje(viajeId, { page, size }) : Promise.resolve(EMPTY_PAGED_INCIDENTES),
         enabled: !!viajeId
     });
 };
 
-export const useCreateViajeIncidente = () => {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ({ viajeId, data }: { viajeId: number; data: CreateViajeIncidenteDto }) => 
-            viajeIncidenteApi.create(viajeId, data),
-        onSuccess: (_, { viajeId }) => {
-            queryClient.invalidateQueries({ queryKey: ['viaje-incidentes', viajeId] });
-        }
-    });
-};
-
-export const useUpdateViajeIncidente = () => {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ({ id, data, viajeId }: { id: number; data: CreateViajeIncidenteDto; viajeId: number }) => 
-            viajeIncidenteApi.update(id, data),
-        onSuccess: (_, { viajeId }) => {
-            queryClient.invalidateQueries({ queryKey: ['viaje-incidentes', viajeId] });
-        }
-    });
-};
-
-export const useDeleteViajeIncidente = () => {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ({ id }: { id: number; viajeId: number }) => 
-            viajeIncidenteApi.delete(id),
-        onSuccess: (_, { viajeId }) => {
-            queryClient.invalidateQueries({ queryKey: ['viaje-incidentes', viajeId] });
-        }
-    });
-};
+export const {
+    useCreate: useCreateViajeIncidente,
+    useUpdate: useUpdateViajeIncidente,
+    useDelete: useDeleteViajeIncidente
+} = createViajeSubresourceHooks<CreateViajeIncidenteDto>(
+    viajeIncidenteApi,
+    'Incidente',
+    VIAJE_QUERY_KEYS.incidentes
+);

@@ -27,7 +27,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginFormData } from '../model/schema';
 import { useLogin } from '../api/use-login';
 import { useThemeStore } from '@shared/store/theme.store';
-import type { ApiError } from '@shared/api/http';
 
 export function LoginForm() {
     const theme = useTheme();

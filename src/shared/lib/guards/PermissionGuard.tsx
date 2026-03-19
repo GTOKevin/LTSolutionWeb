@@ -1,4 +1,3 @@
-import { Navigate, useLocation } from 'react-router-dom';
 import { usePermission } from '../hooks/usePermission';
 import { Box, Typography, Button } from '@mui/material';
 
@@ -10,7 +9,6 @@ interface PermissionGuardProps {
 
 export function PermissionGuard({ permission, children, fallback }: PermissionGuardProps) {
     const hasPermission = usePermission(permission);
-    const location = useLocation();
 
     if (!hasPermission) {
         if (fallback) return <>{fallback}</>;

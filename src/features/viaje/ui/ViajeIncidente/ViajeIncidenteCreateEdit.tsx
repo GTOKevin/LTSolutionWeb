@@ -1,14 +1,13 @@
+import { logger } from '@/shared/utils/logger';
 import { 
-    Box, Button, Typography, TextField, MenuItem, Grid,
+    Box, Button, Typography, TextField, Grid,
     useTheme, CircularProgress,
     Paper,
     alpha
 } from '@mui/material';
 import { 
     ReportProblem as ReportProblemIcon,
-    Save as SaveIcon,
-    Edit as EditIcon,
-    Cancel as CancelIcon
+    Save as SaveIcon
 } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -20,6 +19,8 @@ import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { useCreateViajeIncidente, useUpdateViajeIncidente } from '@/features/viaje/hooks/useViajeIncidentes';
 import { viajeIncidenteSchema, type ViajeIncidenteFormData } from '../../model/schema';
 import { getCurrentDateISO, getCurrentTimeISO, toInputDate, toInputTime, combineDateTime } from '@/shared/utils/date-utils';
+import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
+import { FormSelect } from '@/shared/components/ui/FormSelect';
 
 interface Props {
     viajeId: number;
@@ -90,7 +91,7 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
                 }
             }
         } catch (e) {
-            console.error("Invalid date/time format");
+            logger.error("Invalid date/time format");
         }
     }, [date, time, setValue]);
 
@@ -123,7 +124,7 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
             
             if (onCancel) onCancel();
         } catch (error) {
-            console.error("Error saving incidente:", error);
+            logger.error("Error saving incidente:", error);
         }
     };
 
@@ -137,32 +138,13 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
                 bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
             }}
         >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ 
-                        bgcolor: isEditing ? theme.palette.warning.main : theme.palette.primary.main,
-                        color: 'white',
-                        p: 0.5,
-                        borderRadius: '50%',
-                        display: 'flex'
-                    }}>
-                        {isEditing ? <EditIcon fontSize="small" /> : <ReportProblemIcon fontSize="small" />}
-                    </Box>
-                    <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
-                        {isEditing ? "Editar Incidente" : "Agregar Incidente"}
-                    </Typography>
-                </Box>
-                {isEditing && (
-                    <Button 
-                        size="small" 
-                        color="inherit" 
-                        onClick={onCancel}
-                        startIcon={<CancelIcon />}
-                    >
-                        Cancelar Edición
-                    </Button>
-                )}
-            </Box>
+            <SubFormHeader 
+                isEditing={isEditing}
+                titleAdd="Agregar Incidente"
+                titleEdit="Editar Incidente"
+                onCancel={onCancel}
+                iconAdd={<ReportProblemIcon fontSize="small" />}
+            />
 
             <Grid container spacing={2}>
                 <Grid size={{xs:12, md:8}}>
@@ -172,20 +154,14 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
                                 name="tipoIncidenteID"
                                 control={control}
                                 render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        select
+                                    <FormSelect
                                         label="Tipo Incidente"
-                                        fullWidth
-                                        size="small"
+                                        options={tiposIncidente}
+                                        value={field.value}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
                                         error={!!errors.tipoIncidenteID}
                                         helperText={errors.tipoIncidenteID?.message}
-                                    >
-                                        <MenuItem value={0} disabled>Seleccione...</MenuItem>
-                                        {tiposIncidente.map(tipo => (
-                                            <MenuItem key={tipo.id} value={tipo.id}>{tipo.text}</MenuItem>
-                                        ))}
-                                    </TextField>
+                                    />
                                 )}
                             />
                         </Grid>

@@ -3,21 +3,16 @@ import {
     Typography,
     Button,
     useTheme,
-    alpha,
     Snackbar,
     Alert,
-    Grid,
-    Card,
-    CardContent
+    Grid
 } from '@mui/material';
 import {
     Add as AddIcon,
     Group as GroupIcon,
     CheckCircle as CheckCircleIcon,
     Block as BlockIcon,
-    RemoveCircle as RemoveCircleIcon,
-    TrendingUp as TrendingUpIcon,
-    TrendingDown as TrendingDownIcon
+    RemoveCircle as RemoveCircleIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { usuarioApi } from '@entities/usuario/api/usuario.api';

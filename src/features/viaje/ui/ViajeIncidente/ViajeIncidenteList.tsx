@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { 
     Box, 
     Typography, 
@@ -26,7 +27,8 @@ import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
 import { formatDate, formatTime } from '@/shared/utils/date-utils';
-import { ViajeIncidenteMobileList } from './ViajeIncidenteMobileList';
+import { buildInternalFileUrl } from '@/shared/config/env';
+import { ViajeIncidenteMobileList } from './Index';
 
 interface Props {
     viajeId: number;
@@ -34,8 +36,6 @@ interface Props {
     tiposIncidente: SelectItem[];
     onEdit?: (item: ViajeIncidente) => void;
 }
-
-const API_URL = import.meta.env.VITE_IMG_URL_BASE || 'https://localhost:44332';
 
 export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }: Props) {
     const theme = useTheme();
@@ -66,19 +66,13 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
         try {
             await deleteMutation.mutateAsync({ id, viajeId });
         } catch (error) {
-            console.error("Error deleting incidente:", error);
+            logger.error("Error deleting incidente:", error);
         }
     };
 
-    const getFullUrl = (path: string) => {
-        if (!path) return '';
-        if (path.startsWith('http')) return path;
-        const baseUrl = API_URL.replace(/\/api\/?$/, '');
-        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-    };
-
     const handlePreview = (path: string) => {
-        setPreviewUrl(getFullUrl(path));
+        const fullUrl = buildInternalFileUrl(path);
+        setPreviewUrl(fullUrl || null);
     };
 
     const handleClosePreview = () => {
@@ -86,21 +80,25 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
     };
 
     const handleExportPdf = async () => {
+        let objectUrl: string | null = null;
         try {
             setIsExportingPdf(true);
             const reportData = await viajeIncidenteApi.getReportData(viajeId);
             const blob = await pdf(<ViajeIncidentePdf data={reportData} />).toBlob();
             
-            const url = window.URL.createObjectURL(blob);
+            objectUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.href = url;
+            link.href = objectUrl;
             link.setAttribute('download', `Incidentes_Viaje_${viajeId}.pdf`);
             document.body.appendChild(link);
             link.click();
             link.remove();
         } catch (error) {
-            console.error("Error exporting PDF:", error);
+            logger.error("Error exporting PDF:", error);
         } finally {
+            if (objectUrl) {
+                window.URL.revokeObjectURL(objectUrl);
+            }
             setIsExportingPdf(false);
         }
     };

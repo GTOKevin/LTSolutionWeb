@@ -9,8 +9,7 @@ import {
     useTheme,
     alpha,
     Collapse,
-    Grid,
-    useMediaQuery
+    Grid
 } from '@mui/material';
 import { 
     FilterList,
@@ -42,7 +41,7 @@ export function ViajesFilters({ onSearch }: Props) {
         estadoID: 0
     });
 
-    const handleChange = (field: keyof ViajeFilters, value: any) => {
+    const handleChange = <K extends keyof ViajeFilters>(field: K, value: ViajeFilters[K]) => {
         setFilters(prev => ({ ...prev, [field]: value }));
     };
 

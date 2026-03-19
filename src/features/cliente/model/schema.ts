@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ALPHA_ESPECIAL_ERROR_MSG, ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
+import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
 
 export const createClienteSchema = z.object({
     ruc: z.string().min(11, 'RUC debe tener 11 dígitos').max(11, 'RUC debe tener 11 dígitos'),

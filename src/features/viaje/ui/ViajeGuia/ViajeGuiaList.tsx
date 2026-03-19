@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { 
     Box, 
     IconButton, 
@@ -22,8 +23,9 @@ import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDia
 import { useViajeGuias, useDeleteViajeGuia } from '@/features/viaje/hooks/useViajeGuias';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
+import { buildInternalFileUrl } from '@/shared/config/env';
 
-import { ViajeGuiaMobileList } from './ViajeGuiaMobileList';
+import { ViajeGuiaMobileList } from './Index';
 
 interface Props {
     viajeId: number;
@@ -31,8 +33,6 @@ interface Props {
     tiposGuia: SelectItem[];
     onEdit?: (item: ViajeGuia) => void;
 }
-
-const API_URL = import.meta.env.VITE_IMG_URL_BASE || 'https://localhost:44332';
 
 export function ViajeGuiaList({ viajeId, viewOnly, tiposGuia, onEdit }: Props) {
     const theme = useTheme();
@@ -57,24 +57,18 @@ export function ViajeGuiaList({ viajeId, viewOnly, tiposGuia, onEdit }: Props) {
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-    const getFullUrl = (path: string) => {
-        if (!path) return '';
-        if (path.startsWith('http')) return path;
-        const baseUrl = API_URL.replace(/\/api\/?$/, '');
-        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-    };
-
     const handleDelete = async (id: number) => {
         if (!viajeId) return;
         try {
             await deleteMutation.mutateAsync({ id, viajeId });
         } catch (error) {
-            console.error("Error deleting guia:", error);
+            logger.error("Error deleting guia:", error);
         }
     };
 
     const handlePreview = (path: string) => {
-        setPreviewUrl(getFullUrl(path));
+        const fullUrl = buildInternalFileUrl(path);
+        setPreviewUrl(fullUrl || null);
     };
 
     const handleClosePreview = () => {
