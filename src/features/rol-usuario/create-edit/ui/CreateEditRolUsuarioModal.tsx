@@ -17,24 +17,22 @@ import {
 import { Close as CloseIcon } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { rolUsuarioApi } from '@entities/rol-usuario/api/rol-usuario.api';
 import { rolUsuarioSchema, type RolUsuarioSchema } from '../../model/schema';
 import { useEffect, useState } from 'react';
 import type { RolUsuario } from '@entities/rol-usuario/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { handleLettersOnlyKeyDown } from '@shared/utils/input-validators';
+import { useCreateRolUsuario, useUpdateRolUsuario } from '../../hooks/useRolUsuarioCrud';
 
 interface CreateEditRolUsuarioModalProps {
     open: boolean;
     onClose: () => void;
     rolToEdit?: RolUsuario | null;
-    onSuccess: (id: number) => void;
+    onSuccess: (id?: number) => void;
 }
 
 export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess }: CreateEditRolUsuarioModalProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     
     const isEdit = !!rolToEdit;
@@ -45,7 +43,7 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
         reset,
         setError,
         control,
-        formState: { errors, isSubmitting }
+        formState: { errors }
     } = useForm({
         resolver: zodResolver(rolUsuarioSchema),
         defaultValues: {
@@ -54,6 +52,9 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
             estado: true
         }
     });
+
+    const createMutation = useCreateRolUsuario();
+    const updateMutation = useUpdateRolUsuario();
 
     useEffect(() => {
         if (open) {
@@ -74,36 +75,51 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
         }
     }, [open, rolToEdit, reset]);
 
-    const mutation = useMutation({
-        mutationFn:async (data: RolUsuarioSchema) => {
-            if (isEdit && rolToEdit) {
-                await rolUsuarioApi.update(rolToEdit.rolUsuarioID, data);
-                return rolToEdit.rolUsuarioID;
-            }
-            const response= await rolUsuarioApi.create(data);
-            return response.data;
-        },
-        onSuccess: (id:number) => {
-            queryClient.invalidateQueries({ queryKey: ['roles-usuario'] });
-            onSuccess(id);
-            onClose();
-        },
-        onError: (error: any) => {
-            if (error?.response?.status === 409) {
-                // Assuming backend sends a specific message or we default to a friendly one
-                setErrorMessage('El nombre del rol ya se encuentra registrado.');
-            } else {
-                const genericError = handleBackendErrors<RolUsuarioSchema>(error, setError);
-                if (genericError) {
-                    setErrorMessage(genericError);
-                }
-            }
-        }
-    });
-
     const onSubmit = (data: RolUsuarioSchema) => {
-        mutation.mutate(data);
+        if (isEdit && rolToEdit) {
+            updateMutation.mutate(
+                { id: rolToEdit.rolUsuarioID, data },
+                {
+                    onSuccess: () => {
+                        onSuccess();
+                        onClose();
+                    },
+                    onError: (error: any) => {
+                        if (error?.response?.status === 409) {
+                            setErrorMessage('El nombre del rol ya se encuentra registrado.');
+                        } else {
+                            const genericError = handleBackendErrors<RolUsuarioSchema>(error, setError);
+                            if (genericError) {
+                                setErrorMessage(genericError);
+                            }
+                        }
+                    }
+                }
+            );
+        } else {
+            createMutation.mutate(
+                data,
+                {
+                    onSuccess: () => {
+                        onSuccess();
+                        onClose();
+                    },
+                    onError: (error: any) => {
+                        if (error?.response?.status === 409) {
+                            setErrorMessage('El nombre del rol ya se encuentra registrado.');
+                        } else {
+                            const genericError = handleBackendErrors<RolUsuarioSchema>(error, setError);
+                            if (genericError) {
+                                setErrorMessage(genericError);
+                            }
+                        }
+                    }
+                }
+            );
+        }
     };
+
+    const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
     return (
         <Dialog 
@@ -213,7 +229,7 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                     type="submit"
                     form="rol-form"
                     variant="contained"
-                    disabled={mutation.isPending || isSubmitting}
+                    disabled={isSubmitting}
                     sx={{ 
                         borderRadius: 2, 
                         textTransform: 'none', 
@@ -221,7 +237,7 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                         px: 4
                     }}
                 >
-                    {mutation.isPending ? 'Guardando...' : 'Guardar'}
+                    {isSubmitting ? 'Guardando...' : 'Guardar'}
                 </Button>
             </DialogActions>
         </Dialog>

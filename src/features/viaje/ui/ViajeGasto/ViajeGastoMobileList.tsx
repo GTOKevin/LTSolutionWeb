@@ -14,7 +14,7 @@ import {
 import type { ViajeGasto } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import { MobileListShell } from '../MobileListShell';
+import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 
 interface Props {
     items: ViajeGasto[];

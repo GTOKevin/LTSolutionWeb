@@ -11,6 +11,8 @@ export const tipoMaestroApi = {
         httpClient.post<number>('/TipoMaestro', data),
     update: (id: number, data: Omit<TipoMaestro, 'tipoMaestroID'>) =>
         httpClient.put<void>(`/TipoMaestro/${id}`, data),
+    delete: (id: number) =>
+        httpClient.delete<void>(`/TipoMaestro/${id}`),
     getSecciones: () =>
         httpClient.get<string[]>('/TipoMaestro/secciones'),
 };

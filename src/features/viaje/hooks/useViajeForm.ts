@@ -10,7 +10,7 @@ import { ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
 import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
 import type { CreateViajeDto, Viaje } from '@/entities/viaje/model/types';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
-import { notifyMutationError, type ViajeMutationError } from './mutation-error';
+import { notifyMutationError, type ApiMutationError } from '@/shared/utils/api-errors';
 
 export const TAB_INDICES = {
     GENERAL: 0,
@@ -37,7 +37,7 @@ interface UseViajeFormReturn {
     setShowConfirmDialog: (show: boolean) => void;
     pendingData: CreateViajeDto | null;
     handleConfirmSave: () => void;
-    mutation: UseMutationResult<number | void, ViajeMutationError, CreateViajeDto, unknown>;
+    mutation: UseMutationResult<number | void, ApiMutationError, CreateViajeDto, unknown>;
     options: ReturnType<typeof useViajeOptions>;
     requiereEscolta: boolean;
     requierePermiso: boolean;
@@ -90,7 +90,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
         }
     }, [selectedCarretaID, carretas, setValue]);
 
-    const mutation = useMutation<number | void, ViajeMutationError, CreateViajeDto>({
+    const mutation = useMutation<number | void, ApiMutationError, CreateViajeDto>({
         mutationFn: (data: CreateViajeDto) => {
             const cleanData = {
                 ...data,
@@ -113,7 +113,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
             });
             onClose();
         },
-        onError: (error: ViajeMutationError) => {
+        onError: (error: ApiMutationError) => {
             notifyMutationError(
                 showToast,
                 'Viaje',

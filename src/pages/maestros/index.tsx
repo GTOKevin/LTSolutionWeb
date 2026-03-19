@@ -3,8 +3,6 @@ import {
     Typography,
     Button,
     useTheme,
-    Snackbar,
-    Alert,
     TextField,
     InputAdornment,
     Autocomplete
@@ -32,9 +30,6 @@ export function MaestrosPage() {
     
     const [modalOpen, setModalOpen] = useState(false);
     const [maestroToEdit, setMaestroToEdit] = useState<TipoMaestro | null>(null);
-    
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -74,9 +69,7 @@ export function MaestrosPage() {
         setModalOpen(true);
     };
 
-    const handleSuccess = (_: number) => {
-        setSnackbarMessage(maestroToEdit ? 'Maestro actualizado exitosamente.' : 'Maestro creado exitosamente.');
-        setSnackbarOpen(true);
+    const handleSuccess = () => {
         refetch();
     };
 
@@ -228,17 +221,6 @@ export function MaestrosPage() {
                 maestroToEdit={maestroToEdit}
                 onSuccess={handleSuccess}
             />
-
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={() => setSnackbarOpen(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
             </Box>
         </Box>
     );

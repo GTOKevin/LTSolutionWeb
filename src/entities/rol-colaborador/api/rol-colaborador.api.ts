@@ -17,4 +17,7 @@ export const rolColaboradorApi = {
 
     update: (id: number, data: Omit<RolColaborador, 'rolColaboradorID'>) =>
         httpClient.put<void>(`/RolColaborador/${id}`, data),
+
+    delete: (id: number) =>
+        httpClient.delete<void>(`/RolColaborador/${id}`),
 };

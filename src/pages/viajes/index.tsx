@@ -38,7 +38,7 @@ export function ViajesPage() {
         handleExportExcel, 
         handleExportPdf 
     } = useViajeReports();
-    type ViajeMutationError = AxiosError<ApiError & { message?: string }>;
+    type ApiMutationError = AxiosError<ApiError & { message?: string }>;
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -76,7 +76,7 @@ export function ViajesPage() {
             refetch();
             showToast({ entity: 'Viaje', action: 'delete' });
         },
-        onError: (error: ViajeMutationError) => {
+        onError: (error: ApiMutationError) => {
             const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Viaje', action: 'delete', isError: true, message });
             if (message) console.error("Validation error:", message);
@@ -91,7 +91,7 @@ export function ViajesPage() {
             refetch();
             showToast({ entity: 'Viaje', action: 'reopen' });
         },
-        onError: (error: ViajeMutationError) => {
+        onError: (error: ApiMutationError) => {
             const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Viaje', action: 'reopen', isError: true, message });
             if (message) console.error("Validation error:", message);

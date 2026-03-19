@@ -21,6 +21,7 @@ import { viajeIncidenteSchema, type ViajeIncidenteFormData } from '../../model/s
 import { getCurrentDateISO, getCurrentTimeISO, toInputDate, toInputTime, combineDateTime } from '@/shared/utils/date-utils';
 import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
+import { handleBackendErrors } from '@/shared/utils/form-validation';
 
 interface Props {
     viajeId: number;
@@ -41,7 +42,7 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
     const [date, setDate] = useState(getCurrentDateISO());
     const [time, setTime] = useState(getCurrentTimeISO());
 
-    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajeIncidenteFormData>({
+    const { control, handleSubmit, reset, setValue, setError, formState: { errors } } = useForm<ViajeIncidenteFormData>({
         resolver: zodResolver(viajeIncidenteSchema),
         defaultValues: {
             fechaHora: new Date().toISOString(),
@@ -125,6 +126,7 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
             if (onCancel) onCancel();
         } catch (error) {
             logger.error("Error saving incidente:", error);
+            handleBackendErrors<ViajeIncidenteFormData>(error, setError);
         }
     };
 

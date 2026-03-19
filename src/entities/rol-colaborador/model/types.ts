@@ -4,3 +4,9 @@ export interface RolColaborador {
     descripcion?: string;
     activo: boolean;
 }
+
+export interface CreateRolColaboradorDto {
+    nombre: string;
+    descripcion?: string;
+    activo: boolean;
+}

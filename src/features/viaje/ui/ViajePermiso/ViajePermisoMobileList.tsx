@@ -14,7 +14,7 @@ import {
 } from '@mui/icons-material';
 import type { ViajePermiso } from '@/entities/viaje/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import { MobileListShell } from '../MobileListShell';
+import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 
 interface Props {
     items: ViajePermiso[];

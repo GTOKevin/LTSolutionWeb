@@ -15,6 +15,7 @@ import { useCreateViajeEscolta, useUpdateViajeEscolta } from '@/features/viaje/h
 import { viajeEscoltaSchema, type ViajeEscoltaFormData } from '../../model/schema';
 import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
+import { handleBackendErrors } from '@/shared/utils/form-validation';
 
 interface Props {
     viajeId: number;
@@ -32,7 +33,7 @@ export function ViajeEscoltaCreateEdit({ viajeId, flotas, colaboradores, escolta
     const isEditing = !!escolta;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ViajeEscoltaFormData>({
+    const { control, handleSubmit, reset, watch, setValue, setError, formState: { errors } } = useForm<ViajeEscoltaFormData>({
         resolver: zodResolver(viajeEscoltaSchema),
         defaultValues: {
             tercero: false,
@@ -103,6 +104,7 @@ export function ViajeEscoltaCreateEdit({ viajeId, flotas, colaboradores, escolta
             if (onCancel) onCancel();
         } catch (error) {
             logger.error("Error saving escolta:", error);
+            handleBackendErrors<ViajeEscoltaFormData>(error, setError);
         }
     };
 
