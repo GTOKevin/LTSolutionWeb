@@ -161,7 +161,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                     {/* Desktop Table View */}
                     {!isMobile && (
                         <SharedTable<MantenimientoDetalle>
-                            data={data as any}
+                            data={data}
                             isLoading={isLoading}
                             page={page}
                             rowsPerPage={rowsPerPage}

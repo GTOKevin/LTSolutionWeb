@@ -88,12 +88,9 @@ export interface MantenimientoDetalleParams {
     size?: number;
 }
 
-export interface MantenimientoDetalleResponse {
-    items: MantenimientoDetalle[];
-    page: number;
-    size: number;
-    total: number;
-    totalPages: number;
+import type { PagedResponse } from '@/shared/model/types';
+
+export interface MantenimientoDetalleResponse extends PagedResponse<MantenimientoDetalle> {
     totalsByCurrency: Record<string, number>;
 }
 
