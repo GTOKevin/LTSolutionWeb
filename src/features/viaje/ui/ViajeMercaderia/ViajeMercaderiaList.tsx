@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { 
     Box, 
     Typography, 
@@ -51,7 +52,7 @@ export function ViajeMercaderiaList({ viajeId, viewOnly, tiposMedida, tiposPeso,
         try {
             await deleteMutation.mutateAsync({ id, viajeId });
         } catch (error) {
-            console.error("Error deleting mercaderia:", error);
+            logger.error("Error deleting mercaderia:", error);
         }
     };
 

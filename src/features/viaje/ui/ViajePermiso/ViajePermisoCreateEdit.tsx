@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { 
     Box, Button, Typography, Paper, Grid,
     useTheme, alpha, CircularProgress
@@ -30,7 +31,7 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
     const isEditing = !!permiso;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajePermisoFormData>({
+    const { control, handleSubmit, reset, formState: { errors } } = useForm<ViajePermisoFormData>({
         resolver: zodResolver(viajePermisoSchema),
         defaultValues: {
             fechaVigencia: getCurrentDateISO(),
@@ -83,7 +84,7 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
             
             if (onCancel) onCancel();
         } catch (error) {
-            console.error("Error saving permiso:", error);
+            logger.error("Error saving permiso:", error);
         }
     };
 

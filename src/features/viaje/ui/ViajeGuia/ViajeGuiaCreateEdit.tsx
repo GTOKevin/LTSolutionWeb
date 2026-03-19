@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { 
     Box, 
     Button, 
@@ -41,7 +42,7 @@ export function ViajeGuiaCreateEdit({ viajeId, tiposGuia, guia, onCancel }: Prop
     const isEditing = !!guia;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<ViajeGuiaFormData>({
+    const { control, handleSubmit, reset, formState: { errors } } = useForm<ViajeGuiaFormData>({
         resolver: zodResolver(viajeGuiaSchema),
         defaultValues: {
             tipoGuiaID: 0,
@@ -50,8 +51,6 @@ export function ViajeGuiaCreateEdit({ viajeId, tiposGuia, guia, onCancel }: Prop
             rutaArchivo: ''
         }
     });
-
-    const tipoGuiaID = watch('tipoGuiaID');
 
     useEffect(() => {
         if (guia) {
@@ -100,7 +99,7 @@ export function ViajeGuiaCreateEdit({ viajeId, tiposGuia, guia, onCancel }: Prop
             
             if (onCancel) onCancel();
         } catch (error) {
-            console.error("Error saving guia:", error);
+            logger.error("Error saving guia:", error);
         }
     };
 

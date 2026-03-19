@@ -1,5 +1,4 @@
-import { Card, CardContent, Box, Typography, alpha, useTheme } from '@mui/material';
-import { TrendingUp, TrendingDown } from '@mui/icons-material';
+import { Box, Card, CardContent, Typography, useTheme, alpha } from '@mui/material';
 
 interface StatsCardProps {
     title: string;

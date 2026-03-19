@@ -1,10 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { AxiosError } from 'axios';
+import { useQuery } from '@tanstack/react-query';
 import { viajeMercaderiaApi } from '@/entities/viaje/api/viaje-mercaderia.api';
 import type { CreateViajeMercaderiaDto, PagedViajeMercaderias } from '@/entities/viaje/model/types';
-import { useToast } from '@/shared/components/ui/Toast';
-import type { ApiError } from '@/shared/api/http';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
+import { createViajeSubresourceHooks } from './useViajeSubresourceCrud';
 
 const EMPTY_PAGED_MERCADERIAS: PagedViajeMercaderias = {
     items: [],
@@ -22,61 +20,12 @@ export const useViajeMercaderias = (viajeId?: number, page = 1, size = 5) => {
     });
 };
 
-type ViajeMutationError = AxiosError<ApiError & { message?: string }>;
-
-export const useCreateViajeMercaderia = () => {
-    const queryClient = useQueryClient();
-    const { showToast } = useToast();
-
-    return useMutation({
-        mutationFn: ({ viajeId, data }: { viajeId: number; data: CreateViajeMercaderiaDto }) => 
-            viajeMercaderiaApi.create(viajeId, data),
-        onSuccess: (_, { viajeId }) => {
-            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.mercaderias(viajeId) });
-            showToast({ entity: 'Mercadería', action: 'create' });
-        },
-        onError: (error: ViajeMutationError) => {
-            const message = error.response?.data?.message || error.response?.data?.detail;
-            showToast({ entity: 'Mercadería', action: 'create', isError: true, message });
-            if (message) console.error("Validation error:", message);
-        }
-    });
-};
-
-export const useUpdateViajeMercaderia = () => {
-    const queryClient = useQueryClient();
-    const { showToast } = useToast();
-
-    return useMutation({
-        mutationFn: ({ id, data }: { id: number; data: CreateViajeMercaderiaDto; viajeId: number }) => 
-            viajeMercaderiaApi.update(id, data),
-        onSuccess: (_, { viajeId }) => {
-            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.mercaderias(viajeId) });
-            showToast({ entity: 'Mercadería', action: 'update' });
-        },
-        onError: (error: ViajeMutationError) => {
-            const message = error.response?.data?.message || error.response?.data?.detail;
-            showToast({ entity: 'Mercadería', action: 'update', isError: true, message });
-            if (message) console.error("Validation error:", message);
-        }
-    });
-};
-
-export const useDeleteViajeMercaderia = () => {
-    const queryClient = useQueryClient();
-    const { showToast } = useToast();
-
-    return useMutation({
-        mutationFn: ({ id }: { id: number; viajeId: number }) => 
-            viajeMercaderiaApi.delete(id),
-        onSuccess: (_, { viajeId }) => {
-            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.mercaderias(viajeId) });
-            showToast({ entity: 'Mercadería', action: 'delete' });
-        },
-        onError: (error: ViajeMutationError) => {
-            const message = error.response?.data?.message || error.response?.data?.detail;
-            showToast({ entity: 'Mercadería', action: 'delete', isError: true, message });
-            if (message) console.error("Validation error:", message);
-        }
-    });
-};
+export const {
+    useCreate: useCreateViajeMercaderia,
+    useUpdate: useUpdateViajeMercaderia,
+    useDelete: useDeleteViajeMercaderia
+} = createViajeSubresourceHooks<CreateViajeMercaderiaDto>(
+    viajeMercaderiaApi,
+    'Mercadería',
+    VIAJE_QUERY_KEYS.mercaderias
+);

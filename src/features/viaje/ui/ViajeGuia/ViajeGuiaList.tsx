@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { 
     Box, 
     IconButton, 
@@ -61,7 +62,7 @@ export function ViajeGuiaList({ viajeId, viewOnly, tiposGuia, onEdit }: Props) {
         try {
             await deleteMutation.mutateAsync({ id, viajeId });
         } catch (error) {
-            console.error("Error deleting guia:", error);
+            logger.error("Error deleting guia:", error);
         }
     };
 

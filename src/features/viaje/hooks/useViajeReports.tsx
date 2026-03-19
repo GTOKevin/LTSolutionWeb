@@ -7,6 +7,7 @@ import { ViajeListPdf } from '@features/viaje/reports/ui/ViajeListPdf';
 import { viajeApi } from '@entities/viaje/api/viaje.api';
 import type { ViajeListItem, ViajeFilters as ViajeFiltersType } from '@entities/viaje/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
+import { notifyGenericError } from './mutation-error';
 
 export function useViajeReports() {
     const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
@@ -31,8 +32,7 @@ export function useViajeReports() {
             const generator = new ViajeListExcelGenerator(reportData, filters.fechaInicio, filters.fechaFin);
             await generator.generateAndDownload();
         } catch (error) {
-            console.error("Error exporting Excel list:", error);
-            showToast({ entity: 'Reporte de viajes', action: 'error', isError: true, message: 'No se pudo exportar el listado en Excel.' });
+            notifyGenericError(showToast, 'Reporte de viajes', 'No se pudo exportar el listado en Excel.', error, 'Error exporting Excel list:');
         } finally {
             setLoadingMessage(null);
         }
@@ -65,8 +65,7 @@ export function useViajeReports() {
             link.click();
             link.remove();
         } catch (error) {
-            console.error("Error exporting PDF list:", error);
-            showToast({ entity: 'Reporte de viajes', action: 'error', isError: true, message: 'No se pudo exportar el listado en PDF.' });
+            notifyGenericError(showToast, 'Reporte de viajes', 'No se pudo exportar el listado en PDF.', error, 'Error exporting PDF list:');
         } finally {
             if (objectUrl) {
                 window.URL.revokeObjectURL(objectUrl);
@@ -82,8 +81,7 @@ export function useViajeReports() {
             const generator = new ViajeGeneralExcelGenerator(reportData);
             await generator.generateAndDownload();
         } catch (error) {
-            console.error("Error exporting Excel:", error);
-            showToast({ entity: 'Reporte de viajes', action: 'error', isError: true, message: 'No se pudo exportar el reporte detallado en Excel.' });
+            notifyGenericError(showToast, 'Reporte de viajes', 'No se pudo exportar el reporte detallado en Excel.', error, 'Error exporting Excel:');
         } finally {
             setLoadingMessage(null);
         }
@@ -104,8 +102,7 @@ export function useViajeReports() {
             link.click();
             link.remove();
         } catch (error) {
-            console.error("Error exporting PDF:", error);
-            showToast({ entity: 'Reporte de viajes', action: 'error', isError: true, message: 'No se pudo exportar el reporte detallado en PDF.' });
+            notifyGenericError(showToast, 'Reporte de viajes', 'No se pudo exportar el reporte detallado en PDF.', error, 'Error exporting PDF:');
         } finally {
             if (objectUrl) {
                 window.URL.revokeObjectURL(objectUrl);

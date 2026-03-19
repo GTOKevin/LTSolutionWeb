@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { 
     Box, Button, Typography, Paper, TextField, Grid,
     useTheme, alpha, InputAdornment, CircularProgress
@@ -114,7 +115,7 @@ export function ViajeMercaderiaCreateEdit({
                 peso: 0
             });
         } catch (error) {
-            console.error("Error saving mercaderia:", error);
+            logger.error("Error saving mercaderia:", error);
         }
     };
 

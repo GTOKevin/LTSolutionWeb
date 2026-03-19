@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { 
     Box, 
     Typography, 
@@ -65,7 +66,7 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
         try {
             await deleteMutation.mutateAsync({ id, viajeId });
         } catch (error) {
-            console.error("Error deleting incidente:", error);
+            logger.error("Error deleting incidente:", error);
         }
     };
 
@@ -93,7 +94,7 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
             link.click();
             link.remove();
         } catch (error) {
-            console.error("Error exporting PDF:", error);
+            logger.error("Error exporting PDF:", error);
         } finally {
             if (objectUrl) {
                 window.URL.revokeObjectURL(objectUrl);

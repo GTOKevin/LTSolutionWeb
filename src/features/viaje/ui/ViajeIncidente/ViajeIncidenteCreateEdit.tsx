@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { 
     Box, Button, Typography, TextField, Grid,
     useTheme, CircularProgress,
@@ -90,7 +91,7 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
                 }
             }
         } catch (e) {
-            console.error("Invalid date/time format");
+            logger.error("Invalid date/time format");
         }
     }, [date, time, setValue]);
 
@@ -123,7 +124,7 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
             
             if (onCancel) onCancel();
         } catch (error) {
-            console.error("Error saving incidente:", error);
+            logger.error("Error saving incidente:", error);
         }
     };
 

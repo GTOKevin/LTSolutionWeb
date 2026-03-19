@@ -1,7 +1,7 @@
-import { Box, Alert } from '@mui/material';
 import { useState } from 'react';
-import type { ViajePermiso } from '@/entities/viaje/model/types';
+import type { ViajePermiso as ViajePermisoType } from '@/entities/viaje/model/types';
 import { ViajePermisoCreateEdit, ViajePermisoList } from './Index';
+import { ViajeSubmoduleContainer } from '../ViajeSubmoduleContainer';
 
 interface Props {
     viajeId?: number;
@@ -9,33 +9,27 @@ interface Props {
 }
 
 export function ViajePermiso({ viajeId, viewOnly }: Props) {
-    const [itemToEdit, setItemToEdit] = useState<ViajePermiso | null>(null);
-
-    if (!viajeId && !viewOnly) {
-        return (
-            <Alert severity="info" sx={{ mt: 2 }}>
-                Debe guardar el viaje (información general) antes de registrar permisos.
-            </Alert>
-        );
-    }
+    const [itemToEdit, setItemToEdit] = useState<ViajePermisoType | null>(null);
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {!viewOnly && viajeId && (
+        <ViajeSubmoduleContainer
+            viajeId={viajeId}
+            viewOnly={viewOnly}
+            entityName="permisos"
+            renderForm={() => (
                 <ViajePermisoCreateEdit 
-                    viajeId={viajeId} 
+                    viajeId={viajeId!} 
                     permiso={itemToEdit}
                     onCancel={() => setItemToEdit(null)}
                 />
             )}
-
-            {viajeId && (
+            renderList={() => (
                 <ViajePermisoList 
-                    viajeId={viajeId} 
+                    viajeId={viajeId!} 
                     viewOnly={viewOnly} 
                     onEdit={setItemToEdit}
                 />
             )}
-        </Box>
+        />
     );
 }

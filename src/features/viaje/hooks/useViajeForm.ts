@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useForm, type UseFormReturn, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
-import type { AxiosError } from 'axios';
 import { useToast } from '@/shared/components/ui/Toast';
 import { viajeSchema } from '../model/schema';
 import { useViajeOptions } from './useViajeOptions';
@@ -10,8 +9,8 @@ import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import { ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
 import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
 import type { CreateViajeDto, Viaje } from '@/entities/viaje/model/types';
-import type { ApiError } from '@/shared/api/http';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
+import { notifyMutationError, type ViajeMutationError } from './mutation-error';
 
 export const TAB_INDICES = {
     GENERAL: 0,
@@ -43,8 +42,6 @@ interface UseViajeFormReturn {
     requiereEscolta: boolean;
     requierePermiso: boolean;
 }
-
-type ViajeMutationError = AxiosError<ApiError & { message?: string }>;
 
 export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseViajeFormReturn {
     const [activeTab, setActiveTab] = useState<number>(TAB_INDICES.GENERAL);
@@ -117,14 +114,13 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
             onClose();
         },
         onError: (error: ViajeMutationError) => {
-            const message = error.response?.data?.message || error.response?.data?.detail;
-            console.error("Error saving viaje:", message || error);
-            showToast({ 
-                entity: 'Viaje',
-                action: viaje?.viajeID ? 'update' : 'create',
-                isError: true,
-                message: message
-            });
+            notifyMutationError(
+                showToast,
+                'Viaje',
+                viaje?.viajeID ? 'update' : 'create',
+                error,
+                'Error saving viaje:'
+            );
         }
     });
 
@@ -134,6 +130,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.options.clientes() });
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.options.tractos() });
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.options.carretas() });
+            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.options.flotasEscolta() });
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.options.colaboradores() });
 
             if (viaje) {

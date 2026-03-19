@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { 
     Box, Button, Typography, Paper, TextField, Grid, Checkbox, FormControlLabel,
     useTheme, alpha, CircularProgress
@@ -10,6 +11,7 @@ import type { CreateViajeGastoDto, ViajeGasto } from '@/entities/viaje/model/typ
 import type { SelectItem } from '@/shared/model/types';
 import { useCreateViajeGasto, useUpdateViajeGasto } from '@/features/viaje/hooks/useViajeGastos';
 import { viajeGastoSchema, type ViajeGastoFormData } from '../../model/schema';
+import { getGastoMetadata } from '../../model/gasto-metadata';
 import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
 import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
@@ -54,28 +56,23 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
 
     // Determine if currency should be restricted to Soles (Combustible/Peaje)
     const selectedGasto = tiposGasto.find(t => t.id === selectedGastoID);
-    const selectedGastoText = selectedGasto?.text.toLowerCase() || '';
-    const isRestrictedCurrency = selectedGastoText.includes('combustible') || 
-                                 selectedGastoText.includes('diesel') || 
-                                 selectedGastoText.includes('petroleo') || 
-                                 selectedGastoText.includes('peaje');
+    const metadata = getGastoMetadata(selectedGasto);
+    const isRestrictedCurrency = metadata.forcesCurrency;
 
     useEffect(() => {
         if (selectedGastoID && tiposGasto.length > 0) {
             const gasto = tiposGasto.find(t => t.id === selectedGastoID);
             if (gasto) {
-                const text = gasto.text.toLowerCase();
-                const isFuel = text.includes('combustible') || text.includes('diesel') || text.includes('petroleo');
-                const isToll = text.includes('peaje');
+                const metadata = getGastoMetadata(gasto);
                 
-                setValue('combustible', isFuel);
+                setValue('combustible', metadata.isFuel);
 
-                // Force Soles if Fuel or Toll
-                if (isFuel || isToll) {
-                    setValue('monedaID', MONEDA_ID.SOLES);
+                // Force Currency if needed
+                if (metadata.forcesCurrency && metadata.defaultMonedaID) {
+                    setValue('monedaID', metadata.defaultMonedaID);
                 }
 
-                if (!isFuel) {
+                if (!metadata.isFuel) {
                     setValue('galones', 0);
                 }
             }
@@ -142,7 +139,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
             
             if (onCancel) onCancel();
         } catch (error) {
-            console.error("Error saving gasto:", error);
+            logger.error("Error saving gasto:", error);
         }
     };
 

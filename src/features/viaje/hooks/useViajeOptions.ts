@@ -38,6 +38,15 @@ export function useViajeOptions(enabled: boolean = true) {
         enabled
     });
 
+    const { data: flotasEscolta } = useQuery({
+        queryKey: VIAJE_QUERY_KEYS.options.flotasEscolta(),
+        queryFn: async () => {
+            const response = await flotaApi.getSelect(undefined, 100);
+            return response.data ?? [];
+        },
+        enabled
+    });
+
     const { data: colaboradores } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.colaboradores(),
         queryFn: async () => {
@@ -124,6 +133,7 @@ export function useViajeOptions(enabled: boolean = true) {
         clientes: clientes,
         tractos: tractos,
         carretas: carretas,
+        flotasEscolta: flotasEscolta,
         colaboradores: colaboradores,
         tiposMedida: tiposMedida,
         tiposPeso: tiposPeso,

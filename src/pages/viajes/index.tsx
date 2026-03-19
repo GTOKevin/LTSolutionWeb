@@ -148,7 +148,7 @@ export function ViajesPage() {
         setReopenDialogOpen(true);
     }, []);
 
-    const handleChangePage = useCallback((event: unknown, newPage: number) => {
+    const handleChangePage = useCallback((_: unknown, newPage: number) => {
         setPage(newPage);
     }, []);
 

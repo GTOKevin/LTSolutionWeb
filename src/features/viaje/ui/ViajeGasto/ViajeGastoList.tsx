@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { 
     Box, 
     Typography, 
@@ -72,7 +73,7 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
             link.parentNode?.removeChild(link);
             setSnackbar({ open: true, message: 'Reporte Excel descargado correctamente', severity: 'success' });
         } catch (error) {
-            console.error('Error exporting Excel:', error);
+            logger.error('Error exporting Excel:', error);
             setSnackbar({ open: true, message: 'Error al descargar reporte Excel', severity: 'error' });
         } finally {
             if (objectUrl) {
@@ -96,7 +97,7 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
             link.parentNode?.removeChild(link);
             setSnackbar({ open: true, message: 'Reporte PDF descargado correctamente', severity: 'success' });
         } catch (error) {
-            console.error('Error exporting PDF:', error);
+            logger.error('Error exporting PDF:', error);
             setSnackbar({ open: true, message: 'Error al descargar reporte PDF', severity: 'error' });
         } finally {
             if (objectUrl) {
@@ -120,7 +121,7 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
         try {
             await deleteMutation.mutateAsync({ id, viajeId });
         } catch (error) {
-            console.error("Error deleting gasto:", error);
+            logger.error("Error deleting gasto:", error);
         }
     };
 

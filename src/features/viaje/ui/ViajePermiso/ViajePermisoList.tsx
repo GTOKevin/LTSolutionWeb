@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { useState } from 'react';
 import { 
     Box, 
@@ -57,7 +58,7 @@ export function ViajePermisoList({ viajeId, viewOnly, onEdit }: Props) {
         try {
             await deleteMutation.mutateAsync({ id, viajeId });
         } catch (error) {
-            console.error("Error deleting permiso:", error);
+            logger.error("Error deleting permiso:", error);
         }
     };
 

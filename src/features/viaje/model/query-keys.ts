@@ -18,6 +18,7 @@ export const VIAJE_QUERY_KEYS = {
         clientes: () => ['clientes-select'] as const,
         tractos: () => ['flota-select-tracto'] as const,
         carretas: () => ['flota-select-carreta'] as const,
+        flotasEscolta: () => ['flota-select-escolta'] as const,
         colaboradores: () => ['colaboradores-select'] as const,
         tiposMedida: () => ['maestro-select-medida'] as const,
         tiposPeso: () => ['maestro-select-peso'] as const,

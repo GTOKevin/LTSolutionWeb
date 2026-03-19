@@ -1,3 +1,4 @@
+import { logger } from '@/shared/utils/logger';
 import { useState } from 'react';
 import { Box, Typography, CircularProgress, useTheme, alpha } from '@mui/material';
 import type { SelectItem } from '@/shared/model/types';
@@ -42,7 +43,7 @@ export function ViajeEscoltaList({ viajeId, viewOnly, flotas, colaboradores, onE
         try {
             await deleteMutation.mutateAsync({ id, viajeId });
         } catch (error) {
-            console.error("Error deleting escolta:", error);
+            logger.error("Error deleting escolta:", error);
         }
     };
 

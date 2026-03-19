@@ -1,12 +1,10 @@
+import { logger } from '@/shared/utils/logger';
 import { 
-    Box, Button, TextField, MenuItem, FormControlLabel, Switch,
+    Button, TextField, FormControlLabel, Switch,
     Paper, Typography, Grid, useTheme, alpha, CircularProgress
 } from '@mui/material';
 import { 
-    Save as SaveIcon,
-    Edit as EditIcon,
-    Cancel as CancelIcon,
-    AddCircle as AddCircleIcon
+    Save as SaveIcon
 } from '@mui/icons-material';
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -104,7 +102,7 @@ export function ViajeEscoltaCreateEdit({ viajeId, flotas, colaboradores, escolta
             reset();
             if (onCancel) onCancel();
         } catch (error) {
-            console.error("Error saving escolta:", error);
+            logger.error("Error saving escolta:", error);
         }
     };
 
