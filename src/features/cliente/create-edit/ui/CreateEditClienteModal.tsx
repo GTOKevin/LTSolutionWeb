@@ -15,8 +15,7 @@ import {
     alpha,
     Tabs,
     Tab,
-    Alert,
-    Snackbar
+    Alert
 } from '@mui/material';
 import { Controller } from 'react-hook-form';
 import type { Cliente } from '@entities/cliente/model/types';
@@ -65,23 +64,21 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
         form,
         activeTab,
         errorMessage,
-        openSnackbar,
         setErrorMessage,
-        setOpenSnackbar,
         handleTabChange,
         onSubmit,
         isEdit,
         createdClientId,
         effectiveClienteId,
         canEditContacts,
-        mutation
+        isSubmitting
     } = useClienteForm({ open, onClose, onSuccess, clienteToEdit });
 
     const {
         register,
         handleSubmit,
         control,
-        formState: { errors, isSubmitting, isDirty }
+        formState: { errors, isDirty }
     } = form;
 
     return (
@@ -259,23 +256,13 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                         type="submit" 
                         form="cliente-form"
                         variant="contained" 
-                        disabled={isSubmitting || mutation.isPending || (isEdit && !isDirty)}
+                        disabled={isSubmitting || (isEdit && !isDirty)}
                     >
                         {isEdit || createdClientId ? 'Guardar Cambios' : 'Registrar y Continuar'}
                     </Button>
                 )}
             </DialogActions>
         </Dialog>
-        <Snackbar 
-            open={openSnackbar} 
-            autoHideDuration={6000} 
-            onClose={() => setOpenSnackbar(false)}
-            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        >
-            <Alert onClose={() => setOpenSnackbar(false)} severity="error" sx={{ width: '100%' }}>
-                {errorMessage}
-            </Alert>
-        </Snackbar>
         </>
     );
 }

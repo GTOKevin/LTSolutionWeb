@@ -11,13 +11,12 @@ export const viajeGastoApi = {
         return response.data;
     },
 
-    create: async (viajeId: number, data: CreateViajeGastoDto) => {
+    create: (viajeId: number, data: CreateViajeGastoDto) => {
         const payload = {
             viajeID: viajeId,
             gasto: data
         };
-        const response = await http.post<number>('/viajegasto', payload);
-        return response.data;
+        return http.post<number>('/viajegasto', payload).then(res => res.data);
     },
 
     update: async (id: number, data: CreateViajeGastoDto) => {

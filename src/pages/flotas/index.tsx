@@ -4,15 +4,13 @@ import {
     Button,
     TextField,
     InputAdornment,
-    Snackbar,
-    Alert,
     useTheme
 } from '@mui/material';
 import {
     Search as SearchIcon,
     Add as AddIcon
 } from '@mui/icons-material';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import { useState, useEffect } from 'react';
 import { CreateEditFlotaModal } from '../../features/flota/create-edit/ui/CreateEditFlotaModal';
@@ -20,10 +18,10 @@ import { ConfirmDialog } from '../../shared/components/ui/ConfirmDialog';
 import type { Flota } from '@entities/flota/model/types';
 import { FlotaTable } from '../../features/flota/list/ui/FlotaTable';
 import { FlotaMobileList } from '../../features/flota/list/ui/FlotaMobileList';
+import { useDeleteFlota } from '@features/flota/hooks/useFlotaCrud';
 
 export function FlotasPage() {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     
     // State
     const [page, setPage] = useState(0);
@@ -39,10 +37,6 @@ export function FlotasPage() {
     // Delete Dialog State
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [flotaToDelete, setFlotaToDelete] = useState<Flota | null>(null);
-
-    // Snackbar State
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -63,20 +57,7 @@ export function FlotasPage() {
     });
 
     // Mutations
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => flotaApi.delete(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['flotas'] });
-            setOpenDeleteDialog(false);
-            setFlotaToDelete(null);
-            setSnackbarMessage('Vehículo eliminado exitosamente');
-            setSnackbarOpen(true);
-        },
-        onError: () => {
-            setSnackbarMessage('Error al eliminar el vehículo');
-            setSnackbarOpen(true);
-        }
-    });
+    const deleteMutation = useDeleteFlota();
 
     // Handlers
     const handleChangePage = (_: unknown, newPage: number) => {
@@ -113,14 +94,17 @@ export function FlotasPage() {
 
     const handleConfirmDelete = () => {
         if (flotaToDelete) {
-            deleteMutation.mutate(flotaToDelete.flotaID);
+            deleteMutation.mutate(flotaToDelete.flotaID, {
+                onSuccess: () => {
+                    setOpenDeleteDialog(false);
+                    setFlotaToDelete(null);
+                }
+            });
         }
     };
 
     const handleSuccess = (_: number) => {
-        setSnackbarMessage(selectedFlota ? 'Vehículo actualizado exitosamente' : 'Vehículo creado exitosamente');
-        setSnackbarOpen(true);
-        queryClient.invalidateQueries({ queryKey: ['flotas'] });
+        setOpenModal(false);
     };
 
     return (
@@ -238,17 +222,6 @@ export function FlotasPage() {
                 onConfirm={handleConfirmDelete}
                 isLoading={deleteMutation.isPending}
             />
-
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={() => setSnackbarOpen(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarMessage.includes('Error') ? 'error' : 'success'} sx={{ width: '100%' }}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 }

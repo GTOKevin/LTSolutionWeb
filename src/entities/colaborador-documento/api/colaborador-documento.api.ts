@@ -10,7 +10,7 @@ export const colaboradorDocumentoApi = {
         httpClient.get<ColaboradorDocumento>(`/Colaborador/documentos/${id}`), // Note: Assuming this exists or using getAll
 
     create: (colaboradorId: number, data: CreateColaboradorDocumentoDto) => 
-        httpClient.post<number>(`/Colaborador/${colaboradorId}/documentos`, data),
+        httpClient.post<number>(`/Colaborador/${colaboradorId}/documentos`, data).then(res => res.data),
 
     update: (id: number, data: CreateColaboradorDocumentoDto) => 
         httpClient.put<void>(`/Colaborador/documentos/${id}`, data),

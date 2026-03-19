@@ -15,8 +15,7 @@ export const colaboradorApi = {
     getSelectAvailable: (currentColaboradorId?: number) =>
         httpClient.get<SelectItem[]>('/Colaborador/select-available', { params: { currentColaboradorId } }),
 
-    create: (data: CreateColaboradorDto) => 
-        httpClient.post<number>('/Colaborador', data),
+    create: (data: CreateColaboradorDto) => httpClient.post<number>('/Colaborador', data).then(res => res.data),
 
     update: (id: number, data: CreateColaboradorDto) => 
         httpClient.put<void>(`/Colaborador/${id}`, data),

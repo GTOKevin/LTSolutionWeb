@@ -1,13 +1,14 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { flotaApi } from '@entities/flota/api/flota.api';
+import { useQuery } from '@tanstack/react-query';
 import { maestroApi } from '@shared/api/maestro.api';
 import { createFlotaSchema, type CreateFlotaSchema } from '../model/schema';
 import { useEffect, useState } from 'react';
 import type { Flota } from '@entities/flota/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { useCreateFlota, useUpdateFlota } from './useFlotaCrud';
+import type { AxiosError } from 'axios';
 
 interface UseFlotaFormProps {
     flotaToEdit?: Flota | null;
@@ -17,7 +18,6 @@ interface UseFlotaFormProps {
 }
 
 export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlotaFormProps) {
-    const queryClient = useQueryClient();
     const [createdFlotaId, setCreatedFlotaId] = useState<number | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState(0);
@@ -25,6 +25,9 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
     const isEdit = !!flotaToEdit;
     const effectiveFlotaId = flotaToEdit?.flotaID || createdFlotaId;
     const canEditDocs = !!effectiveFlotaId;
+
+    const createMutation = useCreateFlota();
+    const updateMutation = useUpdateFlota();
 
     // --- Queries ---
     const { data: tiposFlota } = useQuery({
@@ -126,45 +129,53 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
     }, [open, flotaToEdit, reset]);
 
     // --- Mutations ---
-    const mutation = useMutation({
-        mutationFn: async (data: CreateFlotaSchema) => {
-            if (isEdit && flotaToEdit) {
-                await flotaApi.update(flotaToEdit.flotaID, data);
-                return flotaToEdit.flotaID;
-            }
-            if (createdFlotaId) {
-                await flotaApi.update(createdFlotaId, data);
-                return createdFlotaId;
-            }
-            const response = await flotaApi.create(data);
-            return response.data;
-        },
-        onSuccess: (id: number) => {
-            queryClient.invalidateQueries({ queryKey: ['flotas'] });
-            onSuccess(id);
-            
-            if (!isEdit && !createdFlotaId) {
-                setCreatedFlotaId(id);
-                setActiveTab(1); 
-            } else {
-                onClose();
-            }
-        },
-        onError: (error: any) => {
-            const genericError = handleBackendErrors<CreateFlotaSchema>(error, setError);
-            if (genericError) {
-                setErrorMessage(genericError);
-            }
+    const handleError = (error: AxiosError | any) => {
+        const genericError = handleBackendErrors<CreateFlotaSchema>(error, setError);
+        if (genericError) {
+            setErrorMessage(genericError);
         }
-    });
+    };
+
+    const handleSuccess = (id: number) => {
+        onSuccess(id);
+        if (!isEdit && !createdFlotaId) {
+            setCreatedFlotaId(id);
+            setActiveTab(1); 
+        } else {
+            onClose();
+        }
+    };
 
     const onSubmit = (data: CreateFlotaSchema) => {
-        mutation.mutate(data);
+        if (isEdit && flotaToEdit) {
+            updateMutation.mutate(
+                { id: flotaToEdit.flotaID, data },
+                {
+                    onSuccess: () => handleSuccess(flotaToEdit.flotaID),
+                    onError: handleError
+                }
+            );
+        } else if (createdFlotaId) {
+            updateMutation.mutate(
+                { id: createdFlotaId, data },
+                {
+                    onSuccess: () => handleSuccess(createdFlotaId),
+                    onError: handleError
+                }
+            );
+        } else {
+            createMutation.mutate(
+                data,
+                {
+                    onSuccess: (response) => handleSuccess(response.data),
+                    onError: handleError
+                }
+            );
+        }
     };
 
     return {
         form,
-        mutation,
         onSubmit,
         activeTab,
         setActiveTab,
@@ -174,6 +185,7 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
         canEditDocs,
         isEdit,
         createdFlotaId,
+        isSubmitting: createMutation.isPending || updateMutation.isPending,
         
         // Catalogs
         listaFlota,

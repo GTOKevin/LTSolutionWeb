@@ -16,14 +16,13 @@ export const viajeIncidenteApi = {
         return response.data;
     },
 
-    create: async (viajeId: number, data: CreateViajeIncidenteDto) => {
+    create: (viajeId: number, data: CreateViajeIncidenteDto) => {
         // CreateViajeIncidenteCommand expects ViajeID and Incidente object
         const payload = {
             viajeID: viajeId,
             incidente: data
         };
-        const response = await http.post<number>('/viajeincidente', payload);
-        return response.data;
+        return http.post<number>('/viajeincidente', payload).then(res => res.data);
     },
 
     update: async (id: number, data: CreateViajeIncidenteDto) => {

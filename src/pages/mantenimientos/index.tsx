@@ -151,6 +151,11 @@ export function MantenimientosPage() {
                 {/* Content */}
                 <MantenimientoMobileList
                     data={data?.items}
+                    total={data?.total || 0}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
                     isLoading={isLoading}
                     onView={handleView}
                     onEdit={handleEdit}

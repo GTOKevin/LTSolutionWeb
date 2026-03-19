@@ -8,7 +8,7 @@ export const tipoMaestroApi = {
     getById: (id: number) =>
         httpClient.get<TipoMaestro>(`/TipoMaestro/${id}`),
     create: (data: Omit<TipoMaestro, 'tipoMaestroID'>) =>
-        httpClient.post<number>('/TipoMaestro', data),
+        httpClient.post<number>('/TipoMaestro', data).then(res => res.data),
     update: (id: number, data: Omit<TipoMaestro, 'tipoMaestroID'>) =>
         httpClient.put<void>(`/TipoMaestro/${id}`, data),
     delete: (id: number) =>

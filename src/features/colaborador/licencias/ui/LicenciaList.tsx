@@ -23,12 +23,13 @@ import {
     Add as AddIcon,
     CalendarToday as CalendarIcon
 } from '@mui/icons-material';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { licenciaApi } from '@entities/licencia/api/licencia.api';
 import type { Licencia } from '@entities/licencia/model/types';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { useState } from 'react';
 import { LicenciaForm } from './LicenciaForm';
+import { useDeleteLicencia } from '../../hooks/useLicenciaCrud';
 
 interface LicenciaListProps {
     colaboradorId: number;
@@ -37,7 +38,6 @@ interface LicenciaListProps {
 
 export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     const [openForm, setOpenForm] = useState(false);
     const [licenciaToEdit, setLicenciaToEdit] = useState<Licencia | null>(null);
     const [openDelete, setOpenDelete] = useState(false);
@@ -46,7 +46,7 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const { data, isLoading } = useQuery({
-        queryKey: ['licencias', colaboradorId, page, rowsPerPage],
+        queryKey: ['colaborador-licencias', colaboradorId, page, rowsPerPage],
         queryFn: () => licenciaApi.getAll({ 
             colaboradorID: colaboradorId, 
             page: page + 1,
@@ -54,14 +54,18 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
         })
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => licenciaApi.delete(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['licencias', colaboradorId] });
-            setOpenDelete(false);
-            setLicenciaToDelete(null);
+    const deleteMutation = useDeleteLicencia();
+
+    const handleDeleteConfirm = () => {
+        if (licenciaToDelete) {
+            deleteMutation.mutate(licenciaToDelete.licenciaID, {
+                onSuccess: () => {
+                    setOpenDelete(false);
+                    setLicenciaToDelete(null);
+                }
+            });
         }
-    });
+    };
 
     const handleCreate = () => {
         setLicenciaToEdit(null);
@@ -230,7 +234,7 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
                 title="Eliminar Registro"
                 content={`¿Está seguro que desea eliminar este registro?`}
                 onClose={() => setOpenDelete(false)}
-                onConfirm={() => licenciaToDelete && deleteMutation.mutate(licenciaToDelete.licenciaID)}
+                onConfirm={handleDeleteConfirm}
                 isLoading={deleteMutation.isPending}
             />
         </Box>

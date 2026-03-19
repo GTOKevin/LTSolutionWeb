@@ -7,7 +7,7 @@ export const colaboradorPagoApi = {
         httpClient.get<PagedResponse<ColaboradorPago>>('/Colaborador/pagos', { params }),
 
     create: (colaboradorId: number, data: CreateColaboradorPagoDto) => 
-        httpClient.post<number>(`/Colaborador/${colaboradorId}/pagos`, data),
+        httpClient.post<number>(`/Colaborador/${colaboradorId}/pagos`, data).then(res => res.data),
 
     update: (id: number, data: CreateColaboradorPagoDto) => 
         httpClient.put<void>(`/Colaborador/pagos/${id}`, data),

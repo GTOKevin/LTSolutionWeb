@@ -93,6 +93,7 @@ export interface MantenimientoDetalleResponse {
     page: number;
     size: number;
     total: number;
+    totalPages: number;
     totalsByCurrency: Record<string, number>;
 }
 

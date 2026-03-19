@@ -21,10 +21,7 @@ export const mantenimientoApi = {
         return data;
     },
 
-    create: async (dto: CreateMantenimientoDto) => {
-        const { data } = await http.post<number>('/mantenimiento', dto);
-        return data;
-    },
+    create: (dto: CreateMantenimientoDto) => http.post<number>('/mantenimiento', dto).then(res => res.data),
 
     update: async (id: number, dto: CreateMantenimientoDto) => {
         await http.put(`/mantenimiento/${id}`, dto);

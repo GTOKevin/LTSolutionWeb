@@ -44,9 +44,9 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
             register,
             handleSubmit,
             control,
-            formState: { errors, isSubmitting, isDirty }
+            formState: { errors, isDirty }
         },
-        mutation,
+        isSubmitting,
         onSubmit,
         activeTab,
         setActiveTab,
@@ -386,8 +386,8 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
                         type="submit" 
                         form="colab-form"
                         variant="contained" 
-                        disabled={isSubmitting || mutation.isPending || (isEdit && !isDirty)}
-                        startIcon={mutation.isPending ? <CircularProgress size={20} color="inherit" /> : null}
+                        disabled={isSubmitting || (isEdit && !isDirty)}
+                        startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
                     >
                         {isEdit || createdId ? 'Guardar Cambios' : 'Registrar'}
                     </Button>

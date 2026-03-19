@@ -8,29 +8,25 @@ import {
     Box,
     useTheme,
     alpha,
-    IconButton,
-    List,
-    ListItem,
-    ListItemText,
-    ListItemSecondaryAction,
     Chip,
-    Alert,
-    Snackbar
+    TableCell
 } from '@mui/material';
 import {
     Add as AddIcon,
-    Delete as DeleteIcon,
-    Edit as EditIcon,
     Person as PersonIcon
 } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
 import { createContactoSchema, type CreateContactoSchema } from '../../model/schema';
 import { useState } from 'react';
 import type { ClienteContacto } from '@entities/cliente/model/types';
-import { handleBackendErrors } from '@shared/utils/form-validation';
+import { useCreateClienteContacto, useUpdateClienteContacto, useDeleteClienteContacto } from '../../hooks/useClienteContactosCrud';
+import { MobileListShell } from '@shared/components/ui/MobileListShell';
+import { SharedTable } from '@shared/components/ui/SharedTable';
+import { TableActions } from '@shared/components/ui/TableActions';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 
 interface ClienteContactosListProps {
     clienteId: number;
@@ -39,15 +35,17 @@ interface ClienteContactosListProps {
 
 export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteContactosListProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     const [editingId, setEditingId] = useState<number | null>(null);
     const [showForm, setShowForm] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
+    
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [openDelete, setOpenDelete] = useState(false);
+    const [contactoToDelete, setContactoToDelete] = useState<ClienteContacto | null>(null);
 
     const { data: data, isLoading } = useQuery({
-        queryKey: ['cliente-contactos', clienteId],
-        queryFn: () => clienteApi.getContactos(clienteId, undefined, undefined, 1, 100),
+        queryKey: ['cliente-contactos', clienteId, page, rowsPerPage],
+        queryFn: () => clienteApi.getContactos(clienteId, undefined, undefined, page + 1, rowsPerPage),
         enabled: !!clienteId
     });
 
@@ -57,7 +55,6 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
         reset,
         setValue,
         control,
-        setError,
         formState: { errors, isSubmitting, isDirty }
     } = useForm({
         resolver: zodResolver(createContactoSchema),
@@ -66,48 +63,9 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
         }
     });
 
-    const createMutation = useMutation({
-        mutationFn: (data: CreateContactoSchema) => 
-            clienteApi.addContacto(clienteId, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['cliente-contactos', clienteId] });
-            resetForm();
-        },
-        onError: (error: any) => {
-            const genericError = handleBackendErrors<CreateContactoSchema>(error, setError);
-            if (genericError) {
-                setErrorMessage(genericError);
-                setOpenSnackbar(true);
-            }
-        }
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: (data: CreateContactoSchema) => 
-            editingId ? clienteApi.updateContacto(editingId, data) : Promise.reject('No ID'),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['cliente-contactos', clienteId] });
-            resetForm();
-        },
-        onError: (error: any) => {
-            const genericError = handleBackendErrors<CreateContactoSchema>(error, setError);
-            if (genericError) {
-                setErrorMessage(genericError);
-                setOpenSnackbar(true);
-            }
-        }
-    });
-
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => clienteApi.removeContacto(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['cliente-contactos', clienteId] });
-        },
-        onError: () => {
-            setErrorMessage('Error al eliminar el contacto');
-            setOpenSnackbar(true);
-        }
-    });
+    const createMutation = useCreateClienteContacto();
+    const updateMutation = useUpdateClienteContacto();
+    const deleteMutation = useDeleteClienteContacto();
 
     const resetForm = () => {
         reset({
@@ -135,10 +93,35 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
 
     const onSubmit = (data: CreateContactoSchema) => {
         if (editingId) {
-            updateMutation.mutate(data);
+            
+            console.log('clienteId:', editingId);
+            updateMutation.mutate(
+                { id: editingId, data },
+                { onSuccess: resetForm }
+            );
         } else {
-            createMutation.mutate(data);
+            console.log('clienteId:', clienteId);
+            createMutation.mutate(
+                { clienteId, data },
+                { onSuccess: resetForm }
+            );
         }
+    };
+
+    const handleDeleteConfirm = () => {
+        if (contactoToDelete) {
+            deleteMutation.mutate(contactoToDelete.clienteContactoID, {
+                onSuccess: () => {
+                    setOpenDelete(false);
+                    setContactoToDelete(null);
+                }
+            });
+        }
+    };
+
+    const handleDeleteRequest = (contacto: ClienteContacto) => {
+        setContactoToDelete(contacto);
+        setOpenDelete(true);
     };
 
     return (
@@ -252,87 +235,110 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
                     </Grid>
                 </Box>
             ) : (
-                <List sx={{ flex: 1, overflow: 'auto', p: 0 }}>
-                    {isLoading ? (
-                        <Box p={3} textAlign="center">Cargando contactos...</Box>
-                    ) : data?.data.items?.length === 0 ? (
-                        <Box p={5} textAlign="center" color="text.secondary">
-                            No hay contactos registrados.
-                        </Box>
-                    ) : (
-                        data?.data.items?.map((contacto) => (
-                            <ListItem 
-                                key={contacto.clienteContactoID}
-                                divider
-                                sx={{ 
-                                    '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.05) }
-                                }}
-                            >
-                                <Box mr={2} color="text.secondary">
-                                    <PersonIcon />
-                                </Box>
-                                <ListItemText
-                                    primary={
-                                        <Box display="flex" alignItems="center" gap={1}>
-                                            <Typography variant="subtitle2">
-                                                {contacto.nombreCompleto}
-                                            </Typography>
-                                            {contacto.rol && (
-                                                <Chip label={contacto.rol} size="small" variant="outlined" sx={{ height: 20, fontSize: 10 }} />
-                                            )}
-                                            {!contacto.activo && (
-                                                <Chip label="Inactivo" size="small" color="error" sx={{ height: 20, fontSize: 10 }} />
-                                            )}
-                                        </Box>
-                                    }
-                                    secondary={
-                                        <Typography variant="caption" color="text.secondary">
-                                            {contacto.telefonoPrincipal} • {contacto.email || 'Sin email'}
-                                        </Typography>
-                                    }
-                                />
-                                {!viewOnly && (
-                                    <ListItemSecondaryAction>
-                                        <Box display="flex" gap={0.5}>
-                                            <IconButton 
-                                                size="small" 
-                                                onClick={() => handleEdit(contacto)}
-                                                sx={{ 
-                                                    color: 'text.secondary',
-                                                    '&:hover': { color: 'primary.main' }
-                                                }}
-                                            >
-                                                <EditIcon fontSize="small" />
-                                            </IconButton>
-                                            <IconButton 
-                                                size="small" 
-                                                color="error" 
-                                                onClick={() => deleteMutation.mutate(contacto.clienteContactoID)}
-                                                sx={{ 
-                                                    color: 'text.secondary',
-                                                    '&:hover': { color: 'error.main' }
-                                                }}
-                                            >
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
-                                        </Box>
-                                    </ListItemSecondaryAction>
+                <Box sx={{ flex: 1, overflow: 'auto', p: 0.5 }}>
+                    <MobileListShell
+                        items={data?.data.items || []}
+                        total={data?.data.total || 0}
+                        page={page}
+                        rowsPerPage={rowsPerPage}
+                        onPageChange={(_, p) => setPage(p)}
+                        onRowsPerPageChange={(e) => {
+                            setRowsPerPage(parseInt(e.target.value, 10));
+                            setPage(0);
+                        }}
+                        emptyMessage="No hay contactos registrados."
+                        keyExtractor={(item) => item.clienteContactoID}
+                        viewOnly={viewOnly}
+                        onEdit={handleEdit}
+                        onDelete={handleDeleteRequest}
+                        renderHeader={(contacto) => (
+                            <Box display="flex" alignItems="center" gap={1}>
+                                <Typography variant="subtitle2" fontWeight={600}>
+                                    {contacto.nombreCompleto}
+                                </Typography>
+                                {contacto.rol && (
+                                    <Chip label={contacto.rol} size="small" variant="outlined" sx={{ height: 20, fontSize: 10 }} />
                                 )}
-                            </ListItem>
-                        ))
-                    )}
-                </List>
+                                {!contacto.activo && (
+                                    <Chip label="Inactivo" size="small" color="error" sx={{ height: 20, fontSize: 10 }} />
+                                )}
+                            </Box>
+                        )}
+                        renderBody={(contacto) => (
+                            <Box display="flex" flexDirection="column" gap={0.5} mt={1}>
+                                <Typography variant="body2" color="text.secondary">
+                                    <PersonIcon sx={{ fontSize: 14, verticalAlign: 'middle', mr: 0.5 }} />
+                                    {contacto.telefonoPrincipal} • {contacto.email || 'Sin email'}
+                                </Typography>
+                            </Box>
+                        )}
+                    />
+                    
+                    <Box sx={{ display: { xs: 'none', md: 'block' }, mt: 2 }}>
+                        <SharedTable<ClienteContacto>
+                            columns={[
+                                { id: 'nombreCompleto', label: 'Nombre Completo' },
+                                { id: 'rol', label: 'Rol / Cargo' },
+                                { id: 'telefonoPrincipal', label: 'Teléfono' },
+                                { id: 'email', label: 'Email' },
+                                { id: 'activo', label: 'Estado', align: 'center' },
+                                ...(!viewOnly ? [{ id: 'acciones', label: 'Acciones', align: 'right' as const }] : [])
+                            ]}
+                            data={data?.data}
+                            page={page}
+                            rowsPerPage={rowsPerPage}
+                            onPageChange={(_, p) => setPage(p)}
+                            onRowsPerPageChange={(e) => {
+                                setRowsPerPage(parseInt(e.target.value, 10));
+                                setPage(0);
+                            }}
+                            isLoading={isLoading}
+                            keyExtractor={(item) => item.clienteContactoID}
+                            renderRow={(item) => (
+                                <>
+                                    <TableCell>
+                                        <Typography variant="body2" fontWeight={500}>{item.nombreCompleto}</Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Typography variant="body2">{item.rol || '-'}</Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Typography variant="body2">{item.telefonoPrincipal}</Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Typography variant="body2">{item.email || '-'}</Typography>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Chip 
+                                            label={item.activo ? "Activo" : "Inactivo"} 
+                                            size="small" 
+                                            color={item.activo ? "success" : "error"} 
+                                            sx={{ height: 24 }} 
+                                        />
+                                    </TableCell>
+                                    {!viewOnly && (
+                                        <TableCell align="right">
+                                            <TableActions 
+                                                onEdit={() => handleEdit(item)}
+                                                onDelete={() => handleDeleteRequest(item)}
+                                            />
+                                        </TableCell>
+                                    )}
+                                </>
+                            )}
+                        />
+                    </Box>
+                </Box>
             )}
-            <Snackbar
-                open={openSnackbar}
-                autoHideDuration={6000}
-                onClose={() => setOpenSnackbar(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={() => setOpenSnackbar(false)} severity="error" sx={{ width: '100%' }}>
-                    {errorMessage}
-                </Alert>
-            </Snackbar>
+
+            <ConfirmDialog
+                open={openDelete}
+                title="Eliminar Contacto"
+                content={`¿Está seguro que desea eliminar a ${contactoToDelete?.nombreCompleto}?`}
+                onClose={() => setOpenDelete(false)}
+                onConfirm={handleDeleteConfirm}
+                isLoading={deleteMutation.isPending}
+            />
         </Box>
     );
 }

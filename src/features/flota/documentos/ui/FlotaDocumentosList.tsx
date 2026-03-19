@@ -26,7 +26,7 @@ import {
     Error as ErrorIcon,
     CalendarToday as CalendarIcon
 } from '@mui/icons-material';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import type { CreateFlotaDocumentoSchema } from '../../model/schema';
 import { useState } from 'react';
@@ -36,6 +36,8 @@ import { parseDateOnly, formatDateLong } from '@/shared/utils/date-utils';
 import { FlotaDocumentosForm } from './FlotaDocumentosForm';
 import { ROWS_DOC_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
+import { useCreateFlotaDocumento, useUpdateFlotaDocumento, useDeleteFlotaDocumento } from '../../hooks/useFlotaDocumentoCrud';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 
 interface FlotaDocumentosListProps {
     flotaId: number;
@@ -87,12 +89,11 @@ const getExpirationStatus = (fechaVencimiento: string) => {
 
 export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocumentosListProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     const [editingDoc, setEditingDoc] = useState<CreateFlotaDocumentoSchema | undefined>(undefined);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [showForm, setShowForm] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [openDelete, setOpenDelete] = useState(false);
+    const [documentoToDelete, setDocumentoToDelete] = useState<FlotaDocumento | null>(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(6);
     
@@ -105,6 +106,10 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
     });
 
     const totalItems = data?.data?.total || 0;
+
+    const createMutation = useCreateFlotaDocumento();
+    const updateMutation = useUpdateFlotaDocumento();
+    const deleteMutation = useDeleteFlotaDocumento();
 
     const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
@@ -129,43 +134,6 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
         setShowForm(false);
     };
 
-    const createMutation = useMutation({
-        mutationFn: (data: CreateFlotaDocumentoSchema) => 
-            flotaApi.addDocumento(flotaId, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['flota-documentos', flotaId] });
-            handleFormCancel();
-        },
-        onError: () => {
-            setErrorMessage('Error al crear documento. Verifique los datos.');
-            setOpenSnackbar(true);
-        }
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: (data: CreateFlotaDocumentoSchema) => 
-            editingId ? flotaApi.updateDocumento(editingId, data) : Promise.reject('No ID'),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['flota-documentos', flotaId] });
-            handleFormCancel();
-        },
-        onError: () => {
-            setErrorMessage('Error al actualizar documento. Verifique los datos.');
-            setOpenSnackbar(true);
-        }
-    });
-
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => flotaApi.removeDocumento(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['flota-documentos', flotaId] });
-        },
-        onError: () => {
-            setErrorMessage('Error al eliminar el documento');
-            setOpenSnackbar(true);
-        }
-    });
-
     const handleEdit = (doc: FlotaDocumento) => {
         setEditingId(doc.flotaDocumentoID);
         setEditingDoc({
@@ -183,13 +151,27 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
         setEditingId(null);
         setEditingDoc(undefined);
         setShowForm(true);
-    }
-
     const handleSubmit = (data: CreateFlotaDocumentoSchema) => {
         if (editingId) {
-            updateMutation.mutate(data);
+            updateMutation.mutate({ id: editingId, data }, { onSuccess: handleFormCancel });
         } else {
-            createMutation.mutate(data);
+            createMutation.mutate({ flotaId, data }, { onSuccess: handleFormCancel });
+        }
+    };
+
+    const handleDelete = (doc: FlotaDocumento) => {
+        setDocumentoToDelete(doc);
+        setOpenDelete(true);
+    };
+
+    const handleDeleteConfirm = () => {
+        if (documentoToDelete) {
+            deleteMutation.mutate(documentoToDelete.flotaDocumentoID, {
+                onSuccess: () => {
+                    setOpenDelete(false);
+                    setDocumentoToDelete(null);
+                }
+            });
         }
     };
 
@@ -387,22 +369,21 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
                 </Box>
             )}
 
+            <ConfirmDialog
+                open={openDelete}
+                title="Eliminar Documento"
+                content={`¿Está seguro que desea eliminar el documento ${documentoToDelete?.numeroDocumento || ''}?`}
+                onClose={() => setOpenDelete(false)}
+                onConfirm={handleDeleteConfirm}
+                isLoading={deleteMutation.isPending}
+            />
+
             <DocumentPreviewDialog 
                 open={!!previewUrl}
                 onClose={handleClosePreview}
                 previewUrl={previewUrl}
             />
-
-            <Snackbar
-                open={openSnackbar}
-                autoHideDuration={6000}
-                onClose={() => setOpenSnackbar(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={() => setOpenSnackbar(false)} severity="error" sx={{ width: '100%' }}>
-                    {errorMessage}
-                </Alert>
-            </Snackbar>
         </Box>
     );
+}
 }

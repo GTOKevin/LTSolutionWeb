@@ -21,14 +21,14 @@ export const flotaApi = {
     getDocumentos: (params: FlotaDocumentoParams) =>
         httpClient.get<PagedResponse<FlotaDocumento>>('/Flota/documentos', { params }),
 
-    create: (data: CreateFlotaDto) => httpClient.post<number>('/Flota', data),
+    create: (data: CreateFlotaDto) => httpClient.post<number>('/Flota', data).then(res => res.data),
 
     update: (id: number, data: CreateFlotaDto) => httpClient.put<void>(`/Flota/${id}`, data),
 
     delete: (id: number) => httpClient.delete<void>(`/Flota/${id}`),
 
     addDocumento: (flotaId: number, data: CreateFlotaDocumentoDto) => 
-        httpClient.post<number>(`/Flota/${flotaId}/documentos`, data),
+        httpClient.post<number>(`/Flota/${flotaId}/documentos`, data).then(res => res.data),
 
     updateDocumento: (documentoId: number, data: CreateFlotaDocumentoDto) => 
         httpClient.put<void>(`/Flota/documentos/${documentoId}`, data),

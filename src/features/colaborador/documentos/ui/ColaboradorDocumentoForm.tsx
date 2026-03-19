@@ -13,13 +13,13 @@ import {
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { colaboradorDocumentoApi } from '@entities/colaborador-documento/api/colaborador-documento.api';
+import { useQuery } from '@tanstack/react-query';
 import { tipoDocumentoApi } from '@entities/tipo-documento/api/tipo-documento.api';
 import type { ColaboradorDocumento } from '@entities/colaborador-documento/model/types';
 import { createColaboradorDocumentoSchema, type CreateColaboradorDocumentoSchema } from '../model/schema';
 import { ImageUpload } from '@shared/components/ui/ImageUpload';
 import { useEffect } from 'react';
+import { useCreateColaboradorDocumento, useUpdateColaboradorDocumento } from '../../hooks/useColaboradorDocumentoCrud';
 
 interface ColaboradorDocumentoFormProps {
     open: boolean;
@@ -30,8 +30,10 @@ interface ColaboradorDocumentoFormProps {
 
 export function ColaboradorDocumentoForm({ open, onClose, colaboradorId, documentoToEdit }: ColaboradorDocumentoFormProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     const isEdit = !!documentoToEdit;
+
+    const createMutation = useCreateColaboradorDocumento();
+    const updateMutation = useUpdateColaboradorDocumento();
 
     // Queries
     const { data: tiposDocumento } = useQuery({
@@ -80,23 +82,18 @@ export function ColaboradorDocumentoForm({ open, onClose, colaboradorId, documen
         }
     }, [open, documentoToEdit, colaboradorId, reset]);
 
-    const mutation = useMutation({
-        mutationFn: async (data: CreateColaboradorDocumentoSchema) => {
-            if (isEdit && documentoToEdit) {
-                await colaboradorDocumentoApi.update(documentoToEdit.colaboradorDocumentoID, data);
-                return documentoToEdit.colaboradorDocumentoID;
-            }
-            const response = await colaboradorDocumentoApi.create(colaboradorId, data);
-            return response.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['colaborador-documentos', colaboradorId] });
-            onClose();
-        }
-    });
-
     const onSubmit = (data: CreateColaboradorDocumentoSchema) => {
-        mutation.mutate(data);
+        if (isEdit && documentoToEdit) {
+            updateMutation.mutate(
+                { id: documentoToEdit.colaboradorDocumentoID, data },
+                { onSuccess: () => onClose() }
+            );
+        } else {
+            createMutation.mutate(
+                { colaboradorId, data },
+                { onSuccess: () => onClose() }
+            );
+        }
     };
 
     return (
@@ -210,7 +207,7 @@ export function ColaboradorDocumentoForm({ open, onClose, colaboradorId, documen
                     <Button 
                         type="submit" 
                         variant="contained"
-                        disabled={isSubmitting || mutation.isPending}
+                        disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}
                     >
                         {isEdit ? 'Guardar Cambios' : 'Registrar'}
                     </Button>

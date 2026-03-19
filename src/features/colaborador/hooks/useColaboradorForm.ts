@@ -1,7 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { colaboradorApi } from '@entities/colaborador/api/colaborador.api';
+import { useQuery } from '@tanstack/react-query';
 import { maestroApi } from '@shared/api/maestro.api';
 import { rolColaboradorApi } from '@entities/rol-colaborador/api/rol-colaborador.api';
 import { monedaApi } from '@/shared/api/moneda.api';
@@ -10,6 +9,8 @@ import { useEffect, useState } from 'react';
 import type { Colaborador } from '@entities/colaborador/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { useCreateColaborador, useUpdateColaborador } from './useColaboradorCrud';
+import type { AxiosError } from 'axios';
 
 interface UseColaboradorFormProps {
     colaboradorToEdit?: Colaborador | null;
@@ -19,7 +20,6 @@ interface UseColaboradorFormProps {
 }
 
 export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open }: UseColaboradorFormProps) {
-    const queryClient = useQueryClient();
     const [createdId, setCreatedId] = useState<number | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -28,6 +28,9 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
     const isEdit = !!colaboradorToEdit;
     const effectiveId = colaboradorToEdit?.colaboradorID || createdId;
     const canEditDetails = !!effectiveId;
+
+    const createMutation = useCreateColaborador();
+    const updateMutation = useUpdateColaborador();
 
     // --- Queries ---
     const { data: roles } = useQuery({
@@ -113,46 +116,53 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
     }, [open, colaboradorToEdit, reset]);
 
     // --- Mutations ---
-    const mutation = useMutation({
-        mutationFn: async (data: CreateColaboradorSchema) => {
-            if (isEdit && colaboradorToEdit) {
-                await colaboradorApi.update(colaboradorToEdit.colaboradorID, data);
-                return colaboradorToEdit.colaboradorID;
-            }
-            if (createdId) {
-                await colaboradorApi.update(createdId, data);
-                return createdId;
-            }
-            const response = await colaboradorApi.create(data);
-            return response.data;
-        },
-        onSuccess: (id: number) => {
-            queryClient.invalidateQueries({ queryKey: ['colaboradores'] });
-            onSuccess(id);
-            if (!isEdit && !createdId) {
-                setCreatedId(id);
-                // Optionally move to next tab or keep open
-                // onClose(); 
-            } else {
-                onClose();
-            }
-        },
-        onError: (error: any) => {
-            const genericError = handleBackendErrors<CreateColaboradorSchema>(error, setError);
-            if (genericError) {
-                setErrorMessage(genericError);
-                setOpenSnackbar(true);
-            }
+    const handleError = (error: AxiosError | any) => {
+        const genericError = handleBackendErrors<CreateColaboradorSchema>(error, setError);
+        if (genericError) {
+            setErrorMessage(genericError);
+            setOpenSnackbar(true);
         }
-    });
+    };
+
+    const handleSuccess = (id: number) => {
+        onSuccess(id);
+        if (!isEdit && !createdId) {
+            setCreatedId(id);
+        } else {
+            onClose();
+        }
+    };
 
     const onSubmit = (data: CreateColaboradorSchema) => {
-        mutation.mutate(data);
+        if (isEdit && colaboradorToEdit) {
+            updateMutation.mutate(
+                { id: colaboradorToEdit.colaboradorID, data },
+                {
+                    onSuccess: () => handleSuccess(colaboradorToEdit.colaboradorID),
+                    onError: handleError
+                }
+            );
+        } else if (createdId) {
+            updateMutation.mutate(
+                { id: createdId, data },
+                {
+                    onSuccess: () => handleSuccess(createdId),
+                    onError: handleError
+                }
+            );
+        } else {
+            createMutation.mutate(
+                data,
+                {
+                    onSuccess: (response) => handleSuccess(response.data),
+                    onError: handleError
+                }
+            );
+        }
     };
 
     return {
         form,
-        mutation,
         onSubmit,
         activeTab,
         setActiveTab,
@@ -164,6 +174,7 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
         canEditDetails,
         isEdit,
         createdId,
+        isSubmitting: createMutation.isPending || updateMutation.isPending,
         
         // Catalogs
         roles,

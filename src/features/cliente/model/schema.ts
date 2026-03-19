@@ -6,7 +6,7 @@ export const createClienteSchema = z.object({
     razonSocial: z.string().regex(INPUT_VAL.TEXTO_SEGURO_REGEX, ERROR_MESSAGES.TEXTO_SEGURO).min(1, 'Razón Social es requerida'),
     direccionLegal: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL).optional(),
     direccionFiscal: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL).optional(),
-    contactoPrincipal: z.string().min(1, 'Contacto Principal es requerido'),
+    contactoPrincipal: z.string().regex(INPUT_VAL.LETRAS_ESPACIO, ERROR_MESSAGES.LETRAS_ESPACIO).min(1, 'Contacto Principal es requerido'),
     telefono: z.string().regex(INPUT_VAL.TELEFONO_PERU_REGEX, 'Debe ser un celular válido (9 dígitos)').optional().or(z.literal('')),
     email: z.string().email('Email inválido').optional().or(z.literal('')),
     activo: z.boolean(),
@@ -15,7 +15,7 @@ export const createClienteSchema = z.object({
 export type CreateClienteSchema = z.infer<typeof createClienteSchema>;
 
 export const createContactoSchema = z.object({
-    nombreCompleto: z.string().min(1, 'Nombre es requerido'),
+    nombreCompleto: z.string().regex(INPUT_VAL.LETRAS_ESPACIO, ERROR_MESSAGES.LETRAS_ESPACIO).min(1, 'Nombre es requerido'),
     email: z.string().email('Email inválido').optional().or(z.literal('')),
     telefonoPrincipal: z.string().regex(INPUT_VAL.TELEFONO_PERU_REGEX, ERROR_MESSAGES.TELEFONO_PERU).min(1, 'Teléfono Principal es requerido'),
     telefonoSecundario: z.string().regex(INPUT_VAL.TELEFONO_PERU_REGEX, ERROR_MESSAGES.TELEFONO_PERU).optional(),

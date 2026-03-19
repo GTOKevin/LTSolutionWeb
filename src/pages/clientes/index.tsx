@@ -4,8 +4,6 @@ import {
     Button,
     TextField,
     InputAdornment,
-    Snackbar,
-    Alert,
     Select,
     MenuItem,
     useTheme
@@ -14,7 +12,7 @@ import {
     Search as SearchIcon,
     Add as AddIcon
 } from '@mui/icons-material';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
 import { useState, useEffect } from 'react';
 import { CreateEditClienteModal } from '../../features/cliente/create-edit/ui/CreateEditClienteModal';
@@ -22,6 +20,7 @@ import { ConfirmDialog } from '../../shared/components/ui/ConfirmDialog';
 import type { Cliente } from '@entities/cliente/model/types';
 import { ClientesTable } from '../../features/cliente/list/ui/ClientesTable';
 import { ClientesMobileList } from '../../features/cliente/list/ui/ClientesMobileList';
+import { useDeleteCliente } from '@features/cliente/hooks/useClienteCrud';
 
 export function ClientesPage() {
     const theme = useTheme();
@@ -34,8 +33,6 @@ export function ClientesPage() {
     const [clienteToEdit, setClienteToEdit] = useState<Cliente | null>(null);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [clienteToDelete, setClienteToDelete] = useState<Cliente | null>(null);
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
 
     const [viewOnlyMode, setViewOnlyMode] = useState(false);
 
@@ -63,21 +60,7 @@ export function ClientesPage() {
         })
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => clienteApi.delete(id),
-        onSuccess: () => {
-            setDeleteConfirmOpen(false);
-            setClienteToDelete(null);
-            setSnackbarMessage(`Cliente ${clienteToDelete?.razonSocial} Eliminado.`);
-            setSnackbarOpen(true);
-            refetch();
-        },
-        onError: () => {
-             setDeleteConfirmOpen(false);
-             setClienteToDelete(null);
-             // Optionally handle error message
-        }
-    });
+    const deleteMutation = useDeleteCliente();
 
     const handleCreate = () => {
         setClienteToEdit(null);
@@ -104,7 +87,13 @@ export function ClientesPage() {
 
     const handleConfirmDelete = () => {
         if (clienteToDelete) {
-            deleteMutation.mutate(clienteToDelete.clienteID);
+            deleteMutation.mutate(clienteToDelete.clienteID, {
+                onSuccess: () => {
+                    setDeleteConfirmOpen(false);
+                    setClienteToDelete(null);
+                    refetch();
+                }
+            });
         }
     };
 
@@ -263,17 +252,6 @@ export function ClientesPage() {
                 confirmText="Eliminar"
                 isLoading={deleteMutation.isPending}
             />
-
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={() => setSnackbarOpen(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 }

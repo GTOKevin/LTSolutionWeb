@@ -7,8 +7,7 @@ export const mercaderiaApi = {
         httpClient.get<PagedResponse<Mercaderia>>('/Mercaderia', { params }),
     getById: (id: number) =>
         httpClient.get<MercaderiaDto>(`/Mercaderia/${id}`),
-    create: (data: CreateMercaderiaDto) =>
-        httpClient.post<number>('/Mercaderia', data),
+    create: (data: CreateMercaderiaDto) => httpClient.post<number>('/Mercaderia', data).then(res => res.data),
     update: (id: number, data: CreateMercaderiaDto) =>
         httpClient.put<void>(`/Mercaderia/${id}`, data)
 };

@@ -10,7 +10,7 @@ export const licenciaApi = {
         httpClient.get<Licencia>(`/Colaborador/licencias/${id}`), // Note: Controller doesn't have GetById for Licencia specifically, but let's keep it or remove if unused. The list comes from getAll.
 
     create: (colaboradorId: number, data: CreateLicenciaDto) => 
-        httpClient.post<number>(`/Colaborador/${colaboradorId}/licencias`, data),
+        httpClient.post<number>(`/Colaborador/${colaboradorId}/licencias`, data).then(res => res.data),
 
     update: (id: number, data: CreateLicenciaDto) => 
         httpClient.put<void>(`/Colaborador/licencias/${id}`, data),
