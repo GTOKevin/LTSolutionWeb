@@ -8,6 +8,7 @@ export interface Cliente {
     telefono?: string;
     email?: string;
     activo: boolean;
+    eliminado: boolean;
     clienteContactos: ClienteContacto[];
 }
 

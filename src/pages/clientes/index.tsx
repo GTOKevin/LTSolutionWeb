@@ -21,6 +21,7 @@ import type { Cliente } from '@entities/cliente/model/types';
 import { ClientesTable } from '../../features/cliente/list/ui/ClientesTable';
 import { ClientesMobileList } from '../../features/cliente/list/ui/ClientesMobileList';
 import { useDeleteCliente } from '@features/cliente/hooks/useClienteCrud';
+import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 
 export function ClientesPage() {
     const theme = useTheme();
@@ -177,7 +178,7 @@ export function ClientesPage() {
                             size="small"
                             fullWidth
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => setSearchTerm(handleSanitizeSearchInput(e.target.value))}
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">

@@ -59,3 +59,25 @@ export const handleAlphaNumericSpacesKeyDown = (e: React.KeyboardEvent<HTMLDivEl
         e.preventDefault();
     }
 };
+
+/**
+ * Validates and restricts input to only allow numbers.
+ * Useful for fields like phone numbers, quantities, etc.
+ * 
+ * Usage: <TextField onKeyDown={handleNumbersOnlyKeyDown} ... />
+ */
+export const handleNumbersOnlyKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key.length > 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+    
+    if (!/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+    }
+};
+
+/**
+ * Sanitizes search input by removing any character that is not:
+ * letters (including accents and ñ), numbers, spaces, or the special characters , . - _ / ( ) [ ]
+ */
+export const handleSanitizeSearchInput = (value: string): string => {
+    return value.split('').filter(char => INPUT_VAL.ALPHA_NUMERICO_ESPECIAL.test(char)).join('');
+};

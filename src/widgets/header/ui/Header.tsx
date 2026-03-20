@@ -20,6 +20,7 @@ import {
 import { useThemeStore } from '@shared/store/theme.store';
 import { DRAWER_WIDTH } from '@widgets/sidebar/ui/Sidebar';
 import { useLocation, } from 'react-router-dom';
+import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 
 export function Header() {
     const { mode, toggleMode } = useThemeStore();
@@ -129,6 +130,9 @@ export function Header() {
                         <InputBase
                             placeholder="Buscar en la plataforma..."
                             sx={{ flex: 1, fontSize: '0.875rem' }}
+                            onChange={(e) => {
+                                e.target.value = handleSanitizeSearchInput(e.target.value);
+                            }}
                         />
                         <Box
                             component="span"

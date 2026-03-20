@@ -18,6 +18,7 @@ import {
 } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import type { SelectItem } from '@/shared/model/types';
+import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 
 interface MantenimientoFilterProps {
     onSearch: (query: string) => void;
@@ -99,7 +100,7 @@ export function MantenimientoFilter({
                         fullWidth
                         placeholder="Buscar por ID, vehículo, motivo..."
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => setSearchTerm(handleSanitizeSearchInput(e.target.value))}
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">

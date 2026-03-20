@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, TableCell } from '@mui/material';
+import { Box, Typography, TableCell, Chip } from '@mui/material';
 import type { Cliente } from '@entities/cliente/model/types';
 import type { PagedResponse } from '@/shared/model/types';
 import { StatusChip } from '@/shared/components/ui/StatusChip';
@@ -68,7 +68,17 @@ export function ClientesTable({
                     </TableCell>
                     <TableCell>{cliente.contactoPrincipal}</TableCell>
                     <TableCell>
-                        <StatusChip active={cliente.activo} />
+                        {cliente.eliminado ? (
+                            <Chip 
+                                label="Eliminado" 
+                                size="small" 
+                                color="error" 
+                                variant="outlined"
+                                sx={{ fontWeight: 600 }}
+                            />
+                        ) : (
+                            <StatusChip active={cliente.activo} />
+                        )}
                     </TableCell>
                     <TableCell>{cliente.telefono || '-'}</TableCell>
                     <TableCell align="right">

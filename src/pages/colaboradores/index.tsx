@@ -19,6 +19,7 @@ import { ColaboradorMobileList } from '@features/colaborador/list/ui/Colaborador
 import { CreateEditColaboradorModal } from '@features/colaborador/create-edit/ui/CreateEditColaboradorModal';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { useDeleteColaborador } from '@features/colaborador/hooks/useColaboradorCrud';
+import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 
 export function ColaboradoresPage() {
     const theme = useTheme();
@@ -153,7 +154,7 @@ export function ColaboradoresPage() {
                             size="small"
                             fullWidth
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => setSearchTerm(handleSanitizeSearchInput(e.target.value))}
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">

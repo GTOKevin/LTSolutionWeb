@@ -19,6 +19,7 @@ import type { Flota } from '@entities/flota/model/types';
 import { FlotaTable } from '../../features/flota/list/ui/FlotaTable';
 import { FlotaMobileList } from '../../features/flota/list/ui/FlotaMobileList';
 import { useDeleteFlota } from '@features/flota/hooks/useFlotaCrud';
+import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 
 export function FlotasPage() {
     const theme = useTheme();
@@ -167,7 +168,7 @@ export function FlotasPage() {
                             size="small"
                             fullWidth
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => setSearchTerm(handleSanitizeSearchInput(e.target.value))}
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">

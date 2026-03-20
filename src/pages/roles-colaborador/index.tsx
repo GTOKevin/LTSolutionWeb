@@ -17,6 +17,7 @@ import { CreateEditRolColaboradorModal } from '../../features/rol-colaborador/cr
 import type { RolColaborador } from '@entities/rol-colaborador/model/types';
 import { RolColaboradorTable } from '../../features/rol-colaborador/list/ui/RolColaboradorTable';
 import { RolColaboradorMobileList } from '../../features/rol-colaborador/list/ui/RolColaboradorMobileList';
+import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 
 export function RolesColaboradorPage() {
     const theme = useTheme();
@@ -124,7 +125,7 @@ export function RolesColaboradorPage() {
                     size="small"
                     fullWidth
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => setSearchTerm(handleSanitizeSearchInput(e.target.value))}
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">

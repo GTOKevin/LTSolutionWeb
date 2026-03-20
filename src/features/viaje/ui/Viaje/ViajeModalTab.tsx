@@ -33,7 +33,8 @@ export function ViajeModalTab({ open, onClose, viaje, isViewOnly = false }: Prop
         mutation,
         options,
         requiereEscolta,
-        requierePermiso
+        requierePermiso,
+        currentViajeId
     } = useViajeForm({ open, onClose, viaje });
 
     const { 
@@ -77,7 +78,7 @@ export function ViajeModalTab({ open, onClose, viaje, isViewOnly = false }: Prop
                                 tiposMedida={tiposMedida || []} 
                                 tiposPeso={tiposPeso || []} 
                                 mercaderias={mercaderias || []}
-                                viajeId={viaje?.viajeID || 0}
+                                viajeId={currentViajeId}
                             />
                         </TabPanel>
 
@@ -85,7 +86,7 @@ export function ViajeModalTab({ open, onClose, viaje, isViewOnly = false }: Prop
                             <ViajeGuia
                                 viewOnly={isViewOnly}
                                 tiposGuia={tiposGuia || []}
-                                viajeId={viaje?.viajeID}
+                                viajeId={currentViajeId}
                             />
                         </TabPanel>
 
@@ -94,7 +95,7 @@ export function ViajeModalTab({ open, onClose, viaje, isViewOnly = false }: Prop
                                 viewOnly={isViewOnly} 
                                 tiposGasto={tiposGasto || []} 
                                 monedas={monedas || []}
-                                viajeId={viaje?.viajeID}
+                                viajeId={currentViajeId}
                             />
                         </TabPanel>
 
@@ -102,13 +103,13 @@ export function ViajeModalTab({ open, onClose, viaje, isViewOnly = false }: Prop
                             <ViajeIncidente
                                 viewOnly={isViewOnly}
                                 tiposIncidente={tiposIncidente || []}
-                                viajeId={viaje?.viajeID || 0}
+                                viajeId={currentViajeId}
                             />
                         </TabPanel>
 
                         {requierePermiso && (
                             <TabPanel value={activeTab} index={TAB_INDICES.PERMISOS}>
-                                <ViajePermiso viajeId={viaje?.viajeID} viewOnly={isViewOnly} />
+                                <ViajePermiso viajeId={currentViajeId} viewOnly={isViewOnly} />
                             </TabPanel>
                         )}
 
@@ -116,7 +117,7 @@ export function ViajeModalTab({ open, onClose, viaje, isViewOnly = false }: Prop
                             <TabPanel value={activeTab} index={TAB_INDICES.ESCOLTA}>
                                 <ViajeEscolta 
                                     viewOnly={isViewOnly} 
-                                    viajeId={viaje?.viajeID}
+                                    viajeId={currentViajeId}
                                     flotas={flotasEscolta || []}
                                     colaboradores={colaboradores || []}
                                 />
