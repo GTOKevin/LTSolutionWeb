@@ -8,6 +8,9 @@ import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { INITIAL_FILTERS } from '../model/types';
 import type { MantenimientoFiltersState } from '../model/types';
 import { useDeleteMantenimiento } from '../../hooks/useMantenimientoCrud';
+import { useMutation } from '@tanstack/react-query';
+import { useToast } from '@/shared/components/ui/Toast';
+import {type ApiMutationError } from '@/shared/utils/api-errors';
 
 /**
  * Hook personalizado para gestionar la lógica de negocio del módulo de Mantenimientos.
@@ -34,6 +37,8 @@ export function useMantenimientos() {
     const [viewOnly, setViewOnly] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<Mantenimiento | null>(null);
+    const [openReopenDialog, setOpenReopenDialog] = useState(false);
+    const [itemToReopen, setItemToReopen] = useState<Mantenimiento | null>(null);
 
     // --- Data Fetching ---
     // Catalogs
@@ -64,6 +69,22 @@ export function useMantenimientos() {
 
     // --- Mutations ---
     const deleteMutation = useDeleteMantenimiento();
+    const { showToast } = useToast();
+    
+    const reopenMutation = useMutation({
+        mutationFn: mantenimientoApi.reopen,
+        onSuccess: () => {
+            setOpenReopenDialog(false);
+            setItemToReopen(null);
+            queryClient.invalidateQueries({ queryKey: ['mantenimientos'] });
+            showToast({ entity: 'Mantenimiento', action: 'reopen' });
+        },
+        onError: (error: ApiMutationError) => {
+            const message = error.response?.data?.message || error.response?.data?.detail;
+            showToast({ entity: 'Mantenimiento', action: 'reopen', isError: true, message });
+            if (message) console.error("Validation error:", message);
+        }
+    });
 
     // --- Handlers ---
     
@@ -137,6 +158,17 @@ export function useMantenimientos() {
         }
     };
 
+    const handleReopenClick = (item: Mantenimiento) => {
+        setItemToReopen(item);
+        setOpenReopenDialog(true);
+    };
+
+    const handleConfirmReopen = () => {
+        if (itemToReopen) {
+            reopenMutation.mutate(itemToReopen.mantenimientoID);
+        }
+    };
+
     const handleRefresh = () => {
         queryClient.invalidateQueries({ queryKey: ['mantenimientos'] });
     };
@@ -157,6 +189,9 @@ export function useMantenimientos() {
         viewOnly,
         openDeleteDialog,
         itemToDelete,
+        openReopenDialog,
+        itemToReopen,
+        reopenPending: reopenMutation.isPending,
         
         // Catalogs
         listaFlotas: flotas?.data || [],
@@ -165,6 +200,7 @@ export function useMantenimientos() {
         // Setters
         setOpenModal,
         setOpenDeleteDialog,
+        setOpenReopenDialog,
 
         // Actions
         handleSearch,
@@ -177,6 +213,8 @@ export function useMantenimientos() {
         handleView,
         handleDeleteClick,
         handleConfirmDelete,
+        handleReopenClick,
+        handleConfirmReopen,
         handleRefresh
     };
 }

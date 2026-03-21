@@ -5,16 +5,24 @@ import {
     IconButton,
     Tooltip,
     useTheme,
-    alpha
+    alpha,
+    Menu,
+    MenuItem,
+    ListItemIcon,
+    ListItemText
 } from '@mui/material';
 import {
     Add as AddIcon,
     FilterList as FilterListIcon,
     Refresh as RefreshIcon,
-    Build as BuildIcon
+    Build as BuildIcon,
+    FileDownload as FileDownloadIcon,
+    PictureAsPdf as PdfIcon,
+    TableChart as ExcelIcon
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useMantenimientos } from '@features/mantenimiento/list/hooks/useMantenimientos';
+import { useMantenimientoReport } from '@features/mantenimiento/hooks/useMantenimientoReport';
 import { MantenimientoFilter } from '@features/mantenimiento/list/ui/MantenimientoFilter';
 import { MantenimientoTable } from '@features/mantenimiento/list/ui/MantenimientoTable';
 import { MantenimientoMobileList } from '@features/mantenimiento/list/ui/MantenimientoMobileList';
@@ -31,6 +39,8 @@ export function MantenimientosPage() {
         isLoading,
         page,
         rowsPerPage,
+        searchQuery,
+        appliedFilters,
         initialFilters,
         
         // Modal State
@@ -41,6 +51,10 @@ export function MantenimientosPage() {
         openDeleteDialog,
         setOpenDeleteDialog,
         itemToDelete,
+        openReopenDialog,
+        setOpenReopenDialog,
+        itemToReopen,
+        reopenPending,
         
         // Catalogs
         listaFlotas,
@@ -57,8 +71,42 @@ export function MantenimientosPage() {
         handleView,
         handleDeleteClick,
         handleConfirmDelete,
+        handleReopenClick,
+        handleConfirmReopen,
         handleRefresh
     } = useMantenimientos();
+
+    const { generateSummaryExcel, generateSummaryPdf } = useMantenimientoReport();
+
+    // Export Menu state
+    const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
+    const openExportMenu = Boolean(exportAnchorEl);
+
+    const handleExportClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setExportAnchorEl(event.currentTarget);
+    };
+
+    const handleExportClose = () => {
+        setExportAnchorEl(null);
+    };
+
+    const currentParams = {
+        search: searchQuery || undefined,
+        flotaID: appliedFilters.flotaID || undefined,
+        estadoID: appliedFilters.estadoID || undefined,
+        desde: appliedFilters.desde || undefined,
+        hasta: appliedFilters.hasta || undefined
+    };
+
+    const handleExportExcel = () => {
+        handleExportClose();
+        generateSummaryExcel(currentParams);
+    };
+
+    const handleExportPdf = () => {
+        handleExportClose();
+        generateSummaryPdf(currentParams);
+    };
 
     return (
         <Box sx={{ 
@@ -119,6 +167,46 @@ export function MantenimientosPage() {
                                 <RefreshIcon />
                             </IconButton>
                         </Tooltip>
+                        
+                        <Button
+                            variant="outlined"
+                            startIcon={<FileDownloadIcon />}
+                            onClick={handleExportClick}
+                            sx={{ 
+                                border: `1px solid ${theme.palette.divider}`,
+                                color: 'text.primary',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            Exportar
+                        </Button>
+                        <Menu
+                            anchorEl={exportAnchorEl}
+                            open={openExportMenu}
+                            onClose={handleExportClose}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
+                        >
+                            <MenuItem onClick={handleExportExcel}>
+                                <ListItemIcon>
+                                    <ExcelIcon color="success" fontSize="small" />
+                                </ListItemIcon>
+                                <ListItemText>Excel (.xlsx)</ListItemText>
+                            </MenuItem>
+                            <MenuItem onClick={handleExportPdf}>
+                                <ListItemIcon>
+                                    <PdfIcon color="error" fontSize="small" />
+                                </ListItemIcon>
+                                <ListItemText>PDF (.pdf)</ListItemText>
+                            </MenuItem>
+                        </Menu>
+
                         <Button
                             variant="contained"
                             startIcon={<AddIcon />}
@@ -160,6 +248,7 @@ export function MantenimientosPage() {
                     onView={handleView}
                     onEdit={handleEdit}
                     onDelete={handleDeleteClick}
+                    onReopen={handleReopenClick}
                 />
 
                 <MantenimientoTable
@@ -172,6 +261,7 @@ export function MantenimientosPage() {
                     onView={handleView}
                     onEdit={handleEdit}
                     onDelete={handleDeleteClick}
+                    onReopen={handleReopenClick}
                 />
 
                 {/* Modals */}
@@ -192,6 +282,18 @@ export function MantenimientosPage() {
                     confirmText="Eliminar"
                     cancelText="Cancelar"
                     severity="error"
+                />
+
+                <ConfirmDialog
+                    open={openReopenDialog}
+                    title="Reabrir Mantenimiento"
+                    content={`¿Está seguro que desea reabrir el mantenimiento #MNT-${itemToReopen?.mantenimientoID}? Esto habilitará la edición nuevamente.`}
+                    onConfirm={handleConfirmReopen}
+                    onClose={() => setOpenReopenDialog(false)}
+                    confirmText="Reabrir"
+                    cancelText="Cancelar"
+                    severity="warning"
+                    isLoading={reopenPending}
                 />
             </Box>
         </Box>

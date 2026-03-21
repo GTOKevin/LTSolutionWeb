@@ -7,7 +7,8 @@ import type {
     MantenimientoDetalleParams, 
     MantenimientoDetalleResponse,
     MantenimientoParams,
-    MantenimientoReport
+    MantenimientoReport,
+    MantenimientosSummaryReport
 } from '../model/types';
 
 export const mantenimientoApi = {
@@ -50,9 +51,17 @@ export const mantenimientoApi = {
         await http.delete(`/mantenimiento/detalles/${id}`);
     },
 
-    // Reporte
+    getSummaryReport: async (params: Omit<MantenimientoParams, 'page' | 'size'>) => {
+        const { data } = await http.get<MantenimientosSummaryReport>('/mantenimiento/reporte', { params });
+        return data;
+    },
+
     getReport: async (id: number) => {
         const { data } = await http.get<MantenimientoReport>(`/mantenimiento/${id}/reporte`);
         return data;
+    },
+
+    reopen: async (id: number) => {
+        await http.post(`/mantenimiento/${id}/reabrir`);
     }
 };

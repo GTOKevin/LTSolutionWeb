@@ -16,7 +16,8 @@ import {
     MoreVert as MoreVertIcon,
     Visibility as VisibilityIcon,
     TableView as ExcelIcon,
-    PictureAsPdf as PdfIcon
+    PictureAsPdf as PdfIcon,
+    LockOpen as LockOpenIcon
 } from '@mui/icons-material';
 import { useState, type ReactNode } from 'react';
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
@@ -43,12 +44,14 @@ interface MobileListShellProps<T> {
     onPreview?: (item: T) => void; // Si hay un archivo principal
     onExportExcel?: (item: T) => void;
     onExportPdf?: (item: T) => void;
+    onReopen?: (item: T) => void;
     
     // Conditionals for actions (optional, returns boolean if action should be shown for specific item)
     canEdit?: (item: T) => boolean;
     canDelete?: (item: T) => boolean;
     canExportExcel?: (item: T) => boolean;
     canExportPdf?: (item: T) => boolean;
+    canReopen?: (item: T) => boolean;
     
     // Styling
     getCardStyle?: (item: T, theme: any) => object;
@@ -72,10 +75,12 @@ export function MobileListShell<T>({
     onPreview,
     onExportExcel,
     onExportPdf,
+    onReopen,
     canEdit = () => true,
     canDelete = () => true,
     canExportExcel = () => true,
     canExportPdf = () => true,
+    canReopen = () => false,
     getCardStyle
 }: MobileListShellProps<T>) {
     const theme = useTheme();
@@ -92,7 +97,7 @@ export function MobileListShell<T>({
         setSelectedItem(null);
     };
 
-    const handleAction = (action: 'edit' | 'delete' | 'preview' | 'view' | 'excel' | 'pdf') => {
+    const handleAction = (action: 'edit' | 'delete' | 'preview' | 'view' | 'excel' | 'pdf' | 'reopen') => {
         if (!selectedItem) return;
 
         switch (action) {
@@ -113,6 +118,9 @@ export function MobileListShell<T>({
                 break;
             case 'pdf':
                 onExportPdf?.(selectedItem);
+                break;
+            case 'reopen':
+                onReopen?.(selectedItem);
                 break;
         }
         handleMenuClose();
@@ -186,6 +194,13 @@ export function MobileListShell<T>({
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
+                {onReopen && selectedItem && canReopen(selectedItem) && (
+                    <MenuItem onClick={() => handleAction('reopen')}>
+                        <LockOpenIcon fontSize="small" color="warning" sx={{ mr: 1.5 }} />
+                        Reabrir
+                    </MenuItem>
+                )}
+                
                 {onView && selectedItem && (
                     <MenuItem onClick={() => handleAction('view')}>
                         <VisibilityIcon fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />

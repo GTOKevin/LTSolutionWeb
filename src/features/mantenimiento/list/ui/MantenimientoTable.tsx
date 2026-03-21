@@ -8,7 +8,10 @@ import { TableActions } from '@shared/components/ui/TableActions';
 import { formatDateLong } from '@shared/utils/date-utils';
 import { useMantenimientoReport } from '../../hooks/useMantenimientoReport';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
-import { ESTADO_MANTENIMIENTO_NAMES, ESTADO_MANTENIMIENTO_ID } from '@/shared/constants/constantes';
+import { ESTADO_MANTENIMIENTO_NAMES, ESTADO_MANTENIMIENTO_ID, ROL_USUARIO_ID } from '@/shared/constants/constantes';
+import { useAuthStore } from '@/shared/store/auth.store';
+import { Tooltip, IconButton, alpha, useTheme } from '@mui/material';
+import { LockOpen } from '@mui/icons-material';
 
 interface MantenimientoTableProps {
     data?: PagedResponse<Mantenimiento>;
@@ -20,6 +23,7 @@ interface MantenimientoTableProps {
     onView: (item: Mantenimiento) => void;
     onEdit: (item: Mantenimiento) => void;
     onDelete: (item: Mantenimiento) => void;
+    onReopen?: (item: Mantenimiento) => void;
 }
 
 const getStatusChip = (status: Estado | undefined | null) => {
@@ -60,9 +64,12 @@ export function MantenimientoTable({
     onRowsPerPageChange,
     onView,
     onEdit,
-    onDelete
+    onDelete,
+    onReopen
 }: MantenimientoTableProps) {
     const { generateExcel, generatePdf } = useMantenimientoReport();
+    const user = useAuthStore((state) => state.user);
+    const theme = useTheme();
 
     const columns: Column[] = React.useMemo(() => [
         { id: 'mantenimientoID', label: 'ID Mantenimiento' },
@@ -125,13 +132,34 @@ export function MantenimientoTable({
                         {getStatusChip(item.estado)}
                     </TableCell>
                     <TableCell align="right">
-                        <TableActions 
-                            onView={() => onView(item)}
-                            onEdit={item.estadoID !== ESTADO_MANTENIMIENTO_ID.COMPLETADO ? () => onEdit(item) : undefined}
-                            onDelete={item.estadoID !== ESTADO_MANTENIMIENTO_ID.COMPLETADO ? () => onDelete(item) : undefined}
-                            onExportExcel={(item.estadoID === ESTADO_MANTENIMIENTO_ID.COMPLETADO) ? () => generateExcel(item.mantenimientoID) : undefined}
-                            onExportPdf={(item.estadoID === ESTADO_MANTENIMIENTO_ID.COMPLETADO) ? () => generatePdf(item.mantenimientoID) : undefined}
-                        />
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 0.5 }}>
+                            {item.cerrado && user && (Number(user.roleId) === ROL_USUARIO_ID.ADMINISTRADOR || Number(user.roleId) === ROL_USUARIO_ID.GERENTE_GENERAL) && (
+                                <Tooltip title="Reabrir mantenimiento">
+                                    <IconButton 
+                                        size="small" 
+                                        onClick={(e) => { 
+                                            e.stopPropagation(); 
+                                            onReopen && onReopen(item); 
+                                        }}
+                                        sx={{ 
+                                            bgcolor: alpha(theme.palette.warning.main, 0.1),
+                                            '&:hover': {
+                                                bgcolor: alpha(theme.palette.warning.main, 0.2),
+                                            }
+                                        }}
+                                    >
+                                        <LockOpen fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                            <TableActions 
+                                onView={() => onView(item)}
+                                onEdit={!(item.estadoID === ESTADO_MANTENIMIENTO_ID.COMPLETADO && item.cerrado) ? () => onEdit(item) : undefined}
+                                onDelete={!(item.estadoID === ESTADO_MANTENIMIENTO_ID.COMPLETADO && item.cerrado) ? () => onDelete(item) : undefined}
+                                onExportExcel={(item.estadoID === ESTADO_MANTENIMIENTO_ID.COMPLETADO && item.cerrado) ? () => generateExcel(item.mantenimientoID) : undefined}
+                                onExportPdf={(item.estadoID === ESTADO_MANTENIMIENTO_ID.COMPLETADO && item.cerrado) ? () => generatePdf(item.mantenimientoID) : undefined}
+                            />
+                        </Box>
                     </TableCell>
                 </>
             )}

@@ -46,7 +46,8 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
     const [editingItem, setEditingItem] = useState<CreateMantenimientoDetalleSchema | undefined>(undefined);
 
     const isCompleted = mantenimientoInfo?.estado?.nombre?.toUpperCase() === 'FINALIZADO' || mantenimientoInfo?.estado?.nombre?.toUpperCase() === 'COMPLETADO';
-    const showActions = !viewOnly && !isCompleted;
+    const isClosed = mantenimientoInfo?.cerrado;
+    const showActions = !viewOnly && !(isCompleted && isClosed);
 
     // Query for all details (uses updated backend response which includes totals)
     const { data, isLoading } = useQuery({

@@ -33,6 +33,7 @@ export interface Mantenimiento {
     kmIngreso: number;
     kmSalida?: number;
     estadoID: number;
+    cerrado: boolean;
     fechaRegistro: string;
     fechaModificacion?: string;
     
@@ -97,5 +98,10 @@ export interface MantenimientoDetalleResponse extends PagedResponse<Mantenimient
 export interface MantenimientoReport {
     mantenimiento: Mantenimiento;
     detalles: MantenimientoDetalle[];
+    totalsByCurrency: Record<string, number>;
+}
+
+export interface MantenimientosSummaryReport {
+    mantenimientos: Mantenimiento[];
     totalsByCurrency: Record<string, number>;
 }

@@ -8,6 +8,8 @@ import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { formatDateLong } from '@shared/utils/date-utils';
 import { useMantenimientoReport } from '../../hooks/useMantenimientoReport';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
+import { useAuthStore } from '@/shared/store/auth.store';
+import { ROL_USUARIO_ID } from '@/shared/constants/constantes';
 
 interface MantenimientoMobileListProps {
     data?: Mantenimiento[];
@@ -20,6 +22,7 @@ interface MantenimientoMobileListProps {
     onView: (item: Mantenimiento) => void;
     onEdit: (item: Mantenimiento) => void;
     onDelete: (item: Mantenimiento) => void;
+    onReopen?: (item: Mantenimiento) => void;
 }
 
 export function MantenimientoMobileList({
@@ -32,10 +35,12 @@ export function MantenimientoMobileList({
     isLoading,
     onView,
     onEdit,
-    onDelete
+    onDelete,
+    onReopen
 }: MantenimientoMobileListProps) {
     const theme = useTheme();
     const { generateExcel, generatePdf } = useMantenimientoReport();
+    const user = useAuthStore((state) => state.user);
 
     const getStatusColor = (statusName: string = '') => {
         const name = statusName.toLowerCase();
@@ -69,12 +74,14 @@ export function MantenimientoMobileList({
                 onView={onView}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onReopen={onReopen}
                 onExportExcel={(item) => generateExcel(item.mantenimientoID)}
                 onExportPdf={(item) => generatePdf(item.mantenimientoID)}
-                canEdit={(item) => !isCompleted(item)}
-                canDelete={(item) => !isCompleted(item)}
-                canExportExcel={(item) => isCompleted(item)}
-                canExportPdf={(item) => isCompleted(item)}
+                canEdit={(item) => !(isCompleted(item) && item.cerrado)}
+                canDelete={(item) => !(isCompleted(item) && item.cerrado)}
+                canReopen={(item) => Boolean(isCompleted(item) && item.cerrado && user && (Number(user.roleId) === ROL_USUARIO_ID.ADMINISTRADOR || Number(user.roleId) === ROL_USUARIO_ID.GERENTE_GENERAL))}
+                canExportExcel={(item) => isCompleted(item) && item.cerrado}
+                canExportPdf={(item) => isCompleted(item) && item.cerrado}
                 renderHeader={(item) => {
                     const statusColor = getStatusColor(item.estado?.nombre);
                     return (
