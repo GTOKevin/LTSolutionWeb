@@ -61,7 +61,18 @@ export function MantenimientoFilter({
     const [draftFilters, setDraftFilters] = useState<MantenimientoFilters>(initialFilters);
 
     const handleFilterChange = (field: keyof MantenimientoFilters, value: any) => {
-        setDraftFilters(prev => ({ ...prev, [field]: value }));
+        setDraftFilters(prev => {
+            const newFilters = { ...prev, [field]: value };
+            
+            if (field === 'desde' && newFilters.hasta && value > newFilters.hasta) {
+                newFilters.hasta = value;
+            }
+            if (field === 'hasta' && newFilters.desde && value < newFilters.desde) {
+                newFilters.desde = value;
+            }
+            
+            return newFilters;
+        });
     };
 
     const handleApplyFilters = () => {
@@ -161,6 +172,7 @@ export function MantenimientoFilter({
                                 value={draftFilters.desde}
                                 onChange={(e) => handleFilterChange('desde', e.target.value)}
                                 InputLabelProps={{ shrink: true }}
+                                inputProps={{ max: draftFilters.hasta || undefined }}
                             />
                         </Grid>
                         <Grid size={{ xs: 12, md: 2 }}>
@@ -172,6 +184,7 @@ export function MantenimientoFilter({
                                 value={draftFilters.hasta}
                                 onChange={(e) => handleFilterChange('hasta', e.target.value)}
                                 InputLabelProps={{ shrink: true }}
+                                inputProps={{ min: draftFilters.desde || undefined }}
                             />
                         </Grid>
                         <Grid size={{ xs: 12, md: 2 }} sx={{ display: 'flex', gap: 1 }}>

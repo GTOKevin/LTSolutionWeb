@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { tipoProductoApi } from '@entities/tipo-producto/api/tipo-producto.api';
 import { monedaApi } from '@/shared/api/moneda.api';
 import { createMantenimientoDetalleSchema, type CreateMantenimientoDetalleSchema } from '../../model/schema';
+import { handleAddressKeyDown } from '@/shared/utils/input-validators';
 import { useEffect, useState } from 'react';
 
 interface MantenimientoDetalleFormProps {
@@ -175,6 +176,7 @@ export function MantenimientoDetalleForm({
                             label="Descripción (Opcional)"
                             fullWidth
                             {...register('descripcion')}
+                            onKeyDown={handleAddressKeyDown}
                             error={!!errors.descripcion}
                             helperText={errors.descripcion?.message}
                             disabled={viewOnly}

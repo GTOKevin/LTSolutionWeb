@@ -28,6 +28,10 @@ import {
     RadioButtonUnchecked as CircleIcon
 } from '@mui/icons-material';
 
+import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
+import { handleBackendErrors } from '@/shared/utils/form-validation';
+import { useToast } from '@/shared/components/ui/Toast';
+
 interface ChangePasswordModalProps {
     open: boolean;
     onClose: () => void;
@@ -37,7 +41,13 @@ interface ChangePasswordModalProps {
 }
 
 const changePasswordSchema = z.object({
-    password: z.string().min(1, 'La contraseña es requerida'),
+    password: z.string()
+        .min(8, 'La contraseña debe tener al menos 8 caracteres')
+        .max(20, 'La contraseña no debe exceder 20 caracteres')
+        .regex(INPUT_VAL.PASSWORD_SIN_ESPACIOS, ERROR_MESSAGES.PASSWORD_SIN_ESPACIOS)
+        .regex(INPUT_VAL.PASSWORD_AL_MENOS_UNA_LETRA, ERROR_MESSAGES.PASSWORD_AL_MENOS_UNA_LETRA)
+        .regex(INPUT_VAL.PASSWORD_AL_MENOS_UN_NUMERO, ERROR_MESSAGES.PASSWORD_AL_MENOS_UN_NUMERO)
+        .regex(INPUT_VAL.PASSWORD_AL_MENOS_UN_ESPECIAL, ERROR_MESSAGES.PASSWORD_AL_MENOS_UN_ESPECIAL),
     confirmPassword: z.string().min(1, 'Confirmar contraseña es requerida')
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Las contraseñas no coinciden",
@@ -51,12 +61,13 @@ export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, o
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+    const { showToast } = useToast();
     const {
         register,
         handleSubmit,
         reset,
         watch,
+        setError,
         formState: { errors, isSubmitting }
     } = useForm<ChangePasswordSchema>({
         resolver: zodResolver(changePasswordSchema),
@@ -98,20 +109,33 @@ export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, o
     const mutation = useMutation({
         mutationFn: (data: ChangePasswordSchema) => {
             if (!usuarioId) throw new Error("No user ID provided");
-            // Validate strength before submitting? 
-            // The requirement "Elija una contraseña segura" implies we should probably enforce it, 
-            // but the schema only checked min(6). 
-            // Ideally we should enforce strict rules if the UI suggests them.
-            // For now, sticking to basic schema validation but showing indicators.
             return usuarioApi.updatePassword(usuarioId, data.password);
         },
         onSuccess: () => {
+            showToast({
+                message: `Contraseña cambiada exitosamente para ${usuarioNombre || 'el usuario'}`,
+                severity: 'success'
+            });
             onSuccess();
             onClose();
         },
         onError: (error: any) => {
             console.error(error);
-            setErrorMessage(error.response?.data?.detail || "Error al cambiar la contraseña");
+            const apiError = error.response?.data;
+            if (error.response?.status === 400 && apiError?.errors && Array.isArray(apiError.errors)) {
+                let hasFieldErrors = false;
+                apiError.errors.forEach((err: any) => {
+                    if (err.field === 'NuevaClave') {
+                        setError('password', {
+                            type: 'server',
+                            message: err.message
+                        }, { shouldFocus: true });
+                        hasFieldErrors = true;
+                    }
+                });
+                if (hasFieldErrors) return;
+            }
+            setErrorMessage(apiError?.detail || "Error al cambiar la contraseña");
         }
     });
 
