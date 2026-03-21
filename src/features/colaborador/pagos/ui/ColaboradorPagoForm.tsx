@@ -70,6 +70,7 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
                     tipoPagoID: pagoToEdit.tipoPagoID,
                     fechaInico: pagoToEdit.fechaInico,
                     fechaCierre: pagoToEdit.fechaCierre,
+                    fechaPago: pagoToEdit.fechaPago,
                     monedaID: pagoToEdit.monedaID,
                     monto: pagoToEdit.monto,
                     observaciones: pagoToEdit.observaciones || ''
@@ -79,6 +80,7 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
                     tipoPagoID: 0,
                     fechaInico: '',
                     fechaCierre: '',
+                    fechaPago: '',
                     monedaID: 0,
                     monto: 0,
                     observaciones: ''
@@ -149,7 +151,7 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
                             />
                         </Grid>
 
-                        <Grid size={{xs:12, sm:6}}>
+                        <Grid size={{xs:12, sm:4}}>
                             <TextField
                                 label="Fecha Inicio"
                                 type="date"
@@ -161,7 +163,7 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
                             />
                         </Grid>
 
-                        <Grid size={{xs:12, sm:6}}>
+                        <Grid size={{xs:12, sm:4}}>
                             <TextField
                                 label="Fecha Cierre"
                                 type="date"
@@ -170,6 +172,18 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
                                 {...register('fechaCierre')}
                                 error={!!errors.fechaCierre}
                                 helperText={errors.fechaCierre?.message}
+                            />
+                        </Grid>
+
+                        <Grid size={{xs:12, sm:4}}>
+                            <TextField
+                                label="Fecha Pago"
+                                type="date"
+                                fullWidth
+                                InputLabelProps={{ shrink: true }}
+                                {...register('fechaPago')}
+                                error={!!errors.fechaPago}
+                                helperText={errors.fechaPago?.message}
                             />
                         </Grid>
 

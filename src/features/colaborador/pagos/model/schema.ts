@@ -5,6 +5,7 @@ export const createColaboradorPagoSchema = z.object({
     tipoPagoID: z.number().min(1, 'El tipo de pago es requerido'),
     fechaInico: z.string().min(1, 'La fecha de inicio es requerida'),
     fechaCierre: z.string().min(1, 'La fecha de cierre es requerida'),
+    fechaPago: z.string().min(1, 'La fecha de pago es requerida'),
     monedaID: z.number().min(1, 'La moneda es requerida'),
     monto: z.number().min(0.01, 'El monto debe ser mayor a 0'),
     observaciones: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL).optional().or(z.literal(''))
