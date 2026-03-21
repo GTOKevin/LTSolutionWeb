@@ -21,6 +21,7 @@ import type { ColaboradorPago } from '@entities/colaborador-pago/model/types';
 import { createColaboradorPagoSchema, type CreateColaboradorPagoSchema } from '../model/schema';
 import { useEffect } from 'react';
 import { useCreateColaboradorPago, useUpdateColaboradorPago } from '../../hooks/useColaboradorPagoCrud';
+import { handleAddressKeyDown } from '@shared/utils/input-validators';
 
 interface ColaboradorPagoFormProps {
     open: boolean;
@@ -218,6 +219,7 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
                                 {...register('observaciones')}
                                 error={!!errors.observaciones}
                                 helperText={errors.observaciones?.message}
+                                onKeyDown={handleAddressKeyDown}
                             />
                         </Grid>
                     </Grid>

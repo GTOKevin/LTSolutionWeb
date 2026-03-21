@@ -2,16 +2,17 @@ import React from 'react';
 import { Typography, Box, Chip, TableCell } from '@mui/material';
 import { BuildCircle as BuildIcon, Warning as WarningIcon, Schedule as ScheduleIcon } from '@mui/icons-material';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
-import type { Estado } from '@shared/model/estado.types';
 import type { PagedResponse } from '@/shared/model/types';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { formatDateLong } from '@shared/utils/date-utils';
 import { useMantenimientoReport } from '../../hooks/useMantenimientoReport';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
-import { ESTADO_MANTENIMIENTO_NAMES, ESTADO_MANTENIMIENTO_ID, ROL_USUARIO_ID } from '@/shared/constants/constantes';
-import { useAuthStore } from '@/shared/store/auth.store';
+import { useMantenimientoPermissions } from '../../hooks/useMantenimientoPermissions';
 import { Tooltip, IconButton, alpha, useTheme } from '@mui/material';
 import { LockOpen } from '@mui/icons-material';
+
+import { getMantenimientoStatusColor } from '../../utils/mantenimientoStatus';
+import type { Estado } from '@/shared/model/estado.types';
 
 interface MantenimientoTableProps {
     data?: PagedResponse<Mantenimiento>;
@@ -29,13 +30,7 @@ interface MantenimientoTableProps {
 const getStatusChip = (status: Estado | undefined | null) => {
     if (!status) return <Chip label="N/A" size="small" />;
     
-    let color: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' = 'default';
-    const name = status.nombre.toLowerCase();
-    
-    if (ESTADO_MANTENIMIENTO_NAMES.PENDIENTE.some(s => name.includes(s))) color = 'default';
-    else if (ESTADO_MANTENIMIENTO_NAMES.PROCESO.some(s => name.includes(s))) color = 'warning';
-    else if (ESTADO_MANTENIMIENTO_NAMES.COMPLETADO.some(s => name.includes(s))) color = 'success';
-    else if (ESTADO_MANTENIMIENTO_NAMES.CANCELADO.some(s => name.includes(s))) color = 'error';
+    const color = getMantenimientoStatusColor(status);
 
     return (
         <Chip 
@@ -68,7 +63,7 @@ export function MantenimientoTable({
     onReopen
 }: MantenimientoTableProps) {
     const { generateExcel, generatePdf } = useMantenimientoReport();
-    const user = useAuthStore((state) => state.user);
+    const { canEdit, canDelete, canReopen: checkCanReopen, canExport } = useMantenimientoPermissions();
     const theme = useTheme();
 
     const columns: Column[] = React.useMemo(() => [
@@ -133,7 +128,7 @@ export function MantenimientoTable({
                     </TableCell>
                     <TableCell align="right">
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 0.5 }}>
-                            {item.cerrado && user && (Number(user.roleId) === ROL_USUARIO_ID.ADMINISTRADOR || Number(user.roleId) === ROL_USUARIO_ID.GERENTE_GENERAL) && (
+                            {checkCanReopen(item) && (
                                 <Tooltip title="Reabrir mantenimiento">
                                     <IconButton 
                                         size="small" 
@@ -154,10 +149,10 @@ export function MantenimientoTable({
                             )}
                             <TableActions 
                                 onView={() => onView(item)}
-                                onEdit={!(item.estadoID === ESTADO_MANTENIMIENTO_ID.COMPLETADO && item.cerrado) ? () => onEdit(item) : undefined}
-                                onDelete={!(item.estadoID === ESTADO_MANTENIMIENTO_ID.COMPLETADO && item.cerrado) ? () => onDelete(item) : undefined}
-                                onExportExcel={(item.estadoID === ESTADO_MANTENIMIENTO_ID.COMPLETADO && item.cerrado) ? () => generateExcel(item.mantenimientoID) : undefined}
-                                onExportPdf={(item.estadoID === ESTADO_MANTENIMIENTO_ID.COMPLETADO && item.cerrado) ? () => generatePdf(item.mantenimientoID) : undefined}
+                                onEdit={canEdit(item) ? () => onEdit(item) : undefined}
+                                onDelete={canDelete(item) ? () => onDelete(item) : undefined}
+                                onExportExcel={canExport(item) ? () => generateExcel(item.mantenimientoID) : undefined}
+                                onExportPdf={canExport(item) ? () => generatePdf(item.mantenimientoID) : undefined}
                             />
                         </Box>
                     </TableCell>

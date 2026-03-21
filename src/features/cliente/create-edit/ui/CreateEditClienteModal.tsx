@@ -21,6 +21,7 @@ import { Controller } from 'react-hook-form';
 import type { Cliente } from '@entities/cliente/model/types';
 import { ClienteContactosList } from '../../contactos/ui/ClienteContactosModal';
 import { useClienteForm } from '../../hooks/useClienteForm';
+import { handleLettersOnlyKeyDown, handleNumbersOnlyKeyDown } from '@shared/utils/input-validators';
 
 interface CreateEditClienteModalProps {
     open: boolean;
@@ -192,6 +193,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                                         error={!!errors.contactoPrincipal}
                                         helperText={errors.contactoPrincipal?.message}
                                         disabled={viewOnly}
+                                        onKeyDown={handleLettersOnlyKeyDown}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 12, md: 6 }}>
@@ -212,6 +214,7 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
                                         error={!!errors.telefono}
                                         helperText={errors.telefono?.message}
                                         disabled={viewOnly}
+                                        onKeyDown={handleNumbersOnlyKeyDown}
                                     />
                                 </Grid>
                                 {isEdit && (

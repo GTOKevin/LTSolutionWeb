@@ -18,8 +18,8 @@ export const createContactoSchema = z.object({
     nombreCompleto: z.string().regex(INPUT_VAL.LETRAS_ESPACIO, ERROR_MESSAGES.LETRAS_ESPACIO).min(1, 'Nombre es requerido'),
     email: z.string().email('Email inválido').optional().or(z.literal('')),
     telefonoPrincipal: z.string().regex(INPUT_VAL.TELEFONO_PERU_REGEX, ERROR_MESSAGES.TELEFONO_PERU).min(1, 'Teléfono Principal es requerido'),
-    telefonoSecundario: z.string().regex(INPUT_VAL.TELEFONO_PERU_REGEX, ERROR_MESSAGES.TELEFONO_PERU).optional(),
-    rol: z.string().optional(),
+    telefonoSecundario: z.string().regex(INPUT_VAL.TELEFONO_PERU_REGEX, ERROR_MESSAGES.TELEFONO_PERU).optional().or(z.literal('')),
+    rol: z.string().regex(INPUT_VAL.LETRAS_ESPACIO, ERROR_MESSAGES.LETRAS_ESPACIO).optional().or(z.literal('')),
     activo: z.boolean(),
 });
 

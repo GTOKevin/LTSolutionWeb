@@ -1,9 +1,10 @@
 import { z } from 'zod';
+import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
 
 export const createColaboradorDocumentoSchema = z.object({
     colaboradorID: z.number().min(1, 'Colaborador es requerido'),
     tipoDocumentoID: z.number().min(1, 'Tipo de Documento es requerido'),
-    numeroDocumento: z.string().optional(),
+    numeroDocumento: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_GUION_SIN_ESPACIOS, ERROR_MESSAGES.ALPHA_NUMERICO_GUION_SIN_ESPACIOS).optional().or(z.literal('')),
     rutaArchivo: z.string().optional(),
     fechaEmision: z.string().min(1, 'Fecha de Emisión es requerida'),
     fechaVencimiento: z.string().min(1, 'Fecha de Vencimiento es requerida'),

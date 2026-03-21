@@ -1,9 +1,10 @@
 import { z } from 'zod';
+import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
 
 export const createLicenciaSchema = z.object({
     colaboradorID: z.number().min(1, 'Colaborador es requerido'),
     tipoLicenciaID: z.number().min(1, 'Tipo de Licencia es requerido'),
-    descripcion: z.string().optional(),
+    descripcion: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL).optional().or(z.literal('')),
     fechaInicial: z.string().min(1, 'Fecha Inicio es requerida'),
     fechaFinal: z.string().optional().or(z.literal('')),
     activo: z.boolean().default(true)

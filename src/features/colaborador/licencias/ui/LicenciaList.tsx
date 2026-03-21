@@ -58,7 +58,7 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
 
     const handleDeleteConfirm = () => {
         if (licenciaToDelete) {
-            deleteMutation.mutate(licenciaToDelete.licenciaID, {
+            deleteMutation.mutate(licenciaToDelete.colaboradorLicenciaID, {
                 onSuccess: () => {
                     setOpenDelete(false);
                     setLicenciaToDelete(null);
@@ -73,6 +73,7 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
     };
 
     const handleEdit = (licencia: Licencia) => {
+        console.log("licencia:", licencia);
         setLicenciaToEdit(licencia);
         setOpenForm(true);
     };
@@ -134,7 +135,7 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
                         </TableHead>
                         <TableBody>
                             {data?.data?.items.map((licencia) => (
-                                <TableRow key={licencia.licenciaID} hover>
+                                <TableRow key={licencia.colaboradorLicenciaID} hover>
                                     <TableCell>{licencia.tipoLicencia?.nombre || '-'}</TableCell>
                                     <TableCell>{new Date(licencia.fechaInicial).toLocaleDateString()}</TableCell>
                                     <TableCell>{licencia.fechaFinal ? new Date(licencia.fechaFinal).toLocaleDateString() : '-'}</TableCell>
@@ -168,7 +169,7 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
             {/* Mobile List */}
             <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2 }}>
                 {data?.data?.items.map((licencia) => (
-                    <Card key={licencia.licenciaID} variant="outlined" sx={{ borderRadius: 2 }}>
+                    <Card key={licencia.colaboradorLicenciaID} variant="outlined" sx={{ borderRadius: 2 }}>
                         <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                                 <Typography variant="subtitle2" fontWeight="bold">

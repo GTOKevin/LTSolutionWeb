@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
 
 export const createColaboradorPagoSchema = z.object({
     tipoPagoID: z.number().min(1, 'El tipo de pago es requerido'),
@@ -6,7 +7,7 @@ export const createColaboradorPagoSchema = z.object({
     fechaCierre: z.string().min(1, 'La fecha de cierre es requerida'),
     monedaID: z.number().min(1, 'La moneda es requerida'),
     monto: z.number().min(0.01, 'El monto debe ser mayor a 0'),
-    observaciones: z.string().optional()
+    observaciones: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL).optional().or(z.literal(''))
 }).refine((data) => {
     const inicio = new Date(data.fechaInico);
     const fin = new Date(data.fechaCierre);

@@ -75,6 +75,19 @@ export const handleNumbersOnlyKeyDown = (e: React.KeyboardEvent<HTMLDivElement>)
 };
 
 /**
+ * Validates and restricts input to allow letters, numbers and hyphen, without spaces.
+ * 
+ * Usage: <TextField onKeyDown={handleAlphaNumericHyphenNoSpacesKeyDown} ... />
+ */
+export const handleAlphaNumericHyphenNoSpacesKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key.length > 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+    
+    if (!/^[a-zA-Z0-9\-]$/.test(e.key)) {
+        e.preventDefault();
+    }
+};
+
+/**
  * Sanitizes search input by removing any character that is not:
  * letters (including accents and ñ), numbers, spaces, or the special characters , . - _ / ( ) [ ]
  */

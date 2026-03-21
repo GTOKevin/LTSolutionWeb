@@ -1,15 +1,15 @@
 import {
     Box,
     Typography,
-    Chip,
-    useTheme
+    Chip
 } from '@mui/material';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { formatDateLong } from '@shared/utils/date-utils';
 import { useMantenimientoReport } from '../../hooks/useMantenimientoReport';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
-import { useAuthStore } from '@/shared/store/auth.store';
-import { ROL_USUARIO_ID } from '@/shared/constants/constantes';
+import { useMantenimientoPermissions } from '../../hooks/useMantenimientoPermissions';
+
+import { getMantenimientoStatusColor } from '../../utils/mantenimientoStatus';
 
 interface MantenimientoMobileListProps {
     data?: Mantenimiento[];
@@ -38,27 +38,12 @@ export function MantenimientoMobileList({
     onDelete,
     onReopen
 }: MantenimientoMobileListProps) {
-    const theme = useTheme();
     const { generateExcel, generatePdf } = useMantenimientoReport();
-    const user = useAuthStore((state) => state.user);
-
-    const getStatusColor = (statusName: string = '') => {
-        const name = statusName.toLowerCase();
-        if (name.includes('pendiente') || name.includes('agendado')) return 'default';
-        if (name.includes('proceso') || name.includes('taller')) return 'warning';
-        if (name.includes('finalizado') || name.includes('completado')) return 'success';
-        if (name.includes('cancelado')) return 'error';
-        return 'default';
-    };
+    const { canEdit, canDelete, canReopen: checkCanReopen, canExport } = useMantenimientoPermissions();
 
     if (isLoading) {
         return <Box sx={{ p: 2, textAlign: 'center' }}>Cargando datos...</Box>;
     }
-
-    const isCompleted = (item: Mantenimiento | null) => {
-        const name = item?.estado?.nombre?.toUpperCase();
-        return name === 'FINALIZADO' || name === 'COMPLETADO';
-    };
 
     return (
         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
@@ -77,13 +62,13 @@ export function MantenimientoMobileList({
                 onReopen={onReopen}
                 onExportExcel={(item) => generateExcel(item.mantenimientoID)}
                 onExportPdf={(item) => generatePdf(item.mantenimientoID)}
-                canEdit={(item) => !(isCompleted(item) && item.cerrado)}
-                canDelete={(item) => !(isCompleted(item) && item.cerrado)}
-                canReopen={(item) => Boolean(isCompleted(item) && item.cerrado && user && (Number(user.roleId) === ROL_USUARIO_ID.ADMINISTRADOR || Number(user.roleId) === ROL_USUARIO_ID.GERENTE_GENERAL))}
-                canExportExcel={(item) => isCompleted(item) && item.cerrado}
-                canExportPdf={(item) => isCompleted(item) && item.cerrado}
+                canEdit={(item) => canEdit(item)}
+                canDelete={(item) => canDelete(item)}
+                canReopen={(item) => checkCanReopen(item)}
+                canExportExcel={(item) => canExport(item)}
+                canExportPdf={(item) => canExport(item)}
                 renderHeader={(item) => {
-                    const statusColor = getStatusColor(item.estado?.nombre);
+                    const statusColor = getMantenimientoStatusColor(item.estado);
                     return (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <Box>
@@ -100,7 +85,7 @@ export function MantenimientoMobileList({
                                 <Chip 
                                     label={item.estado?.nombre || 'Desconocido'} 
                                     size="small" 
-                                    color={statusColor as any}
+                                    color={statusColor}
                                     variant="outlined"
                                     sx={{ height: 20, fontSize: '0.65rem', fontWeight: 'bold', textTransform: 'uppercase', mr: 1 }}
                                 />
