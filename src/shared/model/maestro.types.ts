@@ -19,3 +19,11 @@ export interface TipoMaestroParams {
     page?: number;
     size?: number;
 }
+
+export interface TipoProducto {
+    tipoProductoID: number;
+    nombre: string;
+    tipo: string;
+    categoria: string;
+    activo: boolean;
+}

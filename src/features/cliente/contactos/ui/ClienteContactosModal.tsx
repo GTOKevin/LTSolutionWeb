@@ -7,7 +7,6 @@ import {
     Typography,
     Box,
     useTheme,
-    alpha,
     Chip,
     TableCell
 } from '@mui/material';
@@ -27,6 +26,7 @@ import { MobileListShell } from '@shared/components/ui/MobileListShell';
 import { SharedTable } from '@shared/components/ui/SharedTable';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
+import { handleLettersOnlyKeyDown, handleNumbersOnlyKeyDown } from '@shared/utils/input-validators';
 
 interface ClienteContactosListProps {
     clienteId: number;
@@ -159,6 +159,7 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
                                 {...register('nombreCompleto')}
                                 error={!!errors.nombreCompleto}
                                 helperText={errors.nombreCompleto?.message}
+                                onKeyDown={handleLettersOnlyKeyDown}
                             />
                         </Grid>
                         <Grid size={{ xs: 12, md: 6 }}>
@@ -167,6 +168,9 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
                                 fullWidth
                                 size="small"
                                 {...register('rol')}
+                                error={!!errors.rol}
+                                helperText={errors.rol?.message}
+                                onKeyDown={handleLettersOnlyKeyDown}
                             />
                         </Grid>
                         <Grid size={{ xs: 12, md: 6 }}>
@@ -177,9 +181,10 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
                                 {...register('telefonoPrincipal')}
                                 error={!!errors.telefonoPrincipal}
                                 helperText={errors.telefonoPrincipal?.message}
+                                onKeyDown={handleNumbersOnlyKeyDown}
                             />
                         </Grid>
-                                                <Grid size={{ xs: 12, md: 6 }}>
+                        <Grid size={{ xs: 12, md: 6 }}>
                             <TextField
                                 label="Teléfono Secundario"
                                 fullWidth
@@ -187,6 +192,7 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
                                 {...register('telefonoSecundario')}
                                 error={!!errors.telefonoSecundario}
                                 helperText={errors.telefonoSecundario?.message}
+                                onKeyDown={handleNumbersOnlyKeyDown}
                             />
                         </Grid>
                         <Grid size={{ xs: 12}}>

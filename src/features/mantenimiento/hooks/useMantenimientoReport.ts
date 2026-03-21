@@ -5,7 +5,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
 import { formatDateLong } from '@shared/utils/date-utils';
-import type { MantenimientoParams } from '@entities/mantenimiento/model/types';
+import type { MantenimientoParams, Mantenimiento, MantenimientoDetalle } from '@entities/mantenimiento/model/types';
 
 export const useMantenimientoReport = () => {
     
@@ -127,8 +127,8 @@ export const useMantenimientoReport = () => {
             reportData.detalles.forEach(item => {
                 const row = worksheet.getRow(currentRowIndex);
                 row.values = [
-                    (item as any).tipoProducto?.categoria || '',
-                    (item as any).tipoProducto?.nombre || '',
+                    item.tipoProducto?.categoria || '',
+                    item.tipoProducto?.nombre || '',
                     item.descripcion || '',
                     item.cantidad,
                     item.moneda?.codigo || '',
@@ -261,8 +261,8 @@ export const useMantenimientoReport = () => {
 
             reportData.detalles.forEach(item => {
                 const row = [
-                    (item as any).tipoProducto?.categoria || '',
-                    (item as any).tipoProducto?.nombre || '',
+                    item.tipoProducto?.categoria || '',
+                    item.tipoProducto?.nombre || '',
                     item.descripcion || '',
                     item.cantidad,
                     item.moneda?.codigo,
@@ -272,11 +272,6 @@ export const useMantenimientoReport = () => {
                 ];
                 tableRows.push(row);
             });
-
-            // Calculate totals for footer
-            const totals = Object.entries(reportData.totalsByCurrency || {}).map(([symbol, total]) => {
-                return `TOTAL ${symbol}: ${total.toFixed(2)}`;
-            }).join(' | ');
 
             autoTable(doc, {
                 head: [tableColumn],
@@ -362,14 +357,14 @@ export const useMantenimientoReport = () => {
 
             // --- Data ---
             let currentRowIndex = headerRowIndex + 1;
-            reportData.mantenimientos.forEach((item: any) => {
+            reportData.mantenimientos.forEach((item: Mantenimiento) => {
                 const maintTotals: Record<string, number> = {};
-                (item.mantenimientoDetalles || []).forEach((d: any) => {
+                (item.mantenimientoDetalles || []).forEach((d: MantenimientoDetalle) => {
                     const symbol = d.moneda?.simbolo || '';
                     maintTotals[symbol] = (maintTotals[symbol] || 0) + d.total;
                 });
 
-                const rowValues: any[] = [
+                const rowValues: (string | number)[] = [
                     `${item.flota?.marca || ''} ${item.flota?.modelo || ''} (${item.flota?.placa || ''})`.trim(),
                     item.tipoServicio?.nombre || '',
                     formatDateLong(item.fechaIngreso),
@@ -460,11 +455,11 @@ export const useMantenimientoReport = () => {
                 "Km. Ing.", "Km. Sal.", "Motivo", "Solución",
                 ...currencies.map(c => `Total ${c}`)
             ];
-            const tableRows: any[] = [];
+            const tableRows: (string | number)[][] = [];
 
-            reportData.mantenimientos.forEach((item: any) => {
+            reportData.mantenimientos.forEach((item: Mantenimiento) => {
                 const maintTotals: Record<string, number> = {};
-                (item.mantenimientoDetalles || []).forEach((d: any) => {
+                (item.mantenimientoDetalles || []).forEach((d: MantenimientoDetalle) => {
                     const symbol = d.moneda?.simbolo || '';
                     maintTotals[symbol] = (maintTotals[symbol] || 0) + d.total;
                 });
@@ -487,7 +482,7 @@ export const useMantenimientoReport = () => {
                 tableRows.push(row);
             });
 
-            const columnStyles: Record<number, any> = {
+            const columnStyles: Record<number, Record<string, string | number>> = {
                 0: { cellWidth: 25 },
                 1: { cellWidth: 20 },
                 2: { cellWidth: 20 },

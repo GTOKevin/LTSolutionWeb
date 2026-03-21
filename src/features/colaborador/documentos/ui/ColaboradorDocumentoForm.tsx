@@ -20,6 +20,7 @@ import { createColaboradorDocumentoSchema, type CreateColaboradorDocumentoSchema
 import { ImageUpload } from '@shared/components/ui/ImageUpload';
 import { useEffect } from 'react';
 import { useCreateColaboradorDocumento, useUpdateColaboradorDocumento } from '../../hooks/useColaboradorDocumentoCrud';
+import { handleAlphaNumericHyphenNoSpacesKeyDown } from '@shared/utils/input-validators';
 
 interface ColaboradorDocumentoFormProps {
     open: boolean;
@@ -151,6 +152,7 @@ export function ColaboradorDocumentoForm({ open, onClose, colaboradorId, documen
                                 {...register('numeroDocumento')}
                                 error={!!errors.numeroDocumento}
                                 helperText={errors.numeroDocumento?.message}
+                                onKeyDown={handleAlphaNumericHyphenNoSpacesKeyDown}
                             />
                         </Grid>
 

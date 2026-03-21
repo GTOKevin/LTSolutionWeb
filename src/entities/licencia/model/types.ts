@@ -1,7 +1,7 @@
 import type { TipoMaestro } from '@shared/model/maestro.types';
 
 export interface Licencia {
-    licenciaID: number;
+    colaboradorLicenciaID: number;
     colaboradorID: number;
     tipoLicenciaID: number;
     descripcion?: string;

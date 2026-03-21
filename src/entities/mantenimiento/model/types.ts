@@ -1,4 +1,4 @@
-import type { TipoMaestro } from '@shared/model/maestro.types';
+import type { TipoMaestro, TipoProducto } from '@shared/model/maestro.types';
 import type { Flota } from '../../flota/model/types';
 import type { Moneda } from '../../moneda/model/types';
 import type { Estado } from '@shared/model/estado.types';
@@ -18,7 +18,7 @@ export interface MantenimientoDetalle {
     fechaRegistro: string;
     fechaModificacion?: string;
     moneda?: Moneda;
-    tipoProducto?: TipoMaestro; // To be defined if needed
+    tipoProducto?: TipoProducto;
 }
 
 export interface Mantenimiento {

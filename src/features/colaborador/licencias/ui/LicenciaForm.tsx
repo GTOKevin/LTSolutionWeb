@@ -20,6 +20,7 @@ import { createLicenciaSchema, type CreateLicenciaSchema } from '../model/schema
 import { useEffect } from 'react';
 import { TIPO_MAESTRO } from '@/shared/constants/constantes';
 import { useCreateLicencia, useUpdateLicencia } from '../../hooks/useLicenciaCrud';
+import { handleAddressKeyDown } from '@shared/utils/input-validators';
 
 interface LicenciaFormProps {
     open: boolean;
@@ -57,6 +58,7 @@ export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: L
 
     useEffect(() => {
         if (open) {
+            console.log("Colaborador ID:",colaboradorId);
             if (licenciaToEdit) {
                 reset({
                     colaboradorID: colaboradorId,
@@ -78,9 +80,11 @@ export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: L
     }, [open, licenciaToEdit, colaboradorId, reset]);
 
     const onSubmit = (data: CreateLicenciaSchema) => {
+        console.log("Colaborador ID:", colaboradorId);
         if (isEdit && licenciaToEdit) {
+            console.log("Licencia ID:", licenciaToEdit.colaboradorLicenciaID);
             updateMutation.mutate(
-                { id: licenciaToEdit.licenciaID, data },
+                { id: licenciaToEdit.colaboradorLicenciaID, data },
                 { onSuccess: () => onClose() }
             );
         } else {
@@ -173,6 +177,7 @@ export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: L
                                 error={!!errors.descripcion}
                                 helperText={errors.descripcion?.message}
                                 placeholder="Ej: Cita médica programada..."
+                                onKeyDown={handleAddressKeyDown}
                             />
                         </Grid>
                     </Grid>
