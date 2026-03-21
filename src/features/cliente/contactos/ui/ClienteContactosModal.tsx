@@ -93,14 +93,12 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
 
     const onSubmit = (data: CreateContactoSchema) => {
         if (editingId) {
-            
-            console.log('clienteId:', editingId);
+
             updateMutation.mutate(
                 { id: editingId, data },
                 { onSuccess: resetForm }
             );
         } else {
-            console.log('clienteId:', clienteId);
             createMutation.mutate(
                 { clienteId, data },
                 { onSuccess: resetForm }

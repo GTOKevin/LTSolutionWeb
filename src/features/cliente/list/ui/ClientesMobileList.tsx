@@ -2,6 +2,7 @@ import {
     Box,
     Typography,
     Stack,
+    Chip,
     useTheme,
     alpha
 } from '@mui/material';
@@ -91,7 +92,17 @@ export function ClientesMobileList({
                                     {cliente.contactoPrincipal || 'Sin contacto'}
                                 </Typography>
                             </Box>
-                            <StatusChip active={cliente.activo} />
+                            {cliente.eliminado ? (
+                                <Chip 
+                                    label="Eliminado" 
+                                    size="small" 
+                                    color="error" 
+                                    variant="outlined"
+                                    sx={{ fontWeight: 600 }}
+                                />
+                            ) : (
+                                <StatusChip active={cliente.activo} />
+                            )}
                         </Box>
                         
                         {(cliente.email || cliente.telefono) && (

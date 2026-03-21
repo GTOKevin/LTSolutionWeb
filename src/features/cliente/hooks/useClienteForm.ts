@@ -68,7 +68,6 @@ export function useClienteForm({ open, onClose, onSuccess, clienteToEdit }: UseC
 
     const handleSuccess = (id: number) => {
         onSuccess(id);
-        console.log('handleSuccess:', id);
         if (!isEdit && !createdClientId) {
             setCreatedClientId(id);
             setActiveTab(1);
