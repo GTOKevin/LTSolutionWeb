@@ -28,3 +28,18 @@ export interface LicenciaParams {
     page?: number;
     size?: number;
 }
+
+export interface ColaboradorLicenciasReportDto {
+    nombreCompleto: string;
+    cargo: string;
+    tipoDocumento: string;
+    numeroDocumento: string;
+    licencias: ColaboradorLicenciaDetailDto[];
+}
+
+export interface ColaboradorLicenciaDetailDto {
+    tipoLicencia: string;
+    fechaInicio: string;
+    fechaFin?: string;
+    comentario: string;
+}

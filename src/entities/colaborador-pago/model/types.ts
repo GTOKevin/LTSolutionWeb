@@ -7,6 +7,7 @@ export interface ColaboradorPago {
     tipoPagoID: number;
     fechaInico: string; // DateOnly -> string
     fechaCierre: string; // DateOnly -> string
+    fechaPago: string; // DateOnly -> string
     monedaID: number;
     monto: number;
     observaciones?: string;
@@ -19,6 +20,7 @@ export interface CreateColaboradorPagoDto {
     tipoPagoID: number;
     fechaInico: string;
     fechaCierre: string;
+    fechaPago: string;
     monedaID: number;
     monto: number;
     observaciones?: string;
@@ -33,3 +35,23 @@ export interface ColaboradorPagoParams {
     page?: number;
     size?: number;
 }
+
+export interface ColaboradorPagosReportDto {
+    nombreCompleto: string;
+    cargo: string;
+    tipoDocumento: string;
+    numeroDocumento: string;
+    pagos: ColaboradorPagoDetailDto[];
+    totalesPorMoneda: Record<string, number>;
+}
+
+export interface ColaboradorPagoDetailDto {
+    tipoPago: string;
+    observaciones: string;
+    fechaInicio: string;
+    fechaCierre: string;
+    fechaPago: string;
+    moneda: string;
+    monto: number;
+}
+
