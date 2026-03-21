@@ -11,17 +11,18 @@ import {
     Search as SearchIcon
 } from '@mui/icons-material';
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { colaboradorApi } from '@entities/colaborador/api/colaborador.api';
 import type { Colaborador } from '@entities/colaborador/model/types';
 import { ColaboradorTable } from '@features/colaborador/list/ui/ColaboradorTable';
 import { ColaboradorMobileList } from '@features/colaborador/list/ui/ColaboradorMobileList';
 import { CreateEditColaboradorModal } from '@features/colaborador/create-edit/ui/CreateEditColaboradorModal';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
+import { useDeleteColaborador } from '@features/colaborador/hooks/useColaboradorCrud';
+import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 
 export function ColaboradoresPage() {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     
     // State
     const [page, setPage] = useState(0);
@@ -48,14 +49,7 @@ export function ColaboradoresPage() {
     });
 
     // Mutations
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => colaboradorApi.delete(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['colaboradores'] });
-            setOpenDeleteDialog(false);
-            setColaboradorToDelete(null);
-        }
-    });
+    const deleteMutation = useDeleteColaborador();
 
     // Handlers
     const handleChangePage = (_: unknown, newPage: number) => {
@@ -92,7 +86,12 @@ export function ColaboradoresPage() {
 
     const handleConfirmDelete = () => {
         if (colaboradorToDelete) {
-            deleteMutation.mutate(colaboradorToDelete.colaboradorID);
+            deleteMutation.mutate(colaboradorToDelete.colaboradorID, {
+                onSuccess: () => {
+                    setOpenDeleteDialog(false);
+                    setColaboradorToDelete(null);
+                }
+            });
         }
     };
 
@@ -155,7 +154,7 @@ export function ColaboradoresPage() {
                             size="small"
                             fullWidth
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => setSearchTerm(handleSanitizeSearchInput(e.target.value))}
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">

@@ -26,7 +26,7 @@ import {
     Error as ErrorIcon,
     CalendarToday as CalendarIcon
 } from '@mui/icons-material';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { colaboradorDocumentoApi } from '@entities/colaborador-documento/api/colaborador-documento.api';
 import type { ColaboradorDocumento } from '@entities/colaborador-documento/model/types';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
@@ -35,6 +35,7 @@ import { useState } from 'react';
 import { ColaboradorDocumentoForm } from './ColaboradorDocumentoForm';
 import { parseDateOnly, formatDateLong } from '@/shared/utils/date-utils';
 import { ROWS_DOC_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
+import { useDeleteColaboradorDocumento } from '../../hooks/useColaboradorDocumentoCrud';
 
 interface ColaboradorDocumentoListProps {
     colaboradorId: number;
@@ -86,14 +87,11 @@ const getExpirationStatus = (fechaVencimiento: string) => {
 
 export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: ColaboradorDocumentoListProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     const [openForm, setOpenForm] = useState(false);
     const [documentoToEdit, setDocumentoToEdit] = useState<ColaboradorDocumento | null>(null);
     const [openDelete, setOpenDelete] = useState(false);
     const [documentoToDelete, setDocumentoToDelete] = useState<ColaboradorDocumento | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(6);
 
@@ -109,18 +107,18 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
     const items = data?.data?.items || [];
     const totalItems = data?.data?.total || 0;
 
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => colaboradorDocumentoApi.delete(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['colaborador-documentos', colaboradorId] });
-            setOpenDelete(false);
-            setDocumentoToDelete(null);
-        },
-        onError: () => {
-            setErrorMessage('Error al eliminar el documento');
-            setOpenSnackbar(true);
+    const deleteMutation = useDeleteColaboradorDocumento();
+
+    const handleDeleteConfirm = () => {
+        if (documentoToDelete) {
+            deleteMutation.mutate(documentoToDelete.colaboradorDocumentoID, {
+                onSuccess: () => {
+                    setOpenDelete(false);
+                    setDocumentoToDelete(null);
+                }
+            });
         }
-    });
+    };
 
     const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
@@ -349,7 +347,7 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
                 title="Eliminar Documento"
                 content={`¿Está seguro que desea eliminar el documento ${documentoToDelete?.numeroDocumento || ''}?`}
                 onClose={() => setOpenDelete(false)}
-                onConfirm={() => documentoToDelete && deleteMutation.mutate(documentoToDelete.colaboradorDocumentoID)}
+                onConfirm={handleDeleteConfirm}
                 isLoading={deleteMutation.isPending}
             />
 
@@ -358,17 +356,6 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
                 onClose={handleClosePreview}
                 previewUrl={previewUrl}
             />
-
-            <Snackbar
-                open={openSnackbar}
-                autoHideDuration={6000}
-                onClose={() => setOpenSnackbar(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={() => setOpenSnackbar(false)} severity="error" sx={{ width: '100%' }}>
-                    {errorMessage}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 }

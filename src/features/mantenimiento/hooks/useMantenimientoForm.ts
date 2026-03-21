@@ -1,7 +1,6 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
+import { useQuery } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import { estadoApi } from '@shared/api/estado.api';
 import { maestroApi } from '@shared/api/maestro.api';
@@ -10,6 +9,7 @@ import { useEffect, useState } from 'react';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { ESTADO_SECCIONES, TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { useCreateMantenimiento, useUpdateMantenimiento } from './useMantenimientoCrud';
 
 interface UseMantenimientoFormProps {
     mantenimientoToEdit?: Mantenimiento | null;
@@ -19,7 +19,6 @@ interface UseMantenimientoFormProps {
 }
 
 export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, open }: UseMantenimientoFormProps) {
-    const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState(0);
     const [createdId, setCreatedId] = useState<number | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -60,6 +59,9 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
 
     const { reset, setError } = form;
 
+    const createMutation = useCreateMantenimiento();
+    const updateMutation = useUpdateMantenimiento();
+
     // --- Effects ---
     useEffect(() => {
         if (open) {
@@ -96,56 +98,71 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
         }
     }, [open, mantenimientoToEdit, reset]);
 
-    // --- Mutations ---
-    const mutation = useMutation({
-        mutationFn: (data: CreateMantenimientoSchema) => {
-            if (isEdit && mantenimientoToEdit) {
-                return mantenimientoApi.update(mantenimientoToEdit.mantenimientoID, data).then(() => mantenimientoToEdit.mantenimientoID);
-            }
-            if (createdId) {
-                return mantenimientoApi.update(createdId, data).then(() => createdId);
-            }
-            return mantenimientoApi.create(data);
-        },
-        onSuccess: (id: number) => {
-            queryClient.invalidateQueries({ queryKey: ['mantenimientos'] });
-            onSuccess(id);
+    const handleSuccess = (id: number) => {
+        onSuccess(id);
 
-            if (!isEdit && !createdId) {
-                setCreatedId(id);
-                onClose();
-            } else {
-                onClose();
-            }
-        },
-        onError: (error: any) => {
-            const genericError = handleBackendErrors<CreateMantenimientoSchema>(error, setError);
-            if (genericError) {
-                setErrorMessage(genericError);
-            }
+        if (!isEdit && !createdId) {
+            setCreatedId(id);
+            onClose();
+        } else {
+            onClose();
         }
-    });
+    };
+
+    const handleError = (error: any) => {
+        const genericError = handleBackendErrors<CreateMantenimientoSchema>(error, setError);
+        if (genericError) {
+            setErrorMessage(genericError);
+        }
+    };
+
+    const submitData = (data: CreateMantenimientoSchema) => {
+        if (isEdit && mantenimientoToEdit) {
+            updateMutation.mutate(
+                { id: mantenimientoToEdit.mantenimientoID, data },
+                {
+                    onSuccess: () => handleSuccess(mantenimientoToEdit.mantenimientoID),
+                    onError: handleError
+                }
+            );
+        } else if (createdId) {
+            updateMutation.mutate(
+                { id: createdId, data },
+                {
+                    onSuccess: () => handleSuccess(createdId),
+                    onError: handleError
+                }
+            );
+        } else {
+            createMutation.mutate(data, {
+                onSuccess: (response: any) => handleSuccess(response?.data || response),
+                onError: handleError
+            });
+        }
+    };
 
     const onSubmit: SubmitHandler<CreateMantenimientoSchema> = (data) => {
         if (data.estadoID === 102) { // Completed/Finalized
             setPendingData(data);
             setConfirmationOpen(true);
         } else {
-            mutation.mutate(data);
+            submitData(data);
         }
     };
 
     const handleConfirmSave = () => {
         if (pendingData) {
-            mutation.mutate(pendingData);
+            submitData(pendingData);
             setConfirmationOpen(false);
             setPendingData(null);
         }
     };
 
+    const isSubmitting = createMutation.isPending || updateMutation.isPending;
+
     return {
         form,
-        mutation,
+        isSubmitting,
         onSubmit,
         handleConfirmSave,
         activeTab,

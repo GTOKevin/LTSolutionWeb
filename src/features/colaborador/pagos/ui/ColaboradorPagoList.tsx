@@ -8,8 +8,6 @@ import {
     ListItem,
     ListItemText,
     ListItemSecondaryAction,
-    Snackbar,
-    Alert,
     TablePagination,
     Chip
 } from '@mui/material';
@@ -19,13 +17,14 @@ import {
     Add as AddIcon,
     Payment as PaymentIcon
 } from '@mui/icons-material';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { colaboradorPagoApi } from '@entities/colaborador-pago/api/colaborador-pago.api';
 import type { ColaboradorPago } from '@entities/colaborador-pago/model/types';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { useState } from 'react';
 import { ColaboradorPagoForm } from './ColaboradorPagoForm';
 import { formatDateShort } from '@/shared/utils/date-utils';
+import { useDeleteColaboradorPago } from '../../hooks/useColaboradorPagoCrud';
 
 interface ColaboradorPagoListProps {
     colaboradorId: number;
@@ -34,13 +33,10 @@ interface ColaboradorPagoListProps {
 
 export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: ColaboradorPagoListProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     const [openForm, setOpenForm] = useState(false);
     const [pagoToEdit, setPagoToEdit] = useState<ColaboradorPago | null>(null);
     const [openDelete, setOpenDelete] = useState(false);
     const [pagoToDelete, setPagoToDelete] = useState<ColaboradorPago | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -56,18 +52,18 @@ export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: Colabor
     const items = data?.data?.items || [];
     const totalItems = data?.data?.total || 0;
 
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => colaboradorPagoApi.delete(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['colaborador-pagos', colaboradorId] });
-            setOpenDelete(false);
-            setPagoToDelete(null);
-        },
-        onError: () => {
-            setErrorMessage('Error al eliminar el pago');
-            setOpenSnackbar(true);
+    const deleteMutation = useDeleteColaboradorPago();
+
+    const handleDeleteConfirm = () => {
+        if (pagoToDelete) {
+            deleteMutation.mutate(pagoToDelete.colaboradorPagoID, {
+                onSuccess: () => {
+                    setOpenDelete(false);
+                    setPagoToDelete(null);
+                }
+            });
         }
-    });
+    };
 
     const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
@@ -224,20 +220,9 @@ export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: Colabor
                 title="Eliminar Pago"
                 content={`¿Está seguro que desea eliminar este registro de pago?`}
                 onClose={() => setOpenDelete(false)}
-                onConfirm={() => pagoToDelete && deleteMutation.mutate(pagoToDelete.colaboradorPagoID)}
+                onConfirm={handleDeleteConfirm}
                 isLoading={deleteMutation.isPending}
             />
-
-            <Snackbar
-                open={openSnackbar}
-                autoHideDuration={6000}
-                onClose={() => setOpenSnackbar(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={() => setOpenSnackbar(false)} severity="error" sx={{ width: '100%' }}>
-                    {errorMessage}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 }

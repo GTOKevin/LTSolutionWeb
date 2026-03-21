@@ -41,18 +41,22 @@ interface UseViajeFormReturn {
     options: ReturnType<typeof useViajeOptions>;
     requiereEscolta: boolean;
     requierePermiso: boolean;
+    currentViajeId: number;
 }
 
 export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseViajeFormReturn {
     const [activeTab, setActiveTab] = useState<number>(TAB_INDICES.GENERAL);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [pendingData, setPendingData] = useState<CreateViajeDto | null>(null);
+    const [createdViajeId, setCreatedViajeId] = useState<number | null>(null);
     
     const queryClient = useQueryClient();
     const { showToast } = useToast();
     
     const options = useViajeOptions(open);
     const { tractos, carretas } = options;
+
+    const currentViajeId = viaje?.viajeID || createdViajeId || 0;
 
     const methods = useForm<CreateViajeDto>({
         resolver: zodResolver(viajeSchema) as Resolver<CreateViajeDto>,
@@ -100,24 +104,32 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
                 fechaLlegadaBase: data.fechaLlegadaBase || undefined,
             };
 
-            if (viaje?.viajeID) {
-                return viajeApi.update(viaje.viajeID, { ...cleanData, viajeID: viaje.viajeID });
+            if (currentViajeId > 0) {
+                return viajeApi.update(currentViajeId, { ...cleanData, viajeID: currentViajeId });
             }
             return viajeApi.create(cleanData);
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
+            const isUpdate = currentViajeId > 0;
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.lists() });
             showToast({ 
                 entity: 'Viaje',
-                action: viaje?.viajeID ? 'update' : 'create'
+                action: isUpdate ? 'update' : 'create'
             });
-            onClose();
+
+            if (isUpdate) {
+                onClose();
+            } else if (typeof data === 'number') {
+                setCreatedViajeId(data);
+                setActiveTab(TAB_INDICES.MERCADERIA);
+                setShowConfirmDialog(false);
+            }
         },
         onError: (error: ApiMutationError) => {
             notifyMutationError(
                 showToast,
                 'Viaje',
-                viaje?.viajeID ? 'update' : 'create',
+                currentViajeId > 0 ? 'update' : 'create',
                 error,
                 'Error saving viaje:'
             );
@@ -189,6 +201,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
             setActiveTab(TAB_INDICES.GENERAL);
             setShowConfirmDialog(false);
             setPendingData(null);
+            setCreatedViajeId(null);
         }
     }, [open, viaje, reset, queryClient]);
 
@@ -230,6 +243,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
         mutation,
         options,
         requiereEscolta: !!requiereEscolta,
-        requierePermiso: !!requierePermiso
+        requierePermiso: !!requierePermiso,
+        currentViajeId
     };
 }

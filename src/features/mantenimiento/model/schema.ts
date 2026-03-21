@@ -58,8 +58,8 @@ export type CreateMantenimientoSchema = z.infer<typeof createMantenimientoSchema
 
 export const createMantenimientoDetalleSchema = z.object({
     tipoProductoID: z.coerce.number().min(1, 'Tipo de Producto es requerido'),
-    descripcion: z.string().optional().nullable().refine(val => !val || INPUT_VAL.TEXTO_SEGURO_REGEX.test(val), {
-        message: 'Caracteres no permitidos'
+    descripcion: z.string().optional().nullable().refine(val => !val || INPUT_VAL.ALPHA_NUMERICO_ESPECIAL.test(val), {
+        message: ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL
     }),
     cantidad: z.coerce.number().min(1, 'Cantidad debe ser mayor a 0'),
     monedaID: z.coerce.number().min(1, 'Moneda es requerida'),

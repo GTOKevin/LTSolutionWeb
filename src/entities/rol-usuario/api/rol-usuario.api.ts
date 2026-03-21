@@ -13,7 +13,7 @@ export const rolUsuarioApi = {
         httpClient.get<SelectItem[]>('/RolUsuario/select', { params: { search, limit } }),
 
     create: (data: Omit<RolUsuario, 'rolUsuarioID'>) =>
-        httpClient.post<number>('/RolUsuario', data),
+        httpClient.post<number>('/RolUsuario', data).then(res => res.data),
 
     update: (id: number, data: Omit<RolUsuario, 'rolUsuarioID'>) =>
         httpClient.put<void>(`/RolUsuario/${id}`, data),

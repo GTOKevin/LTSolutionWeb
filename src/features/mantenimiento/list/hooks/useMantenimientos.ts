@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import { estadoApi } from '@shared/api/estado.api';
@@ -7,6 +7,7 @@ import { ESTADO_SECCIONES } from '@/shared/constants/constantes';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { INITIAL_FILTERS } from '../model/types';
 import type { MantenimientoFiltersState } from '../model/types';
+import { useDeleteMantenimiento } from '../../hooks/useMantenimientoCrud';
 
 /**
  * Hook personalizado para gestionar la lógica de negocio del módulo de Mantenimientos.
@@ -62,14 +63,7 @@ export function useMantenimientos() {
     });
 
     // --- Mutations ---
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => mantenimientoApi.delete(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['mantenimientos'] });
-            setOpenDeleteDialog(false);
-            setItemToDelete(null);
-        }
-    });
+    const deleteMutation = useDeleteMantenimiento();
 
     // --- Handlers ---
     
@@ -134,7 +128,12 @@ export function useMantenimientos() {
 
     const handleConfirmDelete = () => {
         if (itemToDelete) {
-            deleteMutation.mutate(itemToDelete.mantenimientoID);
+            deleteMutation.mutate(itemToDelete.mantenimientoID, {
+                onSuccess: () => {
+                    setOpenDeleteDialog(false);
+                    setItemToDelete(null);
+                }
+            });
         }
     };
 

@@ -13,13 +13,13 @@ import {
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { licenciaApi } from '@entities/licencia/api/licencia.api';
+import { useQuery } from '@tanstack/react-query';
 import { maestroApi } from '@shared/api/maestro.api';
 import type { Licencia } from '@entities/licencia/model/types';
 import { createLicenciaSchema, type CreateLicenciaSchema } from '../model/schema';
 import { useEffect } from 'react';
 import { TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { useCreateLicencia, useUpdateLicencia } from '../../hooks/useLicenciaCrud';
 
 interface LicenciaFormProps {
     open: boolean;
@@ -30,8 +30,10 @@ interface LicenciaFormProps {
 
 export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: LicenciaFormProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     const isEdit = !!licenciaToEdit;
+
+    const createMutation = useCreateLicencia();
+    const updateMutation = useUpdateLicencia();
 
     // Queries
     const { data: tiposLicencia } = useQuery({
@@ -75,23 +77,18 @@ export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: L
         }
     }, [open, licenciaToEdit, colaboradorId, reset]);
 
-    const mutation = useMutation({
-        mutationFn: async (data: CreateLicenciaSchema) => {
-            if (isEdit && licenciaToEdit) {
-                await licenciaApi.update(licenciaToEdit.licenciaID, data);
-                return licenciaToEdit.licenciaID;
-            }
-            const response = await licenciaApi.create(colaboradorId, data);
-            return response.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['licencias', colaboradorId] });
-            onClose();
-        }
-    });
-
     const onSubmit = (data: CreateLicenciaSchema) => {
-        mutation.mutate(data);
+        if (isEdit && licenciaToEdit) {
+            updateMutation.mutate(
+                { id: licenciaToEdit.licenciaID, data },
+                { onSuccess: () => onClose() }
+            );
+        } else {
+            createMutation.mutate(
+                { colaboradorId, data },
+                { onSuccess: () => onClose() }
+            );
+        }
     };
 
     return (
@@ -188,7 +185,7 @@ export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: L
                     <Button 
                         type="submit" 
                         variant="contained"
-                        disabled={isSubmitting || mutation.isPending}
+                        disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}
                     >
                         {isEdit ? 'Guardar Cambios' : 'Registrar'}
                     </Button>

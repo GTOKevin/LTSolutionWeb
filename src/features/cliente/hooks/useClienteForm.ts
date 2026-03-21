@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { clienteApi } from '@entities/cliente/api/cliente.api';
 import { createClienteSchema, type CreateClienteSchema } from '../model/schema';
 import type { Cliente } from '@entities/cliente/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
+import { useCreateCliente, useUpdateCliente } from './useClienteCrud';
 
 interface UseClienteFormProps {
     open: boolean;
@@ -15,11 +14,9 @@ interface UseClienteFormProps {
 }
 
 export function useClienteForm({ open, onClose, onSuccess, clienteToEdit }: UseClienteFormProps) {
-    const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState(0);
     const [createdClientId, setCreatedClientId] = useState<number | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
 
     const isEdit = !!clienteToEdit;
     const effectiveClienteId = clienteToEdit?.clienteID || createdClientId;
@@ -34,12 +31,14 @@ export function useClienteForm({ open, onClose, onSuccess, clienteToEdit }: UseC
 
     const { reset, setError } = form;
 
+    const createMutation = useCreateCliente();
+    const updateMutation = useUpdateCliente();
+
     useEffect(() => {
         if (open) {
             setActiveTab(0);
             setCreatedClientId(null);
             setErrorMessage(null);
-            setOpenSnackbar(false);
 
             if (clienteToEdit) {
                 reset({
@@ -67,61 +66,65 @@ export function useClienteForm({ open, onClose, onSuccess, clienteToEdit }: UseC
         }
     }, [open, clienteToEdit, reset]);
 
-    const mutation = useMutation({
-        mutationFn: async (data: CreateClienteSchema) => {
-            if (isEdit && clienteToEdit) {
-                await clienteApi.update(clienteToEdit.clienteID, data);
-                return clienteToEdit.clienteID;
-            }
-            if (createdClientId) {
-                await clienteApi.update(createdClientId, data);
-                return createdClientId;
-            }
-            const response = await clienteApi.create(data);
-            return response.data;
-        },
-        onSuccess: (id: number) => {
-            queryClient.invalidateQueries({ queryKey: ['clientes'] });
-            onSuccess(id);
-
-            if (!isEdit && !createdClientId) {
-                setCreatedClientId(id);
-                setActiveTab(1);
-            } else {
-                onClose();
-            }
-        },
-        onError: (error: any) => {
-            console.warn("Mutation Error:", error);
-            const genericError = handleBackendErrors<CreateClienteSchema>(error, setError);
-            if (genericError) {
-                setErrorMessage(genericError);
-                setOpenSnackbar(true);
-            }
+    const handleSuccess = (id: number) => {
+        onSuccess(id);
+        if (!isEdit && !createdClientId) {
+            setCreatedClientId(id);
+            setActiveTab(1);
+        } else {
+            onClose();
         }
-    });
+    };
+
+    const handleError = (error: any) => {
+        const genericError = handleBackendErrors<CreateClienteSchema>(error, setError);
+        if (genericError) {
+            setErrorMessage(genericError);
+        }
+    };
 
     const onSubmit = (data: CreateClienteSchema) => {
-        mutation.mutate(data);
+        if (isEdit && clienteToEdit) {
+            updateMutation.mutate(
+                { id: clienteToEdit.clienteID, data },
+                {
+                    onSuccess: () => handleSuccess(clienteToEdit.clienteID),
+                    onError: handleError
+                }
+            );
+        } else if (createdClientId) {
+            updateMutation.mutate(
+                { id: createdClientId, data },
+                {
+                    onSuccess: () => handleSuccess(createdClientId),
+                    onError: handleError
+                }
+            );
+        } else {
+            createMutation.mutate(data, {
+                onSuccess: (id) => handleSuccess(id as number),
+                onError: handleError
+            });
+        }
     };
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
         setActiveTab(newValue);
     };
 
+    const isSubmitting = createMutation.isPending || updateMutation.isPending;
+
     return {
         form,
         activeTab,
         errorMessage,
-        openSnackbar,
         setErrorMessage,
-        setOpenSnackbar,
         handleTabChange,
         onSubmit,
         isEdit,
         createdClientId,
         effectiveClienteId,
         canEditContacts,
-        mutation
+        isSubmitting
     };
 }

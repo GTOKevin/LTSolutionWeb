@@ -13,14 +13,14 @@ import {
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { colaboradorPagoApi } from '@entities/colaborador-pago/api/colaborador-pago.api';
+import { useQuery } from '@tanstack/react-query';
 import { maestroApi } from '@shared/api/maestro.api';
 import { monedaApi } from '@/shared/api/moneda.api';
 import { TIPO_MAESTRO } from '@/shared/constants/constantes';
 import type { ColaboradorPago } from '@entities/colaborador-pago/model/types';
 import { createColaboradorPagoSchema, type CreateColaboradorPagoSchema } from '../model/schema';
 import { useEffect } from 'react';
+import { useCreateColaboradorPago, useUpdateColaboradorPago } from '../../hooks/useColaboradorPagoCrud';
 
 interface ColaboradorPagoFormProps {
     open: boolean;
@@ -31,8 +31,10 @@ interface ColaboradorPagoFormProps {
 
 export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }: ColaboradorPagoFormProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     const isEdit = !!pagoToEdit;
+
+    const createMutation = useCreateColaboradorPago();
+    const updateMutation = useUpdateColaboradorPago();
 
     // Queries
     const { data: tiposPago } = useQuery({
@@ -84,23 +86,18 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
         }
     }, [open, pagoToEdit, reset]);
 
-    const mutation = useMutation({
-        mutationFn: async (data: CreateColaboradorPagoSchema) => {
-            if (isEdit && pagoToEdit) {
-                await colaboradorPagoApi.update(pagoToEdit.colaboradorPagoID, data);
-                return pagoToEdit.colaboradorPagoID;
-            }
-            const response = await colaboradorPagoApi.create(colaboradorId, data);
-            return response.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['colaborador-pagos', colaboradorId] });
-            onClose();
-        }
-    });
-
     const onSubmit = (data: CreateColaboradorPagoSchema) => {
-        mutation.mutate(data);
+        if (isEdit && pagoToEdit) {
+            updateMutation.mutate(
+                { id: pagoToEdit.colaboradorPagoID, data },
+                { onSuccess: () => onClose() }
+            );
+        } else {
+            createMutation.mutate(
+                { colaboradorId, data },
+                { onSuccess: () => onClose() }
+            );
+        }
     };
 
     return (
@@ -233,7 +230,7 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
                     <Button 
                         type="submit" 
                         variant="contained"
-                        disabled={isSubmitting || mutation.isPending}
+                        disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}
                     >
                         {isEdit ? 'Guardar Cambios' : 'Registrar'}
                     </Button>

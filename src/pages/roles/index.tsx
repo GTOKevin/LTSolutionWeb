@@ -17,6 +17,7 @@ import { CreateEditRolUsuarioModal } from '../../features/rol-usuario/create-edi
 import type { RolUsuario } from '@entities/rol-usuario/model/types';
 import { RolUsuarioTable } from '../../features/rol-usuario/list/ui/RolUsuarioTable';
 import { RolUsuarioMobileList } from '../../features/rol-usuario/list/ui/RolUsuarioMobileList';
+import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 
 export function RolesPage() {
     const theme = useTheme();
@@ -117,7 +118,7 @@ export function RolesPage() {
                     size="small"
                     fullWidth
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => setSearchTerm(handleSanitizeSearchInput(e.target.value))}
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">

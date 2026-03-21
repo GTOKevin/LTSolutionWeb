@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { Search as SearchIcon, FilterList as FilterListIcon, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
+import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 
 interface UsuarioFilterProps {
     searchTerm: string;
@@ -90,7 +91,7 @@ export function UsuarioFilter({
                                 fullWidth
                                 size="small"
                                 value={searchTerm}
-                                onChange={(e) => onSearchChange(e.target.value)}
+                                onChange={(e) => onSearchChange(handleSanitizeSearchInput(e.target.value))}
                                 InputProps={{
                                     startAdornment: (
                                         <InputAdornment position="start">

@@ -24,10 +24,8 @@ export const usuarioApi = {
         return data;
     },
 
-    create: async (dto: CreateUsuarioDto) => {
-        const { data } = await httpClient.post<number>('/Usuario', dto);
-        return data;
-    },
+    create: (data: Omit<Usuario, 'usuarioID'>) =>
+        httpClient.post<number>('/Usuario', data).then(res => res.data),
 
     update: async (id: number, dto: CreateUsuarioDto) => {
         await httpClient.put(`/Usuario/${id}`, dto);

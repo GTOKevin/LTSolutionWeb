@@ -20,11 +20,14 @@ import {
 import { useThemeStore } from '@shared/store/theme.store';
 import { DRAWER_WIDTH } from '@widgets/sidebar/ui/Sidebar';
 import { useLocation, } from 'react-router-dom';
+import { useState } from 'react';
+import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 
 export function Header() {
     const { mode, toggleMode } = useThemeStore();
     const theme = useTheme();
     const location = useLocation();
+    const [searchQuery, setSearchQuery] = useState('');
 
 
     // Map routes to titles
@@ -129,6 +132,10 @@ export function Header() {
                         <InputBase
                             placeholder="Buscar en la plataforma..."
                             sx={{ flex: 1, fontSize: '0.875rem' }}
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(handleSanitizeSearchInput(e.target.value));
+                            }}
                         />
                         <Box
                             component="span"

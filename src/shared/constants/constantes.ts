@@ -78,7 +78,11 @@ export const INPUT_VAL={
     ALPHA_NUMERICO_ESPACIOS : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]*$/,
     LETRAS_ESPACIO: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/,
     DECIMAL_10_2_REGEX : /^\d{1,8}(\.\d{1,2})?$/,
-    TELEFONO_PERU_REGEX : /^9\d{8}$/
+    TELEFONO_PERU_REGEX : /^9\d{8}$/,
+    PASSWORD_SIN_ESPACIOS: /^\S+$/,
+    PASSWORD_AL_MENOS_UNA_LETRA: /[A-Za-z]/,
+    PASSWORD_AL_MENOS_UN_NUMERO: /\d/,
+    PASSWORD_AL_MENOS_UN_ESPECIAL: /[^A-Za-z0-9]/
 }
 export const ERROR_MESSAGES = {
     PLACA_INVALIDA: 'Debe ser una placa válida (XXX-1234 o XXX-123)',
@@ -87,7 +91,11 @@ export const ERROR_MESSAGES = {
     ALPHA_NUMERICO_ESPACIOS: 'Caracteres inválidos (Solo letras, números y espacios)',
     LETRAS_ESPACIO: 'Caracteres inválidos (Solo letras y espacios)',
     DECIMAL_10_2: 'Debe ser un número decimal con máximo 10 dígitos y 2 decimales',
-    TELEFONO_PERU: 'Debe ser un celular válido (9 dígitos)'
+    TELEFONO_PERU: 'Debe ser un celular válido (9 dígitos)',
+    PASSWORD_SIN_ESPACIOS: 'El valor no debe contener espacios.',
+    PASSWORD_AL_MENOS_UNA_LETRA: 'Debe incluir al menos una letra.',
+    PASSWORD_AL_MENOS_UN_NUMERO: 'Debe incluir al menos un número.',
+    PASSWORD_AL_MENOS_UN_ESPECIAL: 'Debe incluir al menos un carácter especial.'
 }
 
 export const ALPHA_ESPECIAL_ERROR_MSG = 'Caracteres inválidos (Solo letras, números y ,._-/()[] )';

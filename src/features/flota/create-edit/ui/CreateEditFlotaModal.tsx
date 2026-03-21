@@ -39,7 +39,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
             handleSubmit,
             formState: { errors, isDirty }
         },
-        mutation,
+        isSubmitting,
         onSubmit,
         activeTab,
         setActiveTab,
@@ -355,7 +355,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
                     onClick={onClose}
                     variant="outlined"
                     color="inherit"
-                    disabled={mutation.isPending}
+                    disabled={isSubmitting}
                 >
                     {viewOnly || activeTab === 1 ? 'Cerrar' : 'Cancelar'}
                 </Button>
@@ -365,8 +365,8 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
                         type="submit"
                         form="flota-form"
                         variant="contained" 
-                        disabled={mutation.isPending || (isEdit && !isDirty)}
-                        startIcon={mutation.isPending ? <CircularProgress size={20} color="inherit" /> : null}
+                        disabled={isSubmitting || (isEdit && !isDirty)}
+                        startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
                     >
                         {isEdit || createdFlotaId ? 'Guardar Cambios' : 'Crear Vehículo'}
                     </Button>

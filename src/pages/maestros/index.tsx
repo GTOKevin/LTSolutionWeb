@@ -19,6 +19,7 @@ import { CreateEditTipoMaestroModal } from '../../features/tipo-maestro/create-e
 import type { TipoMaestro } from '@entities/tipo-maestro/model/types';
 import { TipoMaestroTable } from '../../features/tipo-maestro/list/ui/TipoMaestroTable';
 import { TipoMaestroMobileList } from '../../features/tipo-maestro/list/ui/TipoMaestroMobileList';
+import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 
 export function MaestrosPage() {
     const theme = useTheme();
@@ -140,7 +141,7 @@ export function MaestrosPage() {
                         size="small"
                         fullWidth
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => setSearchTerm(handleSanitizeSearchInput(e.target.value))}
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">

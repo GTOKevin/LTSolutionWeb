@@ -16,10 +16,10 @@ export const clienteApi = {
             params: { clienteId, search, activo, page, size } 
         }),
 
-    create: (data: CreateClienteDto) => httpClient.post<number>('/Cliente', data),
+    create: (data: CreateClienteDto) => httpClient.post<number>('/Cliente', data).then(res => res.data),
 
     addContacto: (clienteId: number, data: CreateClienteContactoDto) => 
-        httpClient.post<number>(`/Cliente/${clienteId}/contactos`, data),
+        httpClient.post<number>(`/Cliente/${clienteId}/contactos`, data).then(res => res.data),
 
     update: (id: number, data: CreateClienteDto) => httpClient.put<void>(`/Cliente/${id}`, data),
 

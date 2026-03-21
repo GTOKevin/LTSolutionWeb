@@ -14,7 +14,9 @@ import {
     Edit as EditIcon,
     Delete as DeleteIcon,
     MoreVert as MoreVertIcon,
-    Visibility as VisibilityIcon
+    Visibility as VisibilityIcon,
+    TableView as ExcelIcon,
+    PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import { useState, type ReactNode } from 'react';
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
@@ -37,7 +39,16 @@ interface MobileListShellProps<T> {
     // Actions
     onEdit?: (item: T) => void;
     onDelete?: (item: T) => void;
+    onView?: (item: T) => void; // Para ver detalle
     onPreview?: (item: T) => void; // Si hay un archivo principal
+    onExportExcel?: (item: T) => void;
+    onExportPdf?: (item: T) => void;
+    
+    // Conditionals for actions (optional, returns boolean if action should be shown for specific item)
+    canEdit?: (item: T) => boolean;
+    canDelete?: (item: T) => boolean;
+    canExportExcel?: (item: T) => boolean;
+    canExportPdf?: (item: T) => boolean;
     
     // Styling
     getCardStyle?: (item: T, theme: any) => object;
@@ -57,7 +68,14 @@ export function MobileListShell<T>({
     renderBody,
     onEdit,
     onDelete,
+    onView,
     onPreview,
+    onExportExcel,
+    onExportPdf,
+    canEdit = () => true,
+    canDelete = () => true,
+    canExportExcel = () => true,
+    canExportPdf = () => true,
     getCardStyle
 }: MobileListShellProps<T>) {
     const theme = useTheme();
@@ -74,7 +92,7 @@ export function MobileListShell<T>({
         setSelectedItem(null);
     };
 
-    const handleAction = (action: 'edit' | 'delete' | 'preview') => {
+    const handleAction = (action: 'edit' | 'delete' | 'preview' | 'view' | 'excel' | 'pdf') => {
         if (!selectedItem) return;
 
         switch (action) {
@@ -86,6 +104,15 @@ export function MobileListShell<T>({
                 break;
             case 'preview':
                 onPreview?.(selectedItem);
+                break;
+            case 'view':
+                onView?.(selectedItem);
+                break;
+            case 'excel':
+                onExportExcel?.(selectedItem);
+                break;
+            case 'pdf':
+                onExportPdf?.(selectedItem);
                 break;
         }
         handleMenuClose();
@@ -100,6 +127,7 @@ export function MobileListShell<T>({
             <Stack spacing={2} sx={{ mb: 2 }}>
                 {items.map((item) => {
                     const customStyle = getCardStyle ? getCardStyle(item, theme) : {};
+                    const hasActions = !viewOnly && (onEdit || onDelete || onPreview || onView || onExportExcel || onExportPdf);
                     
                     return (
                         <Card 
@@ -118,7 +146,7 @@ export function MobileListShell<T>({
                                         {renderHeader && renderHeader(item)}
                                     </Box>
                                     
-                                    {!viewOnly && (onEdit || onDelete || onPreview) && (
+                                    {hasActions && (
                                         <IconButton 
                                             size="small" 
                                             onClick={(e) => handleMenuOpen(e, item)}
@@ -158,6 +186,13 @@ export function MobileListShell<T>({
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
+                {onView && selectedItem && (
+                    <MenuItem onClick={() => handleAction('view')}>
+                        <VisibilityIcon fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />
+                        Ver Detalle
+                    </MenuItem>
+                )}
+                
                 {onPreview && selectedItem && (
                     <MenuItem onClick={() => handleAction('preview')}>
                         <VisibilityIcon fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />
@@ -165,14 +200,28 @@ export function MobileListShell<T>({
                     </MenuItem>
                 )}
                 
-                {!viewOnly && onEdit && (
+                {onExportPdf && selectedItem && canExportPdf(selectedItem) && (
+                    <MenuItem onClick={() => handleAction('pdf')}>
+                        <PdfIcon fontSize="small" sx={{ mr: 1.5, color: 'error.main' }} />
+                        Exportar PDF
+                    </MenuItem>
+                )}
+                
+                {onExportExcel && selectedItem && canExportExcel(selectedItem) && (
+                    <MenuItem onClick={() => handleAction('excel')}>
+                        <ExcelIcon fontSize="small" sx={{ mr: 1.5, color: 'success.main' }} />
+                        Exportar Excel
+                    </MenuItem>
+                )}
+                
+                {!viewOnly && onEdit && selectedItem && canEdit(selectedItem) && (
                     <MenuItem onClick={() => handleAction('edit')}>
                         <EditIcon fontSize="small" color="primary" sx={{ mr: 1.5 }} />
                         Editar
                     </MenuItem>
                 )}
                 
-                {!viewOnly && onDelete && (
+                {!viewOnly && onDelete && selectedItem && canDelete(selectedItem) && (
                     <MenuItem onClick={() => handleAction('delete')}>
                         <DeleteIcon fontSize="small" sx={{ mr: 1.5, color: 'error.main' }} />
                         <Typography color="error">Eliminar</Typography>

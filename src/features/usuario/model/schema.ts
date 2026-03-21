@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { INPUT_VAL, ERROR_MESSAGES } from '@/shared/constants/constantes';
 
 export const baseUsuarioSchema = z.object({
     nombre: z.string()
@@ -16,14 +17,24 @@ export const baseUsuarioSchema = z.object({
 
 export const createUsuarioSchemaFull = baseUsuarioSchema.extend({
     clave: z.string()
-        .min(6, 'La contraseña debe tener al menos 6 caracteres')
-        .regex(/^\S*$/, 'La contraseña no puede contener espacios')
+        .min(8, 'La contraseña debe tener al menos 8 caracteres')
+        .max(20, 'La contraseña no debe exceder 20 caracteres')
+        .regex(INPUT_VAL.PASSWORD_SIN_ESPACIOS, ERROR_MESSAGES.PASSWORD_SIN_ESPACIOS)
+        .regex(INPUT_VAL.PASSWORD_AL_MENOS_UNA_LETRA, ERROR_MESSAGES.PASSWORD_AL_MENOS_UNA_LETRA)
+        .regex(INPUT_VAL.PASSWORD_AL_MENOS_UN_NUMERO, ERROR_MESSAGES.PASSWORD_AL_MENOS_UN_NUMERO)
+        .regex(INPUT_VAL.PASSWORD_AL_MENOS_UN_ESPECIAL, ERROR_MESSAGES.PASSWORD_AL_MENOS_UN_ESPECIAL)
 });
 
 export const editUsuarioSchemaFull = baseUsuarioSchema.extend({
     clave: z.string()
-        .regex(/^\S*$/, 'La contraseña no puede contener espacios')
+        .min(8, 'La contraseña debe tener al menos 8 caracteres')
+        .max(20, 'La contraseña no debe exceder 20 caracteres')
+        .regex(INPUT_VAL.PASSWORD_SIN_ESPACIOS, ERROR_MESSAGES.PASSWORD_SIN_ESPACIOS)
+        .regex(INPUT_VAL.PASSWORD_AL_MENOS_UNA_LETRA, ERROR_MESSAGES.PASSWORD_AL_MENOS_UNA_LETRA)
+        .regex(INPUT_VAL.PASSWORD_AL_MENOS_UN_NUMERO, ERROR_MESSAGES.PASSWORD_AL_MENOS_UN_NUMERO)
+        .regex(INPUT_VAL.PASSWORD_AL_MENOS_UN_ESPECIAL, ERROR_MESSAGES.PASSWORD_AL_MENOS_UN_ESPECIAL)
         .optional()
+        .or(z.literal(''))
 });
 
 export type CreateUsuarioSchema = z.infer<typeof createUsuarioSchemaFull>;

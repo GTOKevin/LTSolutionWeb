@@ -44,12 +44,8 @@ export function CreateEditMantenimientoModal({
     const theme = useTheme();
 
     const {
-        form: {
-            register,
-            handleSubmit,
-            formState: { errors, isDirty }
-        },
-        mutation,
+        form,
+        isSubmitting,
         onSubmit,
         handleConfirmSave,
         activeTab,
@@ -71,6 +67,13 @@ export function CreateEditMantenimientoModal({
         onClose,
         open
     });
+
+    const {
+        register,
+        handleSubmit,
+        control,
+        formState: { errors, isDirty }
+    } = form;
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
         setActiveTab(newValue);
@@ -325,7 +328,7 @@ export function CreateEditMantenimientoModal({
                     onClick={onClose}
                     variant="outlined"
                     color="inherit"
-                    disabled={mutation.isPending}
+                    disabled={isSubmitting}
                 >
                     {viewOnly || activeTab === 1 ? 'Cerrar' : 'Cancelar'}
                 </Button>
@@ -335,8 +338,8 @@ export function CreateEditMantenimientoModal({
                         type="submit"
                         form="mantenimiento-form"
                         variant="contained"
-                        disabled={mutation.isPending || (isEdit && !isDirty)}
-                        startIcon={mutation.isPending ? <CircularProgress size={20} color="inherit" /> : null}
+                        disabled={isSubmitting || (isEdit && !isDirty)}
+                        startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
                     >
                         {isEdit || createdId ? 'Guardar Cambios' : 'Guardar Ingreso'}
                     </Button>
