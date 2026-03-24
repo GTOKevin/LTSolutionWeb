@@ -30,7 +30,6 @@ interface LicenciaFormProps {
 }
 
 export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: LicenciaFormProps) {
-    const theme = useTheme();
     const isEdit = !!licenciaToEdit;
 
     const createMutation = useCreateLicencia();

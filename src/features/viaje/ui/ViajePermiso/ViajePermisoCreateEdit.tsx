@@ -1,7 +1,7 @@
 import { logger } from '@/shared/utils/logger';
 import { 
-    Box, Button, Typography, Paper, Grid,
-    useTheme, alpha, CircularProgress
+    Box, Button, Typography, Grid,
+    useTheme, CircularProgress
 } from '@mui/material';
 import { 
     Save as SaveIcon
@@ -14,7 +14,7 @@ import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { useCreateViajePermiso, useUpdateViajePermiso } from '@/features/viaje/hooks/useViajePermisos';
 import { viajePermisoSchema, type ViajePermisoFormData } from '../../model/schema';
 import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
-import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
+
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
 import { handleBackendErrors } from '@/shared/utils/form-validation';
 

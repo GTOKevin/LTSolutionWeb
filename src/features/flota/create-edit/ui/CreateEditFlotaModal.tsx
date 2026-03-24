@@ -66,7 +66,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
     return (
         <Dialog 
             open={open} 
-            onClose={(e, reason) => {
+            onClose={(_, reason) => {
                 if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
                     onClose();
                 }

@@ -23,6 +23,9 @@ const RolesPage = lazy(() => import('@/pages/roles').then(module => ({ default: 
 const RolesColaboradorPage = lazy(() => import('@/pages/roles-colaborador').then(module => ({ default: module.RolesColaboradorPage })));
 const MaestrosPage = lazy(() => import('@/pages/maestros').then(module => ({ default: module.MaestrosPage })));
 const ViajesPage = lazy(() => import('@pages/viajes').then(module => ({ default: module.ViajesPage })));
+const GastoPage = lazy(() => import('@/pages/gasto').then(module => ({ default: module.GastoPage })));
+const MercaderiaPage = lazy(() => import('@/pages/mercaderia').then(module => ({ default: module.MercaderiaPage })));
+const TipoProductoPage = lazy(() => import('@/pages/tipo-producto').then(module => ({ default: module.TipoProductoPage })));
 
 function LoadingFallback() {
     return (
@@ -130,6 +133,21 @@ export function RouterProvider() {
                         <Route path="maestros" element={
                             <PermissionGuard permission={PERMISSIONS.SISTEMA.MAESTROS.VER}>
                                 <MaestrosPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="gasto" element={
+                            <PermissionGuard permission={PERMISSIONS.SISTEMA.MAESTROS.VER}>
+                                <GastoPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="mercaderia" element={
+                            <PermissionGuard permission={PERMISSIONS.SISTEMA.MAESTROS.VER}>
+                                <MercaderiaPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="tipo-producto" element={
+                            <PermissionGuard permission={PERMISSIONS.SISTEMA.MAESTROS.VER}>
+                                <TipoProductoPage />
                             </PermissionGuard>
                         } />
                     </Route>

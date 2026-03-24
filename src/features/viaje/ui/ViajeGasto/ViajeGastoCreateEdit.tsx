@@ -1,7 +1,7 @@
 import { logger } from '@/shared/utils/logger';
 import { 
-    Box, Button, Typography, Paper, TextField, Grid, Checkbox, FormControlLabel,
-    useTheme, alpha, CircularProgress
+    Box, Button, Typography, TextField, Grid, Checkbox, FormControlLabel,
+    useTheme, CircularProgress
 } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 import { useEffect } from 'react';
@@ -13,7 +13,7 @@ import { useCreateViajeGasto, useUpdateViajeGasto } from '@/features/viaje/hooks
 import { viajeGastoSchema, type ViajeGastoFormData } from '../../model/schema';
 import { getGastoMetadata } from '../../model/gasto-metadata';
 import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
-import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
+
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
 import { handleBackendErrors } from '@/shared/utils/form-validation';

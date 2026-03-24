@@ -1,7 +1,6 @@
 import { logger } from '@/shared/utils/logger';
 import { 
-    Box, Button, Typography, Paper, TextField, Grid,
-    useTheme, alpha, InputAdornment, CircularProgress
+    Box, Button, Typography, Paper, TextField, Grid, InputAdornment, CircularProgress
 } from '@mui/material';
 import { 
     Add as AddIcon, 
@@ -19,7 +18,7 @@ import type { SelectItem } from '@/shared/model/types';
 import { useCreateViajeMercaderia, useUpdateViajeMercaderia } from '@/features/viaje/hooks/useViajeMercaderias';
 import { viajeMercaderiaSchema, type ViajeMercaderiaFormData } from '../../model/schema';
 import { handleAddressKeyDown } from '@/shared/utils/input-validators';
-import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
+
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { handleBackendErrors } from '@/shared/utils/form-validation';
 
@@ -35,11 +34,9 @@ interface Props {
 export function ViajeMercaderiaCreateEdit({ 
     viajeId, tiposMedida, tiposPeso, mercaderias, editItem, onCancelEdit 
 }: Props) {
-    const theme = useTheme();
     const createMutation = useCreateViajeMercaderia();
     const updateMutation = useUpdateViajeMercaderia();
 
-    const isEditing = !!editItem;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
     const { control, handleSubmit, reset, setValue, setError, formState: { errors } } = useForm<ViajeMercaderiaFormData>({

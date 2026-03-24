@@ -1,15 +1,11 @@
 import {
     Box,
     Button,
-    Collapse,
     Divider,
     TextField,
     Grid,
     MenuItem,
-    Paper,
-    Typography,
-    useTheme,
-    alpha
+    Typography
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,7 +26,6 @@ interface ColaboradorDocumentoFormProps {
 }
 
 export function ColaboradorDocumentoForm({ open, onClose, colaboradorId, documentoToEdit }: ColaboradorDocumentoFormProps) {
-    const theme = useTheme();
     const isEdit = !!documentoToEdit;
 
     const createMutation = useCreateColaboradorDocumento();

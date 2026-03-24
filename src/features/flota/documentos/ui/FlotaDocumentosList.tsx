@@ -27,7 +27,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import type { CreateFlotaDocumentoSchema } from '../../model/schema';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import type { FlotaDocumento } from '@entities/flota/model/types';
 import { parseDateOnly, formatDateLong } from '@/shared/utils/date-utils';
 
@@ -403,7 +403,6 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
                         onDelete={viewOnly ? undefined : handleDelete}
                         onPreview={(item) => item.rutaArchivo ? handlePreview(item.rutaArchivo) : undefined}
                         renderHeader={(doc) => {
-                            const status = getExpirationStatus(doc.fechaVencimiento);
                             return (
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>

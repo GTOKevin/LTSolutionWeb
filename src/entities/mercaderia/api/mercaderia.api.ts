@@ -9,5 +9,6 @@ export const mercaderiaApi = {
         httpClient.get<MercaderiaDto>(`/Mercaderia/${id}`),
     create: (data: CreateMercaderiaDto) => httpClient.post<number>('/Mercaderia', data).then(res => res.data),
     update: (id: number, data: CreateMercaderiaDto) =>
-        httpClient.put<void>(`/Mercaderia/${id}`, data)
+        httpClient.put<void>(`/Mercaderia/${id}`, data),
+    delete: (id: number) => httpClient.delete<void>(`/Mercaderia/${id}`)
 };

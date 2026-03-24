@@ -22,7 +22,7 @@ interface CreateEditTipoMaestroModalProps {
     open: boolean;
     onClose: () => void;
     maestroToEdit: TipoMaestro | null;
-    onSuccess: (id: number) => void;
+    onSuccess: (id?: number) => void;
 }
 
 export function CreateEditTipoMaestroModal({
