@@ -4,40 +4,40 @@ import {
     useTheme,
     IconButton,
     Typography,
-    Snackbar,
-    Alert,
     Avatar,
-    Grid,
-    Card,
-    CardContent,
-    CardActions,
     Tooltip,
     alpha,
-    TablePagination
+    TableCell,
+    Stack,
+    Paper,
+    Collapse
 } from '@mui/material';
 import {
     Add as AddIcon,
-    Delete as DeleteIcon,
-    Edit as EditIcon,
     Description as FileIcon,
-    Download as DownloadIcon,
     Warning as WarningIcon,
     CheckCircle as CheckIcon,
     Error as ErrorIcon,
-    CalendarToday as CalendarIcon
+    CalendarToday as CalendarIcon,
+    ExpandLess,
+    ExpandMore,
+    Edit as EditIcon,
+    Cancel as CancelIcon
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import type { CreateFlotaDocumentoSchema } from '../../model/schema';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { FlotaDocumento } from '@entities/flota/model/types';
 import { parseDateOnly, formatDateLong } from '@/shared/utils/date-utils';
 
 import { FlotaDocumentosForm } from './FlotaDocumentosForm';
-import { ROWS_DOC_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
 import { useCreateFlotaDocumento, useUpdateFlotaDocumento, useDeleteFlotaDocumento } from '../../hooks/useFlotaDocumentoCrud';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
+import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
+import { MobileListShell } from '@/shared/components/ui/MobileListShell';
+import { TableActions } from '@/shared/components/ui/TableActions';
 
 interface FlotaDocumentosListProps {
     flotaId: number;
@@ -91,11 +91,13 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
     const theme = useTheme();
     const [editingDoc, setEditingDoc] = useState<CreateFlotaDocumentoSchema | undefined>(undefined);
     const [editingId, setEditingId] = useState<number | null>(null);
-    const [showForm, setShowForm] = useState(false);
+    const [isFormExpanded, setIsFormExpanded] = useState(true);
+
+    const formRef = useRef<HTMLDivElement>(null);
     const [openDelete, setOpenDelete] = useState(false);
     const [documentoToDelete, setDocumentoToDelete] = useState<FlotaDocumento | null>(null);
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(6);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
     
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -106,6 +108,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
     });
 
     const totalItems = data?.data?.total || 0;
+    const items = data?.data?.items || [];
 
     const createMutation = useCreateFlotaDocumento();
     const updateMutation = useUpdateFlotaDocumento();
@@ -131,7 +134,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
     const handleFormCancel = () => {
         setEditingDoc(undefined);
         setEditingId(null);
-        setShowForm(false);
+        setIsFormExpanded(false);
     };
 
     const handleEdit = (doc: FlotaDocumento) => {
@@ -144,18 +147,37 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
             fechaVencimiento: doc.fechaVencimiento,
             activo: doc.estado
         });
-        setShowForm(true);
+        setIsFormExpanded(true);
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
+
 
     const handleCreate = () => {
         setEditingId(null);
         setEditingDoc(undefined);
-        setShowForm(true);
+        setIsFormExpanded(true);
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    };
+
     const handleSubmit = (data: CreateFlotaDocumentoSchema) => {
         if (editingId) {
-            updateMutation.mutate({ id: editingId, data }, { onSuccess: handleFormCancel });
+            updateMutation.mutate({ id: editingId, data }, { 
+                onSuccess: () => {
+                    handleFormCancel();
+                    setEditingDoc(undefined);
+                } 
+            });
         } else {
-            createMutation.mutate({ flotaId, data }, { onSuccess: handleFormCancel });
+            createMutation.mutate({ flotaId, data }, { 
+                onSuccess: () => {
+                    handleFormCancel();
+                    setEditingDoc(undefined);
+                } 
+            });
         }
     };
 
@@ -175,199 +197,288 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
         }
     };
 
+    const columns: Column[] = [
+        { id: 'documento', label: 'Documento', minWidth: 250 },
+        { id: 'vencimiento', label: 'Vencimiento', minWidth: 150 },
+        { id: 'acciones', label: 'Acciones', align: 'center', width: 120 }
+    ];
+
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 400 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+            {!viewOnly && (
+                <Paper
+                    ref={formRef}
+                    elevation={0}
+                    sx={{
+                        p: 0,
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 3,
+                        bgcolor: alpha(editingId ? theme.palette.warning.main : theme.palette.primary.main, 0.02),
+                        overflow: 'hidden',
+                        mb: 2
+                    }}
+                >
+                    <Box
+                        onClick={() => {
+                            if (isFormExpanded && editingId) {
+                                handleFormCancel();
+                            } else if (!isFormExpanded && !editingId) {
+                                handleCreate();
+                            } else {
+                                setIsFormExpanded((prev) => !prev);
+                            }
+                        }}
+                        sx={{
+                            px: 3,
+                            py: 2,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            borderBottom: isFormExpanded ? `1px solid ${theme.palette.divider}` : 'none',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ 
+                                bgcolor: editingId ? theme.palette.warning.main : theme.palette.primary.main, 
+                                color: 'white', 
+                                p: 0.5, 
+                                borderRadius: '50%', 
+                                display: 'flex' 
+                            }}>
+                                {editingId ? <EditIcon fontSize="small" /> : <AddIcon fontSize="small" />}
+                            </Box>
+                            <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
+                                {editingId ? 'Editar Documento' : 'Agregar Documento'}
+                            </Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {editingId && (
+                                <Button 
+                                    size="small" 
+                                    color="inherit" 
+                                    startIcon={<CancelIcon />}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleFormCancel();
+                                    }}
+                                >
+                                    Cancelar Edición
+                                </Button>
+                            )}
+                            <IconButton
+                                size="small"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    setIsFormExpanded((prev) => !prev);
+                                }}
+                            >
+                                {isFormExpanded ? <ExpandLess /> : <ExpandMore />}
+                            </IconButton>
+                        </Box>
+                    </Box>
+                    <Collapse in={isFormExpanded} unmountOnExit>
+                        <Box sx={{ p: 2 }}>
+                            <FlotaDocumentosForm 
+                                defaultValues={editingDoc}
+                                onSubmit={handleSubmit}
+                                onCancel={handleFormCancel}
+                                isSubmitting={createMutation.isPending || updateMutation.isPending}
+                                isEditing={!!editingId}
+                                viewOnly={viewOnly}
+                            />
+                        </Box>
+                    </Collapse>
+                </Paper>
+            )}
+
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h6" fontWeight="bold">
-                    Documentos del Vehículo
+                    Documentos Registrados
                 </Typography>
-                {!showForm && !viewOnly && (
-                    <Button 
-                        startIcon={<AddIcon />} 
-                        variant="contained" 
-                        onClick={handleCreate}
-                    >
-                        Agregar Documento
-                    </Button>
-                )}
             </Box>
-            
-            {showForm ? (
-                <FlotaDocumentosForm 
-                    defaultValues={editingDoc}
-                    onSubmit={handleSubmit}
-                    onCancel={handleFormCancel}
-                    isSubmitting={createMutation.isPending || updateMutation.isPending}
-                    isEditing={!!editingId}
-                    viewOnly={viewOnly}
-                />
-            ) : (
-                <Box sx={{ flex: 1, overflow: 'auto', p: 0.5 }}>
-                    {isLoading ? (
-                        <Box p={3} textAlign="center">Cargando documentos...</Box>
-                    ) : data?.data?.items?.length === 0 ? (
-                        <Box 
-                            p={5} 
-                            textAlign="center" 
-                            color="text.secondary"
-                            sx={{ 
-                                border: `1px dashed ${theme.palette.divider}`,
-                                borderRadius: 2,
-                                bgcolor: theme.palette.action.hover
-                            }}
-                        >
-                            <Typography variant="body1">No hay documentos registrados.</Typography>
-                            {!viewOnly && <Typography variant="caption">Haga clic en "Agregar Documento" para comenzar.</Typography>}
-                        </Box>
-                    ) : (
-                        <Grid container spacing={2}>
-                            {data?.data?.items?.map((doc) => {
-                                const status = getExpirationStatus(doc.fechaVencimiento);
-                                return (
-                                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={doc.flotaDocumentoID}>
-                                        <Card 
-                                            elevation={0}
-                                            sx={{ 
-                                                border: `1px solid ${theme.palette.divider}`,
-                                                borderRadius: 2,
-                                                height: '100%',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                transition: 'all 0.2s',
-                                                '&:hover': {
-                                                    borderColor: theme.palette.primary.main,
-                                                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.1)}`
-                                                }
-                                            }}
-                                        >
-                                            <CardContent sx={{ p: 2, flex: 1 }}>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                                                    <Box 
-                                                        onClick={() => doc.rutaArchivo && handlePreview(doc.rutaArchivo)}
-                                                        sx={{ 
-                                                            cursor: doc.rutaArchivo ? 'pointer' : 'default',
-                                                            borderRadius: 2,
-                                                            overflow: 'hidden',
-                                                            border: `1px solid ${theme.palette.divider}`
-                                                        }}
-                                                    >
-                                                        {doc.rutaArchivo ? (
-                                                            <Avatar
-                                                                variant="rounded"
-                                                                src={doc.rutaArchivo}
-                                                                alt={doc.numeroDocumento}
-                                                                sx={{ width: 64, height: 64 }}
-                                                            />
-                                                        ) : (
-                                                            <Box 
-                                                                sx={{ 
-                                                                    width: 64, 
-                                                                    height: 64, 
-                                                                    bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center',
-                                                                    color: 'primary.main'
-                                                                }}
-                                                            >
-                                                                <FileIcon fontSize="large" />
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                    {status && (
-                                                        <Tooltip title={status.fullLabel}>
-                                                            <Box 
-                                                                sx={{ 
-                                                                    display: 'flex', 
-                                                                    alignItems: 'center', 
-                                                                    gap: 0.5,
-                                                                    px: 1,
-                                                                    py: 0.5,
-                                                                    borderRadius: 1,
-                                                                    bgcolor: alpha(theme.palette[status.color].main, 0.1),
-                                                                    color: status.textColor,
-                                                                    border: `1px solid ${alpha(theme.palette[status.color].main, 0.2)}`
-                                                                }}
-                                                            >
-                                                                {status.icon}
-                                                                <Typography variant="caption" fontWeight="bold">
-                                                                    {status.label}
-                                                                </Typography>
-                                                            </Box>
-                                                        </Tooltip>
-                                                    )}
-                                                </Box>
 
-                                                <Typography variant="subtitle1" fontWeight={700} noWrap title={doc.numeroDocumento}>
-                                                    {doc.numeroDocumento}
+            <Box sx={{ width: '100%', p: 0.5 }}>
+                    <SharedTable
+                        data={data?.data}
+                        isLoading={isLoading}
+                        page={page}
+                        rowsPerPage={rowsPerPage}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        columns={columns}
+                        keyExtractor={(item) => item.flotaDocumentoID}
+                        emptyMessage="No hay documentos registrados."
+                        renderRow={(doc) => {
+                            const status = getExpirationStatus(doc.fechaVencimiento);
+                            return (
+                                <>
+                                    <TableCell>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                            <Box 
+                                                onClick={() => doc.rutaArchivo && handlePreview(doc.rutaArchivo)}
+                                                sx={{ 
+                                                    cursor: doc.rutaArchivo ? 'pointer' : 'default',
+                                                    borderRadius: 2,
+                                                    overflow: 'hidden',
+                                                    border: `1px solid ${theme.palette.divider}`,
+                                                    width: 48,
+                                                    height: 48,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    bgcolor: doc.rutaArchivo ? 'transparent' : alpha(theme.palette.primary.main, 0.1),
+                                                    color: 'primary.main'
+                                                }}
+                                            >
+                                                {doc.rutaArchivo ? (
+                                                    <Avatar variant="rounded" src={doc.rutaArchivo} alt="Doc" sx={{ width: '100%', height: '100%' }} />
+                                                ) : (
+                                                    <FileIcon />
+                                                )}
+                                            </Box>
+                                            <Box>
+                                                <Typography variant="subtitle2" fontWeight={700}>
+                                                    {doc.numeroDocumento || 'S/N'}
                                                 </Typography>
-                                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                                <Typography variant="body2" color="text.secondary">
                                                     {doc.tipoDocumento?.nombre || `Tipo ${doc.tipoDocumentoID}`}
                                                 </Typography>
-
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', bgcolor: alpha(theme.palette.background.default, 0.5), p: 1, borderRadius: 1 }}>
-                                                    <CalendarIcon fontSize="small" />
-                                                    <Box>
-                                                        <Typography variant="caption" display="block" color="text.secondary">Vencimiento</Typography>
-                                                        <Typography variant="body2" fontWeight={500}>
-                                                            {formatDateLong(doc.fechaVencimiento)}
+                                            </Box>
+                                        </Box>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Stack spacing={0.5}>
+                                            <Typography variant="body2" fontWeight={500}>
+                                                {formatDateLong(doc.fechaVencimiento)}
+                                            </Typography>
+                                            {status && (
+                                                <Tooltip title={status.fullLabel}>
+                                                    <Box 
+                                                        sx={{ 
+                                                            display: 'inline-flex', 
+                                                            alignItems: 'center', 
+                                                            gap: 0.5,
+                                                            px: 1,
+                                                            py: 0.25,
+                                                            borderRadius: 1,
+                                                            bgcolor: alpha(theme.palette[status.color].main, 0.1),
+                                                            color: status.textColor,
+                                                            width: 'fit-content'
+                                                        }}
+                                                    >
+                                                        {status.icon}
+                                                        <Typography variant="caption" fontWeight="bold">
+                                                            {status.label}
                                                         </Typography>
                                                     </Box>
-                                                </Box>
-                                            </CardContent>
+                                                </Tooltip>
+                                            )}
+                                        </Stack>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <TableActions
+                                            onView={doc.rutaArchivo ? () => handlePreview(doc.rutaArchivo!) : undefined}
+                                            onEdit={!viewOnly ? () => handleEdit(doc) : undefined}
+                                            onDelete={!viewOnly ? () => handleDelete(doc) : undefined}
+                                        />
+                                    </TableCell>
+                                </>
+                            );
+                        }}
+                    />
 
-                                            <CardActions sx={{ p: 1.5, pt: 0, justifyContent: 'flex-end', gap: 1 }}>
-                                                {doc.rutaArchivo && (
-                                                    <Button 
-                                                        size="small" 
-                                                        startIcon={<DownloadIcon />}
-                                                        onClick={() => handlePreview(doc.rutaArchivo!)}
-                                                        color="inherit"
-                                                    >
-                                                        Ver
-                                                    </Button>
-                                                )}
-                                                {!viewOnly && (
-                                                    <>
-                                                        <IconButton 
-                                                            size="small" 
-                                                            onClick={() => handleEdit(doc)}
-                                                            color="primary"
-                                                            sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1) }}
-                                                        >
-                                                            <EditIcon fontSize="small" />
-                                                        </IconButton>
-                                                        <IconButton 
-                                                            size="small" 
-                                                            color="error" 
-                                                            onClick={() => deleteMutation.mutate(doc.flotaDocumentoID)}
-                                                            sx={{ bgcolor: alpha(theme.palette.error.main, 0.1) }}
-                                                        >
-                                                            <DeleteIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </>
-                                                )}
-                                            </CardActions>
-                                        </Card>
-                                    </Grid>
-                                );
-                            })}
-                        </Grid>
-                    )}
-                    <TablePagination
-                        component="div"
-                        count={totalItems}
+                    <MobileListShell
+                        items={items}
+                        total={totalItems}
                         page={page}
-                        onPageChange={handleChangePage}
                         rowsPerPage={rowsPerPage}
+                        onPageChange={handleChangePage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
-                        rowsPerPageOptions={ROWS_DOC_PER_PAGE_OPTIONS}
-                        labelRowsPerPage="Items por página"
-                        labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-                        sx={{ mt: 2, borderTop: `1px solid ${theme.palette.divider}` }}
+                        emptyMessage="No hay documentos registrados."
+                        keyExtractor={(item) => item.flotaDocumentoID}
+                        onView={viewOnly ? undefined : undefined} // Handled via actions
+                        onEdit={viewOnly ? undefined : handleEdit}
+                        onDelete={viewOnly ? undefined : handleDelete}
+                        onPreview={(item) => item.rutaArchivo ? handlePreview(item.rutaArchivo) : undefined}
+                        renderHeader={(doc) => {
+                            const status = getExpirationStatus(doc.fechaVencimiento);
+                            return (
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                        <Box 
+                                            onClick={() => doc.rutaArchivo && handlePreview(doc.rutaArchivo)}
+                                            sx={{ 
+                                                cursor: doc.rutaArchivo ? 'pointer' : 'default',
+                                                borderRadius: 2,
+                                                overflow: 'hidden',
+                                                border: `1px solid ${theme.palette.divider}`,
+                                                width: 48,
+                                                height: 48,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                bgcolor: doc.rutaArchivo ? 'transparent' : alpha(theme.palette.primary.main, 0.1),
+                                                color: 'primary.main'
+                                            }}
+                                        >
+                                            {doc.rutaArchivo ? (
+                                                <Avatar variant="rounded" src={doc.rutaArchivo} alt="Doc" sx={{ width: '100%', height: '100%' }} />
+                                            ) : (
+                                                <FileIcon />
+                                            )}
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="subtitle1" fontWeight={700}>
+                                                {doc.numeroDocumento || 'S/N'}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {doc.tipoDocumento?.nombre || `Tipo ${doc.tipoDocumentoID}`}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            );
+                        }}
+                        renderBody={(doc) => {
+                            const status = getExpirationStatus(doc.fechaVencimiento);
+                            return (
+                                <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', bgcolor: alpha(theme.palette.background.default, 0.5), p: 1, borderRadius: 1 }}>
+                                    <CalendarIcon fontSize="small" />
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="caption" display="block" color="text.secondary">Vencimiento</Typography>
+                                        <Typography variant="body2" fontWeight={500}>
+                                            {formatDateLong(doc.fechaVencimiento)}
+                                        </Typography>
+                                    </Box>
+                                    {status && (
+                                        <Tooltip title={status.fullLabel}>
+                                            <Box 
+                                                sx={{ 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    gap: 0.5,
+                                                    px: 1,
+                                                    py: 0.5,
+                                                    borderRadius: 1,
+                                                    bgcolor: alpha(theme.palette[status.color].main, 0.1),
+                                                    color: status.textColor,
+                                                    border: `1px solid ${alpha(theme.palette[status.color].main, 0.2)}`
+                                                }}
+                                            >
+                                                {status.icon}
+                                                <Typography variant="caption" fontWeight="bold">
+                                                    {status.label}
+                                                </Typography>
+                                            </Box>
+                                        </Tooltip>
+                                    )}
+                                </Box>
+                            );
+                        }}
                     />
                 </Box>
-            )}
 
             <ConfirmDialog
                 open={openDelete}
@@ -386,4 +497,4 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
         </Box>
     );
 }
-}
+

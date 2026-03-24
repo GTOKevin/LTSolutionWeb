@@ -146,22 +146,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
     };
 
     return (
-        <Paper 
-            elevation={0}
-            sx={{ 
-                p: 3, 
-                borderRadius: 3, 
-                border: `1px solid ${theme.palette.divider}`,
-                bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
-            }}
-        >
-            <SubFormHeader 
-                isEditing={isEditing}
-                titleAdd="Agregar Gasto"
-                titleEdit="Editar Gasto"
-                onCancel={onCancel}
-            />
-
+        <Box sx={{ p: 3 }}>
             <Grid container spacing={2}>
                 <Grid size={{xs:12, sm:6, md:3}}>
                     <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
@@ -343,6 +328,6 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                         </Button>
                     </Grid>
                 </Grid>
-        </Paper>
+        </Box>
     );
 }

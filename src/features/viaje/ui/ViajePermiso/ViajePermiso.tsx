@@ -16,11 +16,18 @@ export function ViajePermiso({ viajeId, viewOnly }: Props) {
             viajeId={viajeId}
             viewOnly={viewOnly}
             entityName="permisos"
-            renderForm={() => (
+            titleAdd="Agregar Permiso"
+            titleEdit="Editar Permiso"
+            isEditing={!!itemToEdit}
+            onCancelEdit={() => setItemToEdit(null)}
+            renderForm={(onClose) => (
                 <ViajePermisoCreateEdit 
                     viajeId={viajeId!} 
                     permiso={itemToEdit}
-                    onCancel={() => setItemToEdit(null)}
+                    onCancel={() => {
+                        setItemToEdit(null);
+                        onClose();
+                    }}
                 />
             )}
             renderList={() => (

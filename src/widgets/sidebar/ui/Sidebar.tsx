@@ -13,7 +13,9 @@ import {
     alpha,
     Menu,
     MenuItem as MuiMenuItem,
-    Divider
+    Divider,
+    Backdrop,
+    CircularProgress
 } from '@mui/material';
 import {
     ExpandLess,
@@ -27,7 +29,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { useAuthStore } from '@shared/store/auth.store';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { SIDEBAR_MENU, type MenuItem } from '../model/sidebar.config';
 
 export const DRAWER_WIDTH = 280;
@@ -40,7 +42,12 @@ export function Sidebar() {
     const { user, logout } = useAuthStore();
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [isNavigating, setIsNavigating] = useState(false);
+    const [pendingPath, setPendingPath] = useState<string | null>(null);
+    const [navigationLabel, setNavigationLabel] = useState('');
     const openMenu = Boolean(anchorEl);
+
+    const navigationTimeoutRef = useRef<number | null>(null);
 
     // Permission check helper logic
     const hasPermission = (requiredPermission?: string | string[]) => {
@@ -107,9 +114,45 @@ export function Sidebar() {
         }));
     };
 
-    const handleNavigation = (path: string) => {
+    useEffect(() => {
+        if (isNavigating && pendingPath && location.pathname === pendingPath) {
+            setIsNavigating(false);
+            setPendingPath(null);
+            setNavigationLabel('');
+            if (navigationTimeoutRef.current) {
+                clearTimeout(navigationTimeoutRef.current);
+                navigationTimeoutRef.current = null;
+            }
+        }
+    }, [isNavigating, pendingPath, location.pathname]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (navigationTimeoutRef.current) {
+                clearTimeout(navigationTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    const handleNavigation = (path: string, label: string) => {
+        if (isNavigating) return;
+        if (location.pathname === path) return;
+        
+        if (navigationTimeoutRef.current) {
+            clearTimeout(navigationTimeoutRef.current);
+        }
+
+        setIsNavigating(true);
+        setPendingPath(path);
+        setNavigationLabel(label);
         navigate(path);
-        // On mobile we might want to close sidebar, but keeping logic simple for now
+        
+        navigationTimeoutRef.current = window.setTimeout(() => {
+            setIsNavigating(false);
+            setPendingPath(null);
+            setNavigationLabel('');
+        }, 4000);
     };
 
     const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -153,6 +196,7 @@ export function Sidebar() {
             {item.children ? (
                 <ListItemButton 
                     onClick={() => handleSubmenuClick(item.text)}
+                    disabled={isNavigating}
                     sx={{ 
                         borderRadius: 2,
                         mb: 0.5,
@@ -182,8 +226,9 @@ export function Sidebar() {
                 </ListItemButton>
             ) : (
                 <ListItemButton 
-                    onClick={() => item.path && handleNavigation(item.path)}
+                    onClick={() => item.path && handleNavigation(item.path, item.text)}
                     selected={isPathActive(item.path)}
+                    disabled={isNavigating}
                     sx={{ 
                         borderRadius: 2,
                         mb: 0.5,
@@ -226,8 +271,9 @@ export function Sidebar() {
                         {item.children.map((child) => (
                             <ListItemButton 
                                 key={child.text}
-                                onClick={() => child.path && handleNavigation(child.path)}
+                                onClick={() => child.path && handleNavigation(child.path, child.text)}
                                 selected={isPathActive(child.path)}
+                                disabled={isNavigating}
                                 sx={{ 
                                     pl: 4, 
                                     borderRadius: 2,
@@ -408,6 +454,20 @@ export function Sidebar() {
                     </MuiMenuItem>
                 </Menu>
             </Box>
+            <Backdrop
+                open={isNavigating}
+                sx={{
+                    color: '#fff',
+                    zIndex: (currentTheme) => currentTheme.zIndex.drawer + 10,
+                    flexDirection: 'column',
+                    gap: 1.5
+                }}
+            >
+                <CircularProgress color="inherit" />
+                <Typography variant="subtitle1" fontWeight={700}>
+                    Ingresando a {navigationLabel || 'la vista'}...
+                </Typography>
+            </Backdrop>
         </Box>
     );
 

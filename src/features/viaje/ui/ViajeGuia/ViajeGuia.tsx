@@ -18,12 +18,19 @@ export function ViajeGuia({ viajeId, viewOnly, tiposGuia }: Props) {
             viajeId={viajeId}
             viewOnly={viewOnly}
             entityName="guías"
-            renderForm={() => (
+            titleAdd="Agregar Guía"
+            titleEdit="Editar Guía"
+            isEditing={!!itemToEdit}
+            onCancelEdit={() => setItemToEdit(null)}
+            renderForm={(onClose) => (
                 <ViajeGuiaCreateEdit 
                     viajeId={viajeId!} 
                     tiposGuia={tiposGuia} 
                     guia={itemToEdit}
-                    onCancel={() => setItemToEdit(null)}
+                    onCancel={() => {
+                        setItemToEdit(null);
+                        onClose();
+                    }}
                 />
             )}
             renderList={() => (

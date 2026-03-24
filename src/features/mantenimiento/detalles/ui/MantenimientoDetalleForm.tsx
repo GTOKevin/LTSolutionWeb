@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react';
 
 interface MantenimientoDetalleFormProps {
     defaultValues?: CreateMantenimientoDetalleSchema;
+    initialCategoria?: string;
     onSubmit: (data: CreateMantenimientoDetalleSchema) => void;
     onCancel: () => void;
     isSubmitting: boolean;
@@ -29,6 +30,7 @@ interface MantenimientoDetalleFormProps {
 
 export function MantenimientoDetalleForm({
     defaultValues,
+    initialCategoria,
     onSubmit,
     onCancel,
     isSubmitting,
@@ -78,17 +80,24 @@ export function MantenimientoDetalleForm({
     useEffect(() => {
         if (defaultValues) {
             reset(defaultValues);
-            // We might need to fetch the category for the existing product if we want to pre-fill it correctly.
-            // However, the current API doesn't seem to easily support "get category by product ID" without extra calls.
-            // For now, if editing, we might need a way to set the category.
-            // But let's look at the requirement: "Con las categorias del select, cuando se haga un change en el select de categorias..."
-            // If editing, we need the category to be selected to show the product.
-            // I'll assume for now that the user selects category manually or we infer it.
-            // Ideally, the backend `MantenimientoDetalle` should return the category or we fetch the product details to get it.
-            // Let's check `MantenimientoDetalle` type again. It has `TipoProducto` nested object.
-            // If `defaultValues` comes from `MantenimientoDetalleList`, it might have the nested object.
+            if (initialCategoria) {
+                setSelectedCategoria(initialCategoria);
+            }
+        } else {
+            reset({
+                tipoProductoID: 0,
+                descripcion: '',
+                cantidad: 1,
+                monedaID: 0,
+                costo: 0,
+                igv: true,
+                subTotal: 0,
+                montoIGV: 0,
+                total: 0
+            });
+            setSelectedCategoria('');
         }
-    }, [defaultValues, reset]);
+    }, [defaultValues, initialCategoria, reset]);
 
     // Queries for Selects
     const { data: categorias } = useQuery({
@@ -117,15 +126,26 @@ export function MantenimientoDetalleForm({
         setValue('tipoProductoID', 0); // Reset product selection when category changes
     };
 
+    const handleCancelClick = () => {
+        reset({
+            tipoProductoID: 0,
+            descripcion: '',
+            cantidad: 1,
+            monedaID: 0,
+            costo: 0,
+            igv: true,
+            subTotal: 0,
+            montoIGV: 0,
+            total: 0
+        });
+        setSelectedCategoria('');
+        onCancel();
+    };
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <Box sx={{ p: 2, border: '1px dashed #e0e0e0', borderRadius: 2, bgcolor: 'background.paper' }}>
-                <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 2 }}>
-                    {viewOnly ? 'Detalle del Insumo' : (isEditing ? 'Editar Insumo/Servicio' : 'Nuevo Insumo/Servicio')}
-                </Typography>
-                
-                <Grid container spacing={2}>
-                    <Grid size={{xs:12, sm:6}}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: 1 }}>
+            <Grid container spacing={2}>
+                <Grid size={{xs:12, sm:6}}>
                         <TextField
                             select
                             label="Categoría"
@@ -279,7 +299,7 @@ export function MantenimientoDetalleForm({
                     {!viewOnly && (
                         <Grid size={{xs:12}} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1 }}>
                             <Button 
-                                onClick={onCancel} 
+                                onClick={handleCancelClick} 
                                 variant="outlined" 
                                 color="inherit" 
                                 size="small"
@@ -299,7 +319,6 @@ export function MantenimientoDetalleForm({
                         </Grid>
                     )}
                 </Grid>
-            </Box>
-        </form>
+        </Box>
     );
 }

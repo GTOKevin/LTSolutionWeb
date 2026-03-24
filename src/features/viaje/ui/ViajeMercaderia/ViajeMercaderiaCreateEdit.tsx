@@ -122,24 +122,10 @@ export function ViajeMercaderiaCreateEdit({
     };
 
     return (
-        <Paper 
+        <Box 
             id="mercaderia-form"
-            elevation={0} 
-            sx={{ 
-                p: 3, 
-                mb: 4, 
-                borderRadius: 3, 
-                border: `1px solid ${theme.palette.divider}`,
-                bgcolor: alpha(editItem ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
-            }}
+            sx={{ p: 3 }}
         >
-            <SubFormHeader 
-                isEditing={isEditing}
-                titleAdd="Agregar Mercadería"
-                titleEdit="Editar Mercadería"
-                onCancel={onCancelEdit}
-            />
-
             <Grid container spacing={2}>
                 {/* Fila 1: Producto, Descripción */}
                 <Grid size={{xs:12, md:4}}>
@@ -354,6 +340,6 @@ export function ViajeMercaderiaCreateEdit({
                     </Box>
                 </Grid>
             </Grid>
-        </Paper>
+        </Box>
     );
 }

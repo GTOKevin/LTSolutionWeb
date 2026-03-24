@@ -28,13 +28,20 @@ export function ViajeMercaderia({ viajeId, viewOnly, tiposMedida, tiposPeso, mer
             viajeId={viajeId}
             viewOnly={viewOnly}
             entityName="mercadería"
-            renderForm={() => (
+            titleAdd="Agregar Mercadería"
+            titleEdit="Editar Mercadería"
+            isEditing={!!editItem}
+            onCancelEdit={handleCancelEdit}
+            renderForm={(onClose) => (
                 <ViajeMercaderiaCreateEdit 
                     viajeId={viajeId} 
                     tiposMedida={tiposMedida}
                     tiposPeso={tiposPeso}
                     mercaderias={mercaderias}
-                    onCancelEdit={handleCancelEdit}
+                    onCancelEdit={() => {
+                        handleCancelEdit();
+                        onClose();
+                    }}
                     editItem={editItem}
                 />
             )}

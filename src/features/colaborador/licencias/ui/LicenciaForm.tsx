@@ -1,12 +1,12 @@
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
+    Box,
     Button,
+    Collapse,
+    Divider,
     TextField,
     Grid,
     MenuItem,
+    Paper,
     Typography,
     useTheme,
     alpha
@@ -58,7 +58,6 @@ export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: L
 
     useEffect(() => {
         if (open) {
-            console.log("Colaborador ID:",colaboradorId);
             if (licenciaToEdit) {
                 reset({
                     colaboradorID: colaboradorId,
@@ -80,122 +79,114 @@ export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: L
     }, [open, licenciaToEdit, colaboradorId, reset]);
 
     const onSubmit = (data: CreateLicenciaSchema) => {
-        console.log("Colaborador ID:", colaboradorId);
         if (isEdit && licenciaToEdit) {
-            console.log("Licencia ID:", licenciaToEdit.colaboradorLicenciaID);
             updateMutation.mutate(
                 { id: licenciaToEdit.colaboradorLicenciaID, data },
-                { onSuccess: () => onClose() }
+                { onSuccess: () => {
+                    reset();
+                    onClose();
+                }}
             );
         } else {
             createMutation.mutate(
                 { colaboradorId, data },
-                { onSuccess: () => onClose() }
+                { onSuccess: () => {
+                    reset({
+                        colaboradorID: colaboradorId,
+                        tipoLicenciaID: 0,
+                        descripcion: '',
+                        fechaInicial: new Date().toISOString().split('T')[0],
+                        fechaFinal: ''
+                    });
+                    onClose();
+                }}
             );
         }
     };
 
     return (
-        <Dialog 
-            open={open} 
-            onClose={onClose}
-            maxWidth="sm"
-            fullWidth
-            PaperProps={{
-                sx: { borderRadius: 3 }
-            }}
-        >
-            <DialogTitle component="div" sx={{ 
-                borderBottom: `1px solid ${theme.palette.divider}`,
-                bgcolor: alpha(theme.palette.background.default, 0.5)
-            }}>
-                <Typography variant="h6" component="div" fontWeight="bold">
-                    {isEdit ? 'Editar Ausencia/Licencia' : 'Nueva Ausencia/Licencia'}
-                </Typography>
-            </DialogTitle>
+        <form onSubmit={handleSubmit(onSubmit)}>
+            <Box sx={{ p: 2.5 }}>
+                <Grid container spacing={3}>
+                    <Grid size={{xs:12}}>
+                                <Controller
+                                    name="tipoLicenciaID"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TextField
+                                            select
+                                            label="Tipo de Ausencia/Licencia"
+                                            fullWidth
+                                            {...field}
+                                            onChange={(e) => field.onChange(Number(e.target.value))}
+                                            value={field.value || 0}
+                                            error={!!errors.tipoLicenciaID}
+                                            helperText={errors.tipoLicenciaID?.message}
+                                        >
+                                            <MenuItem value={0} disabled>Seleccione</MenuItem>
+                                            {tiposLicencia?.data?.map((t) => (
+                                                <MenuItem key={t.id} value={t.id}>
+                                                    {t.text}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
+                                    )}
+                                />
+                            </Grid>
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <DialogContent sx={{ p: 3 }}>
-                    <Grid container spacing={3}>
-                        <Grid size={{xs:12}}>
-                            <Controller
-                                name="tipoLicenciaID"
-                                control={control}
-                                render={({ field }) => (
-                                    <TextField
-                                        select
-                                        label="Tipo de Ausencia/Licencia"
-                                        fullWidth
-                                        {...field}
-                                        onChange={(e) => field.onChange(Number(e.target.value))}
-                                        value={field.value || 0}
-                                        error={!!errors.tipoLicenciaID}
-                                        helperText={errors.tipoLicenciaID?.message}
-                                    >
-                                        <MenuItem value={0} disabled>Seleccione</MenuItem>
-                                        {tiposLicencia?.data?.map((t) => (
-                                            <MenuItem key={t.id} value={t.id}>
-                                                {t.text}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                )}
-                            />
+                            <Grid size={{xs:12,sm:6}}>
+                                <TextField
+                                    label="Fecha Inicio"
+                                    type="date"
+                                    fullWidth
+                                    InputLabelProps={{ shrink: true }}
+                                    {...register('fechaInicial')}
+                                    error={!!errors.fechaInicial}
+                                    helperText={errors.fechaInicial?.message}
+                                />
+                            </Grid>
+
+                            <Grid size={{xs:12,sm:6}}>
+                                <TextField
+                                    label="Fecha Fin"
+                                    type="date"
+                                    fullWidth
+                                    InputLabelProps={{ shrink: true }}
+                                    {...register('fechaFinal')}
+                                    error={!!errors.fechaFinal}
+                                    helperText={errors.fechaFinal?.message}
+                                />
+                            </Grid>
+
+                            <Grid size={{xs:12}}>
+                                <TextField
+                                    label="Motivó / Comentario"
+                                    fullWidth
+                                    multiline
+                                    rows={2}
+                                    {...register('descripcion')}
+                                    error={!!errors.descripcion}
+                                    helperText={errors.descripcion?.message}
+                                    placeholder="Ej: Cita médica programada..."
+                                    onKeyDown={handleAddressKeyDown}
+                                />
+                            </Grid>
                         </Grid>
+                    </Box>
 
-                        <Grid size={{xs:12,sm:6}}>
-                            <TextField
-                                label="Fecha Inicio"
-                                type="date"
-                                fullWidth
-                                InputLabelProps={{ shrink: true }}
-                                {...register('fechaInicial')}
-                                error={!!errors.fechaInicial}
-                                helperText={errors.fechaInicial?.message}
-                            />
-                        </Grid>
-
-                        <Grid size={{xs:12,sm:6}}>
-                            <TextField
-                                label="Fecha Fin"
-                                type="date"
-                                fullWidth
-                                InputLabelProps={{ shrink: true }}
-                                {...register('fechaFinal')}
-                                error={!!errors.fechaFinal}
-                                helperText={errors.fechaFinal?.message}
-                            />
-                        </Grid>
-
-                        <Grid size={{xs:12}}>
-                            <TextField
-                                label="Motivó / Comentario"
-                                fullWidth
-                                multiline
-                                rows={2}
-                                {...register('descripcion')}
-                                error={!!errors.descripcion}
-                                helperText={errors.descripcion?.message}
-                                placeholder="Ej: Cita médica programada..."
-                                onKeyDown={handleAddressKeyDown}
-                            />
-                        </Grid>
-                    </Grid>
-                </DialogContent>
-
-                <DialogActions sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                    <Button onClick={onClose} color="inherit">
-                        Cancelar
-                    </Button>
-                    <Button 
-                        type="submit" 
-                        variant="contained"
-                        disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}
-                    >
-                        {isEdit ? 'Guardar Cambios' : 'Registrar'}
-                    </Button>
-                </DialogActions>
-            </form>
-        </Dialog>
+                    <Divider />
+                    <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                        <Button onClick={onClose} color="inherit">
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}
+                        >
+                            {isEdit ? 'Guardar Cambios' : 'Registrar'}
+                        </Button>
+                    </Box>
+        </form>
     );
 }

@@ -3,7 +3,6 @@ import {
     Box, 
     Button, 
     Typography, 
-    Paper, 
     TextField, 
     Grid, 
     useTheme,
@@ -25,7 +24,6 @@ import type { SelectItem } from '@/shared/model/types';
 import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { useCreateViajeGuia, useUpdateViajeGuia } from '@/features/viaje/hooks/useViajeGuias';
 import { viajeGuiaSchema, type ViajeGuiaFormData } from '../../model/schema';
-import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
 import { handleBackendErrors } from '@/shared/utils/form-validation';
 
 interface Props {
@@ -118,22 +116,7 @@ export function ViajeGuiaCreateEdit({ viajeId, tiposGuia, guia, onCancel }: Prop
     };
 
     return (
-        <Paper 
-            elevation={0} 
-            sx={{ 
-                p: 3, 
-                border: `1px solid ${theme.palette.divider}`,
-                borderRadius: 3,
-                bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
-            }}
-        >
-            <SubFormHeader 
-                isEditing={isEditing}
-                titleAdd="Agregar Guía"
-                titleEdit="Editar Guía"
-                onCancel={onCancel}
-            />
-
+        <Box sx={{ p: 3 }}>
             <Grid container spacing={4}>
                 <Grid size={{xs:12, lg:6}}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -282,6 +265,6 @@ export function ViajeGuiaCreateEdit({ viajeId, tiposGuia, guia, onCancel }: Prop
                     </Box>
                 </Grid>
             </Grid>
-        </Paper>
+        </Box>
     );
 }

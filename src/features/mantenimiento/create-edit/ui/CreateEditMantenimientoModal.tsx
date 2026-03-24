@@ -84,10 +84,11 @@ export function CreateEditMantenimientoModal({
             <Dialog
                 open={open}
                 onClose={(_, reason) => {
-                    if (reason && reason === 'backdropClick') return;
-                    onClose();
+                    if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
+                        onClose();
+                    }
                 }}
-                maxWidth="md"
+                maxWidth="xl"
                 fullWidth
                 PaperProps={{
                     sx: { borderRadius: 3, minHeight: '80vh' }
@@ -307,7 +308,7 @@ export function CreateEditMantenimientoModal({
 
                 <TabPanel value={activeTab} index={1} name="mantenimiento">
                     {effectiveId && (
-                        <Box sx={{ px: 3, height: 500 }}>
+                        <Box sx={{ px: 3, pb: 3 }}>
                             <MantenimientoDetalleList 
                                 mantenimientoId={effectiveId} 
                                 viewOnly={viewOnly} 

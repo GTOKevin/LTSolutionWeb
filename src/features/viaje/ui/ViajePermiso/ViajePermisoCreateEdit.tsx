@@ -91,22 +91,7 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
     };
 
     return (
-        <Paper 
-            elevation={0}
-            sx={{ 
-                p: 3, 
-                borderRadius: 3, 
-                border: `1px solid ${theme.palette.divider}`,
-                bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
-            }}
-        >
-            <SubFormHeader 
-                isEditing={isEditing}
-                titleAdd="Agregar Permiso"
-                titleEdit="Editar Permiso"
-                onCancel={onCancel}
-            />
-
+        <Box sx={{ p: 3 }}>
             <Grid container spacing={3}>
                 <Grid size={{xs:12, md:6}}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -178,6 +163,6 @@ export function ViajePermisoCreateEdit({ viajeId, permiso, onCancel }: Props) {
                     </Box>
                 </Grid>
             </Grid>
-        </Paper>
+        </Box>
     );
 }
