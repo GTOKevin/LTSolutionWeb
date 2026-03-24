@@ -51,6 +51,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
     const formRef = useRef<HTMLDivElement>(null);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editingItem, setEditingItem] = useState<CreateMantenimientoDetalleSchema | undefined>(undefined);
+    const [editingCategoria, setEditingCategoria] = useState<string>('');
 
     const isCompleted = mantenimientoInfo?.estado?.nombre?.toUpperCase() === 'FINALIZADO' || mantenimientoInfo?.estado?.nombre?.toUpperCase() === 'COMPLETADO';
     const isClosed = mantenimientoInfo?.cerrado;
@@ -77,6 +78,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
 
     const handleEdit = (item: MantenimientoDetalle) => {
         setEditingId(item.mantenimientoDetalleID);
+        setEditingCategoria(item.tipoProducto?.categoria || '');
         setEditingItem({
             tipoProductoID: item.tipoProductoID,
             descripcion: item.descripcion,
@@ -97,12 +99,14 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
     const handleCancel = () => {
         setEditingId(null);
         setEditingItem(undefined);
+        setEditingCategoria('');
         setIsFormExpanded(false);
     };
 
     const handleCreate = () => {
         setEditingId(null);
         setEditingItem(undefined);
+        setEditingCategoria('');
         setIsFormExpanded(true);
         setTimeout(() => {
             formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -218,6 +222,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                         <Box sx={{ p: 2 }}>
                             <MantenimientoDetalleForm
                                 defaultValues={editingItem}
+                                initialCategoria={editingCategoria}
                                 onSubmit={handleSubmit}
                                 onCancel={handleCancel}
                                 isSubmitting={createMutation.isPending || updateMutation.isPending}

@@ -29,7 +29,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { useAuthStore } from '@shared/store/auth.store';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { SIDEBAR_MENU, type MenuItem } from '../model/sidebar.config';
 
 export const DRAWER_WIDTH = 280;
@@ -46,6 +46,8 @@ export function Sidebar() {
     const [pendingPath, setPendingPath] = useState<string | null>(null);
     const [navigationLabel, setNavigationLabel] = useState('');
     const openMenu = Boolean(anchorEl);
+
+    const navigationTimeoutRef = useRef<number | null>(null);
 
     // Permission check helper logic
     const hasPermission = (requiredPermission?: string | string[]) => {
@@ -117,17 +119,36 @@ export function Sidebar() {
             setIsNavigating(false);
             setPendingPath(null);
             setNavigationLabel('');
+            if (navigationTimeoutRef.current) {
+                clearTimeout(navigationTimeoutRef.current);
+                navigationTimeoutRef.current = null;
+            }
         }
     }, [isNavigating, pendingPath, location.pathname]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (navigationTimeoutRef.current) {
+                clearTimeout(navigationTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const handleNavigation = (path: string, label: string) => {
         if (isNavigating) return;
         if (location.pathname === path) return;
+        
+        if (navigationTimeoutRef.current) {
+            clearTimeout(navigationTimeoutRef.current);
+        }
+
         setIsNavigating(true);
         setPendingPath(path);
         setNavigationLabel(label);
         navigate(path);
-        setTimeout(() => {
+        
+        navigationTimeoutRef.current = window.setTimeout(() => {
             setIsNavigating(false);
             setPendingPath(null);
             setNavigationLabel('');

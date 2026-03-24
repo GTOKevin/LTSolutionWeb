@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react';
 
 interface MantenimientoDetalleFormProps {
     defaultValues?: CreateMantenimientoDetalleSchema;
+    initialCategoria?: string;
     onSubmit: (data: CreateMantenimientoDetalleSchema) => void;
     onCancel: () => void;
     isSubmitting: boolean;
@@ -29,6 +30,7 @@ interface MantenimientoDetalleFormProps {
 
 export function MantenimientoDetalleForm({
     defaultValues,
+    initialCategoria,
     onSubmit,
     onCancel,
     isSubmitting,
@@ -78,6 +80,9 @@ export function MantenimientoDetalleForm({
     useEffect(() => {
         if (defaultValues) {
             reset(defaultValues);
+            if (initialCategoria) {
+                setSelectedCategoria(initialCategoria);
+            }
         } else {
             reset({
                 tipoProductoID: 0,
@@ -92,7 +97,7 @@ export function MantenimientoDetalleForm({
             });
             setSelectedCategoria('');
         }
-    }, [defaultValues, reset]);
+    }, [defaultValues, initialCategoria, reset]);
 
     // Queries for Selects
     const { data: categorias } = useQuery({
