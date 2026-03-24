@@ -1,4 +1,4 @@
-import { createGenericCrudHooks } from '@/shared/hooks/useGenericCrud';
+import { createGenericCrudHooks as createFlotaDocumentosHooks } from '@/shared/hooks/useGenericCrud';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import type { CreateFlotaDocumentoSchema } from '../model/schema';
 
@@ -14,7 +14,7 @@ export const {
     useCreate: useCreateFlotaDocumento, 
     useUpdate: useUpdateFlotaDocumento, 
     useDelete: useDeleteFlotaDocumento 
-} = createGenericCrudHooks(
+} = createFlotaDocumentosHooks(
     FlotaDocumentoCrudApi,
     'Documento de Flota',
     (args) => {

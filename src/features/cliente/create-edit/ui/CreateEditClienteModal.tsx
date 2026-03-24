@@ -86,8 +86,12 @@ export function CreateEditClienteModal({ open, onClose, clienteToEdit, onSuccess
         <>
         <Dialog 
             open={open} 
-            onClose={onClose} 
-            maxWidth="md" 
+            onClose={(e, reason) => {
+                if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
+                    onClose();
+                }
+            }}
+            maxWidth="xl" 
             fullWidth
             PaperProps={{
                 sx: { borderRadius: 3, minHeight: '80vh' }

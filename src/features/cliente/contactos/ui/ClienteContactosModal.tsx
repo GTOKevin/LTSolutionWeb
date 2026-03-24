@@ -8,18 +8,26 @@ import {
     Box,
     useTheme,
     Chip,
-    TableCell
+    TableCell,
+    Paper,
+    alpha,
+    IconButton,
+    Collapse
 } from '@mui/material';
 import {
     Add as AddIcon,
-    Person as PersonIcon
+    Person as PersonIcon,
+    Edit as EditIcon,
+    Cancel as CancelIcon,
+    ExpandLess,
+    ExpandMore
 } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
 import { createContactoSchema, type CreateContactoSchema } from '../../model/schema';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { ClienteContacto } from '@entities/cliente/model/types';
 import { useCreateClienteContacto, useUpdateClienteContacto, useDeleteClienteContacto } from '../../hooks/useClienteContactosCrud';
 import { MobileListShell } from '@shared/components/ui/MobileListShell';
@@ -36,7 +44,8 @@ interface ClienteContactosListProps {
 export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteContactosListProps) {
     const theme = useTheme();
     const [editingId, setEditingId] = useState<number | null>(null);
-    const [showForm, setShowForm] = useState(false);
+    const [isFormExpanded, setIsFormExpanded] = useState(true);
+    const formRef = useRef<HTMLDivElement>(null);
     
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -77,7 +86,15 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
             activo: true
         });
         setEditingId(null);
-        setShowForm(false);
+        setIsFormExpanded(false);
+    };
+
+    const handleCreate = () => {
+        resetForm();
+        setIsFormExpanded(true);
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
 
     const handleEdit = (contacto: ClienteContacto) => {
@@ -88,7 +105,10 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
         setValue('telefonoSecundario', contacto.telefonoSecundario || '');
         setValue('rol', contacto.rol || '');
         setValue('activo', contacto.activo);
-        setShowForm(true);
+        setIsFormExpanded(true);
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
 
     const onSubmit = (data: CreateContactoSchema) => {
@@ -124,6 +144,175 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 400 }}>
+            {!viewOnly && (
+                <Paper
+                    ref={formRef}
+                    elevation={0}
+                    sx={{
+                        p: 0,
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 3,
+                        bgcolor: alpha(editingId ? theme.palette.warning.main : theme.palette.primary.main, 0.02),
+                        overflow: 'hidden',
+                        mb: 2
+                    }}
+                >
+                    <Box
+                        onClick={() => {
+                            if (isFormExpanded && editingId) {
+                                resetForm();
+                            } else if (!isFormExpanded && !editingId) {
+                                handleCreate();
+                            } else {
+                                setIsFormExpanded((prev) => !prev);
+                            }
+                        }}
+                        sx={{
+                            px: 3,
+                            py: 2,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            borderBottom: isFormExpanded ? `1px solid ${theme.palette.divider}` : 'none',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ 
+                                bgcolor: editingId ? theme.palette.warning.main : theme.palette.primary.main, 
+                                color: 'white', 
+                                p: 0.5, 
+                                borderRadius: '50%', 
+                                display: 'flex' 
+                            }}>
+                                {editingId ? <EditIcon fontSize="small" /> : <AddIcon fontSize="small" />}
+                            </Box>
+                            <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
+                                {editingId ? 'Editar Contacto' : 'Agregar Contacto'}
+                            </Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {editingId && (
+                                <Button 
+                                    size="small" 
+                                    color="inherit" 
+                                    startIcon={<CancelIcon />}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        resetForm();
+                                    }}
+                                >
+                                    Cancelar Edición
+                                </Button>
+                            )}
+                            <IconButton
+                                size="small"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    setIsFormExpanded((prev) => !prev);
+                                }}
+                            >
+                                {isFormExpanded ? <ExpandLess /> : <ExpandMore />}
+                            </IconButton>
+                        </Box>
+                    </Box>
+                    <Collapse in={isFormExpanded} unmountOnExit>
+                        <Box sx={{ p: 3 }}>
+                            <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+                                    <Grid container spacing={2}>
+                                        <Grid size={{ xs: 12, md: 6 }}>
+                                            <TextField
+                                                label="Nombre Completo"
+                                                fullWidth
+                                                size="small"
+                                                {...register('nombreCompleto')}
+                                                error={!!errors.nombreCompleto}
+                                                helperText={errors.nombreCompleto?.message}
+                                                onKeyDown={handleLettersOnlyKeyDown}
+                                            />
+                                        </Grid>
+                                        <Grid size={{ xs: 12, md: 6 }}>
+                                            <TextField
+                                                label="Rol / Cargo"
+                                                fullWidth
+                                                size="small"
+                                                {...register('rol')}
+                                                error={!!errors.rol}
+                                                helperText={errors.rol?.message}
+                                                onKeyDown={handleLettersOnlyKeyDown}
+                                            />
+                                        </Grid>
+                                        <Grid size={{ xs: 12, md: 6 }}>
+                                            <TextField
+                                                label="Teléfono Principal"
+                                                fullWidth
+                                                size="small"
+                                                {...register('telefonoPrincipal')}
+                                                error={!!errors.telefonoPrincipal}
+                                                helperText={errors.telefonoPrincipal?.message}
+                                                onKeyDown={handleNumbersOnlyKeyDown}
+                                            />
+                                        </Grid>
+                                        <Grid size={{ xs: 12, md: 6 }}>
+                                            <TextField
+                                                label="Teléfono Secundario"
+                                                fullWidth
+                                                size="small"
+                                                {...register('telefonoSecundario')}
+                                                error={!!errors.telefonoSecundario}
+                                                helperText={errors.telefonoSecundario?.message}
+                                                onKeyDown={handleNumbersOnlyKeyDown}
+                                            />
+                                        </Grid>
+                                        <Grid size={{ xs: 12}}>
+                                            <TextField
+                                                label="Email"
+                                                fullWidth
+                                                size="small"
+                                                {...register('email')}
+                                                error={!!errors.email}
+                                                helperText={errors.email?.message}
+                                            />
+                                        </Grid>
+                                        {editingId && (
+                                            <Grid size={{ xs: 12, md: 6 }}>
+                                                <Controller
+                                                    name="activo"
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <FormControlLabel
+                                                            control={
+                                                            <Switch
+                                                                checked={field.value}
+                                                                onChange={(e) => field.onChange(e.target.checked)}
+                                                                color="success"
+                                                            />
+                                                        }
+                                                        label="Contacto Activo"
+                                                    />
+                                                )}
+                                            />
+                                        </Grid>)}
+                                        <Grid size={{ xs: 12}} display="flex" justifyContent="flex-end" gap={1}>
+                                            <Button onClick={resetForm} color="inherit">
+                                                Cancelar
+                                            </Button>
+                                            <Button 
+                                                type="submit" 
+                                                variant="contained"
+                                                disabled={isSubmitting || createMutation.isPending || updateMutation.isPending || (!!editingId && !isDirty)}
+                                            >
+                                                Guardar
+                                            </Button>
+                                        </Grid>
+                                    </Grid>
+                                </Box>
+                        </Box>
+                    </Collapse>
+                </Paper>
+            )}
+
             <Box sx={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
@@ -133,113 +322,9 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
                 <Typography variant="subtitle1" fontWeight="bold">
                     Lista de Contactos
                 </Typography>
-                {!showForm && !viewOnly && (
-                    <Button 
-                        startIcon={<AddIcon />} 
-                        variant="contained" 
-                        size="small"
-                        onClick={() => setShowForm(true)}
-                    >
-                        Agregar
-                    </Button>
-                )}
             </Box>
             
-            {showForm ? (
-                <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}>
-                    <Typography variant="subtitle2" sx={{ mb: 2, color: 'primary.main', fontWeight: 600 }}>
-                        {editingId ? 'Editar Contacto' : 'Nuevo Contacto'}
-                    </Typography>
-                    <Grid container spacing={2}>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                            <TextField
-                                label="Nombre Completo"
-                                fullWidth
-                                size="small"
-                                {...register('nombreCompleto')}
-                                error={!!errors.nombreCompleto}
-                                helperText={errors.nombreCompleto?.message}
-                                onKeyDown={handleLettersOnlyKeyDown}
-                            />
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                            <TextField
-                                label="Rol / Cargo"
-                                fullWidth
-                                size="small"
-                                {...register('rol')}
-                                error={!!errors.rol}
-                                helperText={errors.rol?.message}
-                                onKeyDown={handleLettersOnlyKeyDown}
-                            />
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                            <TextField
-                                label="Teléfono Principal"
-                                fullWidth
-                                size="small"
-                                {...register('telefonoPrincipal')}
-                                error={!!errors.telefonoPrincipal}
-                                helperText={errors.telefonoPrincipal?.message}
-                                onKeyDown={handleNumbersOnlyKeyDown}
-                            />
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                            <TextField
-                                label="Teléfono Secundario"
-                                fullWidth
-                                size="small"
-                                {...register('telefonoSecundario')}
-                                error={!!errors.telefonoSecundario}
-                                helperText={errors.telefonoSecundario?.message}
-                                onKeyDown={handleNumbersOnlyKeyDown}
-                            />
-                        </Grid>
-                        <Grid size={{ xs: 12}}>
-                            <TextField
-                                label="Email"
-                                fullWidth
-                                size="small"
-                                {...register('email')}
-                                error={!!errors.email}
-                                helperText={errors.email?.message}
-                            />
-                        </Grid>
-                        {editingId && (
-                            <Grid size={{ xs: 12, md: 6 }}>
-                                <Controller
-                                    name="activo"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <FormControlLabel
-                                            control={
-                                            <Switch
-                                                checked={field.value}
-                                                onChange={(e) => field.onChange(e.target.checked)}
-                                                color="success"
-                                            />
-                                        }
-                                        label="Contacto Activo"
-                                    />
-                                )}
-                            />
-                        </Grid>)}
-                        <Grid size={{ xs: 12}} display="flex" justifyContent="flex-end" gap={1}>
-                            <Button onClick={resetForm} color="inherit">
-                                Cancelar
-                            </Button>
-                            <Button 
-                                type="submit" 
-                                variant="contained"
-                                disabled={isSubmitting || createMutation.isPending || updateMutation.isPending || (!!editingId && !isDirty)}
-                            >
-                                Guardar
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </Box>
-            ) : (
-                <Box sx={{ flex: 1, overflow: 'auto', p: 0.5 }}>
+            <Box sx={{ flex: 1, overflow: 'auto', p: 0.5 }}>
                     <MobileListShell
                         items={data?.data.items || []}
                         total={data?.data.total || 0}
@@ -332,8 +417,8 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
                             )}
                         />
                     </Box>
-                </Box>
-            )}
+            </Box>
+          
 
             <ConfirmDialog
                 open={openDelete}

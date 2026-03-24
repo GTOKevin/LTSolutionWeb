@@ -17,7 +17,7 @@ import {
 import { useQuery, useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import { viajeApi } from '@entities/viaje/api/viaje.api';
-import { CreateEditViajeModal, ViajesFilters ,ViajesMobileList, ViajesTable} from '@/features/viaje/ui/Viaje/Index';
+import { ViajeModalTab, ViajesFilters ,ViajesMobileList, ViajesTable} from '@/features/viaje/ui/Viaje/Index';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { LoadingModal } from '@shared/components/ui/LoadingModal';
 import { StatsCard } from '@shared/components/ui/StatsCard';
@@ -302,7 +302,7 @@ export function ViajesPage() {
                 onReopen={handleReopen}
             />
 
-            <CreateEditViajeModal
+            <ViajeModalTab
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
                 viaje={viajeToEdit}

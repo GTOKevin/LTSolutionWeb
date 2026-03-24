@@ -1,41 +1,36 @@
 import {
     Box,
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    IconButton,
     Typography,
     Button,
-    useTheme,
-    alpha,
-    Card,
-    CardContent,
     Stack,
-    TablePagination,
     Grid,
     TextField,
     MenuItem,
     Tooltip,
-    CircularProgress
+    CircularProgress,
+    TableCell,
+    Paper,
+    IconButton,
+    Collapse,
+    useTheme,
+    alpha
 } from '@mui/material';
 import {
-    Edit as EditIcon,
-    Delete as DeleteIcon,
     Add as AddIcon,
     CalendarToday as CalendarIcon,
     PictureAsPdf as PdfIcon,
     TableView as ExcelIcon,
-    Search as SearchIcon
+    Search as SearchIcon,
+    ExpandLess,
+    ExpandMore,
+    Edit as EditIcon,
+    Cancel as CancelIcon
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { licenciaApi } from '@entities/licencia/api/licencia.api';
 import type { Licencia } from '@entities/licencia/model/types';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { LicenciaForm } from './LicenciaForm';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@/shared/utils/date-utils';
 import { useDeleteLicencia } from '../../hooks/useLicenciaCrud';
@@ -45,6 +40,9 @@ import { pdf } from '@react-pdf/renderer';
 import { ColaboradorLicenciasPdf } from '../reports/ColaboradorLicenciasPdf';
 import { ColaboradorLicenciasExcelGenerator } from '../lib/ColaboradorLicenciasExcelGenerator';
 import { logger } from '@/shared/utils/logger';
+import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
+import { MobileListShell } from '@/shared/components/ui/MobileListShell';
+import { TableActions } from '@/shared/components/ui/TableActions';
 
 interface LicenciaListProps {
     colaboradorId: number;
@@ -53,8 +51,9 @@ interface LicenciaListProps {
 
 export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListProps) {
     const theme = useTheme();
-    const [openForm, setOpenForm] = useState(false);
+    const [isFormExpanded, setIsFormExpanded] = useState(true);
     const [licenciaToEdit, setLicenciaToEdit] = useState<Licencia | null>(null);
+    const formRef = useRef<HTMLDivElement>(null);
     const [openDelete, setOpenDelete] = useState(false);
     const [licenciaToDelete, setLicenciaToDelete] = useState<Licencia | null>(null);
     const [page, setPage] = useState(0);
@@ -107,13 +106,18 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
 
     const handleCreate = () => {
         setLicenciaToEdit(null);
-        setOpenForm(true);
+        setIsFormExpanded(true);
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
 
     const handleEdit = (licencia: Licencia) => {
-        console.log("licencia:", licencia);
         setLicenciaToEdit(licencia);
-        setOpenForm(true);
+        setIsFormExpanded(true);
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
 
     const handleDelete = (licencia: Licencia) => {
@@ -184,12 +188,106 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
         }
     };
 
-    if (isLoading) {
-        return <Box p={3} textAlign="center">Cargando ausencias/licencias...</Box>;
-    }
+    const columns: Column[] = [
+        { id: 'tipo', label: 'Tipo' },
+        { id: 'desde', label: 'Desde' },
+        { id: 'hasta', label: 'Hasta' },
+        { id: 'detalle', label: 'Detalle' },
+        { id: 'acciones', label: 'Acciones', align: 'right' }
+    ];
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {!viewOnly && (
+                <Paper
+                    ref={formRef}
+                    elevation={0}
+                    sx={{
+                        p: 0,
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 3,
+                        bgcolor: alpha(licenciaToEdit ? theme.palette.warning.main : theme.palette.primary.main, 0.02),
+                        overflow: 'hidden'
+                    }}
+                >
+                    <Box
+                        onClick={() => {
+                            if (isFormExpanded && licenciaToEdit) {
+                                setLicenciaToEdit(null);
+                                setIsFormExpanded(false);
+                            } else if (!isFormExpanded && !licenciaToEdit) {
+                                handleCreate();
+                            } else {
+                                setIsFormExpanded((prev) => !prev);
+                            }
+                        }}
+                        sx={{
+                            px: 3,
+                            py: 2,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            borderBottom: isFormExpanded ? `1px solid ${theme.palette.divider}` : 'none',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ 
+                                bgcolor: licenciaToEdit ? theme.palette.warning.main : theme.palette.primary.main, 
+                                color: 'white', 
+                                p: 0.5, 
+                                borderRadius: '50%', 
+                                display: 'flex' 
+                            }}>
+                                {licenciaToEdit ? <EditIcon fontSize="small" /> : <AddIcon fontSize="small" />}
+                            </Box>
+                            <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
+                                {licenciaToEdit ? 'Editar Ausencia/Licencia' : 'Agregar Ausencia/Licencia'}
+                            </Typography>
+                        </Box>
+                        
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {licenciaToEdit && (
+                                <Button 
+                                    size="small" 
+                                    color="inherit" 
+                                    startIcon={<CancelIcon />}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setLicenciaToEdit(null);
+                                        setIsFormExpanded(false);
+                                    }}
+                                >
+                                    Cancelar Edición
+                                </Button>
+                            )}
+                            <IconButton
+                                size="small"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    setIsFormExpanded((prev) => !prev);
+                                }}
+                            >
+                                {isFormExpanded ? <ExpandLess /> : <ExpandMore />}
+                            </IconButton>
+                        </Box>
+                    </Box>
+                    <Collapse in={isFormExpanded} unmountOnExit>
+                        <Box sx={{ p: 2 }}>
+                            <LicenciaForm
+                                open={true}
+                                onClose={() => {
+                                    setLicenciaToEdit(null);
+                                    setIsFormExpanded(false);
+                                }}
+                                colaboradorId={colaboradorId}
+                                licenciaToEdit={licenciaToEdit}
+                            />
+                        </Box>
+                    </Collapse>
+                </Paper>
+            )}
+
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                 <Typography variant="subtitle1" fontWeight="bold">
                     Registro de Ausencias y Licencias
@@ -219,16 +317,6 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
                             PDF
                         </Button>
                     </Tooltip>
-                    {!viewOnly && (
-                        <Button 
-                            startIcon={<AddIcon />} 
-                            variant="contained" 
-                            size="small"
-                            onClick={handleCreate}
-                        >
-                            Registrar Ausencia
-                        </Button>
-                    )}
                 </Stack>
             </Box>
 
@@ -285,119 +373,67 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
             </Grid>
 
             {/* Desktop Table */}
-            <Paper sx={{ 
-                display: { xs: 'none', md: 'block' },
-                border: `1px solid ${theme.palette.divider}`,
-                boxShadow: 'none',
-                borderRadius: 2,
-                overflow: 'hidden'
-            }}>
-                <TableContainer>
-                    <Table size="small">
-                        <TableHead sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
-                            <TableRow>
-                                <TableCell>Tipo</TableCell>
-                                <TableCell>Desde</TableCell>
-                                <TableCell>Hasta</TableCell>
-                                <TableCell>Detalle</TableCell>
-                                {!viewOnly && <TableCell align="right">Acciones</TableCell>}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {data?.data?.items.map((licencia) => (
-                                <TableRow key={licencia.colaboradorLicenciaID} hover>
-                                    <TableCell>{licencia.tipoLicencia?.nombre || '-'}</TableCell>
-                                    <TableCell>{new Date(licencia.fechaInicial).toLocaleDateString()}</TableCell>
-                                    <TableCell>{licencia.fechaFinal ? new Date(licencia.fechaFinal).toLocaleDateString() : '-'}</TableCell>
-                                    <TableCell sx={{ fontFamily: 'monospace' }}>
-                                        {licencia.descripcion || '-'}
-                                    </TableCell>
-                                    {!viewOnly && (
-                                        <TableCell align="right">
-                                            <IconButton size="small" color="primary" onClick={() => handleEdit(licencia)}>
-                                                <EditIcon fontSize="small" />
-                                            </IconButton>
-                                            <IconButton size="small" color="error" onClick={() => handleDelete(licencia)}>
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
-                                        </TableCell>
-                                    )}
-                                </TableRow>
-                            ))}
-                            {data?.data?.items.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={7} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                                        No hay ausencias o licencias registradas
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper>
-
-            {/* Mobile List */}
-            <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2 }}>
-                {data?.data?.items.map((licencia) => (
-                    <Card key={licencia.colaboradorLicenciaID} variant="outlined" sx={{ borderRadius: 2 }}>
-                        <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                <Typography variant="subtitle2" fontWeight="bold">
-                                    {licencia.tipoLicencia?.nombre || 'Ausencia'}
-                                </Typography>
-                            </Box>
-                            
-                            <Stack spacing={1} sx={{ mb: 2 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <CalendarIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                                    <Typography variant="body2">
-                                        {new Date(licencia.fechaInicial).toLocaleDateString()} 
-                                        {licencia.fechaFinal ? ` - ${new Date(licencia.fechaFinal).toLocaleDateString()}` : ''}
-                                    </Typography>
-                                </Box>
-                                {licencia.descripcion && (
-                                    <Typography variant="body2" color="text.secondary">
-                                        {licencia.descripcion}
-                                    </Typography>
-                                )}
-                            </Stack>
-
-                            {!viewOnly && (
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, borderTop: `1px solid ${theme.palette.divider}`, pt: 1, mt: 1 }}>
-                                    <Button size="small" startIcon={<EditIcon />} onClick={() => handleEdit(licencia)}>
-                                        Editar
-                                    </Button>
-                                    <Button size="small" color="error" startIcon={<DeleteIcon />} onClick={() => handleDelete(licencia)}>
-                                        Eliminar
-                                    </Button>
-                                </Box>
-                            )}
-                        </CardContent>
-                    </Card>
-                ))}
-                 {data?.data?.items.length === 0 && (
-                    <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary', bgcolor: 'background.paper', borderRadius: 2 }}>
-                        No hay registros
-                    </Box>
-                )}
-            </Box>
-
-            <TablePagination
-                component="div"
-                count={data?.data?.total || 0}
+            <SharedTable
+                data={data?.data}
+                isLoading={isLoading}
                 page={page}
-                onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}
+                onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
-                labelRowsPerPage="Filas por página"
-                rowsPerPageOptions={[5, 10, 25]}
+                columns={columns}
+                keyExtractor={(item) => item.colaboradorLicenciaID}
+                emptyMessage="No hay ausencias o licencias registradas"
+                renderRow={(licencia) => (
+                    <>
+                        <TableCell>{licencia.tipoLicencia?.nombre || '-'}</TableCell>
+                        <TableCell>{new Date(licencia.fechaInicial).toLocaleDateString()}</TableCell>
+                        <TableCell>{licencia.fechaFinal ? new Date(licencia.fechaFinal).toLocaleDateString() : '-'}</TableCell>
+                        <TableCell sx={{ fontFamily: 'monospace' }}>
+                            {licencia.descripcion || '-'}
+                        </TableCell>
+                        <TableCell align="right">
+                            <TableActions
+                                onEdit={!viewOnly ? () => handleEdit(licencia) : undefined}
+                                onDelete={!viewOnly ? () => handleDelete(licencia) : undefined}
+                            />
+                        </TableCell>
+                    </>
+                )}
             />
 
-            <LicenciaForm 
-                open={openForm}
-                onClose={() => setOpenForm(false)}
-                colaboradorId={colaboradorId}
-                licenciaToEdit={licenciaToEdit}
+            {/* Mobile List */}
+            <MobileListShell
+                items={data?.data?.items || []}
+                total={data?.data?.total || 0}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                emptyMessage="No hay registros"
+                keyExtractor={(item) => item.colaboradorLicenciaID}
+                onEdit={viewOnly ? undefined : handleEdit}
+                onDelete={viewOnly ? undefined : handleDelete}
+                renderHeader={(licencia) => (
+                    <Typography variant="subtitle2" fontWeight="bold">
+                        {licencia.tipoLicencia?.nombre || 'Ausencia'}
+                    </Typography>
+                )}
+                renderBody={(licencia) => (
+                    <Stack spacing={1} sx={{ mt: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <CalendarIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                            <Typography variant="body2">
+                                {new Date(licencia.fechaInicial).toLocaleDateString()} 
+                                {licencia.fechaFinal ? ` - ${new Date(licencia.fechaFinal).toLocaleDateString()}` : ''}
+                            </Typography>
+                        </Box>
+                        {licencia.descripcion && (
+                            <Typography variant="body2" color="text.secondary">
+                                {licencia.descripcion}
+                            </Typography>
+                        )}
+                    </Stack>
+                )}
             />
 
             <ConfirmDialog

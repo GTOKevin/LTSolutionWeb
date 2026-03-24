@@ -1,15 +1,11 @@
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
+    Box,
     Button,
+    Divider,
     TextField,
     Grid,
     MenuItem,
-    Typography,
-    useTheme,
-    alpha
+    useTheme
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,7 +27,6 @@ interface ColaboradorPagoFormProps {
 }
 
 export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }: ColaboradorPagoFormProps) {
-    const theme = useTheme();
     const isEdit = !!pagoToEdit;
 
     const createMutation = useCreateColaboradorPago();
@@ -93,165 +88,161 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
         if (isEdit && pagoToEdit) {
             updateMutation.mutate(
                 { id: pagoToEdit.colaboradorPagoID, data },
-                { onSuccess: () => onClose() }
+                { onSuccess: () => {
+                    reset();
+                    onClose();
+                }}
             );
         } else {
             createMutation.mutate(
                 { colaboradorId, data },
-                { onSuccess: () => onClose() }
+                { onSuccess: () => {
+                    reset({
+                        tipoPagoID: 0,
+                        fechaInico: '',
+                        fechaCierre: '',
+                        fechaPago: '',
+                        monedaID: 0,
+                        monto: 0,
+                        observaciones: ''
+                    });
+                    onClose();
+                }}
             );
         }
     };
 
     return (
-        <Dialog 
-            open={open} 
-            onClose={onClose}
-            maxWidth="sm"
-            fullWidth
-            PaperProps={{
-                sx: { borderRadius: 3 }
-            }}
-        >
-            <DialogTitle component="div" sx={{ 
-                borderBottom: `1px solid ${theme.palette.divider}`,
-                bgcolor: alpha(theme.palette.background.default, 0.5)
-            }}>
-                <Typography variant="h6" component="div" fontWeight="bold">
-                    {isEdit ? 'Editar Pago' : 'Nuevo Pago'}
-                </Typography>
-            </DialogTitle>
+        <form onSubmit={handleSubmit(onSubmit)}>
+            <Box sx={{ p: 2.5 }}>
+                <Grid container spacing={3}>
+                    <Grid size={{xs:12}}>
+                                <Controller
+                                    name="tipoPagoID"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TextField
+                                            select
+                                            label="Tipo de Pago"
+                                            fullWidth
+                                            {...field}
+                                            onChange={(e) => field.onChange(Number(e.target.value))}
+                                            value={field.value || 0}
+                                            error={!!errors.tipoPagoID}
+                                            helperText={errors.tipoPagoID?.message}
+                                        >
+                                            <MenuItem value={0} disabled>Seleccione</MenuItem>
+                                            {tiposPago?.data?.map((t) => (
+                                                <MenuItem key={t.id} value={t.id}>
+                                                    {t.text}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
+                                    )}
+                                />
+                            </Grid>
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <DialogContent sx={{ p: 3 }}>
-                    <Grid container spacing={3}>
-                        <Grid size={{xs:12}}>
-                            <Controller
-                                name="tipoPagoID"
-                                control={control}
-                                render={({ field }) => (
-                                    <TextField
-                                        select
-                                        label="Tipo de Pago"
-                                        fullWidth
-                                        {...field}
-                                        onChange={(e) => field.onChange(Number(e.target.value))}
-                                        value={field.value || 0}
-                                        error={!!errors.tipoPagoID}
-                                        helperText={errors.tipoPagoID?.message}
-                                    >
-                                        <MenuItem value={0} disabled>Seleccione</MenuItem>
-                                        {tiposPago?.data?.map((t) => (
-                                            <MenuItem key={t.id} value={t.id}>
-                                                {t.text}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                )}
-                            />
+                            <Grid size={{xs:12, sm:4}}>
+                                <TextField
+                                    label="Fecha Inicio"
+                                    type="date"
+                                    fullWidth
+                                    InputLabelProps={{ shrink: true }}
+                                    {...register('fechaInico')}
+                                    error={!!errors.fechaInico}
+                                    helperText={errors.fechaInico?.message}
+                                />
+                            </Grid>
+
+                            <Grid size={{xs:12, sm:4}}>
+                                <TextField
+                                    label="Fecha Cierre"
+                                    type="date"
+                                    fullWidth
+                                    InputLabelProps={{ shrink: true }}
+                                    {...register('fechaCierre')}
+                                    error={!!errors.fechaCierre}
+                                    helperText={errors.fechaCierre?.message}
+                                />
+                            </Grid>
+
+                            <Grid size={{xs:12, sm:4}}>
+                                <TextField
+                                    label="Fecha Pago"
+                                    type="date"
+                                    fullWidth
+                                    InputLabelProps={{ shrink: true }}
+                                    {...register('fechaPago')}
+                                    error={!!errors.fechaPago}
+                                    helperText={errors.fechaPago?.message}
+                                />
+                            </Grid>
+
+                            <Grid size={{xs:12, sm:6}}>
+                                <Controller
+                                    name="monedaID"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TextField
+                                            select
+                                            label="Moneda"
+                                            fullWidth
+                                            {...field}
+                                            onChange={(e) => field.onChange(Number(e.target.value))}
+                                            value={field.value || 0}
+                                            error={!!errors.monedaID}
+                                            helperText={errors.monedaID?.message}
+                                        >
+                                            <MenuItem value={0} disabled>Seleccione</MenuItem>
+                                            {monedas?.data?.map((m) => (
+                                                <MenuItem key={m.id} value={m.id}>
+                                                    {m.text}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
+                                    )}
+                                />
+                            </Grid>
+
+                            <Grid size={{xs:12, sm:6}}>
+                                <TextField
+                                    label="Monto"
+                                    type="number"
+                                    fullWidth
+                                    {...register('monto', { valueAsNumber: true })}
+                                    error={!!errors.monto}
+                                    helperText={errors.monto?.message}
+                                />
+                            </Grid>
+
+                            <Grid size={{xs:12}}>
+                                <TextField
+                                    label="Observaciones"
+                                    fullWidth
+                                    multiline
+                                    rows={3}
+                                    {...register('observaciones')}
+                                    error={!!errors.observaciones}
+                                    helperText={errors.observaciones?.message}
+                                    onKeyDown={handleAddressKeyDown}
+                                />
+                            </Grid>
                         </Grid>
+                    </Box>
 
-                        <Grid size={{xs:12, sm:4}}>
-                            <TextField
-                                label="Fecha Inicio"
-                                type="date"
-                                fullWidth
-                                InputLabelProps={{ shrink: true }}
-                                {...register('fechaInico')}
-                                error={!!errors.fechaInico}
-                                helperText={errors.fechaInico?.message}
-                            />
-                        </Grid>
-
-                        <Grid size={{xs:12, sm:4}}>
-                            <TextField
-                                label="Fecha Cierre"
-                                type="date"
-                                fullWidth
-                                InputLabelProps={{ shrink: true }}
-                                {...register('fechaCierre')}
-                                error={!!errors.fechaCierre}
-                                helperText={errors.fechaCierre?.message}
-                            />
-                        </Grid>
-
-                        <Grid size={{xs:12, sm:4}}>
-                            <TextField
-                                label="Fecha Pago"
-                                type="date"
-                                fullWidth
-                                InputLabelProps={{ shrink: true }}
-                                {...register('fechaPago')}
-                                error={!!errors.fechaPago}
-                                helperText={errors.fechaPago?.message}
-                            />
-                        </Grid>
-
-                        <Grid size={{xs:12, sm:6}}>
-                            <Controller
-                                name="monedaID"
-                                control={control}
-                                render={({ field }) => (
-                                    <TextField
-                                        select
-                                        label="Moneda"
-                                        fullWidth
-                                        {...field}
-                                        onChange={(e) => field.onChange(Number(e.target.value))}
-                                        value={field.value || 0}
-                                        error={!!errors.monedaID}
-                                        helperText={errors.monedaID?.message}
-                                    >
-                                        <MenuItem value={0} disabled>Seleccione</MenuItem>
-                                        {monedas?.data?.map((m) => (
-                                            <MenuItem key={m.id} value={m.id}>
-                                                {m.text}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                )}
-                            />
-                        </Grid>
-
-                        <Grid size={{xs:12, sm:6}}>
-                            <TextField
-                                label="Monto"
-                                type="number"
-                                fullWidth
-                                {...register('monto', { valueAsNumber: true })}
-                                error={!!errors.monto}
-                                helperText={errors.monto?.message}
-                            />
-                        </Grid>
-
-                        <Grid size={{xs:12}}>
-                            <TextField
-                                label="Observaciones"
-                                fullWidth
-                                multiline
-                                rows={3}
-                                {...register('observaciones')}
-                                error={!!errors.observaciones}
-                                helperText={errors.observaciones?.message}
-                                onKeyDown={handleAddressKeyDown}
-                            />
-                        </Grid>
-                    </Grid>
-                </DialogContent>
-
-                <DialogActions sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                    <Button onClick={onClose} color="inherit">
-                        Cancelar
-                    </Button>
-                    <Button 
-                        type="submit" 
-                        variant="contained"
-                        disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}
-                    >
-                        {isEdit ? 'Guardar Cambios' : 'Registrar'}
-                    </Button>
-                </DialogActions>
-            </form>
-        </Dialog>
+                    <Divider />
+                    <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                        <Button onClick={onClose} color="inherit">
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}
+                        >
+                            {isEdit ? 'Guardar Cambios' : 'Registrar'}
+                        </Button>
+                    </Box>
+        </form>
     );
 }

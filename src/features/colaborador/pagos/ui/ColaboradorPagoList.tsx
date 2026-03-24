@@ -15,7 +15,11 @@ import {
     MenuItem,
     Tooltip,
     CircularProgress,
-    Stack
+    Stack,
+    Paper,
+    Collapse,
+    IconButton as MuiIconButton,
+    alpha
 } from '@mui/material';
 import {
     Edit as EditIcon,
@@ -24,13 +28,16 @@ import {
     Payment as PaymentIcon,
     PictureAsPdf as PdfIcon,
     TableView as ExcelIcon,
-    Search as SearchIcon
+    Search as SearchIcon,
+    ExpandLess,
+    ExpandMore,
+    Cancel as CancelIcon
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { colaboradorPagoApi } from '@entities/colaborador-pago/api/colaborador-pago.api';
 import type { ColaboradorPago } from '@entities/colaborador-pago/model/types';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ColaboradorPagoForm } from './ColaboradorPagoForm';
 import { formatDateShort, getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@/shared/utils/date-utils';
 import { useDeleteColaboradorPago } from '../../hooks/useColaboradorPagoCrud';
@@ -48,8 +55,9 @@ interface ColaboradorPagoListProps {
 
 export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: ColaboradorPagoListProps) {
     const theme = useTheme();
-    const [openForm, setOpenForm] = useState(false);
+    const [isFormExpanded, setIsFormExpanded] = useState(true);
     const [pagoToEdit, setPagoToEdit] = useState<ColaboradorPago | null>(null);
+    const formRef = useRef<HTMLDivElement>(null);
     const [openDelete, setOpenDelete] = useState(false);
     const [pagoToDelete, setPagoToDelete] = useState<ColaboradorPago | null>(null);
     const [page, setPage] = useState(0);
@@ -114,12 +122,18 @@ export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: Colabor
 
     const handleCreate = () => {
         setPagoToEdit(null);
-        setOpenForm(true);
+        setIsFormExpanded(true);
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
 
     const handleEdit = (pago: ColaboradorPago) => {
         setPagoToEdit(pago);
-        setOpenForm(true);
+        setIsFormExpanded(true);
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
 
     const handleDelete = (pago: ColaboradorPago) => {
@@ -187,6 +201,97 @@ export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: Colabor
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 400 }}>
+            {!viewOnly && (
+                <Paper
+                    ref={formRef}
+                    elevation={0}
+                    sx={{
+                        p: 0,
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 3,
+                        bgcolor: alpha(pagoToEdit ? theme.palette.warning.main : theme.palette.primary.main, 0.02),
+                        overflow: 'hidden',
+                        mb: 2
+                    }}
+                >
+                    <Box
+                        onClick={() => {
+                            if (isFormExpanded && pagoToEdit) {
+                                setPagoToEdit(null);
+                                setIsFormExpanded(false);
+                            } else if (!isFormExpanded && !pagoToEdit) {
+                                handleCreate();
+                            } else {
+                                setIsFormExpanded((prev) => !prev);
+                            }
+                        }}
+                        sx={{
+                            px: 3,
+                            py: 2,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            borderBottom: isFormExpanded ? `1px solid ${theme.palette.divider}` : 'none',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ 
+                                bgcolor: pagoToEdit ? theme.palette.warning.main : theme.palette.primary.main, 
+                                color: 'white', 
+                                p: 0.5, 
+                                borderRadius: '50%', 
+                                display: 'flex' 
+                            }}>
+                                {pagoToEdit ? <EditIcon fontSize="small" /> : <AddIcon fontSize="small" />}
+                            </Box>
+                            <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
+                                {pagoToEdit ? 'Editar Pago' : 'Agregar Pago'}
+                            </Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {pagoToEdit && (
+                                <Button 
+                                    size="small" 
+                                    color="inherit" 
+                                    startIcon={<CancelIcon />}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPagoToEdit(null);
+                                        setIsFormExpanded(false);
+                                    }}
+                                >
+                                    Cancelar Edición
+                                </Button>
+                            )}
+                            <MuiIconButton
+                                size="small"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    setIsFormExpanded((prev) => !prev);
+                                }}
+                            >
+                                {isFormExpanded ? <ExpandLess /> : <ExpandMore />}
+                            </MuiIconButton>
+                        </Box>
+                    </Box>
+                    <Collapse in={isFormExpanded} unmountOnExit>
+                        <Box sx={{ p: 2 }}>
+                            <ColaboradorPagoForm
+                                open={true}
+                                onClose={() => {
+                                    setPagoToEdit(null);
+                                    setIsFormExpanded(false);
+                                }}
+                                colaboradorId={colaboradorId}
+                                pagoToEdit={pagoToEdit}
+                            />
+                        </Box>
+                    </Collapse>
+                </Paper>
+            )}
+
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
                 <Typography variant="h6" fontWeight="bold">
                     Historial de Pagos
@@ -217,15 +322,6 @@ export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: Colabor
                             PDF
                         </Button>
                     </Tooltip>
-                    {!viewOnly && (
-                        <Button 
-                            startIcon={<AddIcon />} 
-                            variant="contained" 
-                            onClick={handleCreate}
-                        >
-                            Registrar Pago
-                        </Button>
-                    )}
                 </Stack>
             </Box>
 
@@ -380,13 +476,6 @@ export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: Colabor
                 onRowsPerPageChange={handleChangeRowsPerPage}
                 labelRowsPerPage="Filas por página"
                 labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-            />
-
-            <ColaboradorPagoForm 
-                open={openForm}
-                onClose={() => setOpenForm(false)}
-                colaboradorId={colaboradorId}
-                pagoToEdit={pagoToEdit}
             />
 
             <ConfirmDialog

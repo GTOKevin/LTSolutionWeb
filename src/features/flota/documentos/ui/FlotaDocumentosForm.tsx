@@ -3,9 +3,7 @@ import {
     TextField,
     Grid,
     Box,
-    Typography,
-    useTheme,
-    alpha
+    Typography
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,7 +29,6 @@ export function FlotaDocumentosForm({
     isEditing = false,
     viewOnly = false
 }: FlotaDocumentosFormProps) {
-    const theme = useTheme();
 
     const {
         register,
@@ -55,24 +52,38 @@ export function FlotaDocumentosForm({
     useEffect(() => {
         if (defaultValues) {
             reset(defaultValues);
+        } else {
+            reset({
+                tipoDocumentoID: 0,
+                numeroDocumento: '',
+                rutaArchivo: '',
+                fechaEmision: '',
+                fechaVencimiento: '',
+                activo: true
+            });
         }
     }, [defaultValues, reset]);
+
+    const handleCancel = () => {
+        reset({
+            tipoDocumentoID: 0,
+            numeroDocumento: '',
+            rutaArchivo: '',
+            fechaEmision: '',
+            fechaVencimiento: '',
+            activo: true
+        });
+        onCancel();
+    };
 
     return (
         <Box 
             component="form" 
             onSubmit={handleSubmit(onSubmit)} 
             sx={{ 
-                p: 3, 
-                border: `1px solid ${theme.palette.divider}`, 
-                borderRadius: 3,
-                bgcolor: alpha(theme.palette.background.paper, 0.5)
+                p: 3
             }}
         >
-            <Typography variant="subtitle1" sx={{ mb: 3, color: 'primary.main', fontWeight: 700 }}>
-                {isEditing ? 'Editar Documento' : 'Nuevo Documento'}
-            </Typography>
-            
             <Grid container spacing={3}>
                 <Grid size={{xs:12,md:6}}>
                     <Controller
@@ -150,7 +161,7 @@ export function FlotaDocumentosForm({
                     <Grid size={{xs:12}}>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
                             <Button 
-                                onClick={onCancel} 
+                                onClick={handleCancel} 
                                 variant="outlined" 
                                 color="inherit"
                                 disabled={isSubmitting}

@@ -11,19 +11,25 @@ import {
     Divider,
     Grid,
     alpha,
-    Paper
+    Paper,
+    Collapse,
+    IconButton
 } from '@mui/material';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { useMemo } from 'react';
 import {
     Add as AddIcon,
-    MonetizationOn as MonetizationOnIcon
+    MonetizationOn as MonetizationOnIcon,
+    Edit as EditIcon,
+    Cancel as CancelIcon,
+    ExpandLess,
+    ExpandMore
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
 import type { Mantenimiento, MantenimientoDetalle } from '@entities/mantenimiento/model/types';
 import type { CreateMantenimientoDetalleSchema } from '../../model/schema';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { MantenimientoDetalleForm } from './MantenimientoDetalleForm';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
@@ -41,7 +47,8 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [showForm, setShowForm] = useState(false);
+    const [isFormExpanded, setIsFormExpanded] = useState(true);
+    const formRef = useRef<HTMLDivElement>(null);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editingItem, setEditingItem] = useState<CreateMantenimientoDetalleSchema | undefined>(undefined);
 
@@ -67,11 +74,6 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
     const updateMutation = useUpdateMantenimientoDetalle();
     const deleteMutation = useDeleteMantenimientoDetalle();
 
-    const handleCreate = () => {
-        setEditingId(null);
-        setEditingItem(undefined);
-        setShowForm(true);
-    };
 
     const handleEdit = (item: MantenimientoDetalle) => {
         setEditingId(item.mantenimientoDetalleID);
@@ -86,13 +88,25 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
             montoIGV: item.montoIGV,
             total: item.total
         });
-        setShowForm(true);
+        setIsFormExpanded(true);
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
 
     const handleCancel = () => {
-        setShowForm(false);
         setEditingId(null);
         setEditingItem(undefined);
+        setIsFormExpanded(false);
+    };
+
+    const handleCreate = () => {
+        setEditingId(null);
+        setEditingItem(undefined);
+        setIsFormExpanded(true);
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
 
     const handleSubmit = (data: CreateMantenimientoDetalleSchema) => {
@@ -126,39 +140,103 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
     }, [showActions]);
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%',minHeight: 650 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
+            {showActions && (
+                <Paper
+                    ref={formRef}
+                    elevation={0}
+                    sx={{
+                        p: 0,
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 3,
+                        bgcolor: alpha(editingId ? theme.palette.warning.main : theme.palette.primary.main, 0.02),
+                        overflow: 'hidden',
+                        mb: 2
+                    }}
+                >
+                    <Box
+                        onClick={() => {
+                            if (isFormExpanded && editingId) {
+                                handleCancel();
+                            } else if (!isFormExpanded && !editingId) {
+                                handleCreate();
+                            } else {
+                                setIsFormExpanded((prev) => !prev);
+                            }
+                        }}
+                        sx={{
+                            px: 3,
+                            py: 2,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            borderBottom: isFormExpanded ? `1px solid ${theme.palette.divider}` : 'none',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ 
+                                bgcolor: editingId ? theme.palette.warning.main : theme.palette.primary.main, 
+                                color: 'white', 
+                                p: 0.5, 
+                                borderRadius: '50%', 
+                                display: 'flex' 
+                            }}>
+                                {editingId ? <EditIcon fontSize="small" /> : <AddIcon fontSize="small" />}
+                            </Box>
+                            <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
+                                {editingId ? 'Editar Insumo/Servicio' : 'Agregar Insumo/Servicio'}
+                            </Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {editingId && (
+                                <Button 
+                                    size="small" 
+                                    color="inherit" 
+                                    startIcon={<CancelIcon />}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCancel();
+                                    }}
+                                >
+                                    Cancelar Edición
+                                </Button>
+                            )}
+                            <IconButton
+                                size="small"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    setIsFormExpanded((prev) => !prev);
+                                }}
+                            >
+                                {isFormExpanded ? <ExpandLess /> : <ExpandMore />}
+                            </IconButton>
+                        </Box>
+                    </Box>
+                    <Collapse in={isFormExpanded} unmountOnExit>
+                        <Box sx={{ p: 2 }}>
+                            <MantenimientoDetalleForm
+                                defaultValues={editingItem}
+                                onSubmit={handleSubmit}
+                                onCancel={handleCancel}
+                                isSubmitting={createMutation.isPending || updateMutation.isPending}
+                                isEditing={!!editingId}
+                                viewOnly={viewOnly}
+                            />
+                        </Box>
+                    </Collapse>
+                </Paper>
+            )}
+
             {/* Header & Actions */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                 <Typography variant="subtitle1" fontWeight="bold">
                     Insumos y Servicios Utilizados
                 </Typography>
-                
-                <Box sx={{ display: 'flex', gap: 1 }}>
-
-                    {showActions && !showForm && (
-                        <Button
-                            startIcon={<AddIcon />}
-                            variant="contained"
-                            size="small"
-                            onClick={handleCreate}
-                        >
-                            Agregar
-                        </Button>
-                    )}
-                </Box>
             </Box>
 
-            {showForm ? (
-                <MantenimientoDetalleForm
-                    defaultValues={editingItem}
-                    onSubmit={handleSubmit}
-                    onCancel={handleCancel}
-                    isSubmitting={createMutation.isPending || updateMutation.isPending}
-                    isEditing={!!editingId}
-                    viewOnly={viewOnly}
-                />
-            ) : (
-                <>
+            <>
                     {/* Desktop Table View */}
                     {!isMobile && (
                         <SharedTable<MantenimientoDetalle>
@@ -174,7 +252,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                             columns={columns}
                             keyExtractor={(item) => item.mantenimientoDetalleID}
                             emptyMessage="No hay insumos registrados"
-                            containerSx={{ flex: 1, minHeight: 400 }}
+                            containerSx={{ width: '100%', minHeight: 400 }}
                             renderRow={(item) => (
                                 <>
                                     <TableCell>
@@ -215,7 +293,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
 
                     {/* Mobile Card View */}
                     {isMobile && (
-                        <Box sx={{ flex: 1, overflow: 'auto' }}>
+                        <Box sx={{ width: '100%' }}>
                              {isLoading ? (
                                 <Box sx={{ p: 2, textAlign: 'center' }}>Cargando...</Box>
                              ) : (
@@ -332,7 +410,6 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                         </Box>
                     )}
                 </>
-            )}
         </Box>
     );
 }

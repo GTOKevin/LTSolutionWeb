@@ -66,8 +66,12 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
     return (
         <Dialog 
             open={open} 
-            onClose={onClose} 
-            maxWidth="md" 
+            onClose={(e, reason) => {
+                if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
+                    onClose();
+                }
+            }} 
+            maxWidth="xl" 
             fullWidth
             PaperProps={{
                 sx: { borderRadius: 3, minHeight: '80vh' }
@@ -338,7 +342,7 @@ export function CreateEditFlotaModal({ open, onClose, flotaToEdit, onSuccess, vi
                 
                 <TabPanel value={activeTab} index={1} name="flota">
                     {effectiveFlotaId && (
-                        <Box sx={{ px: 3, height: 500 }}>
+                        <Box sx={{ px: 3, pb: 3 }}>
                             <FlotaDocumentosList flotaId={effectiveFlotaId} viewOnly={viewOnly} />
                         </Box>
                     )}

@@ -1,7 +1,7 @@
 import { logger } from '@/shared/utils/logger';
 import { 
-    Button, TextField, FormControlLabel, Switch,
-    Paper, Typography, Grid, useTheme, alpha, CircularProgress
+    Button, TextField, FormControlLabel, Switch, Typography, Grid, useTheme, CircularProgress,
+    Box
 } from '@mui/material';
 import { 
     Save as SaveIcon
@@ -13,7 +13,6 @@ import type { CreateViajeEscoltaDto, ViajeEscolta } from '@/entities/viaje/model
 import type { SelectItem } from '@/shared/model/types';
 import { useCreateViajeEscolta, useUpdateViajeEscolta } from '@/features/viaje/hooks/useViajeEscoltas';
 import { viajeEscoltaSchema, type ViajeEscoltaFormData } from '../../model/schema';
-import { SubFormHeader } from '@/shared/components/ui/SubFormHeader';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { handleBackendErrors } from '@/shared/utils/form-validation';
 
@@ -109,22 +108,7 @@ export function ViajeEscoltaCreateEdit({ viajeId, flotas, colaboradores, escolta
     };
 
     return (
-        <Paper 
-            elevation={0}
-            sx={{ 
-                p: 3, 
-                borderRadius: 3, 
-                border: `1px solid ${theme.palette.divider}`,
-                bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02)
-            }}
-        >
-            <SubFormHeader 
-                isEditing={isEditing}
-                titleAdd="Asignar Escolta"
-                titleEdit="Editar Escolta"
-                onCancel={onCancel}
-            />
-
+        <Box sx={{ p: 3 }}>
             <Grid container spacing={2}>
                 <Grid size={{xs:12}}>
                     <Controller
@@ -258,6 +242,6 @@ export function ViajeEscoltaCreateEdit({ viajeId, flotas, colaboradores, escolta
                     </Button>
                 </Grid>
             </Grid>
-        </Paper>
+        </Box>
     );
 }
