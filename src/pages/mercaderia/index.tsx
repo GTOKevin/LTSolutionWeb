@@ -21,12 +21,10 @@ import { MercaderiaMobileList } from '../../features/mercaderia/list/ui/Mercader
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import { useDeleteMercaderia } from '@/features/mercaderia/hooks/useMercaderiaCrud';
-import { useToast } from '@/shared/components/ui/Toast';
 
 export function MercaderiaPage() {
     const theme = useTheme();
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
-    const { showToast } = useToast();
 
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -81,12 +79,10 @@ export function MercaderiaPage() {
         if (!mercaderiaToDelete) return;
         try {
             await deleteMutation.mutateAsync(mercaderiaToDelete.mercaderiaID);
-            showToast({ message: 'Mercadería eliminada exitosamente', severity: 'success' });
             setDeleteDialogOpen(false);
             setMercaderiaToDelete(null);
-            refetch();
-        } catch (error: any) {
-            showToast({ message: error.response?.data?.detail || 'Error al eliminar', severity: 'error' });
+        } catch (error: unknown) {
+            // Error is handled by useGenericCrud
         }
     };
 

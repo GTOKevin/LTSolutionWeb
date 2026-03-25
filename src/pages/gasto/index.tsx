@@ -21,12 +21,10 @@ import { GastoMobileList } from '../../features/gasto/list/ui/GastoMobileList';
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import { useDeleteGasto } from '@/features/gasto/hooks/useGastoCrud';
-import { useToast } from '@/shared/components/ui/Toast';
 
 export function GastoPage() {
     const theme = useTheme();
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
-    const { showToast } = useToast();
 
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -81,12 +79,10 @@ export function GastoPage() {
         if (!gastoToDelete) return;
         try {
             await deleteMutation.mutateAsync(gastoToDelete.gastoID);
-            showToast({ message: 'Gasto eliminado exitosamente', severity: 'success' });
             setDeleteDialogOpen(false);
             setGastoToDelete(null);
-            refetch();
-        } catch (error: any) {
-            showToast({ message: error.response?.data?.detail || 'Error al eliminar', severity: 'error' });
+        } catch (error: unknown) {
+            // Error is handled by useGenericCrud
         }
     };
 

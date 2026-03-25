@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -10,14 +10,16 @@ import {
     Box,
     Switch,
     FormControlLabel,
-    Typography
+    Typography,
+    Alert
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/shared/components/ui/Toast';
+
 import { createMercaderiaSchema, type CreateMercaderiaSchema } from '../../model/schema';
 import type { Mercaderia } from '@entities/mercaderia/model/types';
 import { useCreateMercaderia, useUpdateMercaderia } from '../../hooks/useMercaderiaCrud';
+import { handleBackendErrors } from '@/shared/utils/form-validation';
 
 interface Props {
     open: boolean;
@@ -28,26 +30,28 @@ interface Props {
 
 export function CreateEditMercaderiaModal({ open, onClose, mercaderiaToEdit, onSuccess }: Props) {
     const isEdit = !!mercaderiaToEdit;
-    const { showToast } = useToast();
     const createMutation = useCreateMercaderia();
     const updateMutation = useUpdateMercaderia();
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const {
         register,
         handleSubmit,
         control,
         reset,
+        setError,
         formState: { errors, isSubmitting }
     } = useForm<CreateMercaderiaSchema>({
         resolver: zodResolver(createMercaderiaSchema),
         defaultValues: {
             nombre: '',
-            activo: true
+            activo: true || undefined
         }
     });
 
     useEffect(() => {
         if (open) {
+            setErrorMessage(null);
             if (mercaderiaToEdit) {
                 reset({
                     nombre: mercaderiaToEdit.nombre,
@@ -63,21 +67,23 @@ export function CreateEditMercaderiaModal({ open, onClose, mercaderiaToEdit, onS
     }, [open, mercaderiaToEdit, reset]);
 
     const onSubmit = async (data: CreateMercaderiaSchema) => {
+        setErrorMessage(null);
         try {
             if (isEdit) {
                 await updateMutation.mutateAsync({
                     id: mercaderiaToEdit.mercaderiaID,
                     data
                 });
-                showToast({ message: 'Mercadería actualizada exitosamente', severity: 'success' });
             } else {
                 await createMutation.mutateAsync(data);
-                showToast({ message: 'Mercadería creada exitosamente', severity: 'success' });
             }
             onSuccess();
             onClose();
-        } catch (error: any) {
-            showToast({ message: error.response?.data?.detail || 'Error al guardar la mercadería', severity: 'error' });
+        } catch (error: unknown) {
+            const genericError = handleBackendErrors(error, setError);
+            if (genericError) {
+                setErrorMessage(genericError);
+            }
         }
     };
 
@@ -89,6 +95,13 @@ export function CreateEditMercaderiaModal({ open, onClose, mercaderiaToEdit, onS
             
             <form onSubmit={handleSubmit(onSubmit)}>
                 <DialogContent dividers>
+                    {errorMessage && (
+                        <Box sx={{ mb: 2 }}>
+                            <Alert severity="error" onClose={() => setErrorMessage(null)}>
+                                {errorMessage}
+                            </Alert>
+                        </Box>
+                    )}
                     <Grid container spacing={2}>
                         <Grid size={{ xs: 12 }}>
                             <TextField

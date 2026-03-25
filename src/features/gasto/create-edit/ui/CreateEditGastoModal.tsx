@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -10,14 +10,16 @@ import {
     Box,
     Switch,
     FormControlLabel,
-    Typography
+    Typography,
+    Alert
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/shared/components/ui/Toast';
 import { createGastoSchema, type CreateGastoSchema } from '../../model/schema';
+
 import type { Gasto } from '@entities/gasto/model/types';
 import { useCreateGasto, useUpdateGasto } from '../../hooks/useGastoCrud';
+import { handleBackendErrors } from '@/shared/utils/form-validation';
 
 interface Props {
     open: boolean;
@@ -28,15 +30,16 @@ interface Props {
 
 export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess }: Props) {
     const isEdit = !!gastoToEdit;
-    const { showToast } = useToast();
     const createMutation = useCreateGasto();
     const updateMutation = useUpdateGasto();
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const {
         register,
         handleSubmit,
         control,
         reset,
+        setError,
         formState: { errors, isSubmitting }
     } = useForm<CreateGastoSchema>({
         resolver: zodResolver(createGastoSchema),
@@ -48,6 +51,7 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess }: 
 
     useEffect(() => {
         if (open) {
+            setErrorMessage(null);
             if (gastoToEdit) {
                 reset({
                     nombre: gastoToEdit.nombre,
@@ -63,21 +67,29 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess }: 
     }, [open, gastoToEdit, reset]);
 
     const onSubmit = async (data: CreateGastoSchema) => {
+        setErrorMessage(null);
         try {
             if (isEdit) {
                 await updateMutation.mutateAsync({
                     id: gastoToEdit.gastoID,
-                    data
+                    data: {
+                        ...data,
+                        activo: data.activo ?? true
+                    }
                 });
-                showToast({ message: 'Gasto actualizado exitosamente', severity: 'success' });
             } else {
-                await createMutation.mutateAsync(data);
-                showToast({ message: 'Gasto creado exitosamente', severity: 'success' });
+                await createMutation.mutateAsync({
+                    ...data,
+                    activo: data.activo ?? true
+                });
             }
             onSuccess();
             onClose();
-        } catch (error: any) {
-            showToast({ message: error.response?.data?.detail || 'Error al guardar el gasto', severity: 'error' });
+        } catch (error: unknown) {
+            const genericError = handleBackendErrors(error, setError);
+            if (genericError) {
+                setErrorMessage(genericError);
+            }
         }
     };
 
@@ -89,6 +101,13 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess }: 
             
             <form onSubmit={handleSubmit(onSubmit)}>
                 <DialogContent dividers>
+                    {errorMessage && (
+                        <Box sx={{ mb: 2 }}>
+                            <Alert severity="error" onClose={() => setErrorMessage(null)}>
+                                {errorMessage}
+                            </Alert>
+                        </Box>
+                    )}
                     <Grid container spacing={2}>
                         <Grid size={{ xs: 12 }}>
                             <TextField

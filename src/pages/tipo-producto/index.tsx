@@ -23,12 +23,10 @@ import { TipoProductoMobileList } from '../../features/tipo-producto/list/ui/Tip
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import { useDeleteTipoProducto } from '@/features/tipo-producto/hooks/useTipoProductoCrud';
-import { useToast } from '@/shared/components/ui/Toast';
 
 export function TipoProductoPage() {
     const theme = useTheme();
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
-    const { showToast } = useToast();
 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategoria, setSelectedCategoria] = useState<string | null>(null);
@@ -94,12 +92,10 @@ export function TipoProductoPage() {
         if (!tipoToDelete) return;
         try {
             await deleteMutation.mutateAsync(tipoToDelete.tipoProductoID);
-            showToast({ message: 'Tipo de producto eliminado exitosamente', severity: 'success' });
             setDeleteDialogOpen(false);
             setTipoToDelete(null);
-            refetch();
-        } catch (error: any) {
-            showToast({ message: error.response?.data?.detail || 'Error al eliminar', severity: 'error' });
+        } catch (error: unknown) {
+            // Error is handled by useGenericCrud
         }
     };
 

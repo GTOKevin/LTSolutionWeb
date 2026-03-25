@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createGenericCrudHooks } from '@/shared/hooks/useGenericCrud';
 import { mercaderiaApi } from '@/entities/mercaderia/api/mercaderia.api';
 import type { CreateMercaderiaDto } from '@/entities/mercaderia/model/types';
 
@@ -10,33 +10,24 @@ export const MERCADERIA_QUERY_KEYS = {
     detail: (id: number) => [...MERCADERIA_QUERY_KEYS.details(), id] as const,
 };
 
-export const useCreateMercaderia = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (data: CreateMercaderiaDto) => mercaderiaApi.create(data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: MERCADERIA_QUERY_KEYS.lists() });
-        },
-    });
+const genericApi = {
+    create: (data: CreateMercaderiaDto) => mercaderiaApi.create(data),
+    update: (args: { id: number; data: CreateMercaderiaDto }) => mercaderiaApi.update(args.id, args.data),
+    delete: (id: number) => mercaderiaApi.delete(id)
 };
 
-export const useUpdateMercaderia = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: ({ id, data }: { id: number; data: CreateMercaderiaDto }) => mercaderiaApi.update(id, data),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: MERCADERIA_QUERY_KEYS.lists() });
-            queryClient.invalidateQueries({ queryKey: MERCADERIA_QUERY_KEYS.detail(variables.id) });
-        },
-    });
-};
-
-export const useDeleteMercaderia = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (id: number) => mercaderiaApi.delete(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: MERCADERIA_QUERY_KEYS.lists() });
-        },
-    });
-};
+export const {
+    useCreate: useCreateMercaderia,
+    useUpdate: useUpdateMercaderia,
+    useDelete: useDeleteMercaderia
+} = createGenericCrudHooks(
+    genericApi,
+    'Mercaderia',
+    (args) => {
+        const keys: (readonly unknown[])[] = [MERCADERIA_QUERY_KEYS.lists()];
+        if (args && typeof args === 'object' && 'id' in args) {
+            keys.push(MERCADERIA_QUERY_KEYS.detail(args.id as number));
+        }
+        return keys;
+    }
+);

@@ -12,16 +12,17 @@ import {
     Switch,
     FormControlLabel,
     Typography,
-    Autocomplete
+    Autocomplete,
+    Alert
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
-import { useToast } from '@/shared/components/ui/Toast';
 import { createTipoProductoSchema, type CreateTipoProductoSchema } from '../../model/schema';
 import type { TipoProducto } from '@entities/tipo-producto/model/types';
 import { useCreateTipoProducto, useUpdateTipoProducto } from '../../hooks/useTipoProductoCrud';
 import { tipoProductoApi } from '@entities/tipo-producto/api/tipo-producto.api';
+import { handleBackendErrors } from '@/shared/utils/form-validation';
 
 interface Props {
     open: boolean;
@@ -32,10 +33,10 @@ interface Props {
 
 export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit, onSuccess }: Props) {
     const isEdit = !!tipoProductoToEdit;
-    const { showToast } = useToast();
     const createMutation = useCreateTipoProducto();
     const updateMutation = useUpdateTipoProducto();
     const [inputValue, setInputValue] = useState('');
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const { data: categoriasQuery } = useQuery({
         queryKey: ['categorias-select'],
@@ -50,6 +51,7 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
         handleSubmit,
         control,
         reset,
+        setError,
         formState: { errors, isSubmitting }
     } = useForm<CreateTipoProductoSchema>({
         resolver: zodResolver(createTipoProductoSchema),
@@ -63,12 +65,13 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
 
     useEffect(() => {
         if (open) {
+            setErrorMessage(null);
             if (tipoProductoToEdit) {
                 reset({
                     nombre: tipoProductoToEdit.nombre,
                     tipo: tipoProductoToEdit.tipo,
                     categoria: tipoProductoToEdit.categoria,
-                    activo: tipoProductoToEdit.activo
+                    activo: tipoProductoToEdit.activo ?? true
                 });
                 setInputValue(tipoProductoToEdit.categoria);
             } else {
@@ -76,7 +79,7 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
                     nombre: '',
                     tipo: 'PROD',
                     categoria: '',
-                    activo: true
+                    activo: true || undefined
                 });
                 setInputValue('');
             }
@@ -84,21 +87,29 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
     }, [open, tipoProductoToEdit, reset]);
 
     const onSubmit = async (data: CreateTipoProductoSchema) => {
+        setErrorMessage(null);
         try {
             if (isEdit) {
                 await updateMutation.mutateAsync({
                     id: tipoProductoToEdit.tipoProductoID,
-                    data
+                    data: {
+                        ...data,
+                        activo: data.activo ?? true
+                    }
                 });
-                showToast({ message: 'Tipo de producto actualizado exitosamente', severity: 'success' });
             } else {
-                await createMutation.mutateAsync(data);
-                showToast({ message: 'Tipo de producto creado exitosamente', severity: 'success' });
+                await createMutation.mutateAsync({
+                    ...data,
+                    activo: data.activo ?? true
+                });
             }
             onSuccess();
             onClose();
-        } catch (error: any) {
-            showToast({ message: error.response?.data?.detail || 'Error al guardar el tipo de producto', severity: 'error' });
+        } catch (error: unknown) {
+            const genericError = handleBackendErrors(error, setError);
+            if (genericError) {
+                setErrorMessage(genericError);
+            }
         }
     };
 
@@ -110,6 +121,13 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
             
             <form onSubmit={handleSubmit(onSubmit)}>
                 <DialogContent dividers>
+                    {errorMessage && (
+                        <Box sx={{ mb: 2 }}>
+                            <Alert severity="error" onClose={() => setErrorMessage(null)}>
+                                {errorMessage}
+                            </Alert>
+                        </Box>
+                    )}
                     <Grid container spacing={2}>
                         <Grid size={{ xs: 12 }}>
                             <TextField

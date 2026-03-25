@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createGenericCrudHooks } from '@/shared/hooks/useGenericCrud';
 import { gastoApi } from '@/entities/gasto/api/gasto.api';
 import type { CreateGastoDto } from '@/entities/gasto/model/types';
 
@@ -10,33 +10,24 @@ export const GASTO_QUERY_KEYS = {
     detail: (id: number) => [...GASTO_QUERY_KEYS.details(), id] as const,
 };
 
-export const useCreateGasto = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (data: CreateGastoDto) => gastoApi.create(data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: GASTO_QUERY_KEYS.lists() });
-        },
-    });
+const genericApi = {
+    create: (data: CreateGastoDto) => gastoApi.create(data),
+    update: (args: { id: number; data: CreateGastoDto }) => gastoApi.update(args.id, args.data),
+    delete: (id: number) => gastoApi.delete(id)
 };
 
-export const useUpdateGasto = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: ({ id, data }: { id: number; data: CreateGastoDto }) => gastoApi.update(id, data),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: GASTO_QUERY_KEYS.lists() });
-            queryClient.invalidateQueries({ queryKey: GASTO_QUERY_KEYS.detail(variables.id) });
-        },
-    });
-};
-
-export const useDeleteGasto = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (id: number) => gastoApi.delete(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: GASTO_QUERY_KEYS.lists() });
-        },
-    });
-};
+export const {
+    useCreate: useCreateGasto,
+    useUpdate: useUpdateGasto,
+    useDelete: useDeleteGasto
+} = createGenericCrudHooks(
+    genericApi,
+    'Gasto',
+    (args) => {
+        const keys: (readonly unknown[])[] = [GASTO_QUERY_KEYS.lists()];
+        if (args && typeof args === 'object' && 'id' in args) {
+            keys.push(GASTO_QUERY_KEYS.detail(args.id as number));
+        }
+        return keys;
+    }
+);
