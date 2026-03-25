@@ -12,7 +12,11 @@ import {
     AdminPanelSettings as AdminPanelSettingsIcon,
     People as PeopleIcon,
     VpnKey as VpnKeyIcon,
-    ListAlt as ListAltIcon
+    ListAlt as ListAltIcon,
+    Category as CategoryIcon,
+    Inventory as InventoryIcon,
+    LocalOffer as LocalOfferIcon,
+    AccountBalanceWallet as AccountBalanceWalletIcon
 } from '@mui/icons-material';
 import { PERMISSIONS } from '@/shared/constants/permissions';
 
@@ -89,6 +93,30 @@ export const SIDEBAR_MENU: MenuItem[] = [
                 path: '/app/mantenimientos', 
                 icon: <BuildIcon />,
                 permission: PERMISSIONS.MANTENIMIENTOS.VER
+            },
+        ]
+    },
+    {
+        text: 'Catálogos',
+        icon: <CategoryIcon />,
+        children: [
+            { 
+                text: 'Tipos de Producto', 
+                path: '/app/tipo-producto', 
+                icon: <LocalOfferIcon />,
+                permission: PERMISSIONS.SISTEMA.MAESTROS.VER // Assuming it shares maestro permission
+            },
+            { 
+                text: 'Mercaderías', 
+                path: '/app/mercaderia', 
+                icon: <InventoryIcon />,
+                permission: PERMISSIONS.SISTEMA.MAESTROS.VER
+            },
+            { 
+                text: 'Gastos', 
+                path: '/app/gasto', 
+                icon: <AccountBalanceWalletIcon />,
+                permission: PERMISSIONS.SISTEMA.MAESTROS.VER
             },
         ]
     },

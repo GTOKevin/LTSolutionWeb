@@ -24,7 +24,7 @@ export const usuarioApi = {
         return data;
     },
 
-    create: (data: Omit<Usuario, 'usuarioID'>) =>
+    create: (data: CreateUsuarioDto) =>
         httpClient.post<number>('/Usuario', data).then(res => res.data),
 
     update: async (id: number, dto: CreateUsuarioDto) => {

@@ -71,7 +71,6 @@ export function CreateEditMantenimientoModal({
     const {
         register,
         handleSubmit,
-        control,
         formState: { errors, isDirty }
     } = form;
 

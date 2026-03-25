@@ -77,7 +77,7 @@ export function CreateEditColaboradorModal({ open, onClose, colaboradorToEdit, o
         <>
         <Dialog 
             open={open} 
-            onClose={(e, reason) => {
+            onClose={(_, reason) => {
                 if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
                     onClose();
                 }

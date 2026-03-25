@@ -32,7 +32,8 @@ export interface SelectItem {
 }
 
 export interface SelectStringItem {
-    value: string;
-    label: string;
+    id: string;
+    text: string;
+    extra?: string;
 }
 

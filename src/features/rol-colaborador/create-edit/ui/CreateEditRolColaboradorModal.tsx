@@ -24,7 +24,7 @@ interface CreateEditRolColaboradorModalProps {
     open: boolean;
     onClose: () => void;
     rolToEdit?: RolColaborador | null;
-    onSuccess: (id: number) => void;
+    onSuccess: (id?: number) => void;
 }
 
 export function CreateEditRolColaboradorModal({ open, onClose, rolToEdit, onSuccess }: CreateEditRolColaboradorModalProps) {

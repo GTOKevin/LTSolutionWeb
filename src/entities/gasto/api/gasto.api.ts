@@ -9,5 +9,6 @@ export const gastoApi = {
         httpClient.get<GastoDto>(`/Gasto/${id}`),
     create: (data: CreateGastoDto) => httpClient.post<number>('/Gasto', data).then(res => res.data),
     update: (id: number, data: CreateGastoDto) =>
-        httpClient.put<void>(`/Gasto/${id}`, data)
+        httpClient.put<void>(`/Gasto/${id}`, data),
+    delete: (id: number) => httpClient.delete<void>(`/Gasto/${id}`)
 };

@@ -29,7 +29,7 @@ import {
 } from '@mui/icons-material';
 
 import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
-import { handleBackendErrors } from '@/shared/utils/form-validation';
+
 import { useToast } from '@/shared/components/ui/Toast';
 
 interface ChangePasswordModalProps {
