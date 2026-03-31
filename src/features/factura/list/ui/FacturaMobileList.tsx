@@ -4,6 +4,7 @@ import type { PagedResponse } from '@/shared/model/types';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { formatCurrency } from '@/shared/utils/format-utils';
+import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
 
 interface FacturaMobileListProps {
     data?: PagedResponse<Factura>;
@@ -61,7 +62,7 @@ export function FacturaMobileList({
                         </Box>
                         <Chip 
                             label={row.estado?.descripcion || 'N/A'} 
-                            color={row.estadoID === 1 ? 'warning' : row.estadoID === 2 ? 'success' : 'error'}
+                            color={row.estadoID === ESTADO_FACTURA_ID.REGISTRADA ? 'warning' : row.estadoID === ESTADO_FACTURA_ID.EMITIDO ? 'success' : 'error'}
                             size="small" 
                         />
                     </Box>

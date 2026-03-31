@@ -18,6 +18,7 @@ import { useCreateFacturaDetalle } from '../../hooks/useFacturaDetalleCrud';
 import { ViajeSelectorModal } from './ViajeSelectorModal';
 import type { Viaje } from '@/entities/viaje/model/types';
 import { monedaApi } from '@/shared/api/moneda.api';
+import { IGV_RATE } from '@/shared/constants/constantes';
 
 interface FacturaDetalleFormProps {
     onClose: () => void;
@@ -46,7 +47,7 @@ export function FacturaDetalleForm({ onClose, facturaId, monedaId, clienteId }: 
     const subTotal = useWatch({ control, name: 'subTotal', defaultValue: 0 });
     const applyIgv = useWatch({ control, name: 'igv', defaultValue: true });
     
-    const calculatedIgv = applyIgv ? Number((subTotal * 0.18).toFixed(2)) : 0;
+    const calculatedIgv = applyIgv ? Number((subTotal * IGV_RATE).toFixed(2)) : 0;
     const calculatedTotal = Number((Number(subTotal) + calculatedIgv).toFixed(2));
 
     useEffect(() => {
@@ -178,7 +179,7 @@ export function FacturaDetalleForm({ onClose, facturaId, monedaId, clienteId }: 
                         render={({ field }) => (
                             <FormControlLabel
                                 control={<Checkbox checked={field.value} onChange={field.onChange} />}
-                                label="Aplicar IGV (18%)"
+                                label={`Aplicar IGV (${IGV_RATE * 100}%)`}
                             />
                         )}
                     />
@@ -228,7 +229,7 @@ export function FacturaDetalleForm({ onClose, facturaId, monedaId, clienteId }: 
                             const newTotal = Number(e.target.value);
                             if (!isNaN(newTotal) && newTotal >= 0) {
                                 // If Total is changed manually, we calculate the SubTotal based on the IGV setting
-                                const newSubTotal = applyIgv ? newTotal / 1.18 : newTotal;
+                                const newSubTotal = applyIgv ? newTotal / (1 + IGV_RATE) : newTotal;
                                 setValue('subTotal', Number(newSubTotal.toFixed(2)), { shouldValidate: true });
                             }
                         }}

@@ -97,7 +97,7 @@ export function RouterProvider() {
                             </PermissionGuard>
                         } />
                         <Route path="facturas" element={
-                            <PermissionGuard permission={PERMISSIONS.VIAJES.VER}>
+                            <PermissionGuard permission={PERMISSIONS.FACTURAS.VER}>
                                 <FacturasPage />
                             </PermissionGuard>
                         } />

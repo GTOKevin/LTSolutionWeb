@@ -56,7 +56,7 @@ export const SIDEBAR_MENU: MenuItem[] = [
                 text: 'Facturas', 
                 path: '/app/facturas', 
                 icon: <ReceiptIcon />,
-                permission: PERMISSIONS.VIAJES.VER // or create PERMISSIONS.FACTURAS.VER if it exists
+                permission: PERMISSIONS.FACTURAS.VER
             }
         ]
     },

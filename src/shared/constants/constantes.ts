@@ -47,6 +47,19 @@ export const ESTADO_VIAJE_ID = {
     COMPLETADO: 204
 } as const;
 
+export const ESTADO_FACTURA_ID = {
+    REGISTRADA: 301,
+    EMITIDO: 302,
+    ENTREGADO: 303
+} as const;
+
+export const ESTADO_FACTURA_PAGO_ID = {
+    PENDIENTE: 401,
+    PAGADO: 402
+} as const;
+
+export const IGV_RATE = 0.18;
+
 export const ROL_USUARIO_ID = {
     ADMINISTRADOR: 1,
     GERENTE_GENERAL: 2,

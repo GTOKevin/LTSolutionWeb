@@ -6,6 +6,7 @@ import { TableActions } from '@/shared/components/ui/TableActions';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { formatCurrency } from '@/shared/utils/format-utils';
+import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
 
 interface FacturaTableProps {
     data?: PagedResponse<Factura>;
@@ -88,7 +89,7 @@ export function FacturaTable({
                     <TableCell>
                         <Chip 
                             label={item.estado?.descripcion || 'N/A'} 
-                            color={item.estadoID === 1 ? 'warning' : item.estadoID === 2 ? 'success' : 'error'}
+                            color={item.estadoID === ESTADO_FACTURA_ID.REGISTRADA ? 'warning' : item.estadoID === ESTADO_FACTURA_ID.EMITIDO ? 'success' : 'error'}
                             size="small" 
                             variant="filled"
                         />

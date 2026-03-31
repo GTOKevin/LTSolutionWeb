@@ -6,6 +6,8 @@ import { useDeleteFacturaDetalle } from '../../hooks/useFacturaDetalleCrud';
 import type { Factura } from '@/entities/factura/model/types';
 import { FacturaDetalleForm } from './FacturaDetalleForm';
 import { useQueryClient } from '@tanstack/react-query';
+import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
+import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
 
 interface FacturaDetalleListProps {
     factura: Factura;
@@ -13,15 +15,24 @@ interface FacturaDetalleListProps {
 
 export function FacturaDetalleList({ factura }: FacturaDetalleListProps) {
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [detalleToDelete, setDetalleToDelete] = useState<number | null>(null);
     const deleteMutation = useDeleteFacturaDetalle();
     const queryClient = useQueryClient();
     const theme = useTheme();
 
-    const handleDelete = async (id: number) => {
-        if (window.confirm('¿Está seguro que desea eliminar este detalle?')) {
-            await deleteMutation.mutateAsync(id, {
+    const handleDeleteClick = (id: number) => {
+        setDetalleToDelete(id);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (detalleToDelete !== null) {
+            await deleteMutation.mutateAsync(detalleToDelete, {
                 onSuccess: () => {
                     queryClient.invalidateQueries({ queryKey: ['factura', factura.facturaID] });
+                    setDeleteDialogOpen(false);
+                    setDetalleToDelete(null);
                 }
             });
         }
@@ -44,7 +55,7 @@ export function FacturaDetalleList({ factura }: FacturaDetalleListProps) {
             >
                 <Box
                     onClick={() => {
-                        if (factura.estadoID === 2 || factura.estadoID === 3) return; // pagada o anulada
+                        if (factura.estadoID === ESTADO_FACTURA_ID.EMITIDO || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO) return;
                         setIsFormOpen((prev) => !prev);
                     }}
                     sx={{
@@ -54,7 +65,7 @@ export function FacturaDetalleList({ factura }: FacturaDetalleListProps) {
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         borderBottom: isFormOpen ? `1px solid ${theme.palette.divider}` : 'none',
-                        cursor: (factura.estadoID === 2 || factura.estadoID === 3) ? 'default' : 'pointer'
+                        cursor: (factura.estadoID === ESTADO_FACTURA_ID.EMITIDO || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO) ? 'default' : 'pointer'
                     }}
                 >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -75,7 +86,7 @@ export function FacturaDetalleList({ factura }: FacturaDetalleListProps) {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <IconButton
                             size="small"
-                            disabled={factura.estadoID === 2 || factura.estadoID === 3}
+                            disabled={factura.estadoID === ESTADO_FACTURA_ID.EMITIDO || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO}
                         >
                             {isFormOpen ? <ExpandLess /> : <ExpandMore />}
                         </IconButton>
@@ -122,9 +133,9 @@ export function FacturaDetalleList({ factura }: FacturaDetalleListProps) {
                                         <IconButton 
                                             size="small" 
                                             color="error" 
-                                            onClick={() => handleDelete(detalle.facturaDetalleID)}
-                                            disabled={deleteMutation.isPending || factura.estadoID === 2 || factura.estadoID === 3}
-                                        >
+                                            onClick={() => handleDeleteClick(detalle.facturaDetalleID)}
+                                        disabled={deleteMutation.isPending || factura.estadoID === ESTADO_FACTURA_ID.EMITIDO || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO}
+                                    >
                                             <DeleteIcon fontSize="small" />
                                         </IconButton>
                                     </TableCell>
@@ -134,6 +145,18 @@ export function FacturaDetalleList({ factura }: FacturaDetalleListProps) {
                     </TableBody>
                 </Table>
             </Box>
+
+            <ConfirmDialog
+                open={deleteDialogOpen}
+                title="Eliminar Detalle"
+                content="¿Está seguro que desea eliminar este detalle? Esta acción no se puede deshacer."
+                onClose={() => {
+                    setDeleteDialogOpen(false);
+                    setDetalleToDelete(null);
+                }}
+                onConfirm={handleConfirmDelete}
+                confirmText="Eliminar"
+            />
         </Box>
     );
 }

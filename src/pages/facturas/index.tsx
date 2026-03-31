@@ -57,19 +57,24 @@ export function FacturasPage() {
     };
 
     const handleSubmit = async (formData: CreateFacturaSchema) => {
-        if (selectedFactura) {
-            await updateMutation.mutateAsync({ 
-                id: selectedFactura.facturaID, 
-                data: {
-                    ...formData,
-                    activo: true
-                } 
-            });
-            setModalOpen(false);
-        } else {
-            const newId = await createMutation.mutateAsync({ ...formData, detalles: [], pagos: [] });
-            const newFactura = await facturaApi.getById(newId);
-            setSelectedFactura(newFactura);
+        try {
+            if (selectedFactura) {
+                await updateMutation.mutateAsync({ 
+                    id: selectedFactura.facturaID, 
+                    data: {
+                        ...formData,
+                        activo: true
+                    } 
+                });
+                setModalOpen(false);
+            } else {
+                const newId = await createMutation.mutateAsync({ ...formData, detalles: [], pagos: [] });
+                const newFactura = await facturaApi.getById(newId);
+                setSelectedFactura(newFactura);
+            }
+        } catch (error) {
+            console.error("Error al guardar la factura:", error);
+            // The useGenericCrud hook already handles showing the toast notification for errors
         }
     };
 

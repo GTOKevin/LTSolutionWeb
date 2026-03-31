@@ -7,6 +7,8 @@ import { formatDateLong } from '@/shared/utils/date-utils';
 import { useDeleteFacturaPago } from '../../hooks/useFacturaPagoCrud';
 import { FacturaPagoForm } from './FacturaPagoForm';
 import { useQueryClient } from '@tanstack/react-query';
+import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
+import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
 
 interface FacturaPagoListProps {
     factura: Factura;
@@ -14,17 +16,26 @@ interface FacturaPagoListProps {
 
 export function FacturaPagoList({ factura }: FacturaPagoListProps) {
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [pagoToDelete, setPagoToDelete] = useState<number | null>(null);
     const deleteMutation = useDeleteFacturaPago();
     const queryClient = useQueryClient();
     const theme = useTheme();
 
     const isEditing = false; // Just for theme alpha, as there is no edit yet
     
-    const handleDelete = async (id: number) => {
-        if (window.confirm('¿Está seguro que desea eliminar este pago?')) {
-            await deleteMutation.mutateAsync(id, {
+    const handleDeleteClick = (id: number) => {
+        setPagoToDelete(id);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (pagoToDelete !== null) {
+            await deleteMutation.mutateAsync(pagoToDelete, {
                 onSuccess: () => {
                     queryClient.invalidateQueries({ queryKey: ['factura', factura.facturaID] });
+                    setDeleteDialogOpen(false);
+                    setPagoToDelete(null);
                 }
             });
         }
@@ -46,7 +57,7 @@ export function FacturaPagoList({ factura }: FacturaPagoListProps) {
             >
                 <Box
                     onClick={() => {
-                        if (factura.saldoPendiente <= 0 || factura.estadoID === 3) return; // Pagada o Anulada
+                        if (factura.saldoPendiente <= 0 || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO) return;
                         setIsFormOpen((prev) => !prev);
                     }}
                     sx={{
@@ -56,7 +67,7 @@ export function FacturaPagoList({ factura }: FacturaPagoListProps) {
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         borderBottom: isFormOpen ? `1px solid ${theme.palette.divider}` : 'none',
-                        cursor: (factura.saldoPendiente <= 0 || factura.estadoID === 3) ? 'default' : 'pointer'
+                        cursor: (factura.saldoPendiente <= 0 || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO) ? 'default' : 'pointer'
                     }}
                 >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -76,7 +87,7 @@ export function FacturaPagoList({ factura }: FacturaPagoListProps) {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <IconButton
                             size="small"
-                            disabled={factura.saldoPendiente <= 0 || factura.estadoID === 3}
+                            disabled={factura.saldoPendiente <= 0 || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO}
                         >
                             {isFormOpen ? <ExpandLess /> : <ExpandMore />}
                         </IconButton>
@@ -129,9 +140,9 @@ export function FacturaPagoList({ factura }: FacturaPagoListProps) {
                                         <IconButton 
                                             size="small" 
                                             color="error" 
-                                            onClick={() => handleDelete(pago.facturaPagoID)}
-                                            disabled={deleteMutation.isPending || factura.estadoID === 3}
-                                        >
+                                            onClick={() => handleDeleteClick(pago.facturaPagoID)}
+                                        disabled={deleteMutation.isPending || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO}
+                                    >
                                             <DeleteIcon fontSize="small" />
                                         </IconButton>
                                     </TableCell>
@@ -141,6 +152,18 @@ export function FacturaPagoList({ factura }: FacturaPagoListProps) {
                     </TableBody>
                 </Table>
             </Box>
+
+            <ConfirmDialog
+                open={deleteDialogOpen}
+                title="Eliminar Pago"
+                content="¿Está seguro que desea eliminar este pago? Esta acción no se puede deshacer."
+                onClose={() => {
+                    setDeleteDialogOpen(false);
+                    setPagoToDelete(null);
+                }}
+                onConfirm={handleConfirmDelete}
+                confirmText="Eliminar"
+            />
         </Box>
     );
 }
