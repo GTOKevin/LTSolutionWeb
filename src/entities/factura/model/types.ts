@@ -1,0 +1,117 @@
+import type { PagedFilters, PagedResponse } from '@/shared/model/types';
+import type { Cliente } from '@/entities/cliente/model/types';
+import type { Moneda } from '@/entities/moneda/model/types';
+import type { Viaje } from '@/entities/viaje/model/types';
+
+export interface FacturaDetalle {
+    facturaDetalleID: number;
+    facturaID: number;
+    viajeID: number;
+    descripcion: string | null;
+    monedaID: number;
+    subTotal: number;
+    igv: number;
+    total: number;
+    viaje?: Viaje;
+    moneda?: Moneda;
+}
+
+export interface FacturaPago {
+    facturaPagoID: number;
+    facturaID: number;
+    fechaPago: string;
+    fechaAcreditacion?: string | null;
+    tipoPagoID: number;
+    estadoID: number;
+    monedaID: number;
+    montoAbonado: number;
+    numeroOperacion: string | null;
+    observacion: string | null;
+    moneda?: Moneda;
+    tipoPago?: {
+        tipoMaestroID: number;
+        descripcion: string;
+    };
+    estado?: {
+        estadoID: number;
+        descripcion: string;
+    };
+}
+
+export interface Factura {
+    facturaID: number;
+    clienteID: number;
+    serie: string;
+    numero: string;
+    fechaEmision: string;
+    fechaVencimiento: string;
+    fechaCompromisoPago?: string | null;
+    diasCredito?: number | null;
+    monedaID: number;
+    subTotal: number;
+    igv: number;
+    total: number;
+    saldoPendiente: number;
+    estadoID: number;
+    activo: boolean;
+    cliente?: Cliente;
+    moneda?: Moneda;
+    estado?: {
+        estadoID: number;
+        descripcion: string;
+    };
+    facturaDetalles?: FacturaDetalle[];
+    facturaPagos?: FacturaPago[];
+}
+
+export interface FacturaFilters extends PagedFilters {
+    search?: string;
+}
+
+export type PagedFacturas = PagedResponse<Factura>;
+
+export interface CreateFacturaDetalleDto {
+    viajeID: number;
+    descripcion?: string;
+    monedaID: number;
+    subTotal: number;
+    igv: boolean;
+}
+
+export interface CreateFacturaPagoDto {
+    fechaPago: string;
+    fechaAcreditacion?: string;
+    tipoPagoID: number;
+    estadoID: number;
+    monedaID: number;
+    montoAbonado: number;
+    numeroOperacion?: string;
+    observacion?: string;
+}
+
+export interface CreateFacturaDto {
+    clienteID: number;
+    serie: string;
+    numero: string;
+    fechaEmision: string;
+    fechaVencimiento: string;
+    fechaCompromisoPago?: string | null;
+    diasCredito?: number | null;
+    monedaID: number;
+    estadoID: number;
+    detalles: CreateFacturaDetalleDto[];
+    pagos: CreateFacturaPagoDto[];
+}
+
+export interface UpdateFacturaDto {
+    clienteID: number;
+    serie: string;
+    numero: string;
+    fechaEmision: string;
+    fechaVencimiento: string;
+    fechaCompromisoPago?: string | null;
+    diasCredito?: number | null;
+    monedaID: number;
+    estadoID: number;
+    activo: boolean;
+}

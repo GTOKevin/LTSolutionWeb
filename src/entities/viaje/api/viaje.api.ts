@@ -20,6 +20,16 @@ export const viajeApi = {
         return response.data;
     },
 
+    getSelect: async (params?: { clienteId?: number; search?: string; limit?: number }) => {
+        const query = new URLSearchParams();
+        if (params?.clienteId) query.append('clienteId', params.clienteId.toString());
+        if (params?.search) query.append('search', params.search);
+        if (params?.limit) query.append('limit', params.limit.toString());
+        
+        const response = await http.get<import('@/shared/model/types').SelectItem[]>(`/viaje/select?${query.toString()}`);
+        return response.data;
+    },
+
     getById: async (id: number) => {
         const response = await http.get<Viaje>(`/viaje/${id}`);
         return response.data;

@@ -1,4 +1,4 @@
-import { Box, Typography, TableCell, useTheme } from '@mui/material';
+import { Box, Typography, TableCell } from '@mui/material';
 import type { TipoProducto } from '@entities/tipo-producto/model/types';
 import { StatusChip } from '@/shared/components/ui/StatusChip';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';

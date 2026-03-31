@@ -13,3 +13,4 @@ export const formatCurrency = (amount: number, currency = 'USD'): string => {
         currency: currency,
     }).format(amount);
 };
+

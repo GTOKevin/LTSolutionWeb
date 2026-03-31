@@ -1,3 +1,4 @@
+import type { TipoMaestro } from '@/shared/model/maestro.types';
 import type { PagedFilters, PagedResponse } from '@/shared/model/types';
 
 export interface ViajeListReportDto {
@@ -262,6 +263,7 @@ export interface Viaje {
     ejesTracto: number;
     ejesCarreta: number | null;
     eliminado: boolean;
+    facturado?: boolean;
     
     // Navigation properties for display
     cliente?: {
@@ -300,14 +302,8 @@ export interface Viaje {
         nombre: string;
         codigo?: string; // If backend sends color
     };
-    tipoMedida?: {
-        tipoMaestroID: number;
-        descripcion: string;
-    };
-    tipoPeso?: {
-        tipoMaestroID: number;
-        descripcion: string;
-    };
+    tipoMedida?: TipoMaestro,
+    tipoPeso?: TipoMaestro,
 
     // Collections
     viajeMercaderia: ViajeMercaderia[];
@@ -456,7 +452,9 @@ export interface ViajeListItem {
 
     // Mercadería (Resumen)
     mercaderiaDescripcion?: string;
+    guias?: string;
     cerrado: boolean;
+    facturado?: boolean;
 }
 
 export interface PagedViajes extends PagedResponse<ViajeListItem> {

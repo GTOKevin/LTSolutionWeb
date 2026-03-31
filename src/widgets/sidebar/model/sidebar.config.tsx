@@ -49,15 +49,15 @@ export const SIDEBAR_MENU: MenuItem[] = [
             { 
                 text: 'Cotizaciones', 
                 path: '/app/cotizaciones', 
-                icon: <ReportIcon />,
+                icon: <LocalOfferIcon />,
                 permission: PERMISSIONS.COTIZACIONES.VER
-            }, 
+            },
             { 
                 text: 'Facturas', 
                 path: '/app/facturas', 
                 icon: <ReceiptIcon />,
                 permission: PERMISSIONS.FACTURAS.VER
-            },
+            }
         ]
     },
     {
