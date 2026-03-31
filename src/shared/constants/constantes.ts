@@ -9,7 +9,9 @@ export const TIPO_MAESTRO = {
     TIPO_PRODUCTO: 'PRODUCTO',
     TIPO_SERVICIO: 'MANTENIMIENTO',
     TIPO_GUIA: 'GUIA',
-    TIPO_INCIDENTE: 'INCIDENTE'
+    TIPO_INCIDENTE: 'INCIDENTE',
+    ESTADO_FACTURA: 'ESTADO_FACTURA',
+    MEDIO_PAGO: 'MEDIO_PAGO'
 }as const;
 
 export const ESTADO_SECCIONES = {
@@ -69,7 +71,7 @@ export const TIPO_FLOTA={
 export const INPUT_VAL={
     PLACA_PERU_REGEX : /^[A-Z0-9]{3}-[0-9]{3,4}$/,
     TEXTO_SEGURO_REGEX : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\-_.,\s]+$/,
-    ALPHA_NUMERICO_ESPECIAL : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_\/()[\]]*$/,
+    ALPHA_NUMERICO_ESPECIAL : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_\/()[\]:]*$/,
     ALPHA_NUMERICO_ESPACIOS : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]*$/,
     LETRAS_ESPACIO: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/,
     ALPHA_NUMERICO_GUION_SIN_ESPACIOS: /^[a-zA-Z0-9\-]*$/,
@@ -78,12 +80,15 @@ export const INPUT_VAL={
     PASSWORD_SIN_ESPACIOS: /^\S+$/,
     PASSWORD_AL_MENOS_UNA_LETRA: /[A-Za-z]/,
     PASSWORD_AL_MENOS_UN_NUMERO: /\d/,
-    PASSWORD_AL_MENOS_UN_ESPECIAL: /[^A-Za-z0-9]/
+    PASSWORD_AL_MENOS_UN_ESPECIAL: /[^A-Za-z0-9]/,
+    FACTURA_SERIE_PERU: /^[FB][A-Z0-9]{3}$/,
+    FACTURA_NUMERO_PERU: /^\d{1,8}$/,
+    NUMERO_OPERACION_PERU: /^[0-9]{6,20}$/
 }
 export const ERROR_MESSAGES = {
     PLACA_INVALIDA: 'Debe ser una placa válida (XXX-1234 o XXX-123)',
     TEXTO_SEGURO: 'Caracteres inválidos (Solo letras, números y ,._- )',
-    ALPHA_NUMERICO_ESPECIAL: 'Caracteres inválidos (Solo letras, números y ,._-/()[] )',
+    ALPHA_NUMERICO_ESPECIAL: 'Caracteres inválidos (Solo letras, números y ,._-/()[]: )',
     ALPHA_NUMERICO_ESPACIOS: 'Caracteres inválidos (Solo letras, números y espacios)',
     LETRAS_ESPACIO: 'Caracteres inválidos (Solo letras y espacios)',
     ALPHA_NUMERICO_GUION_SIN_ESPACIOS: 'Caracteres inválidos (Solo letras, números y guiones, sin espacios)',
@@ -92,10 +97,13 @@ export const ERROR_MESSAGES = {
     PASSWORD_SIN_ESPACIOS: 'El valor no debe contener espacios.',
     PASSWORD_AL_MENOS_UNA_LETRA: 'Debe incluir al menos una letra.',
     PASSWORD_AL_MENOS_UN_NUMERO: 'Debe incluir al menos un número.',
-    PASSWORD_AL_MENOS_UN_ESPECIAL: 'Debe incluir al menos un carácter especial.'
+    PASSWORD_AL_MENOS_UN_ESPECIAL: 'Debe incluir al menos un carácter especial.',
+    FACTURA_SERIE_INVALIDA: 'Formato de serie inválido (Ej: F001, B001)',
+    FACTURA_NUMERO_INVALIDO: 'El número debe contener solo dígitos (máx. 8)',
+    NUMERO_OPERACION_INVALIDO: 'El número de operación debe contener entre 6 y 20 dígitos numéricos'
 }
 
-export const ALPHA_ESPECIAL_ERROR_MSG = 'Caracteres inválidos (Solo letras, números y ,._-/()[] )';
+export const ALPHA_ESPECIAL_ERROR_MSG = 'Caracteres inválidos (Solo letras, números y ,._-/()[]: )';
 
 
 export const ROWS_PER_PAGE_OPTIONS = [5, 10, 25, 50];
