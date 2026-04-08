@@ -5,14 +5,14 @@ export const createFacturaSchema = z.object({
     clienteID: z.number().min(1, 'Cliente es requerido'),
     serie: z.string()
         .min(1, 'Serie es requerida')
-        .max(4, 'Máximo 4 caracteres')
+        .max(10, 'Máximo 10 caracteres')
         .toUpperCase()
         .refine(val => INPUT_VAL.FACTURA_SERIE_PERU.test(val), {
             message: ERROR_MESSAGES.FACTURA_SERIE_INVALIDA
         }),
     numero: z.string()
         .min(1, 'Número es requerido')
-        .max(8, 'Máximo 8 caracteres')
+        .max(20, 'Máximo 20 caracteres')
         .refine(val => INPUT_VAL.FACTURA_NUMERO_PERU.test(val), {
             message: ERROR_MESSAGES.FACTURA_NUMERO_INVALIDO
         }),
