@@ -1,162 +1,81 @@
-import { useState } from 'react';
-import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, IconButton, Paper, Collapse, useTheme, alpha } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, ExpandLess, ExpandMore } from '@mui/icons-material';
+import React from 'react';
+import { TableCell } from '@mui/material';
 import { formatCurrency } from '@/shared/utils/format-utils';
-import { useDeleteFacturaDetalle } from '../../hooks/useFacturaDetalleCrud';
-import type { Factura } from '@/entities/factura/model/types';
-import { FacturaDetalleForm } from './FacturaDetalleForm';
-import { useQueryClient } from '@tanstack/react-query';
-import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
-import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
+import type { FacturaDetalle } from '@/entities/factura/model/types';
+import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
+import { TableActions } from '@/shared/components/ui/TableActions';
 
 interface FacturaDetalleListProps {
-    factura: Factura;
+    items: FacturaDetalle[];
+    total: number;
+    page: number;
+    rowsPerPage: number;
+    isLoading: boolean;
+    isReadOnly: boolean;
+    isDeleting: boolean;
+    onPageChange: (event: unknown, newPage: number) => void;
+    onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onDelete: (id: number) => void;
 }
 
-export function FacturaDetalleList({ factura }: FacturaDetalleListProps) {
-    const [isFormOpen, setIsFormOpen] = useState(false);
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [detalleToDelete, setDetalleToDelete] = useState<number | null>(null);
-    const deleteMutation = useDeleteFacturaDetalle();
-    const queryClient = useQueryClient();
-    const theme = useTheme();
+export function FacturaDetalleList({
+    items,
+    total,
+    page,
+    rowsPerPage,
+    isLoading,
+    isReadOnly,
+    isDeleting,
+    onPageChange,
+    onRowsPerPageChange,
+    onDelete
+}: FacturaDetalleListProps) {
 
-    const handleDeleteClick = (id: number) => {
-        setDetalleToDelete(id);
-        setDeleteDialogOpen(true);
-    };
+    const columns: Column[] = [
+        { id: 'viaje', label: 'Viaje' },
+        { id: 'descripcion', label: 'Descripción' },
+        { id: 'subtotal', label: 'SubTotal', align: 'right' },
+        { id: 'igv', label: 'IGV', align: 'right' },
+        { id: 'total', label: 'Total', align: 'right' },
+        { id: 'acciones', label: 'Acciones', align: 'center' }
+    ];
 
-    const handleConfirmDelete = async () => {
-        if (detalleToDelete !== null) {
-            await deleteMutation.mutateAsync(detalleToDelete, {
-                onSuccess: () => {
-                    queryClient.invalidateQueries({ queryKey: ['factura', factura.facturaID] });
-                    setDeleteDialogOpen(false);
-                    setDetalleToDelete(null);
-                }
-            });
-        }
-    };
-
-    const detalles = factura.facturaDetalles || [];
-    const isEditing = isFormOpen;
+    const renderRow = (detalle: FacturaDetalle) => (
+        <>
+            <TableCell>{detalle.viajeID}</TableCell>
+            <TableCell>{detalle.descripcion || '-'}</TableCell>
+            <TableCell align="right">{formatCurrency(detalle.subTotal, detalle.moneda?.simbolo)}</TableCell>
+            <TableCell align="right">{formatCurrency(detalle.igv, detalle.moneda?.simbolo)}</TableCell>
+            <TableCell align="right"><strong>{formatCurrency(detalle.total, detalle.moneda?.simbolo)}</strong></TableCell>
+            <TableCell align="center">
+                <TableActions
+                    onDelete={isReadOnly ? undefined : () => onDelete(detalle.facturaDetalleID)}
+                    disableDelete={isDeleting}
+                    disableEdit={isDeleting}
+                    disableView={isDeleting}
+                />
+            </TableCell>
+        </>
+    );
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
-            <Paper
-                elevation={0}
-                sx={{
-                    p: 0,
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 3,
-                    bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02),
-                    overflow: 'hidden'
-                }}
-            >
-                <Box
-                    onClick={() => {
-                        if (factura.estadoID === ESTADO_FACTURA_ID.EMITIDO || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO) return;
-                        setIsFormOpen((prev) => !prev);
-                    }}
-                    sx={{
-                        px: 3,
-                        py: 2,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        borderBottom: isFormOpen ? `1px solid ${theme.palette.divider}` : 'none',
-                        cursor: (factura.estadoID === ESTADO_FACTURA_ID.EMITIDO || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO) ? 'default' : 'pointer'
-                    }}
-                >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ 
-                            bgcolor: theme.palette.primary.main, 
-                            color: 'white', 
-                            p: 0.5, 
-                            borderRadius: '50%', 
-                            display: 'flex' 
-                        }}>
-                            <AddIcon fontSize="small" />
-                        </Box>
-                        <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
-                            Agregar Detalle
-                        </Typography>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <IconButton
-                            size="small"
-                            disabled={factura.estadoID === ESTADO_FACTURA_ID.EMITIDO || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO}
-                        >
-                            {isFormOpen ? <ExpandLess /> : <ExpandMore />}
-                        </IconButton>
-                    </Box>
-                </Box>
-                <Collapse in={isFormOpen} unmountOnExit>
-                    <Box sx={{ p: 0 }}>
-                        <FacturaDetalleForm
-                            facturaId={factura.facturaID}
-                            monedaId={factura.monedaID}
-                            clienteId={factura.clienteID}
-                            onClose={() => setIsFormOpen(false)}
-                        />
-                    </Box>
-                </Collapse>
-            </Paper>
-
-            <Box sx={{ overflowX: 'auto' }}>
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Viaje</TableCell>
-                            <TableCell>Descripción</TableCell>
-                            <TableCell align="right">SubTotal</TableCell>
-                            <TableCell align="right">IGV</TableCell>
-                            <TableCell align="right">Total</TableCell>
-                            <TableCell align="center">Acciones</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {detalles.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={6} align="center">No hay detalles registrados</TableCell>
-                            </TableRow>
-                        ) : (
-                            detalles.map((detalle) => (
-                                <TableRow key={detalle.facturaDetalleID}>
-                                    <TableCell>{detalle.viajeID}</TableCell>
-                                    <TableCell>{detalle.descripcion || '-'}</TableCell>
-                                    <TableCell align="right">{formatCurrency(detalle.subTotal, detalle.moneda?.simbolo)}</TableCell>
-                                    <TableCell align="right">{formatCurrency(detalle.igv, detalle.moneda?.simbolo)}</TableCell>
-                                    <TableCell align="right"><strong>{formatCurrency(detalle.total, detalle.moneda?.simbolo)}</strong></TableCell>
-                                    <TableCell align="center">
-                                        <IconButton 
-                                            size="small" 
-                                            color="error" 
-                                            onClick={() => handleDeleteClick(detalle.facturaDetalleID)}
-                                        disabled={deleteMutation.isPending || factura.estadoID === ESTADO_FACTURA_ID.EMITIDO || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO}
-                                    >
-                                            <DeleteIcon fontSize="small" />
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </Box>
-
-            <ConfirmDialog
-                open={deleteDialogOpen}
-                title="Eliminar Detalle"
-                content="¿Está seguro que desea eliminar este detalle? Esta acción no se puede deshacer."
-                onClose={() => {
-                    setDeleteDialogOpen(false);
-                    setDetalleToDelete(null);
-                }}
-                onConfirm={handleConfirmDelete}
-                confirmText="Eliminar"
-            />
-        </Box>
+        <SharedTable
+            data={{
+                items: items,
+                total: total,
+                page: page + 1,
+                size: rowsPerPage,
+                totalPages: Math.ceil(total / rowsPerPage)
+            }}
+            isLoading={isLoading}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={onPageChange}
+            onRowsPerPageChange={onRowsPerPageChange}
+            columns={columns}
+            keyExtractor={(item) => item.facturaDetalleID}
+            renderRow={renderRow}
+            emptyMessage="No hay detalles registrados"
+        />
     );
 }

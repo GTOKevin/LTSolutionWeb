@@ -17,7 +17,9 @@ export const TIPO_MAESTRO = {
 export const ESTADO_SECCIONES = {
     USUARIO: 'USUARIO',
     MANTENIMIENTO:'MANTENIMIENTO',
-    VIAJE:'VIAJE'
+    VIAJE:'VIAJE',
+    FACTURA:'FACTURA',
+    FACTURA_PAGO:'FACTURA_PAGO'
 } as const;
 
 export const TIPOS_COMBUSTIBLE = [

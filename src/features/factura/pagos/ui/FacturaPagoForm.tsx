@@ -15,6 +15,8 @@ import { useCreateFacturaPago } from '../../hooks/useFacturaPagoCrud';
 import { maestroApi } from '@/shared/api/maestro.api';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
 import { monedaApi } from '@/shared/api/moneda.api';
+import { estadoApi } from '@/shared/api/estado.api';
+import { ESTADO_SECCIONES, TIPO_MAESTRO } from '@/shared/constants/constantes';
 
 interface FacturaPagoFormProps {
     onClose: () => void;
@@ -55,12 +57,12 @@ export function FacturaPagoForm({ onClose, facturaId, monedaId, maxAmount }: Fac
 
     const { data: tiposPago } = useQuery({
         queryKey: ['maestros', 'tipo-pago'],
-        queryFn: () => maestroApi.getSelect('TipoPago')
+        queryFn: () => maestroApi.getSelect('',TIPO_MAESTRO.MEDIO_PAGO,10)
     });
 
     const { data: estadosPago } = useQuery({
         queryKey: ['estados', 'pago'],
-        queryFn: () => maestroApi.getSelect('EstadoPago') // Asumiendo que hay una sección EstadoPago o usar endpoint de estados
+        queryFn: () => estadoApi.getSelect('',10,ESTADO_SECCIONES.FACTURA_PAGO) // Asumiendo que hay una sección EstadoPago o usar endpoint de estados
     });
 
     const { data: monedas } = useQuery({

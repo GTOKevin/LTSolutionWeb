@@ -1,6 +1,7 @@
 import { createGenericCrudHooks } from '@/shared/hooks/useGenericCrud';
 import { facturaApi } from '@/entities/factura/api/factura.api';
 import type { CreateFacturaPagoDto } from '@/entities/factura/model/types';
+import { useQuery } from '@tanstack/react-query';
 
 // Adapt the API to match the CrudApi interface
 const pagosApiAdapter = {
@@ -21,11 +22,19 @@ export const {
 } = createGenericCrudHooks(
     pagosApiAdapter,
     'Pago de Factura',
-    // Invalidate the specific factura query
+    // Invalidate the specific factura query and its payments
     (args) => {
         if (args && typeof args === 'object' && 'facturaId' in args) {
-            return [['factura', args.facturaId], ['facturas']];
+            return [['factura', args.facturaId], ['facturas'], ['facturaPagos', args.facturaId]];
         }
-        return [['facturas']]; // fallback if we don't have facturaId (like on delete)
+        return [['facturas'], ['facturaPagos'], ['factura']]; // fallback if we don't have facturaId (like on delete)
     }
 );
+
+export const useFacturaPagos = (facturaId?: number) => {
+    return useQuery({
+        queryKey: ['facturaPagos', facturaId],
+        queryFn: () => facturaApi.getPagosByFacturaId(facturaId!),
+        enabled: !!facturaId
+    });
+};

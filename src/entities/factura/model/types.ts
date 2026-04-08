@@ -2,6 +2,8 @@ import type { PagedFilters, PagedResponse } from '@/shared/model/types';
 import type { Cliente } from '@/entities/cliente/model/types';
 import type { Moneda } from '@/entities/moneda/model/types';
 import type { Viaje } from '@/entities/viaje/model/types';
+import type { Estado } from '@/shared/model/estado.types';
+import type { TipoMaestro } from '@/shared/model/maestro.types';
 
 export interface FacturaDetalle {
     facturaDetalleID: number;
@@ -28,14 +30,8 @@ export interface FacturaPago {
     numeroOperacion: string | null;
     observacion: string | null;
     moneda?: Moneda;
-    tipoPago?: {
-        tipoMaestroID: number;
-        descripcion: string;
-    };
-    estado?: {
-        estadoID: number;
-        descripcion: string;
-    };
+    tipoPago?: TipoMaestro;
+    estado?: Estado;
 }
 
 export interface Factura {
@@ -56,10 +52,7 @@ export interface Factura {
     activo: boolean;
     cliente?: Cliente;
     moneda?: Moneda;
-    estado?: {
-        estadoID: number;
-        descripcion: string;
-    };
+    estado?: Estado;
     facturaDetalles?: FacturaDetalle[];
     facturaPagos?: FacturaPago[];
 }

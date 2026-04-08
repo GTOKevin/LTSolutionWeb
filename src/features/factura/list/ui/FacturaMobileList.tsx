@@ -61,7 +61,7 @@ export function FacturaMobileList({
                             </Typography>
                         </Box>
                         <Chip 
-                            label={row.estado?.descripcion || 'N/A'} 
+                            label={row.estado?.nombre || 'N/A'} 
                             color={row.estadoID === ESTADO_FACTURA_ID.REGISTRADA ? 'warning' : row.estadoID === ESTADO_FACTURA_ID.EMITIDO ? 'success' : 'error'}
                             size="small" 
                         />
