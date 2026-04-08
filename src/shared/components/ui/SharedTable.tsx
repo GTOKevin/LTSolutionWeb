@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
     Paper,
     Table,
@@ -12,6 +12,7 @@ import {
     type SxProps,
     type Theme
 } from '@mui/material';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 import type { PagedResponse } from '@/shared/model/types';
@@ -37,6 +38,7 @@ interface SharedTableProps<T> {
     renderRow: (item: T) => React.ReactNode;
     emptyMessage?: string;
     containerSx?: SxProps<Theme>;
+    rowHeight?: number; // Optional row height for virtualization
 }
 
 export function SharedTable<T>({
@@ -50,12 +52,19 @@ export function SharedTable<T>({
     keyExtractor,
     renderRow,
     emptyMessage = "No se encontraron registros",
-    containerSx
+    containerSx,
+    rowHeight = 53
 }: SharedTableProps<T>) {
     const theme = useTheme();
+    const parentRef = useRef<HTMLDivElement>(null);
+    const items = data?.items || [];
 
-
-
+    const rowVirtualizer = useVirtualizer({
+        count: items.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => rowHeight,
+        overscan: 5,
+    });
 
     return (
         <Paper sx={{ 
@@ -65,13 +74,10 @@ export function SharedTable<T>({
             border: `1px solid ${theme.palette.divider}`,
             borderRadius: 3,
             boxShadow: theme.shadows[1],
-            // Removed flex: 1 and minHeight: 0 to allow natural growth if parent allows it
-            // or keep it if parent constrains it. 
-            // If parent has height: auto, this will grow.
             ...containerSx
         }}>
-            <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
-                <Table stickyHeader>
+            <TableContainer ref={parentRef} sx={{ flex: 1, overflow: 'auto' }}>
+                <Table stickyHeader style={{ tableLayout: 'fixed' }}>
                     <TableHead>
                         <TableRow>
                             {columns.map((column) => (
@@ -80,7 +86,7 @@ export function SharedTable<T>({
                                     align={column.align || 'left'}
                                     style={{ width: column.width, minWidth: column.minWidth }}
                                     sx={{ 
-                                        backgroundColor: 'theme.palette.grey[100]',
+                                        backgroundColor: theme.palette.grey[100],
                                         color: 'text.secondary', 
                                         fontWeight: 'bold', 
                                         textTransform: 'uppercase', 
@@ -92,31 +98,50 @@ export function SharedTable<T>({
                             ))}
                         </TableRow>
                     </TableHead>
-                    <TableBody>
+                    <TableBody 
+                        style={{ 
+                            height: isLoading || items.length === 0 ? 'auto' : `${rowVirtualizer.getTotalSize()}px`, 
+                            position: 'relative' 
+                        }}
+                    >
                         {isLoading ? (
                             <TableRow>
                                 <TableCell colSpan={columns.length} align="center" sx={{ p: 0 }}>
                                     <TableLoading />
                                 </TableCell>
                             </TableRow>
-                        ) : data?.items.map((item) => (
-                            <TableRow 
-                                key={keyExtractor(item)} 
-                                hover
-                                sx={{ 
-                                    '&:hover .actions-group': { opacity: 1 },
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                {renderRow(item)}
-                            </TableRow>
-                        ))}
-                        {!isLoading && data?.items.length === 0 && (
+                        ) : items.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={columns.length} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                                     {emptyMessage}
                                 </TableCell>
                             </TableRow>
+                        ) : (
+                            rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                                const item = items[virtualRow.index];
+                                return (
+                                    <TableRow 
+                                        key={keyExtractor(item)} 
+                                        hover
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: `${virtualRow.size}px`,
+                                            transform: `translateY(${virtualRow.start}px)`
+                                        }}
+                                        sx={{ 
+                                            '&:hover .actions-group': { opacity: 1 },
+                                            cursor: 'pointer',
+                                            display: 'flex', // Necesario para que las celdas se alineen en absolute
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        {renderRow(item)}
+                                    </TableRow>
+                                );
+                            })
                         )}
                     </TableBody>
                 </Table>
