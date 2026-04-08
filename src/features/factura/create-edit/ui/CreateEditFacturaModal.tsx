@@ -25,8 +25,9 @@ import { monedaApi } from '@/shared/api/moneda.api';
 import { estadoApi } from '@/shared/api/estado.api';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
-import { FacturaDetalleList } from '../../detalles/ui/FacturaDetalleList';
-import { FacturaPagoList } from '../../pagos/ui/FacturaPagoList';
+import { FacturaDetalles } from '../../detalles/ui/Index';
+import { FacturaPagos } from '../../pagos/ui/Index';
+import { ESTADO_SECCIONES } from '@/shared/constants/constantes';
 
 interface CreateEditFacturaModalProps {
     open: boolean;
@@ -107,7 +108,7 @@ export function CreateEditFacturaModal({
 
     const { data: estados } = useQuery({
         queryKey: ['estados', 'factura'],
-        queryFn: () => estadoApi.getSelect('Factura')
+        queryFn: () => estadoApi.getSelect('',10,ESTADO_SECCIONES.FACTURA)
     });
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
@@ -292,7 +293,7 @@ export function CreateEditFacturaModal({
                                                 label="Moneda"
                                                 error={!!errors.monedaID}
                                                 helperText={errors.monedaID?.message}
-                                                disabled={isEdit && (factura?.facturaDetalles?.length ?? 0) > 0} 
+                                                disabled={isEdit} 
                                             >
                                                 <MenuItem value={0} disabled>Seleccione moneda</MenuItem>
                                                 {monedas?.data?.map((moneda) => (
@@ -335,14 +336,14 @@ export function CreateEditFacturaModal({
                 {isEdit && factura && (
                     <>
                         <TabPanel value={activeTab} index={1} name="factura-detalles">
-                            <Box sx={{ p: 3 }}>
-                                <FacturaDetalleList factura={factura} />
+                            <Box sx={{ p: 0 }}>
+                                <FacturaDetalles factura={factura} />
                             </Box>
                         </TabPanel>
                         
                         <TabPanel value={activeTab} index={2} name="factura-pagos">
-                            <Box sx={{ p: 3 }}>
-                                <FacturaPagoList factura={factura} />
+                            <Box sx={{ p: 0 }}>
+                                <FacturaPagos factura={factura} />
                             </Box>
                         </TabPanel>
                     </>

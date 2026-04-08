@@ -1,169 +1,94 @@
-import { useState } from 'react';
-import { Box, Button, Typography, Table, TableBody, TableCell, TableHead, TableRow, IconButton, Paper, Collapse, useTheme, alpha } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, ExpandLess, ExpandMore } from '@mui/icons-material';
-import type { Factura } from '@/entities/factura/model/types';
+import React from 'react';
+import { TableCell, Chip } from '@mui/material';
+import type { FacturaPago } from '@/entities/factura/model/types';
 import { formatCurrency } from '@/shared/utils/format-utils';
 import { formatDateLong } from '@/shared/utils/date-utils';
-import { useDeleteFacturaPago } from '../../hooks/useFacturaPagoCrud';
-import { FacturaPagoForm } from './FacturaPagoForm';
-import { useQueryClient } from '@tanstack/react-query';
-import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
-import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
+import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
+import { TableActions } from '@/shared/components/ui/TableActions';
 
 interface FacturaPagoListProps {
-    factura: Factura;
+    items: FacturaPago[];
+    total: number;
+    page: number;
+    rowsPerPage: number;
+    isLoading: boolean;
+    isReadOnly: boolean;
+    isDeleting: boolean;
+    onPageChange: (event: unknown, newPage: number) => void;
+    onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onDelete: (id: number) => void;
 }
 
-export function FacturaPagoList({ factura }: FacturaPagoListProps) {
-    const [isFormOpen, setIsFormOpen] = useState(false);
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [pagoToDelete, setPagoToDelete] = useState<number | null>(null);
-    const deleteMutation = useDeleteFacturaPago();
-    const queryClient = useQueryClient();
-    const theme = useTheme();
+export function FacturaPagoList({
+    items,
+    total,
+    page,
+    rowsPerPage,
+    isLoading,
+    isReadOnly,
+    isDeleting,
+    onPageChange,
+    onRowsPerPageChange,
+    onDelete
+}: FacturaPagoListProps) {
 
-    const isEditing = false; // Just for theme alpha, as there is no edit yet
-    
-    const handleDeleteClick = (id: number) => {
-        setPagoToDelete(id);
-        setDeleteDialogOpen(true);
-    };
+    const columns: Column[] = [
+        { id: 'fecha', label: 'Fecha' },
+        { id: 'acreditacion', label: 'Acreditación' },
+        { id: 'tipo', label: 'Tipo' },
+        { id: 'estado', label: 'Estado' },
+        { id: 'operacion', label: 'Operación' },
+        { id: 'observacion', label: 'Observación' },
+        { id: 'monto', label: 'Monto', align: 'right' },
+        { id: 'acciones', label: 'Acciones', align: 'center' }
+    ];
 
-    const handleConfirmDelete = async () => {
-        if (pagoToDelete !== null) {
-            await deleteMutation.mutateAsync(pagoToDelete, {
-                onSuccess: () => {
-                    queryClient.invalidateQueries({ queryKey: ['factura', factura.facturaID] });
-                    setDeleteDialogOpen(false);
-                    setPagoToDelete(null);
-                }
-            });
-        }
-    };
-
-    const pagos = factura.facturaPagos || [];
+    const renderRow = (pago: FacturaPago) => (
+        <>
+            <TableCell>{formatDateLong(pago.fechaPago)}</TableCell>
+            <TableCell>{pago.fechaAcreditacion ? formatDateLong(pago.fechaAcreditacion) : '-'}</TableCell>
+            <TableCell>{pago.tipoPago?.nombre || '-'}</TableCell>
+            <TableCell>
+                <Chip 
+                    label={pago.estado?.nombre || '-'} 
+                    size="small" 
+                    color={pago.estado?.nombre === 'Acreditado' ? 'success' : 'default'}
+                />
+            </TableCell>
+            <TableCell>{pago.numeroOperacion || '-'}</TableCell>
+            <TableCell>{pago.observacion || '-'}</TableCell>
+            <TableCell align="right">
+                <strong>{formatCurrency(pago.montoAbonado, pago.moneda?.simbolo)}</strong>
+            </TableCell>
+            <TableCell align="center">
+                <TableActions
+                    onDelete={isReadOnly ? undefined : () => onDelete(pago.facturaPagoID)}
+                    disableDelete={isDeleting}
+                    disableEdit={isDeleting}
+                    disableView={isDeleting}
+                />
+            </TableCell>
+        </>
+    );
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Paper
-                elevation={0}
-                sx={{
-                    p: 0,
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 3,
-                    bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02),
-                    overflow: 'hidden'
-                }}
-            >
-                <Box
-                    onClick={() => {
-                        if (factura.saldoPendiente <= 0 || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO) return;
-                        setIsFormOpen((prev) => !prev);
-                    }}
-                    sx={{
-                        px: 3,
-                        py: 2,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        borderBottom: isFormOpen ? `1px solid ${theme.palette.divider}` : 'none',
-                        cursor: (factura.saldoPendiente <= 0 || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO) ? 'default' : 'pointer'
-                    }}
-                >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ 
-                            bgcolor: theme.palette.primary.main, 
-                            color: 'white', 
-                            p: 0.5, 
-                            borderRadius: '50%', 
-                            display: 'flex' 
-                        }}>
-                            <AddIcon fontSize="small" />
-                        </Box>
-                        <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
-                            Agregar Pago
-                        </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <IconButton
-                            size="small"
-                            disabled={factura.saldoPendiente <= 0 || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO}
-                        >
-                            {isFormOpen ? <ExpandLess /> : <ExpandMore />}
-                        </IconButton>
-                    </Box>
-                </Box>
-                <Collapse in={isFormOpen} unmountOnExit>
-                    <Box sx={{ p: 0 }}>
-                        <FacturaPagoForm
-                            onClose={() => setIsFormOpen(false)}
-                            facturaId={factura.facturaID}
-                            monedaId={factura.monedaID}
-                            maxAmount={factura.saldoPendiente}
-                        />
-                    </Box>
-                </Collapse>
-            </Paper>
-
-            <Box sx={{ overflowX: 'auto' }}>
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Fecha</TableCell>
-                            <TableCell>Acreditación</TableCell>
-                            <TableCell>Tipo</TableCell>
-                            <TableCell>Estado</TableCell>
-                            <TableCell>Operación</TableCell>
-                            <TableCell>Observación</TableCell>
-                            <TableCell align="right">Monto</TableCell>
-                            <TableCell align="center">Acciones</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {pagos.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={8} align="center">No hay pagos registrados</TableCell>
-                            </TableRow>
-                        ) : (
-                            pagos.map((pago) => (
-                                <TableRow key={pago.facturaPagoID}>
-                                    <TableCell>{formatDateLong(pago.fechaPago)}</TableCell>
-                                    <TableCell>{pago.fechaAcreditacion ? formatDateLong(pago.fechaAcreditacion) : '-'}</TableCell>
-                                    <TableCell>{pago.tipoPago?.descripcion}</TableCell>
-                                    <TableCell>{pago.estado?.descripcion || '-'}</TableCell>
-                                    <TableCell>{pago.numeroOperacion || '-'}</TableCell>
-                                    <TableCell>{pago.observacion || '-'}</TableCell>
-                                    <TableCell align="right">
-                                        <strong>{formatCurrency(pago.montoAbonado, pago.moneda?.simbolo)}</strong>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <IconButton 
-                                            size="small" 
-                                            color="error" 
-                                            onClick={() => handleDeleteClick(pago.facturaPagoID)}
-                                        disabled={deleteMutation.isPending || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO}
-                                    >
-                                            <DeleteIcon fontSize="small" />
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </Box>
-
-            <ConfirmDialog
-                open={deleteDialogOpen}
-                title="Eliminar Pago"
-                content="¿Está seguro que desea eliminar este pago? Esta acción no se puede deshacer."
-                onClose={() => {
-                    setDeleteDialogOpen(false);
-                    setPagoToDelete(null);
-                }}
-                onConfirm={handleConfirmDelete}
-                confirmText="Eliminar"
-            />
-        </Box>
+        <SharedTable
+            data={{
+                items: items,
+                total: total,
+                page: page + 1,
+                size: rowsPerPage,
+                totalPages: Math.ceil(total / rowsPerPage)
+            }}
+            isLoading={isLoading}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={onPageChange}
+            onRowsPerPageChange={onRowsPerPageChange}
+            columns={columns}
+            keyExtractor={(item) => item.facturaPagoID}
+            renderRow={renderRow}
+            emptyMessage="No hay pagos registrados"
+        />
     );
 }

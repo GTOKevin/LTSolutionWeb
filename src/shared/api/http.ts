@@ -4,10 +4,11 @@ import { useAuthStore } from '../store/auth.store';
 import { authApi } from '@entities/auth/api/auth.api';
 
 export interface ApiError {
-    title: string;
-    status: number;
-    detail: string;
-    errors?: Record<string, string[]>;
+    message: string;
+    success: boolean;
+    data: any;
+    errors?: any;
+    detail?: string; // Kept for backwards compatibility
 }
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -59,7 +60,19 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 // Response interceptor for error handling
 httpClient.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // Unwrap the new ApiResponse format if it exists
+        if (response.data && typeof response.data === 'object' && 'success' in response.data) {
+            const apiResponse = response.data;
+            if (apiResponse.success) {
+                // Overwrite response.data with the actual data payload
+                response.data = apiResponse.data;
+            } else {
+                return Promise.reject(new Error(apiResponse.message || 'API Error'));
+            }
+        }
+        return response;
+    },
     async (error: AxiosError<ApiError>) => {
         const originalRequest = error.config as CustomAxiosRequestConfig;
 

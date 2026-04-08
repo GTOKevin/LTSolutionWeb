@@ -6,7 +6,9 @@ import type {
     CreateFacturaDto, 
     UpdateFacturaDto,
     CreateFacturaDetalleDto,
-    CreateFacturaPagoDto
+    CreateFacturaPagoDto,
+    FacturaDetalle,
+    FacturaPago
 } from '../model/types';
 
 export const facturaApi = {
@@ -23,6 +25,16 @@ export const facturaApi = {
 
     getById: async (id: number) => {
         const response = await http.get<Factura>(`/factura/${id}`);
+        return response.data;
+    },
+
+    getDetallesByFacturaId: async (id: number) => {
+        const response = await http.get<FacturaDetalle[]>(`/factura/${id}/detalles`);
+        return response.data;
+    },
+
+    getPagosByFacturaId: async (id: number) => {
+        const response = await http.get<FacturaPago[]>(`/factura/${id}/pagos`);
         return response.data;
     },
 

@@ -79,7 +79,6 @@ export function FacturaDetalleForm({ onClose, facturaId, monedaId, clienteId }: 
         const origen = viaje.origen?.departamento || '';
         const destino = viaje.destino?.departamento || '';
         
-        console.log("viaje select:", viaje);
 
         const mercaderias = viaje.viajeMercaderia?.map(m => m.descripcion || m.mercaderia?.descripcion || '').join(', ') || 'Varios';
         const peso = viaje.peso ? `${viaje.peso} ${viaje.tipoPeso?.nombre || ''}` : '';
@@ -123,7 +122,6 @@ export function FacturaDetalleForm({ onClose, facturaId, monedaId, clienteId }: 
                                         )
                                     }
                                 }}
-                                // Remove select and related props if any were left
                             />
                         )}
                     />

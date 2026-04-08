@@ -88,7 +88,7 @@ export function FacturaTable({
                     </TableCell>
                     <TableCell>
                         <Chip 
-                            label={item.estado?.descripcion || 'N/A'} 
+                            label={item.estado?.nombre || 'N/A'} 
                             color={item.estadoID === ESTADO_FACTURA_ID.REGISTRADA ? 'warning' : item.estadoID === ESTADO_FACTURA_ID.EMITIDO ? 'success' : 'error'}
                             size="small" 
                             variant="filled"
