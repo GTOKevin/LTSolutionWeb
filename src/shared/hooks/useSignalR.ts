@@ -32,18 +32,27 @@ export function useSignalR() {
     }, [token]);
 
     useEffect(() => {
-        if (connection) {
+        if (!connection) return;
+
+        const handleViajeActualizado = (data: { ViajeId: number, EstadoId: number, Message: string }) => {
+            // Invalidate queries to fetch the latest state
+            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.lists() });
+            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.detail(data.ViajeId) });
+        };
+
+        connection.on('ViajeActualizado', handleViajeActualizado);
+
+        if (connection.state === 'Disconnected') {
             connection.start()
                 .then(() => {
-                    console.log('SignalR Connected!');
-
-                    connection.on('ViajeActualizado', (data: { ViajeId: number, EstadoId: number, Message: string }) => {
-                        queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.lists() });
-                        queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.detail(data.ViajeId) });
-                    });
+                    logger.log('SignalR Connected!');
                 })
                 .catch(e => logger.error('Connection failed: ', e));
         }
+
+        return () => {
+            connection.off('ViajeActualizado', handleViajeActualizado);
+        };
     }, [connection, queryClient, showToast]);
 
     return connection;
