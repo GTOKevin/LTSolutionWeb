@@ -4,9 +4,11 @@ import { Header } from '@widgets/header/ui/Header';
 import { Sidebar, DRAWER_WIDTH } from '@widgets/sidebar/ui/Sidebar';
 import { BottomNav } from './BottomNav';
 import { SessionExpiredModal } from '@shared/components/ui/SessionExpiredModal';
+import { useSignalR } from '@/shared/hooks/useSignalR';
 
 export function AppLayout() {
     const theme = useTheme();
+    useSignalR();
     
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: theme.palette.mode === 'dark' ? '#111418' : '#f6f7f8' }}>
