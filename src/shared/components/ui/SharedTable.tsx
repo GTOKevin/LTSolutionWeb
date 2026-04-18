@@ -77,7 +77,7 @@ export function SharedTable<T>({
             ...containerSx
         }}>
             <TableContainer ref={parentRef} sx={{ flex: 1, overflow: 'auto' }}>
-                <Table stickyHeader style={{ tableLayout: 'fixed' }}>
+                <Table stickyHeader>
                     <TableHead>
                         <TableRow>
                             {columns.map((column) => (
@@ -98,12 +98,7 @@ export function SharedTable<T>({
                             ))}
                         </TableRow>
                     </TableHead>
-                    <TableBody 
-                        style={{ 
-                            height: isLoading || items.length === 0 ? 'auto' : `${rowVirtualizer.getTotalSize()}px`, 
-                            position: 'relative' 
-                        }}
-                    >
+                    <TableBody>
                         {isLoading ? (
                             <TableRow>
                                 <TableCell colSpan={columns.length} align="center" sx={{ p: 0 }}>
@@ -117,31 +112,33 @@ export function SharedTable<T>({
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                                const item = items[virtualRow.index];
-                                return (
-                                    <TableRow 
-                                        key={keyExtractor(item)} 
-                                        hover
-                                        style={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            left: 0,
-                                            width: '100%',
-                                            height: `${virtualRow.size}px`,
-                                            transform: `translateY(${virtualRow.start}px)`
-                                        }}
-                                        sx={{ 
-                                            '&:hover .actions-group': { opacity: 1 },
-                                            cursor: 'pointer',
-                                            display: 'flex', // Necesario para que las celdas se alineen en absolute
-                                            alignItems: 'center'
-                                        }}
-                                    >
-                                        {renderRow(item)}
+                            <>
+                                {rowVirtualizer.getVirtualItems().length > 0 && rowVirtualizer.getVirtualItems()[0].start > 0 && (
+                                    <TableRow>
+                                        <TableCell style={{ height: `${rowVirtualizer.getVirtualItems()[0].start}px`, padding: 0, border: 0 }} colSpan={columns.length} />
                                     </TableRow>
-                                );
-                            })
+                                )}
+                                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                                    const item = items[virtualRow.index];
+                                    return (
+                                        <TableRow 
+                                            key={keyExtractor(item)} 
+                                            hover
+                                            sx={{ 
+                                                '&:hover .actions-group': { opacity: 1 },
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            {renderRow(item)}
+                                        </TableRow>
+                                    );
+                                })}
+                                {rowVirtualizer.getVirtualItems().length > 0 && rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end < rowVirtualizer.getTotalSize() && (
+                                    <TableRow>
+                                        <TableCell style={{ height: `${rowVirtualizer.getTotalSize() - rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end}px`, padding: 0, border: 0 }} colSpan={columns.length} />
+                                    </TableRow>
+                                )}
+                            </>
                         )}
                     </TableBody>
                 </Table>
