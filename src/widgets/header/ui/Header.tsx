@@ -4,14 +4,12 @@ import {
     Toolbar,
     Box,
     InputBase,
-    Badge,
     Typography,
     useTheme,
     alpha
 } from '@mui/material';
 import {
     Search as SearchIcon,
-    Notifications as NotificationsIcon,
     DarkMode as DarkModeIcon,
     LightMode as LightModeIcon,
     ChevronRight as ChevronRightIcon,
@@ -19,9 +17,10 @@ import {
 } from '@mui/icons-material';
 import { useThemeStore } from '@shared/store/theme.store';
 import { DRAWER_WIDTH } from '@widgets/sidebar/ui/Sidebar';
-import { useLocation, } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
+import { NotificationBell } from './NotificationBell';
 
 export function Header() {
     const { mode, toggleMode } = useThemeStore();
@@ -165,23 +164,7 @@ export function Header() {
                     />
 
                     {/* Notifications */}
-                    <IconButton
-                        size="small"
-                        sx={{
-                            p: 1,
-                            borderRadius: 2,
-                            color: 'text.secondary',
-                            '&:hover': { bgcolor: alpha(theme.palette.text.primary, 0.05) }
-                        }}
-                    >
-                        <Badge 
-                            variant="dot" 
-                            color="error"
-                            sx={{ '& .MuiBadge-badge': { top: 4, right: 4, border: `2px solid ${theme.palette.background.paper}` } }}
-                        >
-                            <NotificationsIcon sx={{ fontSize: 22 }} />
-                        </Badge>
-                    </IconButton>
+                    <NotificationBell />
 
                     {/* Theme Toggle */}
                     <IconButton

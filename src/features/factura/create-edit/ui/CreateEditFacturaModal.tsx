@@ -125,7 +125,7 @@ export function CreateEditFacturaModal({
     return (
         <Dialog 
             open={open} 
-            onClose={(e, reason) => {
+            onClose={(_, reason) => {
                 if (reason === 'backdropClick') return;
                 onClose();
             }} 
@@ -222,7 +222,7 @@ export function CreateEditFacturaModal({
                                             <FormDatePicker
                                                 label="Fecha de Emisión"
                                                 value={field.value}
-                                                onChange={field.onChange}
+                                                onChange={(value) => field.onChange(value)}
                                                 error={!!errors.fechaEmision}
                                                 fullWidth
                                             />
