@@ -2,7 +2,6 @@ import {
     Dashboard as DashboardIcon,
     Business as BusinessIcon,
     Groups as GroupsIcon,
-    Report as ReportIcon,
     Receipt as ReceiptIcon,
     LocalShipping as LocalShippingIcon,
     AltRoute as AltRouteIcon,
