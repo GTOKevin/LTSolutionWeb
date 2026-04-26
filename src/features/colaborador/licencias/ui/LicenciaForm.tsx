@@ -13,7 +13,7 @@ import { maestroApi } from '@shared/api/maestro.api';
 import type { Licencia } from '@entities/licencia/model/types';
 import { createLicenciaSchema, type CreateLicenciaSchema } from '../model/schema';
 import { useEffect } from 'react';
-import { TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { SECCION_MAESTRO } from '@/shared/constants/maestro';
 import { useCreateLicencia, useUpdateLicencia } from '../../hooks/useLicenciaCrud';
 import { handleAddressKeyDown } from '@shared/utils/input-validators';
 
@@ -33,7 +33,7 @@ export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: L
     // Queries
     const { data: tiposLicencia } = useQuery({
         queryKey: ['tipos-licencia'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_LICENCIA),
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.LICENCIA),
         enabled: open
     });
 

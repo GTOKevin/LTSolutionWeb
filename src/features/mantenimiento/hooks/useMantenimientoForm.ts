@@ -8,7 +8,9 @@ import { createMantenimientoSchema, type CreateMantenimientoSchema } from '../mo
 import { useEffect, useState } from 'react';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
-import { ESTADO_SECCIONES, TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { SECCION_MAESTRO } from '@/shared/constants/maestro';
+import { ESTADO_SECCIONES } from '@/shared/constants/constantes';
+
 import { useCreateMantenimiento, useUpdateMantenimiento } from './useMantenimientoCrud';
 
 interface UseMantenimientoFormProps {
@@ -38,7 +40,7 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
 
     const { data: tiposServicio } = useQuery({
         queryKey: ['tipos-servicio'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_SERVICIO),
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.SERVICIO),
         enabled: open
     });
 

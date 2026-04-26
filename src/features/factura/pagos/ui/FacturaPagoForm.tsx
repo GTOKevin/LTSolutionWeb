@@ -16,8 +16,8 @@ import { maestroApi } from '@/shared/api/maestro.api';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
 import { monedaApi } from '@/shared/api/moneda.api';
 import { estadoApi } from '@/shared/api/estado.api';
-import { ESTADO_SECCIONES, TIPO_MAESTRO } from '@/shared/constants/constantes';
-
+import { SECCION_MAESTRO } from '@/shared/constants/maestro';
+import { ESTADO_SECCIONES } from '@/shared/constants/constantes';
 interface FacturaPagoFormProps {
     onClose: () => void;
     facturaId: number;
@@ -57,7 +57,7 @@ export function FacturaPagoForm({ onClose, facturaId, monedaId, maxAmount }: Fac
 
     const { data: tiposPago } = useQuery({
         queryKey: ['maestros', 'tipo-pago'],
-        queryFn: () => maestroApi.getSelect('',TIPO_MAESTRO.MEDIO_PAGO,10)
+        queryFn: () => maestroApi.getSelect('',SECCION_MAESTRO.MEDIO_PAGO,10)
     });
 
     const { data: estadosPago } = useQuery({

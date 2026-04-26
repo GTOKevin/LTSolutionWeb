@@ -8,7 +8,7 @@ import { createColaboradorSchema, type CreateColaboradorSchema } from '../model/
 import { useEffect, useState } from 'react';
 import type { Colaborador } from '@entities/colaborador/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
-import { TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { SECCION_MAESTRO } from '@/shared/constants/maestro';
 import { useCreateColaborador, useUpdateColaborador } from './useColaboradorCrud';
 import type { AxiosError } from 'axios';
 
@@ -41,7 +41,7 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
 
     const { data: generos } = useQuery({
         queryKey: ['tipos-genero'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_SEXO),
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.SEXO),
         enabled: open
     });
 

@@ -35,7 +35,10 @@ export const viajeApi = {
         return response.data;
     },
 
-    create: (data: CreateViajeDto) => http.post<number>('/viaje', data).then(res => res.data),
+    create: async (data: CreateViajeDto) => {
+        return await http.post<number>('/viaje', data);
+
+    },
 
     update: async (id: number, data: UpdateViajeDto) => {
         const response = await http.put(`/viaje/${id}`, data);

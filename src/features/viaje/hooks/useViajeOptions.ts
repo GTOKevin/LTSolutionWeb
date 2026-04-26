@@ -3,7 +3,8 @@ import { clienteApi } from '@/entities/cliente/api/cliente.api';
 import { colaboradorApi } from '@/entities/colaborador/api/colaborador.api';
 import { maestroApi } from '@/shared/api/maestro.api';
 import { flotaApi } from '@/shared/api/flota.api';
-import { ESTADO_SECCIONES, TIPO_FLOTA, TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { ESTADO_SECCIONES, TIPO_FLOTA } from '@/shared/constants/constantes';
+import { SECCION_MAESTRO } from '@/shared/constants/maestro';
 import { monedaApi } from '@/shared/api/moneda.api';
 import { gastoApi } from '@/shared/api/gasto.api';
 import { mercaderiaApi } from '@/shared/api/mercaderia.api';
@@ -60,7 +61,7 @@ export function useViajeOptions(enabled: boolean = true) {
     const { data: tiposMedida } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.tiposMedida(),
         queryFn: async () => {
-            const response = await maestroApi.getSelect('', TIPO_MAESTRO.TIPO_MEDIDA);
+            const response = await maestroApi.getSelect('', SECCION_MAESTRO.MEDIDA);
             return response.data ?? [];
         },
         enabled
@@ -69,7 +70,7 @@ export function useViajeOptions(enabled: boolean = true) {
     const { data: tiposPeso } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.tiposPeso(),
         queryFn: async () => {
-            const response = await maestroApi.getSelect('', TIPO_MAESTRO.TIPO_PESO);
+            const response = await maestroApi.getSelect('', SECCION_MAESTRO.PESO);
             return response.data ?? [];
         },
         enabled
@@ -96,7 +97,7 @@ export function useViajeOptions(enabled: boolean = true) {
     const { data: tiposIncidente } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.tiposIncidente(),
         queryFn: async () => {
-            const response = await maestroApi.getSelect('', TIPO_MAESTRO.TIPO_INCIDENTE);
+            const response = await maestroApi.getSelect('', SECCION_MAESTRO.INCIDENTE);
             return response.data ?? [];
         },
         enabled
@@ -105,7 +106,7 @@ export function useViajeOptions(enabled: boolean = true) {
     const { data: tiposGuia } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.tiposGuia(),
         queryFn: async () => {
-            const response = await maestroApi.getSelect('', TIPO_MAESTRO.TIPO_GUIA);
+            const response = await maestroApi.getSelect('', SECCION_MAESTRO.GUIA);
             return response.data ?? [];
         },
         enabled
@@ -129,6 +130,15 @@ export function useViajeOptions(enabled: boolean = true) {
         enabled
     });
 
+    const { data: flotaDisponibilidad } = useQuery({
+        queryKey: ['flota', 'disponibilidad'],
+        queryFn: async () => {
+            const response = await flotaApi.getDisponibilidad();
+            return response.data;
+        },
+        enabled
+    });
+
     return {
         clientes: clientes,
         tractos: tractos,
@@ -143,5 +153,6 @@ export function useViajeOptions(enabled: boolean = true) {
         tiposGuia: tiposGuia,
         monedas: monedas,
         estados: estados,
+        flotaDisponibilidad: flotaDisponibilidad,
     };
 }
