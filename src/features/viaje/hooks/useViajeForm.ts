@@ -206,7 +206,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
     }, [open, viaje, reset, queryClient]);
 
     const onSubmit = (data: CreateViajeDto) => {
-        if (data.estadoID === ESTADO_VIAJE_ID.COMPLETADO || data.estadoID === ESTADO_VIAJE_ID.CANCELADO) {
+        if (data.estadoID === ESTADO_VIAJE_ID.COMPLETADO || data.estadoID === ESTADO_VIAJE_ID.DESCARGANDO) {
             setPendingData(data);
             setShowConfirmDialog(true);
         } else {

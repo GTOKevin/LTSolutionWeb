@@ -1,18 +1,4 @@
-export const TIPO_MAESTRO = {
-    TIPO_FLOTA: 'VEHICULO',
-    TIPO_PESO: 'PESO',
-    TIPO_MEDIDA: 'MEDIDA',
-    TIPO_DOCUMENTO_FLOTA:'DOCUMENTO_FLOTA',
-    TIPO_SEXO: 'SEXO',
-    TIPO_LICENCIA: 'LICENCIA',
-    TIPO_PAGO: 'PAGO',
-    TIPO_PRODUCTO: 'PRODUCTO',
-    TIPO_SERVICIO: 'MANTENIMIENTO',
-    TIPO_GUIA: 'GUIA',
-    TIPO_INCIDENTE: 'INCIDENTE',
-    ESTADO_FACTURA: 'ESTADO_FACTURA',
-    MEDIO_PAGO: 'MEDIO_PAGO'
-}as const;
+
 
 export const ESTADO_SECCIONES = {
     USUARIO: 'USUARIO',
@@ -38,14 +24,14 @@ export const ESTADO_MANTENIMIENTO_ID = {
 export const ESTADO_VIAJE_COD = {
     Agendado: "AGE",
     Transito: "TRA",
-    Cancelado: "CAN",
+    DESCARGANDO: "DESC",
     Completado: "COMP"
 } as const;
 
 export const ESTADO_VIAJE_ID = {
     AGENDADO: 201,
     TRANSITO: 202,
-    CANCELADO: 203,
+    DESCARGANDO: 203,
     COMPLETADO: 204
 } as const;
 

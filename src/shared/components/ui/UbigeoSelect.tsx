@@ -1,8 +1,21 @@
-import { useState, useEffect, useRef } from 'react';
-import { Grid, TextField, MenuItem } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Autocomplete, TextField, CircularProgress, Grid, Tooltip } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { ubigeoApi } from '@/shared/api/ubigeo.api';
 import type { SelectItem } from '@/shared/model/types';
+import { useDebounce } from '@/shared/hooks/useDebounce';
+
+// Helper to format "DEPARTAMENTO, PROVINCIA, DISTRITO" to "Distrito, Provincia (Departamento)"
+// Title Case saves horizontal space compared to ALL CAPS
+const formatUbigeoName = (rawText: string) => {
+    if (!rawText) return '';
+    const parts = rawText.split(',').map(p => p.trim());
+    if (parts.length === 3) {
+        const toTitleCase = (str: string) => str.toLowerCase().replace(/(?:^|\s)\w/g, match => match.toUpperCase());
+        return `${toTitleCase(parts[2])}, ${toTitleCase(parts[1])} (${toTitleCase(parts[0])})`;
+    }
+    return rawText;
+};
 
 interface Props {
     label: string;
@@ -11,153 +24,107 @@ interface Props {
     error?: boolean;
     helperText?: string;
     disabled?: boolean;
+    direction?: 'row' | 'column';
 }
 
-export function UbigeoSelect({ label, value, onChange, error, helperText, disabled }: Props) {
-    // State for cascading selection
-    const [selectedDep, setSelectedDep] = useState<string>('');
-    const [selectedProv, setSelectedProv] = useState<string>('');
-    const [selectedDist, setSelectedDist] = useState<string>('');
+export function UbigeoSelect({ label, value, onChange, error, helperText, disabled, direction = 'row' }: Props) {
+    const [open, setOpen] = useState(false);
+    const [inputValue, setInputValue] = useState('');
+    const [options, setOptions] = useState<SelectItem[]>([]);
     
-    // Ref to track internal changes to avoid resetting state on internal updates
-    const isInternalChange = useRef(false);
+    // Custom debounce hook for search input
+    const debouncedSearchTerm = useDebounce(inputValue, 500);
 
-    // Load Ancestors when initial value is provided
+    // Load selected value details if present and not in options
     useEffect(() => {
-        // Skip if the change was triggered internally
-        if (isInternalChange.current) {
-            isInternalChange.current = false;
-            return;
-        }
-
         if (value && value > 0) {
-            // If we have a value, try to load ancestors to populate dropdowns
-            ubigeoApi.getAncestors(value)
-                .then(response => {
-                    const { departamentoId, provinciaId, distritoId } = response.data;
-                    setSelectedDep(departamentoId);
-                    setSelectedProv(provinciaId);
-                    setSelectedDist(distritoId);
-                })
-                .catch(err => {
-                    console.error("Failed to load ubigeo ancestors", err);
-                });
-        } else {
-             // Reset if value is cleared (optional, depends on UX preference)
-             if (!value) {
-                setSelectedDep('');
-                setSelectedProv('');
-                setSelectedDist('');
-             }
+            const selectedOption = options.find(o => o.id === value);
+            if (!selectedOption) {
+                ubigeoApi.getById(value).then(res => {
+                    if (res.data) {
+                        const newOption: SelectItem = {
+                            id: res.data.ubigeoID,
+                            text: formatUbigeoName(`${res.data.departamento}, ${res.data.provincia}, ${res.data.distrito}`)
+                        };
+                        setOptions(prev => [...prev, newOption]);
+                    }
+                }).catch(console.error);
+            }
         }
-    }, [value]);
+    }, [value, options]);
 
-    // Load Departments
-    const { data: departamentos = [] } = useQuery({
-        queryKey: ['ubigeo-departamentos'],
+    // Query to search ubigeos
+    const { isFetching } = useQuery({
+        queryKey: ['ubigeo-search', debouncedSearchTerm],
         queryFn: async () => {
-            const response = await ubigeoApi.getDepartamentos();
-            return response.data ?? [];
-        }
-    });
-
-    // Load Provinces when Dept changes
-    const { data: provincias = [] } = useQuery({
-        queryKey: ['ubigeo-provincias', selectedDep],
-        queryFn: async () => {
-            if (!selectedDep) return [];
-            const response = await ubigeoApi.getProvincias(selectedDep);
-            return response.data ?? [];
+            if (debouncedSearchTerm.length < 3) return [];
+            // Send search term in uppercase to match typical LATAM DB structures
+            const response = await ubigeoApi.getSelect(debouncedSearchTerm.toUpperCase());
+            const newOptions = (response.data || []).map(opt => ({
+                ...opt,
+                text: formatUbigeoName(opt.text)
+            }));
+            setOptions(newOptions);
+            return newOptions;
         },
-        enabled: !!selectedDep
+        enabled: open && debouncedSearchTerm.length >= 3,
     });
 
-    // Load Districts when Prov changes
-    const { data: distritos = [] } = useQuery({
-        queryKey: ['ubigeo-distritos', selectedProv],
-        queryFn: async () => {
-            if (!selectedProv) return [];
-            const response = await ubigeoApi.getDistritos(selectedProv);
-            return response.data ?? [];
-        },
-        enabled: !!selectedProv
-    });
-
-    const handleDeptChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        isInternalChange.current = true;
-        setSelectedDep(event.target.value);
-        setSelectedProv('');
-        setSelectedDist('');
-        onChange(0); // Clear valid selection until district is chosen
-    };
-
-    const handleProvChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        isInternalChange.current = true;
-        setSelectedProv(event.target.value);
-        setSelectedDist('');
-        onChange(0);
-    };
-
-    const handleDistChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        isInternalChange.current = true;
-        const distId = event.target.value;
-        setSelectedDist(distId);
-        // The value of district IS the ubigeoID usually, or we map it. 
-        // Assuming select value corresponds to Ubigeo ID directly here.
-        onChange(Number(distId)); 
-    };
+    const selectedValue = options.find(o => o.id === value) || null;
+    const gridSize = direction === 'column' ? { xs: 12 } : { xs: 12 };
 
     return (
         <Grid container spacing={1}>
-            <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                    select
-                    label={`Dep. (${label})`}
-                    fullWidth
-                    size="small"
-                    value={selectedDep}
-                    onChange={handleDeptChange}
-                    disabled={disabled}
-                >
-                    <MenuItem value="" disabled>Seleccione</MenuItem>
-                    {departamentos.map((d: SelectItem) => (
-                        <MenuItem key={d.id} value={d.id}>{d.text}</MenuItem>
-                    ))}
-                </TextField>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                    select
-                    label="Provincia"
-                    fullWidth
-                    size="small"
-                    value={selectedProv}
-                    onChange={handleProvChange}
-                    disabled={disabled || !selectedDep}
-                >
-                    <MenuItem value="" disabled>Seleccione</MenuItem>
-                    {provincias.map((p: SelectItem) => (
-                        <MenuItem key={p.id} value={p.id}>{p.text}</MenuItem>
-                    ))}
-                </TextField>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                    select
-                    label="Distrito"
-                    fullWidth
-                    size="small"
-                    value={selectedDist} 
-                    onChange={handleDistChange}
-                    disabled={disabled || !selectedProv}
-                    error={error}
-                    helperText={helperText}
-                >
-                    <MenuItem value="" disabled>Seleccione</MenuItem>
-                    {distritos.map((d: SelectItem) => (
-                        <MenuItem key={d.id} value={d.id}>{d.text}</MenuItem>
-                    ))}
-                </TextField>
+            <Grid size={gridSize}>
+                <Tooltip title={selectedValue?.text || ''} placement="top" arrow disableHoverListener={!selectedValue || open}>
+                    <Autocomplete
+                        id={`ubigeo-select-${label.replace(/\s+/g, '-').toLowerCase()}`}
+                        sx={{ width: '100%' }}
+                        open={open}
+                        onOpen={() => setOpen(true)}
+                        onClose={() => setOpen(false)}
+                        isOptionEqualToValue={(option, val) => option.id === val.id}
+                        getOptionLabel={(option) => option.text}
+                        options={options}
+                        loading={isFetching}
+                        value={selectedValue}
+                        disabled={disabled}
+                        onChange={(_, newValue) => {
+                            onChange(newValue ? (newValue.id as number) : 0);
+                        }}
+                        inputValue={inputValue}
+                        onInputChange={(_, newInputValue) => {
+                            setInputValue(newInputValue);
+                        }}
+                        noOptionsText={debouncedSearchTerm.length < 3 ? "Escriba al menos 3 letras..." : "No se encontraron resultados"}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label={label || "Buscar Distrito, Provincia o Dep."}
+                                error={error}
+                                helperText={helperText}
+                                placeholder="Ej. La Punta, Callao..."
+                                InputProps={{
+                                    ...params.InputProps,
+                                    endAdornment: (
+                                        <>
+                                            {isFetching ? <CircularProgress color="inherit" size={20} /> : null}
+                                            {params.InputProps.endAdornment}
+                                        </>
+                                    ),
+                                }}
+                                sx={{ 
+                                    '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' },
+                                    '& .MuiInputBase-input': { 
+                                        textOverflow: 'ellipsis', 
+                                        overflow: 'hidden', 
+                                        whiteSpace: 'nowrap' 
+                                    }
+                                }}
+                            />
+                        )}
+                    />
+                </Tooltip>
             </Grid>
         </Grid>
     );

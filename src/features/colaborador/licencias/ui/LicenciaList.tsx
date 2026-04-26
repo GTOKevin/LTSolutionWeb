@@ -35,7 +35,7 @@ import { LicenciaForm } from './LicenciaForm';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@/shared/utils/date-utils';
 import { useDeleteLicencia } from '../../hooks/useLicenciaCrud';
 import { maestroApi } from '@/shared/api/maestro.api';
-import { TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { SECCION_MAESTRO } from '@/shared/constants/maestro';
 import { pdf } from '@react-pdf/renderer';
 import { ColaboradorLicenciasPdf } from '../reports/ColaboradorLicenciasPdf';
 import { ColaboradorLicenciasExcelGenerator } from '../lib/ColaboradorLicenciasExcelGenerator';
@@ -76,7 +76,7 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
 
     const { data: tiposLicencia } = useQuery({
         queryKey: ['tipos-licencia'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_LICENCIA)
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.LICENCIA)
     });
 
     const { data, isLoading } = useQuery({

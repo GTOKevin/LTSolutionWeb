@@ -1,5 +1,26 @@
 import { z } from 'zod';
 import { ALPHA_ESPECIAL_ERROR_MSG, ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
+import { addDaysToDateISO, addMonthsToDateISO } from '@/shared/utils/date-utils';
+
+const positiveRequiredNumber = (field: string) =>
+    z.number()
+        .refine((value) => Number.isFinite(value), `${field} es requerido`)
+        .refine((value) => value > 0, `${field} debe ser mayor a 0`);
+
+const optionalRegexText = (pattern: RegExp, message: string) =>
+    z.string()
+        .refine((value) => value === '' || pattern.test(value), message)
+        .optional();
+
+const optionalNumber = (defaultValue = 0) =>
+    z.preprocess(
+        (val) => {
+            if (val === undefined || val === null || val === '') return defaultValue;
+            const parsed = Number(val);
+            return isNaN(parsed) ? defaultValue : parsed;
+        },
+        z.number()
+    );
 
 export const viajeEscoltaSchema = z.object({
     tercero: z.boolean().optional(),
@@ -80,22 +101,14 @@ export const viajeIncidenteSchema = z.object({
 });
 
 export const viajeMercaderiaSchema = z.object({
-    mercaderiaID: z.number(),
-    descripcion: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ALPHA_ESPECIAL_ERROR_MSG).optional(),
+    mercaderiaID: z.number().min(1, 'La mercaderia es requerida'),
+    descripcion: optionalRegexText(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ALPHA_ESPECIAL_ERROR_MSG),
     tipoMedidaID: z.number().min(1, 'El tipo de medida es requerido'),
-    alto: z.number().min(0, 'Debe ser mayor o igual a 0').optional(),
-    largo: z.number().min(0, 'Debe ser mayor o igual a 0').optional(),
-    ancho: z.number().min(0, 'Debe ser mayor o igual a 0').optional(),
+    alto: positiveRequiredNumber('El alto'),
+    largo: positiveRequiredNumber('El largo'),
+    ancho: positiveRequiredNumber('El ancho'),
     tipoPesoID: z.number().min(1, 'El tipo de peso es requerido'),
-    peso: z.number().min(0, 'Debe ser mayor o igual a 0').optional()
-}).refine((data) => {
-    if (data.mercaderiaID === 0) {
-        return !!data.descripcion?.trim();
-    }
-    return true;
-}, {
-    message: "Si no selecciona mercadería, la descripción es requerida",
-    path: ["descripcion"]
+    peso: positiveRequiredNumber('El peso')
 });
 
 export const viajePermisoSchema = z.object({
@@ -124,24 +137,43 @@ export const viajeSchema = z.object({
     carretaID: z.number().min(1, 'La carreta es requerida'),
 
     // Optional fields
-    cotizacionID: z.number().optional(),
-    direccionOrigen: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ALPHA_ESPECIAL_ERROR_MSG).optional(),
-    direccionDestino: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ALPHA_ESPECIAL_ERROR_MSG).optional(),
+    cotizacionID: optionalNumber(0),
+    direccionOrigen: optionalRegexText(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ALPHA_ESPECIAL_ERROR_MSG),
+    direccionDestino: optionalRegexText(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ALPHA_ESPECIAL_ERROR_MSG),
     fechaPartida: z.string().optional(),
     fechaLlegada: z.string().optional(),
     fechaDescarga: z.string().optional(),
     fechaLlegadaBase: z.string().optional(),
-    kmInicio: z.number().min(1, 'Mínimo 1').optional().default(0),
-    kmLlegada: z.number().optional().default(0),
-    kmLlegadaBase: z.number().optional().default(0),
+    kmInicio: optionalNumber(0),
+    kmLlegada: optionalNumber(0),
+    kmLlegadaBase: optionalNumber(0),
     requiereEscolta: z.boolean().optional().default(false),
     requierePermiso: z.boolean().optional().default(false),
-    largo: z.number().optional(),
-    alto: z.number().optional(),
-    ancho: z.number().optional(),
-    peso: z.number().optional(),
-    ejesTracto: z.number().min(0, 'Mínimo 0').default(0),
-    ejesCarreta: z.number().optional().default(0)
+    largo: optionalNumber(0),
+    alto: optionalNumber(0),
+    ancho: optionalNumber(0),
+    peso: optionalNumber(0),
+    ejesTracto: optionalNumber(0),
+    ejesCarreta: optionalNumber(0)
+}).superRefine((data, ctx) => {
+    const fechaMinima = addDaysToDateISO(7);
+    const fechaMaxima = addMonthsToDateISO(2);
+
+    if (data.fechaCarga < fechaMinima) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `La fecha de carga debe ser desde ${fechaMinima}.`,
+            path: ['fechaCarga']
+        });
+    }
+
+    if (data.fechaCarga > fechaMaxima) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `La fecha de carga no puede superar ${fechaMaxima}.`,
+            path: ['fechaCarga']
+        });
+    }
 });
 
 export type ViajeFormData = z.infer<typeof viajeSchema>;

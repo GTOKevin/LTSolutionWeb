@@ -63,6 +63,18 @@ export const getCurrentDateISO = (): string => {
     return `${yyyy}-${mm}-${dd}`;
 };
 
+export const addDaysToDateISO = (days: number, baseDate = new Date()): string => {
+    const date = new Date(baseDate);
+    date.setDate(date.getDate() + days);
+    return toInputDate(date);
+};
+
+export const addMonthsToDateISO = (months: number, baseDate = new Date()): string => {
+    const date = new Date(baseDate);
+    date.setMonth(date.getMonth() + months);
+    return toInputDate(date);
+};
+
 /**
  * Returns current time in "HH:MM" format using local time
  */

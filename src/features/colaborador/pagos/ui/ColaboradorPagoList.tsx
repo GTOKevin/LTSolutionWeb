@@ -42,7 +42,7 @@ import { ColaboradorPagoForm } from './ColaboradorPagoForm';
 import { formatDateShort, getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@/shared/utils/date-utils';
 import { useDeleteColaboradorPago } from '../../hooks/useColaboradorPagoCrud';
 import { maestroApi } from '@/shared/api/maestro.api';
-import { TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { SECCION_MAESTRO } from '@/shared/constants/maestro';
 import { pdf } from '@react-pdf/renderer';
 import { ColaboradorPagosPdf } from '../reports/ColaboradorPagosPdf';
 import { ColaboradorPagosExcelGenerator } from '../lib/ColaboradorPagosExcelGenerator';
@@ -80,7 +80,7 @@ export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: Colabor
 
     const { data: tiposPago } = useQuery({
         queryKey: ['tipos-pago'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_PAGO)
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.PAGO)
     });
 
     const { data, isLoading } = useQuery({

@@ -9,4 +9,7 @@ export const flotaApi = {
 
     getSelectTipo: (tipo?: string, limit: number = 20) =>
         httpClient.get<SelectItem[]>('/Flota/tipo-select', { params: { tipo, limit } }),
+
+    getDisponibilidad: () =>
+        httpClient.get<{ totalTractos: number; tractosLibres: number; porcentajeActiva: number }>('/Flota/disponibilidad'),
 };

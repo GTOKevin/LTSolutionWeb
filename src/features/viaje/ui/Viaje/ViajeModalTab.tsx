@@ -132,9 +132,9 @@ export function ViajeModalTab({ open, onClose, viaje, isViewOnly = false }: Prop
 
             <ConfirmDialog
                 open={showConfirmDialog}
-                severity={pendingData?.estadoID === ESTADO_VIAJE_ID.CANCELADO ? 'error' : 'info'}
-                title={pendingData?.estadoID === ESTADO_VIAJE_ID.CANCELADO ? 'Confirmar Cancelación' : 'Confirmar Finalización'}
-                content={pendingData?.estadoID === ESTADO_VIAJE_ID.CANCELADO 
+                severity={pendingData?.estadoID === ESTADO_VIAJE_ID.DESCARGANDO ? 'error' : 'info'}
+                title={pendingData?.estadoID === ESTADO_VIAJE_ID.DESCARGANDO ? 'Confirmar Cancelación' : 'Confirmar Finalización'}
+                content={pendingData?.estadoID === ESTADO_VIAJE_ID.DESCARGANDO 
                     ? "Una vez cancelado el viaje no podrá editarse." 
                     : "Una vez completado el registro no podrá editarse, ¿desea continuar con el registro?"}
                 onClose={() => setShowConfirmDialog(false)}

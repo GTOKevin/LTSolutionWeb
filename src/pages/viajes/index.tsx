@@ -27,8 +27,11 @@ import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shar
 import { useToast } from '@/shared/components/ui/Toast';
 import { useViajeReports } from '@/features/viaje/hooks/useViajeReports';
 
+import { useNavigate } from 'react-router-dom';
+
 export function ViajesPage() {
     const theme = useTheme();
+    const navigate = useNavigate();
     const { showToast } = useToast();
     const { 
         loadingMessage, 
@@ -99,11 +102,8 @@ export function ViajesPage() {
     });
 
     const handleCreate = useCallback(() => {
-        setLoadingMessage(null);
-        setViajeToEdit(null);
-        setIsViewOnly(false);
-        setModalOpen(true);
-    }, [setLoadingMessage]);
+        navigate('/app/viajes/nuevo');
+    }, [navigate]);
 
     const handleView = useCallback(async (item: ViajeListItem) => {
         try {

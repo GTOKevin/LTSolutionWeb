@@ -400,6 +400,7 @@ export interface CreateViajeDto {
     peso?: number;
     ejesTracto: number;
     ejesCarreta?: number;
+    mercaderias?: CreateViajeMercaderiaDto[];
 }
 
 export interface UpdateViajeDto extends CreateViajeDto {

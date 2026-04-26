@@ -6,7 +6,7 @@ import { createFlotaSchema, type CreateFlotaSchema } from '../model/schema';
 import { useEffect, useState } from 'react';
 import type { Flota } from '@entities/flota/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
-import { TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { SECCION_MAESTRO } from '@/shared/constants/maestro';
 import { useCreateFlota, useUpdateFlota } from './useFlotaCrud';
 import type { AxiosError } from 'axios';
 
@@ -32,19 +32,19 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
     // --- Queries ---
     const { data: tiposFlota } = useQuery({
         queryKey: ['tipos-flota'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_FLOTA),
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.FLOTA),
         enabled: open
     });
 
     const { data: tiposPeso } = useQuery({
         queryKey: ['tipos-peso'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_PESO),
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.PESO),
         enabled: open
     });
 
     const { data: tiposMedida } = useQuery({
         queryKey: ['tipos-medida'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_MEDIDA),
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.MEDIDA),
         enabled: open
     });
 

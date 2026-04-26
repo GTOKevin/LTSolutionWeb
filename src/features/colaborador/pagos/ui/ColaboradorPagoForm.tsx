@@ -11,7 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { maestroApi } from '@shared/api/maestro.api';
 import { monedaApi } from '@/shared/api/moneda.api';
-import { TIPO_MAESTRO } from '@/shared/constants/constantes';
+import { SECCION_MAESTRO } from '@/shared/constants/maestro';
 import type { ColaboradorPago } from '@entities/colaborador-pago/model/types';
 import { createColaboradorPagoSchema, type CreateColaboradorPagoSchema } from '../model/schema';
 import { useEffect } from 'react';
@@ -34,7 +34,7 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
     // Queries
     const { data: tiposPago } = useQuery({
         queryKey: ['tipos-pago'],
-        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO.TIPO_PAGO),
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.PAGO),
         enabled: open
     });
 

@@ -14,6 +14,9 @@ export const ubigeoApi = {
     // For simple select if backend supports flat search
     getSelect: (search?: string) => httpClient.get<SelectItem[]>('/Ubigeo/select', { params: { search } }),
     
+    // Get full Ubigeo details
+    getById: (ubigeoId: number) => httpClient.get(`/Ubigeo/${ubigeoId}`),
+    
     // New method to get ancestors
     getAncestors: (ubigeoId: number) => httpClient.get<UbigeoAncestors>(`/Ubigeo/${ubigeoId}/ancestors`)
 };
