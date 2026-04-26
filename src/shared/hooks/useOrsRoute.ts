@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
+import { logger } from '../utils/logger';
 
 // Ideally, this should come from process.env.VITE_ORS_API_KEY
-// Fallback provided to avoid breaking the current implementation
-const ORS_API_KEY = import.meta.env.VITE_ORS_API_KEY || '5b3ce3597851110001cf6248baf501f0a3b84568851f2146e4bbea68';
+// Fallback removed due to security policies. Use environment variable strictly.
+const ORS_API_KEY = import.meta.env.VITE_ORS_API_KEY;
 
 export interface RouteData {
     path: [number, number][];
@@ -29,6 +30,11 @@ export function useOrsRoute(
         queryKey: ['ors-route', origenCoords, destinoCoords, origenDepartamento, destinoDepartamento],
         queryFn: async (): Promise<RouteData | null> => {
             if (!origenCoords || !destinoCoords) return null;
+            
+            if (!ORS_API_KEY) {
+                logger.error('VITE_ORS_API_KEY no está configurada en las variables de entorno. Deshabilitando cálculo de ruta ORS.');
+                throw new Error('VITE_ORS_API_KEY no configurada.');
+            }
             
             // ORS expects [longitude, latitude]
             const start = `${origenCoords[1]},${origenCoords[0]}`;
@@ -80,7 +86,7 @@ export function useOrsRoute(
                 geographyFactor: peruvianFactor
             };
         },
-        enabled: !!origenCoords && !!destinoCoords,
+        enabled: !!origenCoords && !!destinoCoords && !!ORS_API_KEY,
         staleTime: 1000 * 60 * 15, // Cache route for 15 minutes to avoid hitting rate limits
         retry: 1
     });
