@@ -1,10 +1,12 @@
-import { Box, IconButton, Tooltip } from '@mui/material';
+import { useState } from 'react';
+import { Box, IconButton, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { 
     Visibility as VisibilityIcon, 
     Edit as EditIcon, 
     Delete as DeleteIcon,
     TableView as ExcelIcon,
-    PictureAsPdf as PdfIcon
+    PictureAsPdf as PdfIcon,
+    MoreVert as MoreVertIcon
 } from '@mui/icons-material';
 
 interface TableActionsProps {
@@ -21,6 +23,7 @@ interface TableActionsProps {
     disableView?: boolean;
     disableEdit?: boolean;
     disableDelete?: boolean;
+    useMenu?: boolean;
 }
 
 export function TableActions({ 
@@ -36,8 +39,90 @@ export function TableActions({
     pdfTooltip = "Exportar PDF",
     disableView = false,
     disableEdit = false,
-    disableDelete = false
+    disableDelete = false,
+    useMenu = false
 }: TableActionsProps) {
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const open = Boolean(anchorEl);
+
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        event.stopPropagation();
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleAction = (action: () => void) => (event: React.MouseEvent<HTMLElement>) => {
+        event.stopPropagation();
+        handleClose();
+        action();
+    };
+
+    if (useMenu) {
+        return (
+            <Box onClick={(e) => e.stopPropagation()}>
+                <IconButton
+                    size="small"
+                    onClick={handleClick}
+                    aria-controls={open ? 'table-actions-menu' : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={open ? 'true' : undefined}
+                >
+                    <MoreVertIcon fontSize="small" />
+                </IconButton>
+                <Menu
+                    id="table-actions-menu"
+                    anchorEl={anchorEl}
+                    open={open}
+                    onClose={handleClose}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {onEdit && !disableEdit && (
+                        <MenuItem onClick={handleAction(onEdit)}>
+                            <ListItemIcon>
+                                <EditIcon fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText>{editTooltip}</ListItemText>
+                        </MenuItem>
+                    )}
+                    {onView && !disableView && (
+                        <MenuItem onClick={handleAction(onView)}>
+                            <ListItemIcon>
+                                <VisibilityIcon fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText>{viewTooltip}</ListItemText>
+                        </MenuItem>
+                    )}
+                    {onDelete && !disableDelete && (
+                        <MenuItem onClick={handleAction(onDelete)} sx={{ color: 'error.main' }}>
+                            <ListItemIcon>
+                                <DeleteIcon fontSize="small" color="error" />
+                            </ListItemIcon>
+                            <ListItemText>{deleteTooltip}</ListItemText>
+                        </MenuItem>
+                    )}
+                    {onExportExcel && (
+                        <MenuItem onClick={handleAction(onExportExcel)}>
+                            <ListItemIcon>
+                                <ExcelIcon fontSize="small" color="success" />
+                            </ListItemIcon>
+                            <ListItemText>{excelTooltip}</ListItemText>
+                        </MenuItem>
+                    )}
+                    {onExportPdf && (
+                        <MenuItem onClick={handleAction(onExportPdf)}>
+                            <ListItemIcon>
+                                <PdfIcon fontSize="small" color="error" />
+                            </ListItemIcon>
+                            <ListItemText>{pdfTooltip}</ListItemText>
+                        </MenuItem>
+                    )}
+                </Menu>
+            </Box>
+        );
+    }
     return (
         <Box className="actions-group" sx={{
             display: 'flex',

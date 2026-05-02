@@ -24,7 +24,7 @@ export const ESTADO_MANTENIMIENTO_ID = {
 export const ESTADO_VIAJE_COD = {
     Agendado: "AGE",
     Transito: "TRA",
-    DESCARGANDO: "DESC",
+    Descargando: "DESC",
     Completado: "COMP"
 } as const;
 

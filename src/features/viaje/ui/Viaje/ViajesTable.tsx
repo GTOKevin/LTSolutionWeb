@@ -87,7 +87,7 @@ export function ViajesTable({
                 dotColor: theme.palette.success.main
             };
         }
-        if (codigo === ESTADO_VIAJE_COD.Cancelado) {
+        if (codigo === ESTADO_VIAJE_COD.Descargando) {
             return {
                 label,
                 bg: alpha(theme.palette.error.main, 0.1),
@@ -256,13 +256,14 @@ export function ViajesTable({
                                     </Tooltip>
                                 )}
                                 <TableActions
+                                    useMenu={true}
                                     onView={() => onView(viaje)}
                                     onEdit={isEditable ? () => onEdit(viaje) : undefined}
-                                    onDelete={isEditable ? () => onDelete(viaje) : undefined}
+                                    onDelete={isEditable && viaje.estadoCodigo === ESTADO_VIAJE_COD.Agendado && !viaje.fechaPartida ? () => onDelete(viaje) : undefined}
                                     onExportExcel={showReports ? () => onExportExcel(viaje) : undefined}
                                     onExportPdf={showReports ? () => onExportPdf(viaje) : undefined}
-                                    viewTooltip="Ver detalle"
-                                    editTooltip="Editar"
+                                    viewTooltip="Visualizar"
+                                    editTooltip="Modificar"
                                     deleteTooltip="Eliminar"
                                 />
                             </Stack>

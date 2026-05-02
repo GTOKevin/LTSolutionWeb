@@ -12,12 +12,14 @@ import {
     NearMe, 
     TaskAlt,
     PictureAsPdf,
-    TableView
+    TableView,
+    ViewKanban,
+    ViewList
 } from '@mui/icons-material';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import { viajeApi } from '@entities/viaje/api/viaje.api';
-import { ViajeModalTab, ViajesFilters ,ViajesMobileList, ViajesTable} from '@/features/viaje/ui/Viaje/Index';
+import { ViajesFilters ,ViajesMobileList, ViajesTable} from '@/features/viaje/ui/Viaje/Index';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { LoadingModal } from '@shared/components/ui/LoadingModal';
 import { StatsCard } from '@shared/components/ui/StatsCard';
@@ -26,6 +28,8 @@ import type { ApiError } from '@/shared/api/http';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
 import { useToast } from '@/shared/components/ui/Toast';
 import { useViajeReports } from '@/features/viaje/hooks/useViajeReports';
+import { ViajeKanbanBoard } from '@/features/viaje/ui/ViajeKanban/ViajeKanbanBoard';
+import { ViajeEditModal } from '@/features/viaje/ui/ViajeEditModal/ViajeEditModal';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -53,7 +57,7 @@ export function ViajesPage() {
     });
     
     const [modalOpen, setModalOpen] = useState(false);
-    const [viajeToEdit, setViajeToEdit] = useState<Viaje | null>(null);
+    const [viajeToEdit, setViajeToEdit] = useState<ViajeListItem | null>(null);
     const [isViewOnly, setIsViewOnly] = useState(false);
     
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -61,6 +65,8 @@ export function ViajesPage() {
 
     const [reopenDialogOpen, setReopenDialogOpen] = useState(false);
     const [viajeToReopen, setViajeToReopen] = useState<ViajeListItem | null>(null);
+
+    const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
 
     const { data, isLoading, refetch } = useQuery({
         queryKey: ['viajes', page, rowsPerPage, filters],
@@ -105,38 +111,14 @@ export function ViajesPage() {
         navigate('/app/viajes/nuevo');
     }, [navigate]);
 
-    const handleView = useCallback(async (item: ViajeListItem) => {
-        try {
-            setLoadingMessage("Obteniendo viaje...");
-            const fullViaje = await viajeApi.getById(item.viajeID);
-            setViajeToEdit(fullViaje);
-            setIsViewOnly(true);
-            setModalOpen(true);
-        } catch (error) {
-            console.error("Error fetching viaje details:", error);
-        } finally {
-            setLoadingMessage(null);
-        }
-    }, [setLoadingMessage]);
+    const handleView = useCallback((item: ViajeListItem) => {
+        navigate(`/app/viajes/${item.viajeID}?mode=view`);
+    }, [navigate]);
 
-    const handleEdit = useCallback(async (item: ViajeListItem) => {
-        if (item.cerrado) {
-            handleView(item);
-            return;
-        }
-
-        try {
-            setLoadingMessage("Obteniendo viaje...");
-            const fullViaje = await viajeApi.getById(item.viajeID);
-            setViajeToEdit(fullViaje);
-            setIsViewOnly(false);
-            setModalOpen(true);
-        } catch (error) {
-            console.error("Error fetching viaje details:", error);
-        } finally {
-            setLoadingMessage(null);
-        }
-    }, [handleView, setLoadingMessage]);
+    const handleEdit = useCallback((item: ViajeListItem) => {
+        setViajeToEdit(item);
+        setModalOpen(true);
+    }, []);
 
     const handleDelete = useCallback((item: ViajeListItem) => {
         setViajeToDelete(item);
@@ -236,77 +218,114 @@ export function ViajesPage() {
             {/* Actions & Export (Above Table) */}
             <Box sx={{ 
                 display: 'flex', 
-                justifyContent: 'flex-end', 
+                justifyContent: 'space-between', 
                 alignItems: 'center',
-                gap: 2,
                 mb: 2 
             }}>
-                <Button 
-                    variant="outlined" 
-                    startIcon={<PictureAsPdf />}
-                    onClick={onExportListPdf}
-                    color="error"
-                    size="small"
-                    sx={{ 
-                        fontWeight: 600, 
-                        borderRadius: 2,
-                        textTransform: 'none'
-                    }}
-                >
-                    Exportar
-                </Button>
-                <Button 
-                    variant="outlined" 
-                    startIcon={<TableView />}
-                    onClick={onExportListExcel}
-                    color="success"
-                    size="small"
-                    sx={{ 
-                        fontWeight: 600, 
-                        borderRadius: 2,
-                        textTransform: 'none'
-                    }}
-                >
-                    Exportar
-                </Button>
+                <Box>
+                    <Button
+                        variant={viewMode === 'table' ? 'contained' : 'outlined'}
+                        onClick={() => setViewMode('table')}
+                        startIcon={<ViewList />}
+                        size="small"
+                        sx={{ mr: 1, borderRadius: 2, textTransform: 'none' }}
+                    >
+                        Tabla
+                    </Button>
+                    <Button
+                        variant={viewMode === 'kanban' ? 'contained' : 'outlined'}
+                        onClick={() => setViewMode('kanban')}
+                        startIcon={<ViewKanban />}
+                        size="small"
+                        sx={{ borderRadius: 2, textTransform: 'none' }}
+                    >
+                        Kanban
+                    </Button>
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button 
+                        variant="outlined" 
+                        startIcon={<PictureAsPdf />}
+                        onClick={onExportListPdf}
+                        color="error"
+                        size="small"
+                        sx={{ 
+                            fontWeight: 600, 
+                            borderRadius: 2,
+                            textTransform: 'none'
+                        }}
+                    >
+                        Exportar PDF
+                    </Button>
+                    <Button 
+                        variant="outlined" 
+                        startIcon={<TableView />}
+                        onClick={onExportListExcel}
+                        color="success"
+                        size="small"
+                        sx={{ 
+                            fontWeight: 600, 
+                            borderRadius: 2,
+                            textTransform: 'none'
+                        }}
+                    >
+                        Exportar Excel
+                    </Button>
+                </Box>
             </Box>
 
-            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                <ViajesTable 
-                    data={data}
-                    isLoading={isLoading}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    onEdit={handleEdit}
-                    onView={handleView}
-                    onDelete={handleDelete}
-                    onExportExcel={handleExportExcel}
-                    onExportPdf={handleExportPdf}
-                    onReopen={handleReopen}
+            {viewMode === 'kanban' ? (
+                <ViajeKanbanBoard 
+                    viajes={data?.items || []} 
+                    isLoading={isLoading} 
+                    onViajeClick={handleView}
+                    onViewViaje={handleView}
+                    onEditViaje={handleEdit}
+                    onDeleteViaje={handleDelete}
                 />
-            </Box>
-            <ViajesMobileList
-                data={data}
-                isLoading={isLoading}
-                page={page}
-                rowsPerPage={rowsPerPage}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                onEdit={handleEdit}
-                onView={handleView}
-                onDelete={handleDelete}
-                onExportExcel={handleExportExcel}
-                onExportPdf={handleExportPdf}
-                onReopen={handleReopen}
-            />
+            ) : (
+                <>
+                    <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                        <ViajesTable 
+                            data={data}
+                            isLoading={isLoading}
+                            page={page}
+                            rowsPerPage={rowsPerPage}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                            onEdit={handleEdit}
+                            onView={handleView}
+                            onDelete={handleDelete}
+                            onExportExcel={handleExportExcel}
+                            onExportPdf={handleExportPdf}
+                            onReopen={handleReopen}
+                        />
+                    </Box>
+                    <ViajesMobileList
+                        data={data}
+                        isLoading={isLoading}
+                        page={page}
+                        rowsPerPage={rowsPerPage}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        onEdit={handleEdit}
+                        onView={handleView}
+                        onDelete={handleDelete}
+                        onExportExcel={handleExportExcel}
+                        onExportPdf={handleExportPdf}
+                        onReopen={handleReopen}
+                    />
+                </>
+            )}
 
-            <ViajeModalTab
+            <ViajeEditModal
                 open={modalOpen}
-                onClose={() => setModalOpen(false)}
-                viaje={viajeToEdit}
-                isViewOnly={isViewOnly}
+                onClose={() => {
+                    setModalOpen(false);
+                    setViajeToEdit(null);
+                }}
+                viajeListItem={viajeToEdit}
             />
 
             <ConfirmDialog
