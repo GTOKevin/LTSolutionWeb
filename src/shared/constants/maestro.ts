@@ -14,6 +14,21 @@ export const SECCION_MAESTRO = {
     MEDIO_PAGO: 'MEDIO_PAGO'
 }as const;
 
+export const MAESTRO_CONSTANTS_ID = {
+    Peso: {
+        Tonelada:201,
+        Kilogramo:202,
+        Libra:203
+    },
+    Medida: {
+        Metro: 301,
+        Milimetro: 302,
+        Centimetro: 303,
+        Pulgada: 304,
+        Pie: 305
+    }
+}
+
 export const PESO_ID={
     Tonelada:201,
     Kilogramo:202,

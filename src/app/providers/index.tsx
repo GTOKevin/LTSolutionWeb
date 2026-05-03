@@ -4,6 +4,9 @@ import { ThemeProvider } from './theme-provider';
 import { AuthProvider } from './auth-provider';
 import { SessionExpiredModal } from '@/shared/components/ui/SessionExpiredModal';
 import { ToastProvider } from '@/shared/components/ui/Toast';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import 'dayjs/locale/es';
 
 interface AppProvidersProps {
     children: React.ReactNode;
@@ -12,15 +15,17 @@ interface AppProvidersProps {
 export function AppProviders({ children }: AppProvidersProps) {
     return (
         <ThemeProvider>
-            <QueryProvider>
-                <ToastProvider>
-                    <AuthProvider>
-                        <RouterProvider />
-                        <SessionExpiredModal />
-                        {children}
-                    </AuthProvider>
-                </ToastProvider>
-            </QueryProvider>
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                <QueryProvider>
+                    <ToastProvider>
+                        <AuthProvider>
+                            <RouterProvider />
+                            <SessionExpiredModal />
+                            {children}
+                        </AuthProvider>
+                    </ToastProvider>
+                </QueryProvider>
+            </LocalizationProvider>
         </ThemeProvider>
     );
 }

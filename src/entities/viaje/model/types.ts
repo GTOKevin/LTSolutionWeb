@@ -424,6 +424,7 @@ export interface ViajeListItem {
     fechaPartida?: string;
     requiereEscolta?: boolean;
     requierePermiso?: boolean;
+    codigo?: string;
 
     // Cliente
     clienteID: number;

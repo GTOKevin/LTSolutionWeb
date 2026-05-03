@@ -92,5 +92,9 @@ export const viajeApi = {
 
     reopen: async (id: number) => {
         await http.post(`/viaje/${id}/reabrir`);
+    },
+
+    updateEstado: async (id: number, estadoId: number) => {
+        await http.patch(`/viaje/${id}/estado`, estadoId);
     }
 };
