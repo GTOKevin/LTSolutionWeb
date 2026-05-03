@@ -17,10 +17,8 @@ import { KanbanCard } from './KanbanCard';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
 import { ESTADO_VIAJE_COD, ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
 import { useTheme, alpha } from '@mui/material/styles';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { viajeApi } from '@/entities/viaje/api/viaje.api';
-import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
 import { useToast } from '@/shared/components/ui/Toast';
+import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
 
 
 interface KanbanBoardProps {
@@ -34,7 +32,6 @@ interface KanbanBoardProps {
 
 export function ViajeKanbanBoard({ viajes, isLoading, onViajeClick, onEditViaje, onViewViaje, onDeleteViaje }: KanbanBoardProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     const { showToast } = useToast();
 
     // Local state for optimistic updates during drag
@@ -45,18 +42,8 @@ export function ViajeKanbanBoard({ viajes, isLoading, onViajeClick, onEditViaje,
         setLocalViajes(viajes);
     }, [viajes]);
 
-    const updateEstadoMutation = useMutation({
-        mutationFn: ({ id, estadoId }: { id: number, estadoId: number }) => {
-            return viajeApi.updateEstado(id, estadoId);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.lists() });
-            showToast({ message: 'Estado del viaje actualizado', severity: 'success' });
-        },
-        onError: () => {
-            setLocalViajes(viajes);
-            showToast({ message: 'Error al actualizar el estado', severity: 'error' });
-        }
+    const updateEstadoMutation = useUpdateEstadoViaje(() => {
+        setLocalViajes(viajes);
     });
 
     const sensors = useSensors(
@@ -93,7 +80,7 @@ export function ViajeKanbanBoard({ viajes, isLoading, onViajeClick, onEditViaje,
         );
     }
 
-    const getColumnViajes = (estadoCodigo: string) => {
+    const getColumnViajes = (estadoCodigo: string): ViajeListItem[] => {
         return localViajes.filter(v => v.estadoCodigo === estadoCodigo);
     };
 
