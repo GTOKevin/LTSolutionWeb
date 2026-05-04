@@ -95,6 +95,6 @@ export const viajeApi = {
     },
 
     updateEstado: async (id: number, estadoId: number) => {
-        await http.patch(`/viaje/${id}/estado`, estadoId);
+        await http.patch(`/viaje/${id}/estado`, { estadoId });
     }
 };
