@@ -316,7 +316,7 @@ export function ViajeCreateEdit({ viaje, isViewOnly, options, isPending }: Props
                     />
                 </Box>
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }} display="flex" alignItems="center" gap={2}>
+            <Grid size={{ xs: 12, md: 6 }} display="flex" alignItems="center" gap={1}>
                 <Controller
                     name="requiereEscolta"
                     control={control}
@@ -324,16 +324,6 @@ export function ViajeCreateEdit({ viaje, isViewOnly, options, isPending }: Props
                         <FormControlLabel
                             control={<Switch checked={field.value} onChange={field.onChange} disabled={isViewOnly} />}
                             label="Requiere Escolta"
-                        />
-                    )}
-                />
-                <Controller
-                    name="requierePermiso"
-                    control={control}
-                    render={({ field }) => (
-                        <FormControlLabel
-                            control={<Switch checked={field.value} onChange={field.onChange} disabled={isViewOnly} />}
-                            label="Requiere Permisos"
                         />
                     )}
                 />
