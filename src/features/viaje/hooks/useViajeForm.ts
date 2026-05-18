@@ -40,7 +40,6 @@ interface UseViajeFormReturn {
     mutation: UseMutationResult<number | void, ApiMutationError, CreateViajeDto, unknown>;
     options: ReturnType<typeof useViajeOptions>;
     requiereEscolta: boolean;
-    requierePermiso: boolean;
     currentViajeId: number;
 }
 
@@ -62,15 +61,13 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
         resolver: zodResolver(viajeSchema) as Resolver<CreateViajeDto>,
         defaultValues: {
             estadoID: 0,
-            requiereEscolta: false,
-            requierePermiso: false
+            requiereEscolta: false
         }
     });
 
     const { reset, watch, setValue } = methods;
     
     const requiereEscolta = watch('requiereEscolta');
-    const requierePermiso = watch('requierePermiso');
     const selectedTractoID = watch('tractoID');
     const selectedCarretaID = watch('carretaID');
 
@@ -167,7 +164,6 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
                     tipoMedidaID: viaje.tipoMedidaID || 0,
                     tipoPesoID: viaje.tipoPesoID || 0,  
                     requiereEscolta: viaje.requiereEscolta ?? false,
-                    requierePermiso: viaje.requierePermiso ?? false,
                     largo: viaje.largo ?? undefined,
                     alto: viaje.alto ?? undefined,
                     ancho: viaje.ancho ?? undefined,
@@ -179,7 +175,6 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
                 reset({
                     estadoID: 0,
                     requiereEscolta: false,
-                    requierePermiso: false,
                     fechaCarga: getCurrentDateISO(),
                     clienteID: 0,
                     colaboradorID: 0,
@@ -243,7 +238,6 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
         mutation,
         options,
         requiereEscolta: !!requiereEscolta,
-        requierePermiso: !!requierePermiso,
         currentViajeId
     };
 }

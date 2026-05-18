@@ -220,22 +220,67 @@ export interface ViajeEscolta {
     };
 }
 
-export interface ViajeControlRuta {
-    viajeControlRutaID: number;
-    viajeID: number;
-    ubigeoID: number;
-    fechaHora: string;
-    descripcion: string | null;
-    ubigeo?: {
-        ubigeoID: number;
-        descripcion: string;
-    };
+export interface ViajeReferenciaRutaDto {
+    viajeId: number;
+    codigo: string;
+    fechaPartida: string | null;
+    totalParadas: number;
+}
+
+export interface ViajeRutaDto {
+    viajeControlRutaId: number;
+    viajeId: number;
+    tipoPuntoId: number;
+    etapaOrden: number;
+    esOpcionPrincipal: boolean;
+    nombreLugar: string | null;
+    fechaEstimadaLlegada: string | null;
+    radioGeocercaMetros: number | null;
+    latitud: number | null;
+    longitud: number | null;
+    ubicacionReferencia: string | null;
+    tipoPunto: TipoMaestro;
+}
+
+export interface CreateViajeRutaDto {
+    viajeId: number;
+    tipoPuntoId: number;
+    etapaOrden: number;
+    esOpcionPrincipal: boolean;
+    nombreLugar: string | null;
+    fechaEstimadaLlegada: string | null;
+    radioGeocercaMetros: number | null;
+    latitud: number | null;
+    longitud: number | null;
+    ubicacionReferencia: string | null;
+}
+
+export interface UpdateViajeRutaDto {
+    tipoPuntoId: number;
+    esOpcionPrincipal: boolean;
+    nombreLugar: string | null;
+    fechaEstimadaLlegada: string | null;
+    radioGeocercaMetros: number | null;
+    latitud: number | null;
+    longitud: number | null;
+    ubicacionReferencia: string | null;
+}
+
+export interface EtapaRutaDto {
+    etapaOrden: number;
+    viajeControlRutaIds: number[];
+}
+
+export interface ReorderViajeRutasDto {
+    viajeId: number;
+    etapas: EtapaRutaDto[];
 }
 
 export interface Viaje {
     viajeID: number;
     cotizacionID: number | null;
     clienteID: number;
+    codigo?: string;
     tractoID: number;
     carretaID: number | null;
     colaboradorID: number;
@@ -253,7 +298,6 @@ export interface Viaje {
     kmLlegadaBase: number | null;
     estadoID: number;
     requiereEscolta: boolean | null;
-    requierePermiso: boolean | null;
     tipoMedidaID: number;
     largo: number | null;
     alto: number | null;
@@ -312,7 +356,7 @@ export interface Viaje {
     viajeIncidentes: ViajeIncidente[];
     viajePermisos: ViajePermiso[];
     viajeEscolta: ViajeEscolta[];
-    viajeControlRuta: ViajeControlRuta[];
+    viajeControlRuta: ViajeRutaDto[];
 }
 
 // DTOs for Creation/Update
@@ -391,7 +435,6 @@ export interface CreateViajeDto {
     kmLlegadaBase?: number;
     estadoID: number;
     requiereEscolta?: boolean;
-    requierePermiso?: boolean;
     tipoMedidaID: number;
     largo?: number;
     alto?: number;
@@ -423,9 +466,8 @@ export interface ViajeListItem {
     fechaCarga: string;
     fechaPartida?: string;
     requiereEscolta?: boolean;
-    requierePermiso?: boolean;
     codigo?: string;
-
+    kmLlegadaBase?: number;
     // Cliente
     clienteID: number;
     clienteRazonSocial: string;

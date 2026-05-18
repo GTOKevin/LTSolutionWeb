@@ -148,7 +148,6 @@ export const viajeSchema = z.object({
     kmLlegada: optionalNumber(0),
     kmLlegadaBase: optionalNumber(0),
     requiereEscolta: z.boolean().optional().default(false),
-    requierePermiso: z.boolean().optional().default(false),
     largo: optionalNumber(0),
     alto: optionalNumber(0),
     ancho: optionalNumber(0),

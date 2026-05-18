@@ -1,0 +1,388 @@
+import { 
+    Box, Typography, TextField, 
+    FormControlLabel, Switch, 
+    Grid, Divider
+} from '@mui/material';
+import type { ViajeListItem } from '@/entities/viaje/model/types';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Dayjs } from 'dayjs';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import AnalyticsOutlinedIcon from '@mui/icons-material/AnalyticsOutlined';
+import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined';
+import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
+
+export interface ResumenGeneralData {
+    fechaCarga: Dayjs | null;
+    fechaPartida: Dayjs | null;
+    fechaLlegada: Dayjs | null;
+    fechaDescarga: Dayjs | null;
+    fechaLlegadaBase: Dayjs | null;
+    kmInicio: number | '';
+    kmLlegada: number | '';
+    largo: number | '';
+    ancho: number | '';
+    alto: number | '';
+    peso: number | '';
+    requiereEscolta: boolean;
+}
+
+interface ResumenGeneralTabProps {
+    viajeListItem: ViajeListItem;
+    formData: ResumenGeneralData;
+    onChange: (data: Partial<ResumenGeneralData>) => void;
+}
+
+export function ResumenGeneralTab({ viajeListItem, formData, onChange }: ResumenGeneralTabProps) {
+    const handleNumberChange = (field: keyof ResumenGeneralData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        onChange({ [field]: val === '' ? '' : Number(val) });
+    };
+
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            
+            {/* Section: INFORMACIÓN DEL SERVICIO (Read-only) */}
+            <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'primary.main', mb: 1 }}>
+                    <InfoOutlinedIcon fontSize="small" />
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        Información del Servicio
+                    </Typography>
+                </Box>
+                
+                <Grid container spacing={3}>
+                    {/* Cliente Card */}
+                    <Grid size={{ xs: 12, md: 4 }}>
+                        <Box sx={{ position: 'relative' }}>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                Cliente
+                            </Typography>
+                            <Box sx={{ 
+                                width: '100%', 
+                                border: '1px solid', 
+                                borderColor: 'divider', 
+                                borderRadius: 2, 
+                                px: 1.5, 
+                                py: 1.5, 
+                                bgcolor: 'background.paper' 
+                            }}>
+                                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                                    {viajeListItem.clienteRazonSocial || 'N/A'}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Grid>
+
+                    {/* Conductor */}
+                    <Grid size={{ xs: 12, md: 4 }}>
+                        <Box sx={{ position: 'relative' }}>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                Conductor
+                            </Typography>
+                            <Box sx={{ 
+                                width: '100%', 
+                                border: '1px solid', 
+                                borderColor: 'divider', 
+                                borderRadius: 2, 
+                                px: 1.5, 
+                                py: 1.5, 
+                                bgcolor: 'background.paper' 
+                            }}>
+                                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                                    {viajeListItem.conductorNombreCompleto || 'N/A'}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Grid>
+
+                    {/* Tracto */}
+                    <Grid size={{ xs: 12, md: 2 }}>
+                        <Box sx={{ position: 'relative' }}>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                Tracto
+                            </Typography>
+                            <Box sx={{ 
+                                width: '100%', 
+                                border: '1px solid', 
+                                borderColor: 'divider', 
+                                borderRadius: 2, 
+                                px: 1.5, 
+                                py: 1.5, 
+                                bgcolor: 'background.paper' 
+                            }}>
+                                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                                    {viajeListItem.tractoPlaca || 'N/A'}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Grid>
+
+                    {/* Carreta */}
+                    <Grid size={{ xs: 12, md: 2 }}>
+                        <Box sx={{ position: 'relative' }}>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                Carreta
+                            </Typography>
+                            <Box sx={{ 
+                                width: '100%', 
+                                border: '1px solid', 
+                                borderColor: 'divider', 
+                                borderRadius: 2, 
+                                px: 1.5, 
+                                py: 1.5, 
+                                bgcolor: 'background.paper' 
+                            }}>
+                                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                                    {viajeListItem.carretaPlaca || 'N/A'}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Grid>
+
+                    {/* Route Path (Origen/Destino) */}
+                    <Grid size={{ xs: 12 }}>
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+                            <Box sx={{ flex: 1, p: 2.5, border: '1px dashed', borderColor: 'divider', borderRadius: 3, bgcolor: 'action.hover' }}>
+                                <Typography variant="overline" sx={{ fontWeight: 'bold', color: 'text.secondary', display: 'block', mb: 1, lineHeight: 1 }}>
+                                    PUNTO DE ORIGEN
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                                    {viajeListItem.origenDescripcion || 'N/A'}
+                                </Typography>
+                            </Box>
+                            
+                            <Box sx={{ flex: 1, p: 2.5, border: '1px dashed', borderColor: 'divider', borderRadius: 3, bgcolor: 'action.hover' }}>
+                                <Typography variant="overline" sx={{ fontWeight: 'bold', color: 'text.secondary', display: 'block', mb: 1, lineHeight: 1 }}>
+                                    PUNTO DE DESTINO
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                                    {viajeListItem.destinoDescripcion || 'N/A'}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Grid>
+                </Grid>
+            </Box>
+
+            <Divider sx={{ my: 1, borderStyle: 'dashed' }} />
+
+            <Grid container spacing={4}>
+                {/* Section: SEGUIMIENTO Y CONTROL (Editable) */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                    <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'primary.main' }}>
+                            <AnalyticsOutlinedIcon fontSize="small" />
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
+                                Seguimiento y Control
+                            </Typography>
+                        </Box>
+                        
+                        <Grid container spacing={2}>
+                            <Grid size={{ xs: 6 }}>
+                                <Box sx={{ position: 'relative' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                        Fecha Partida
+                                    </Typography>
+                                    <DatePicker 
+                                        slotProps={{ textField: { fullWidth: true, size: "small", sx: { bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } } } }}
+                                        value={formData.fechaPartida}
+                                        onChange={(date) => onChange({ fechaPartida: date })}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid size={{ xs: 6 }}>
+                                <Box sx={{ position: 'relative' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                        Fecha Llegada
+                                    </Typography>
+                                    <DatePicker 
+                                        slotProps={{ textField: { fullWidth: true, size: "small", sx: { bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } } } }}
+                                        value={formData.fechaLlegada}
+                                        onChange={(date) => onChange({ fechaLlegada: date })}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid size={{ xs: 6 }}>
+                                <Box sx={{ position: 'relative' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                        Fecha Descarga
+                                    </Typography>
+                                    <DatePicker 
+                                        slotProps={{ textField: { fullWidth: true, size: "small", sx: { bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } } } }}
+                                        value={formData.fechaDescarga}
+                                        onChange={(date) => onChange({ fechaDescarga: date })}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid size={{ xs: 6 }}>
+                                <Box sx={{ position: 'relative' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                        Fecha Llegada Base
+                                    </Typography>
+                                    <DatePicker 
+                                        slotProps={{ textField: { fullWidth: true, size: "small", sx: { bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } } } }}
+                                        value={formData.fechaLlegadaBase}
+                                        onChange={(date) => onChange({ fechaLlegadaBase: date })}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid size={{ xs: 4 }}>
+                                <Box sx={{ position: 'relative' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                        Km Inicio
+                                    </Typography>
+                                    <TextField 
+                                        fullWidth 
+                                        type="number"
+                                        size="small" 
+                                        sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                        value={formData.kmInicio}
+                                        onChange={handleNumberChange('kmInicio')}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid size={{ xs: 4 }}>
+                                <Box sx={{ position: 'relative' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                        Km Llegada
+                                    </Typography>
+                                    <TextField 
+                                        fullWidth 
+                                        type="number"
+                                        size="small" 
+                                        sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                        value={formData.kmLlegada}
+                                        onChange={handleNumberChange('kmLlegada')}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid size={{ xs: 4 }}>
+                                <Box sx={{ position: 'relative' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                        Km Base
+                                    </Typography>
+                                    <TextField 
+                                        fullWidth 
+                                        type="number"
+                                        size="small" 
+                                        sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                        value={viajeListItem.kmLlegadaBase || ''}
+                                        disabled
+                                    />
+                                </Box>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </Grid>
+
+                {/* Section: DIMENSIONES Y PESO (Editable) */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                    <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'primary.main' }}>
+                            <SquareFootOutlinedIcon fontSize="small" />
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
+                                Configuración de Carga
+                            </Typography>
+                        </Box>
+                        
+                        <Grid container spacing={2}>
+                            <Grid size={{ xs: 12 }}>
+                                <Box sx={{ position: 'relative' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                        Peso Total
+                                    </Typography>
+                                    <TextField 
+                                        fullWidth 
+                                        type="number" 
+                                        size="small" 
+                                        sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                        value={formData.peso} 
+                                        onChange={handleNumberChange('peso')} 
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid size={{ xs: 12 }}>
+                                <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                    Dimensiones (Largo x Ancho x Alto)
+                                </Typography>
+                                <Grid container spacing={2}>
+                                    <Grid size={{ xs: 4 }}>
+                                        <TextField 
+                                            fullWidth 
+                                            type="number" 
+                                            size="small" 
+                                            placeholder="Largo (m)"
+                                            sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                            value={formData.largo} 
+                                            onChange={handleNumberChange('largo')} 
+                                        />
+                                    </Grid>
+                                    <Grid size={{ xs: 4 }}>
+                                        <TextField 
+                                            fullWidth 
+                                            type="number" 
+                                            size="small" 
+                                            placeholder="Ancho (m)"
+                                            sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                            value={formData.ancho} 
+                                            onChange={handleNumberChange('ancho')} 
+                                        />
+                                    </Grid>
+                                    <Grid size={{ xs: 4 }}>
+                                        <TextField 
+                                            fullWidth 
+                                            type="number" 
+                                            size="small" 
+                                            placeholder="Alto (m)"
+                                            sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                            value={formData.alto} 
+                                            onChange={handleNumberChange('alto')} 
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </Grid>
+            </Grid>
+
+            <Box component="section">
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.1, position: 'absolute' }} />
+                        <Box sx={{ width: 40, height: 40, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'primary.main' }}>
+                            <VerifiedUserOutlinedIcon />
+                        </Box>
+                        <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+                                Opciones de Seguridad
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                Requerimientos especiales para el trayecto.
+                            </Typography>
+                        </Box>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', gap: 4 }}>
+                        <FormControlLabel
+                            control={
+                                <Switch 
+                                    checked={formData.requiereEscolta}
+                                    onChange={(e) => onChange({ requiereEscolta: e.target.checked })} 
+                                    color="primary"
+                                />
+                            }
+                            label={
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                                    Requiere escolta
+                                </Typography>
+                            }
+                            sx={{ m: 0 }}
+                        />
+                    </Box>
+                </Box>
+            </Box>
+
+        </Box>
+    );
+}

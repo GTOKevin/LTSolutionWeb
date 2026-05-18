@@ -1,0 +1,1 @@
+export { ViajePlanRutaLayout } from './ViajePlanRutaLayout';

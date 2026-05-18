@@ -1,4 +1,4 @@
-import { Box, Typography, Grid2, CircularProgress, Alert, Card, CardContent, Divider, Chip, Stack } from '@mui/material';
+import { Box, Typography, Grid as Grid2, CircularProgress, Alert, Card, CardContent, Divider, Chip, Stack } from '@mui/material';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
@@ -55,17 +55,6 @@ export function ViajeDetalle() {
             </Alert>
         );
     }
-
-    // Checks for specific modules
-    const requiereEscolta = viaje?.viajeMercaderia?.some(m => {
-        const merc = mercaderias?.find(x => x.id === m.mercaderiaID);
-        return merc && (merc.ancho > 3 || merc.largo > 20 || merc.peso > 48);
-    });
-
-    const requierePermiso = viaje?.viajeMercaderia?.some(m => {
-        const merc = mercaderias?.find(x => x.id === m.mercaderiaID);
-        return merc && (merc.ancho > 2.6 || merc.alto > 4.1 || merc.largo > 20 || merc.peso > 48);
-    });
 
     return (
         <Box>
@@ -166,7 +155,6 @@ export function ViajeDetalle() {
                                 </Card>
                             </Grid2>
 
-                            {requierePermiso && (
                                 <Grid2 size={{ xs: 12, lg: 6 }}>
                                     <Card sx={{ borderRadius: 3, boxShadow: 2, height: '100%' }}>
                                         <CardContent>
@@ -176,9 +164,7 @@ export function ViajeDetalle() {
                                         </CardContent>
                                     </Card>
                                 </Grid2>
-                            )}
-
-                            {requiereEscolta && (
+ 
                                 <Grid2 size={{ xs: 12, lg: 6 }}>
                                     <Card sx={{ borderRadius: 3, boxShadow: 2, height: '100%' }}>
                                         <CardContent>
@@ -193,7 +179,6 @@ export function ViajeDetalle() {
                                         </CardContent>
                                     </Card>
                                 </Grid2>
-                            )}
                         </Grid2>
                     </Stack>
                 </Grid2>

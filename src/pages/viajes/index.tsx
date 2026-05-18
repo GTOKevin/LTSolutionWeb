@@ -23,13 +23,12 @@ import { ViajesFilters ,ViajesMobileList, ViajesTable} from '@/features/viaje/ui
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { LoadingModal } from '@shared/components/ui/LoadingModal';
 import { StatsCard } from '@shared/components/ui/StatsCard';
-import type { Viaje, ViajeListItem, ViajeFilters as ViajeFiltersType } from '@entities/viaje/model/types';
+import type { ViajeListItem, ViajeFilters as ViajeFiltersType } from '@entities/viaje/model/types';
 import type { ApiError } from '@/shared/api/http';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
 import { useToast } from '@/shared/components/ui/Toast';
 import { useViajeReports } from '@/features/viaje/hooks/useViajeReports';
 import { ViajeKanbanBoard } from '@/features/viaje/ui/ViajeKanban/ViajeKanbanBoard';
-import { ViajeEditModal } from '@/features/viaje/ui/ViajeEditModal/ViajeEditModal';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -39,7 +38,6 @@ export function ViajesPage() {
     const { showToast } = useToast();
     const { 
         loadingMessage, 
-        setLoadingMessage, 
         handleExportListExcel, 
         handleExportListPdf, 
         handleExportExcel, 
@@ -55,10 +53,6 @@ export function ViajesPage() {
         fechaInicio: getFirstDayOfCurrentMonthISO(),
         fechaFin: getLastDayOfCurrentMonthISO()
     });
-    
-    const [modalOpen, setModalOpen] = useState(false);
-    const [viajeToEdit, setViajeToEdit] = useState<ViajeListItem | null>(null);
-    const [isViewOnly, setIsViewOnly] = useState(false);
     
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [viajeToDelete, setViajeToDelete] = useState<ViajeListItem | null>(null);
@@ -116,9 +110,8 @@ export function ViajesPage() {
     }, [navigate]);
 
     const handleEdit = useCallback((item: ViajeListItem) => {
-        setViajeToEdit(item);
-        setModalOpen(true);
-    }, []);
+        navigate(`/app/viajes/${item.viajeID}/editar`);
+    }, [navigate]);
 
     const handleDelete = useCallback((item: ViajeListItem) => {
         setViajeToDelete(item);
@@ -318,15 +311,6 @@ export function ViajesPage() {
                     />
                 </>
             )}
-
-            <ViajeEditModal
-                open={modalOpen}
-                onClose={() => {
-                    setModalOpen(false);
-                    setViajeToEdit(null);
-                }}
-                viajeListItem={viajeToEdit}
-            />
 
             <ConfirmDialog
                 open={deleteDialogOpen}

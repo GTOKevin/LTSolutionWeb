@@ -33,7 +33,6 @@ export function ViajeModalTab({ open, onClose, viaje, isViewOnly = false }: Prop
         mutation,
         options,
         requiereEscolta,
-        requierePermiso,
         currentViajeId
     } = useViajeForm({ open, onClose, viaje });
 
@@ -58,7 +57,7 @@ export function ViajeModalTab({ open, onClose, viaje, isViewOnly = false }: Prop
                                 <Tab label="Guías" value={TAB_INDICES.GUIAS} />
                                 <Tab label="Gastos" value={TAB_INDICES.GASTOS} />
                                 <Tab label="Incidentes" value={TAB_INDICES.INCIDENTES} />
-                                {requierePermiso && <Tab label="Permisos" value={TAB_INDICES.PERMISOS} />}
+                                <Tab label="Permisos" value={TAB_INDICES.PERMISOS} />
                                 {requiereEscolta && <Tab label="Escolta" value={TAB_INDICES.ESCOLTA} />}
                             </Tabs>
                         </Box>
@@ -107,11 +106,10 @@ export function ViajeModalTab({ open, onClose, viaje, isViewOnly = false }: Prop
                             />
                         </TabPanel>
 
-                        {requierePermiso && (
-                            <TabPanel value={activeTab} index={TAB_INDICES.PERMISOS}>
-                                <ViajePermiso viajeId={currentViajeId} viewOnly={isViewOnly} />
-                            </TabPanel>
-                        )}
+                        <TabPanel value={activeTab} index={TAB_INDICES.PERMISOS}>
+                            <ViajePermiso viajeId={currentViajeId} viewOnly={isViewOnly} />
+                        </TabPanel>
+                    
 
                         {requiereEscolta && (
                             <TabPanel value={activeTab} index={TAB_INDICES.ESCOLTA}>
