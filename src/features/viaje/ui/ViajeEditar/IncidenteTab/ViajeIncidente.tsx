@@ -1,8 +1,8 @@
 import { Box, Alert } from '@mui/material';
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeIncidente as ViajeIncidenteModel } from '@/entities/viaje/model/types';
-import { ViajeIncidenteCreateEdit } from './Index';
-import { ViajeIncidenteList } from './Index';
+import { ViajeIncidenteCreateEdit } from './ViajeIncidenteCreateEdit';
+import { ViajeIncidenteList } from './ViajeIncidenteList';
 import { useState } from 'react';
 
 interface Props {
@@ -23,7 +23,7 @@ export function ViajeIncidente({ viajeId, viewOnly, tiposIncidente }: Props) {
     }
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '5fr 7fr' }, gap: 4, alignItems: 'start' }}>
             {!viewOnly && viajeId && (
                 <ViajeIncidenteCreateEdit 
                     viajeId={viajeId} 

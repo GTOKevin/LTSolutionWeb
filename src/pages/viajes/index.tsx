@@ -110,7 +110,7 @@ export function ViajesPage() {
     }, [navigate]);
 
     const handleEdit = useCallback((item: ViajeListItem) => {
-        navigate(`/app/viajes/${item.viajeID}/editar`);
+        navigate(`/app/viajes/${item.viajeID}`);
     }, [navigate]);
 
     const handleDelete = useCallback((item: ViajeListItem) => {

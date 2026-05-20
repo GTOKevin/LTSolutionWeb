@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
-import { useViajeRutas } from '../../hooks/useViajeRutas';
+import { useViajeRutas } from '@features/viaje/hooks/useViajeRutas';
 import { LocationSearch } from './LocationSearch';
 import { AddRutaDialog } from './AddRutaDialog';
 

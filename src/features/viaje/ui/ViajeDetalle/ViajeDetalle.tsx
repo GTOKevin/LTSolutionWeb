@@ -11,7 +11,7 @@ import { ViajeCreateEdit } from '../Viaje/ViajeCreateEdit';
 import { ViajeMercaderia } from '../ViajeMercaderia/Index';
 import { ViajeGasto } from '../ViajeGasto/Index';
 import { ViajeGuia } from '../ViajeGuia/Index';
-import { ViajeIncidente } from '../ViajeIncidente/Index';
+import { ViajeIncidente } from '../ViajeEditar/IncidenteTab/Index';
 import { ViajePermiso } from '../ViajePermiso/Index';
 import { ViajeEscolta } from '../ViajeEscolta/Index';
 import { ViajeTimeline } from './ViajeTimeline';

@@ -101,6 +101,7 @@ export function UbigeoSelect({ label, value, onChange, error, helperText, disabl
                             <TextField
                                 {...params}
                                 label={label || "Buscar Distrito, Provincia o Dep."}
+                                size="small"
                                 error={error}
                                 helperText={helperText}
                                 placeholder="Ej. La Punta, Callao..."

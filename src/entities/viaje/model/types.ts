@@ -216,7 +216,8 @@ export interface ViajeEscolta {
     colaborador?: {
         colaboradorID: number;
         nombres: string;
-        apellidos: string;
+        primerApellido: string;
+        segundoApellido: string;
     };
 }
 
@@ -413,6 +414,7 @@ export interface CreateViajeEscoltaDto {
     tercero?: boolean;
     nombreConductor?: string;
     empresa?: string;
+    placa?: string;
 }
 
 export interface CreateViajeDto {
