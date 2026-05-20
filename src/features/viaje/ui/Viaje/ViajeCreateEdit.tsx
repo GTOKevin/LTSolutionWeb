@@ -320,6 +320,7 @@ export function ViajeCreateEdit({ viaje, isViewOnly, options, isPending }: Props
                 <Controller
                     name="requiereEscolta"
                     control={control}
+                    disabled={true}
                     render={({ field }) => (
                         <FormControlLabel
                             control={<Switch checked={field.value} onChange={field.onChange} disabled={isViewOnly} />}

@@ -365,10 +365,10 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange }: Resumen
                     
                     <Box sx={{ display: 'flex', gap: 4 }}>
                         <FormControlLabel
+                            disabled={true}
                             control={
                                 <Switch 
                                     checked={formData.requiereEscolta}
-                                    onChange={(e) => onChange({ requiereEscolta: e.target.checked })} 
                                     color="primary"
                                 />
                             }

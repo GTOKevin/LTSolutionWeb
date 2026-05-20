@@ -12,10 +12,10 @@ import dayjs from 'dayjs';
 import { ResumenGeneralTab, type ResumenGeneralData } from './tabs/ResumenGeneralTab';
 import { PlanificacionRutaTab } from './tabs/PlanificacionRutaTab';
 import { GuiasTab } from './tabs/GuiasTab';
-import { PermisosTab } from './tabs/PermisosTab';
+import { PermisosTab } from './tabs/PermisosTab/PermisosTab';
 import { GastosTab } from './tabs/GastosTab';
-import { EscoltaTab } from './tabs/EscoltaTab';
-import { ViajeIncidente } from '../ViajeIncidente/ViajeIncidente';
+import { EscoltaTab } from './tabs/EscoltaTab/EscoltaTab';
+import { ViajeIncidente } from './tabs/IncidenteTab/ViajeIncidente';
 import { useViajeOptions } from '../../hooks/useViajeOptions';
 import { useToast } from '@/shared/components/ui/Toast';
 
@@ -222,9 +222,9 @@ export function ViajeEditar() {
                         <Tab label="Resumen General" />
                         <Tab label="Planificación de Ruta" />
                         <Tab label="Guías de Remisión" />
-                        <Tab label="Permisos" />
                         <Tab label="Costos" />
                         <Tab label="Incidentes" />
+                        <Tab label="Permisos" />
                         <Tab label="Escolta" disabled={!formData.requiereEscolta} />
                     </Tabs>
                 </Box>
@@ -244,12 +244,9 @@ export function ViajeEditar() {
                         <GuiasTab viaje={viaje} />
                     </TabPanel>
                     <TabPanel value={activeTab} index={3}>
-                        <PermisosTab viaje={viaje} />
-                    </TabPanel>
-                    <TabPanel value={activeTab} index={4}>
                         <GastosTab viaje={viaje} />
                     </TabPanel>
-                    <TabPanel value={activeTab} index={5}>
+                    <TabPanel value={activeTab} index={4}>
                         <Box sx={{p: 2}}>
                             <ViajeIncidente
                                 viewOnly={false}
@@ -257,6 +254,9 @@ export function ViajeEditar() {
                                 viajeId={viajeId}
                             />
                         </Box>
+                    </TabPanel>
+                    <TabPanel value={activeTab} index={5}>
+                        <PermisosTab viaje={viaje} />
                     </TabPanel>
                     <TabPanel value={activeTab} index={6}>
                         <EscoltaTab viaje={viaje} />

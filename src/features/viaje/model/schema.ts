@@ -27,7 +27,8 @@ export const viajeEscoltaSchema = z.object({
     flotaID: z.number().optional(),
     colaboradorID: z.number().optional(),
     nombreConductor: z.string().regex(INPUT_VAL.LETRAS_ESPACIO, ERROR_MESSAGES.LETRAS_ESPACIO).optional(),
-    empresa: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPACIOS, ERROR_MESSAGES.ALPHA_NUMERICO_ESPACIOS).optional()
+    empresa: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPACIOS, ERROR_MESSAGES.ALPHA_NUMERICO_ESPACIOS).optional(),
+    placa: z.string().regex(INPUT_VAL.PLACA_PERU_REGEX, ERROR_MESSAGES.PLACA_INVALIDA).optional()
 }).superRefine((data, ctx) => {
     if (data.tercero) {
         if (!data.nombreConductor?.trim()) {
@@ -42,6 +43,13 @@ export const viajeEscoltaSchema = z.object({
                 code: z.ZodIssueCode.custom,
                 message: "La empresa es requerida",
                 path: ["empresa"]
+            });
+        }
+        if (!data.placa?.trim()) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "La placa del vehículo es requerida",
+                path: ["placa"]
             });
         }
     } else {
@@ -66,12 +74,16 @@ export const viajeGastoSchema = z.object({
     gastoID: z.number().min(1, 'El tipo de gasto es requerido'),
     fechaGasto: z.string().min(1, 'La fecha es requerida'),
     monedaID: z.number().min(1, 'La moneda es requerida'),
-    monto: z.number().min(0.5, 'El monto mínimo es 0.50'),
+    monto: z.any().transform(v => Number(v)).pipe(z.number().min(0.5, 'El monto mínimo es 0.50')),
     comprobante: z.boolean(),
     numeroComprobante: z.string().optional(),
     descripcion: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL).optional(),
     combustible: z.boolean().optional(),
-    galones: z.number().optional()
+    galones: z.any().transform(v => {
+        if (v === '' || v === null || v === undefined) return 0;
+        const num = Number(v);
+        return isNaN(num) ? 0 : num;
+    }).pipe(z.number())
 }).superRefine((data, ctx) => {
     if (data.combustible) {
         if (!data.galones || data.galones < 0.50) {
