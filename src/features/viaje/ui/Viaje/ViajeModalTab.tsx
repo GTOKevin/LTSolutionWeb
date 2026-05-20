@@ -7,7 +7,7 @@ import { ViajeCreateEdit } from './ViajeCreateEdit';
 import { ViajeMercaderia } from '../ViajeMercaderia/Index';
 import { ViajeGasto } from '../ViajeGasto/Index';
 import { ViajeGuia } from '../ViajeGuia/Index';
-import { ViajeIncidente } from '../ViajeEditar/tabs/IncidenteTab/Index';
+import { ViajeIncidente } from '../ViajeEditar/IncidenteTab/Index';
 import { ViajePermiso } from '../ViajePermiso/Index';
 import { ViajeEscolta } from '../ViajeEscolta/Index';
 import { ESTADO_VIAJE_ID } from '@/shared/constants/constantes';

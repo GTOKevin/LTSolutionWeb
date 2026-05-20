@@ -21,9 +21,10 @@ import { logger } from '@/shared/utils/logger';
 
 interface GuiasListProps {
     viajeID: number;
+    isViewOnly?: boolean;
 }
 
-export function GuiasList({ viajeID }: GuiasListProps) {
+export function GuiasList({ viajeID, isViewOnly }: GuiasListProps) {
     const theme = useTheme();
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -167,39 +168,43 @@ export function GuiasList({ viajeID }: GuiasListProps) {
                                 <Typography variant="caption" color="text.secondary" fontWeight={500}>
                                     {/* Date placeholder */}
                                 </Typography>
-                                <Button 
-                                    size="small" 
-                                    color="error" 
-                                    onClick={() => handleDelete(guia.viajeGuiaID)}
-                                    disabled={deleteMutation.isPending}
-                                    sx={{ fontWeight: 800, fontSize: '0.7rem', p: 0, minWidth: 'auto' }}
-                                    startIcon={<DeleteIcon sx={{ fontSize: '1rem' }} />}
-                                >
-                                    Borrar
-                                </Button>
+                                {!isViewOnly && (
+                                    <Button 
+                                        size="small" 
+                                        color="error" 
+                                        onClick={() => handleDelete(guia.viajeGuiaID)}
+                                        disabled={deleteMutation.isPending}
+                                        sx={{ fontWeight: 800, fontSize: '0.7rem', p: 0, minWidth: 'auto' }}
+                                        startIcon={<DeleteIcon sx={{ fontSize: '1rem' }} />}
+                                    >
+                                        Borrar
+                                    </Button>
+                                )}
                             </Box>
                         </Box>
                     );
                 })}
 
                 {/* Empty State / Add Action Card */}
-                <Box sx={{ 
-                    border: '2px dashed', borderColor: alpha(theme.palette.divider, 0.5), 
-                    borderRadius: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    p: 3, textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s',
-                    bgcolor: alpha(theme.palette.background.default, 0.5),
-                    '&:hover': { borderColor: alpha(theme.palette.primary.main, 0.4), '& .icon': { color: 'primary.main' } }
-                }}>
-                    <Box className="icon" sx={{ width: 48, height: 48, borderRadius: '50%', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.secondary', mb: 1, transition: 'color 0.2s' }}>
-                        <AddCircleIcon />
+                {!isViewOnly && (
+                    <Box sx={{ 
+                        border: '2px dashed', borderColor: alpha(theme.palette.divider, 0.5), 
+                        borderRadius: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        p: 3, textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s',
+                        bgcolor: alpha(theme.palette.background.default, 0.5),
+                        '&:hover': { borderColor: alpha(theme.palette.primary.main, 0.4), '& .icon': { color: 'primary.main' } }
+                    }}>
+                        <Box className="icon" sx={{ width: 48, height: 48, borderRadius: '50%', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.secondary', mb: 1, transition: 'color 0.2s' }}>
+                            <AddCircleIcon />
+                        </Box>
+                        <Typography variant="body2" fontWeight={800} color="text.secondary" sx={{ '&:hover': { color: 'text.primary' } }}>
+                            Añadir otra Guía
+                        </Typography>
+                        <Typography variant="caption" color="text.disabled">
+                            Total máximo: 10 documentos
+                        </Typography>
                     </Box>
-                    <Typography variant="body2" fontWeight={800} color="text.secondary" sx={{ '&:hover': { color: 'text.primary' } }}>
-                        Añadir otra Guía
-                    </Typography>
-                    <Typography variant="caption" color="text.disabled">
-                        Total máximo: 10 documentos
-                    </Typography>
-                </Box>
+                )}
             </Box>
 
             <DocumentPreviewDialog 

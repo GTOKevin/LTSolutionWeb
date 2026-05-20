@@ -15,7 +15,7 @@ import type { SelectItem } from '@/shared/model/types';
 import { UbigeoSelect } from '@/shared/components/ui/UbigeoSelect';
 import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { useCreateViajeIncidente, useUpdateViajeIncidente } from '@/features/viaje/hooks/useViajeIncidentes';
-import { viajeIncidenteSchema, type ViajeIncidenteFormData } from '../../../../model/schema';
+import { viajeIncidenteSchema, type ViajeIncidenteFormData } from '../../../model/schema';
 import { getCurrentDateISO, getCurrentTimeISO, toInputDate, toInputTime, combineDateTime } from '@/shared/utils/date-utils';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { handleBackendErrors } from '@/shared/utils/form-validation';

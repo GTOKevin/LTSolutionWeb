@@ -30,9 +30,10 @@ interface ResumenGeneralTabProps {
     viajeListItem: ViajeListItem;
     formData: ResumenGeneralData;
     onChange: (data: Partial<ResumenGeneralData>) => void;
+    isViewOnly?: boolean;
 }
 
-export function ResumenGeneralTab({ viajeListItem, formData, onChange }: ResumenGeneralTabProps) {
+export function ResumenGeneralTab({ viajeListItem, formData, onChange, isViewOnly }: ResumenGeneralTabProps) {
     const handleNumberChange = (field: keyof ResumenGeneralData) => (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         onChange({ [field]: val === '' ? '' : Number(val) });
@@ -187,6 +188,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange }: Resumen
                                         slotProps={{ textField: { fullWidth: true, size: "small", sx: { bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } } } }}
                                         value={formData.fechaPartida}
                                         onChange={(date) => onChange({ fechaPartida: date })}
+                                        disabled={isViewOnly}
                                     />
                                 </Box>
                             </Grid>
@@ -199,6 +201,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange }: Resumen
                                         slotProps={{ textField: { fullWidth: true, size: "small", sx: { bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } } } }}
                                         value={formData.fechaLlegada}
                                         onChange={(date) => onChange({ fechaLlegada: date })}
+                                        disabled={isViewOnly}
                                     />
                                 </Box>
                             </Grid>
@@ -211,6 +214,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange }: Resumen
                                         slotProps={{ textField: { fullWidth: true, size: "small", sx: { bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } } } }}
                                         value={formData.fechaDescarga}
                                         onChange={(date) => onChange({ fechaDescarga: date })}
+                                        disabled={isViewOnly}
                                     />
                                 </Box>
                             </Grid>
@@ -223,6 +227,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange }: Resumen
                                         slotProps={{ textField: { fullWidth: true, size: "small", sx: { bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } } } }}
                                         value={formData.fechaLlegadaBase}
                                         onChange={(date) => onChange({ fechaLlegadaBase: date })}
+                                        disabled={isViewOnly}
                                     />
                                 </Box>
                             </Grid>
@@ -238,6 +243,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange }: Resumen
                                         sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                         value={formData.kmInicio}
                                         onChange={handleNumberChange('kmInicio')}
+                                        disabled={isViewOnly}
                                     />
                                 </Box>
                             </Grid>
@@ -253,6 +259,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange }: Resumen
                                         sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                         value={formData.kmLlegada}
                                         onChange={handleNumberChange('kmLlegada')}
+                                        disabled={isViewOnly}
                                     />
                                 </Box>
                             </Grid>
@@ -298,6 +305,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange }: Resumen
                                         sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                         value={formData.peso} 
                                         onChange={handleNumberChange('peso')} 
+                                        disabled={isViewOnly}
                                     />
                                 </Box>
                             </Grid>
@@ -315,6 +323,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange }: Resumen
                                             sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                             value={formData.largo} 
                                             onChange={handleNumberChange('largo')} 
+                                            disabled={isViewOnly}
                                         />
                                     </Grid>
                                     <Grid size={{ xs: 4 }}>
@@ -326,6 +335,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange }: Resumen
                                             sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                             value={formData.ancho} 
                                             onChange={handleNumberChange('ancho')} 
+                                            disabled={isViewOnly}
                                         />
                                     </Grid>
                                     <Grid size={{ xs: 4 }}>
@@ -337,6 +347,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange }: Resumen
                                             sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                             value={formData.alto} 
                                             onChange={handleNumberChange('alto')} 
+                                            disabled={isViewOnly}
                                         />
                                     </Grid>
                                 </Grid>
@@ -365,10 +376,11 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange }: Resumen
                     
                     <Box sx={{ display: 'flex', gap: 4 }}>
                         <FormControlLabel
-                            disabled={true}
+                            disabled={isViewOnly}
                             control={
                                 <Switch 
                                     checked={formData.requiereEscolta}
+                                    onChange={(e) => onChange({ requiereEscolta: e.target.checked })}
                                     color="primary"
                                 />
                             }

@@ -1,6 +1,6 @@
 import { Box, Typography, Button, Card, CardContent, CircularProgress } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { useViajeRutasSugeridas, useCloneViajeRuta } from '../../hooks/useViajeRutas';
+import { useViajeRutasSugeridas, useCloneViajeRuta } from '@features/viaje/hooks/useViajeRutas';
 
 interface SugerenciasRutaPanelProps {
     viajeId: number;

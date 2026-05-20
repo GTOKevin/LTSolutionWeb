@@ -24,7 +24,6 @@ const RolesColaboradorPage = lazy(() => import('@/pages/roles-colaborador').then
 const MaestrosPage = lazy(() => import('@/pages/maestros').then(module => ({ default: module.MaestrosPage })));
 const ViajesPage = lazy(() => import('@pages/viajes').then(module => ({ default: module.ViajesPage })));
 const ViajeNuevoPage = lazy(() => import('@pages/viajes/nuevo').then(module => ({ default: module.ViajeNuevoPage })));
-const ViajeDetallePage = lazy(() => import('@/pages/viajes/detalle').then(module => ({ default: module.ViajeDetallePage })));
 const ViajeEditarPage = lazy(() => import('@/pages/viajes/editar').then(module => ({ default: module.ViajeEditarPage })));
 const FacturasPage = lazy(() => import('@/pages/facturas').then(module => ({ default: module.FacturasPage })));
 const GastoPage = lazy(() => import('@/pages/gasto').then(module => ({ default: module.GastoPage })));
@@ -105,11 +104,6 @@ export function RouterProvider() {
                             </PermissionGuard>
                         } />
                         <Route path="viajes/:id" element={
-                            <PermissionGuard permission={PERMISSIONS.VIAJES.VER}>
-                                <ViajeDetallePage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="viajes/:id/editar" element={
                             <PermissionGuard permission={PERMISSIONS.VIAJES.VER}>
                                 <ViajeEditarPage />
                             </PermissionGuard>

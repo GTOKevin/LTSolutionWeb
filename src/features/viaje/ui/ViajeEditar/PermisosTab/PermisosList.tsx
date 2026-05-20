@@ -10,9 +10,10 @@ import type { ViajePermiso } from '@/entities/viaje/model/types';
 
 interface PermisosListProps {
     viajeId: number;
+    isViewOnly?: boolean;
 }
 
-export function PermisosList({ viajeId }: PermisosListProps) {
+export function PermisosList({ viajeId, isViewOnly }: PermisosListProps) {
     const theme = useTheme();
     const { data: pagedData, isLoading } = useViajePermisos(viajeId, 1, 50);
     const deleteMutation = useDeleteViajePermiso();
@@ -210,10 +211,12 @@ export function PermisosList({ viajeId }: PermisosListProps) {
                         Descargar
                     </MenuItem>
                 )}
-                <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
-                    <DeleteIcon fontSize="small" sx={{ mr: 1.5, color: 'error.main' }} />
-                    Eliminar
-                </MenuItem>
+                {!isViewOnly && (
+                    <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+                        <DeleteIcon fontSize="small" sx={{ mr: 1.5, color: 'error.main' }} />
+                        Eliminar
+                    </MenuItem>
+                )}
             </Menu>
 
             <ConfirmDialog

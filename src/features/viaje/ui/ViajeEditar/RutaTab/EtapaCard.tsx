@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { ViajeRutaDto } from '@/entities/viaje/model/types';
-import { useUpdateViajeRuta, useDeleteViajeRuta } from '../../hooks/useViajeRutas';
+import { useUpdateViajeRuta, useDeleteViajeRuta } from '@features/viaje/hooks/useViajeRutas';
 import { Box, Typography, Card, CardContent, IconButton, CircularProgress, TextField, Chip, Stack, InputAdornment } from '@mui/material';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -18,9 +18,10 @@ interface EtapaCardProps {
         orden: number;
         items: ViajeRutaDto[];
     };
+    isViewOnly?: boolean;
 }
 
-export function EtapaCard({ etapa, viajeId }: EtapaCardProps) {
+export function EtapaCard({ etapa, viajeId, isViewOnly }: EtapaCardProps) {
     const {
         attributes,
         listeners,
@@ -85,20 +86,22 @@ export function EtapaCard({ etapa, viajeId }: EtapaCardProps) {
             }}
         >
             {/* Drag Handle */}
-            <Box 
-                {...attributes} 
-                {...listeners}
-                sx={{ 
-                    position: 'absolute', 
-                    top: 8, 
-                    right: 8, 
-                    cursor: 'grab', 
-                    color: 'text.disabled',
-                    '&:hover': { color: 'text.secondary' }
-                }}
-            >
-                <DragIndicatorIcon />
-            </Box>
+            {!isViewOnly && (
+                <Box 
+                    {...attributes} 
+                    {...listeners}
+                    sx={{ 
+                        position: 'absolute', 
+                        top: 8, 
+                        right: 8, 
+                        cursor: 'grab', 
+                        color: 'text.disabled',
+                        '&:hover': { color: 'text.secondary' }
+                    }}
+                >
+                    <DragIndicatorIcon />
+                </Box>
+            )}
 
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                 <Box display="flex" alignItems="center" gap={1.5} mb={2} pr={4}>
@@ -142,7 +145,7 @@ export function EtapaCard({ etapa, viajeId }: EtapaCardProps) {
                             value={principal.nombreLugar || 'Sin nombre'} 
                             InputProps={{ 
                                 readOnly: true,
-                                endAdornment: (
+                                endAdornment: !isViewOnly && (
                                     <InputAdornment position="end">
                                         <IconButton size="small" onClick={() => setEditingRuta(principal)}>
                                             <EditIcon fontSize="small" />
@@ -163,15 +166,17 @@ export function EtapaCard({ etapa, viajeId }: EtapaCardProps) {
                                 <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1 }}>
                                     Alternativa
                                 </Typography>
-                                <Typography 
-                                    variant="caption" 
-                                    color="primary" 
-                                    fontWeight="bold"
-                                    sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                                    onClick={() => handleSetPrincipal(alt)}
-                                >
-                                    Hacer Principal
-                                </Typography>
+                                {!isViewOnly && (
+                                    <Typography 
+                                        variant="caption" 
+                                        color="primary" 
+                                        fontWeight="bold"
+                                        sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                                        onClick={() => handleSetPrincipal(alt)}
+                                    >
+                                        Hacer Principal
+                                    </Typography>
+                                )}
                             </Box>
                             <TextField 
                                 fullWidth 
@@ -179,7 +184,7 @@ export function EtapaCard({ etapa, viajeId }: EtapaCardProps) {
                                 value={alt.nombreLugar || 'Sin nombre'} 
                                 InputProps={{ 
                                     readOnly: true,
-                                    endAdornment: (
+                                    endAdornment: !isViewOnly && (
                                         <InputAdornment position="end">
                                             <IconButton size="small" onClick={() => setEditingRuta(alt)}>
                                                 <EditIcon fontSize="small" />

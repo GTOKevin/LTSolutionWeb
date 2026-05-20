@@ -6,9 +6,10 @@ import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
 
 interface EscoltasListProps {
     viajeId: number;
+    isViewOnly?: boolean;
 }
 
-export function EscoltasList({ viajeId }: EscoltasListProps) {
+export function EscoltasList({ viajeId, isViewOnly }: EscoltasListProps) {
     const theme = useTheme();
     const { data: pagedData, isLoading } = useViajeEscoltas(viajeId, 1, 50);
     const deleteMutation = useDeleteViajeEscolta();
@@ -61,23 +62,25 @@ export function EscoltasList({ viajeId }: EscoltasListProps) {
                                     }
                                 }}
                             >
-                                <IconButton 
-                                    className="delete-btn"
-                                    size="small" 
-                                    onClick={() => setDeleteId(item.viajeEscoltaID)} 
-                                    sx={{ 
-                                        position: 'absolute', 
-                                        top: 8, 
-                                        right: 8, 
-                                        opacity: 0, 
-                                        transition: 'opacity 0.2s',
-                                        color: 'error.main',
-                                        bgcolor: alpha(theme.palette.error.main, 0.1),
-                                        '&:hover': { bgcolor: 'error.main', color: 'white' }
-                                    }}
-                                >
-                                    <DeleteIcon fontSize="small" />
-                                </IconButton>
+                                {!isViewOnly && (
+                                    <IconButton 
+                                        className="delete-btn"
+                                        size="small" 
+                                        onClick={() => setDeleteId(item.viajeEscoltaID)} 
+                                        sx={{ 
+                                            position: 'absolute', 
+                                            top: 8, 
+                                            right: 8, 
+                                            opacity: 0, 
+                                            transition: 'opacity 0.2s',
+                                            color: 'error.main',
+                                            bgcolor: alpha(theme.palette.error.main, 0.1),
+                                            '&:hover': { bgcolor: 'error.main', color: 'white' }
+                                        }}
+                                    >
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                )}
 
                                 <Box display="flex" gap={2}>
                                     <Box 

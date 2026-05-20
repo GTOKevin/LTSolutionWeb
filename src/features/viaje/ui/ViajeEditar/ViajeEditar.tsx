@@ -3,28 +3,30 @@ import {
     Box, Tabs, Tab, Typography, CircularProgress, Paper, Stack, Button, Chip
 } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
 import type { UpdateViajeDto, ViajeListItem } from '@/entities/viaje/model/types';
 import dayjs from 'dayjs';
 
-import { ResumenGeneralTab, type ResumenGeneralData } from './tabs/ResumenGeneralTab';
-import { PlanificacionRutaTab } from './tabs/PlanificacionRutaTab';
-import { GuiasTab } from './tabs/GuiasTab';
-import { PermisosTab } from './tabs/PermisosTab/PermisosTab';
-import { GastosTab } from './tabs/GastosTab';
-import { EscoltaTab } from './tabs/EscoltaTab/EscoltaTab';
-import { ViajeIncidente } from './tabs/IncidenteTab/ViajeIncidente';
-import { useViajeOptions } from '../../hooks/useViajeOptions';
+import { ResumenGeneralTab, type ResumenGeneralData } from './ResumenGeneralTab';
+import { PlanificacionRutaTab } from './RutaTab/PlanificacionRutaTab';
+import { GuiasTab } from './GuiasTab';
+import { PermisosTab } from './PermisosTab/PermisosTab';
+import { GastosTab } from './GastosTab';
+import { EscoltaTab } from './EscoltaTab/EscoltaTab';
+import { ViajeIncidente } from './IncidenteTab/ViajeIncidente';
+import { useViajeOptions } from '@features/viaje/hooks/useViajeOptions';
 import { useToast } from '@/shared/components/ui/Toast';
 
 export function ViajeEditar() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const queryClient = useQueryClient();
     const { showToast } = useToast();
     const viajeId = parseInt(id || '0', 10);
+    const isViewOnly = searchParams.get('mode') === 'view';
 
     const [activeTab, setActiveTab] = useState(0);
 
@@ -184,11 +186,13 @@ export function ViajeEditar() {
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                     <Chip label={viaje.estado?.nombre || ''} color="info" size="small" sx={{ fontWeight: 600, mr: 2 }} />
                     <Button onClick={() => navigate('/app/viajes')} variant="outlined" color="inherit" disabled={updateMutation.isPending}>
-                        Cancelar
+                        Volver
                     </Button>
-                    <Button variant="contained" color="primary" onClick={handleSave} disabled={updateMutation.isPending}>
-                        {updateMutation.isPending ? <CircularProgress size={24} color="inherit" /> : 'Guardar Cambios'}
-                    </Button>
+                    {!isViewOnly && (
+                        <Button variant="contained" color="primary" onClick={handleSave} disabled={updateMutation.isPending}>
+                            {updateMutation.isPending ? <CircularProgress size={24} color="inherit" /> : 'Guardar Cambios'}
+                        </Button>
+                    )}
                 </Box>
             </Stack>
 
@@ -235,31 +239,32 @@ export function ViajeEditar() {
                             viajeListItem={mockViajeListItem}
                             formData={formData}
                             onChange={handleFormDataChange}
+                            isViewOnly={isViewOnly}
                         />
                     </TabPanel>
                     <TabPanel value={activeTab} index={1}>
-                        <PlanificacionRutaTab viaje={viaje} />
+                        <PlanificacionRutaTab viaje={viaje} isViewOnly={isViewOnly} />
                     </TabPanel>
                     <TabPanel value={activeTab} index={2}>
-                        <GuiasTab viaje={viaje} />
+                        <GuiasTab viaje={viaje} isViewOnly={isViewOnly} />
                     </TabPanel>
                     <TabPanel value={activeTab} index={3}>
-                        <GastosTab viaje={viaje} />
+                        <GastosTab viaje={viaje} isViewOnly={isViewOnly} />
                     </TabPanel>
                     <TabPanel value={activeTab} index={4}>
                         <Box sx={{p: 2}}>
                             <ViajeIncidente
-                                viewOnly={false}
+                                viewOnly={isViewOnly}
                                 tiposIncidente={tiposIncidente || []}
                                 viajeId={viajeId}
                             />
                         </Box>
                     </TabPanel>
                     <TabPanel value={activeTab} index={5}>
-                        <PermisosTab viaje={viaje} />
+                        <PermisosTab viaje={viaje} isViewOnly={isViewOnly} />
                     </TabPanel>
                     <TabPanel value={activeTab} index={6}>
-                        <EscoltaTab viaje={viaje} />
+                        <EscoltaTab viaje={viaje} isViewOnly={isViewOnly} />
                     </TabPanel>
                 </Box>
             </Paper>

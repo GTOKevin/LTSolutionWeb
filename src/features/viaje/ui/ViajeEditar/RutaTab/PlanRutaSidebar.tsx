@@ -12,7 +12,7 @@ import {
     SortableContext,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { useViajeRutas, useReorderViajeRutas } from '../../hooks/useViajeRutas';
+import { useViajeRutas, useReorderViajeRutas } from '@features/viaje/hooks/useViajeRutas';
 import { EtapaCard } from './EtapaCard';
 import { SugerenciasRutaPanel } from './SugerenciasRutaPanel';
 import type { ViajeRutaDto } from '@/entities/viaje/model/types';
@@ -22,9 +22,10 @@ import SaveIcon from '@mui/icons-material/Save';
 interface PlanRutaSidebarProps {
     viajeId: number;
     onClose?: () => void;
+    isViewOnly?: boolean;
 }
 
-export function PlanRutaSidebar({ viajeId, onClose }: PlanRutaSidebarProps) {
+export function PlanRutaSidebar({ viajeId, onClose, isViewOnly }: PlanRutaSidebarProps) {
     const { data: rutas, isLoading } = useViajeRutas(viajeId);
     const reorderMutation = useReorderViajeRutas();
 
@@ -89,19 +90,19 @@ export function PlanRutaSidebar({ viajeId, onClose }: PlanRutaSidebarProps) {
                     <Box display="flex" justifyContent="center" p={4}><CircularProgress size={24} /></Box>
                 ) : (
                     <>
-                        {etapas.length === 0 && <SugerenciasRutaPanel viajeId={viajeId} />}
+                        {etapas.length === 0 && !isViewOnly && <SugerenciasRutaPanel viajeId={viajeId} />}
                         
                         <DndContext 
                             sensors={sensors}
                             collisionDetection={closestCenter}
-                            onDragEnd={handleDragEnd}
+                            onDragEnd={isViewOnly ? undefined : handleDragEnd}
                         >
                             <SortableContext 
                                 items={etapas.map(e => e.id)}
                                 strategy={verticalListSortingStrategy}
                             >
                                 {etapas.map(etapa => (
-                                    <EtapaCard key={etapa.id} etapa={etapa} viajeId={viajeId} />
+                                    <EtapaCard key={etapa.id} etapa={etapa} viajeId={viajeId} isViewOnly={isViewOnly} />
                                 ))}
                             </SortableContext>
                         </DndContext>
@@ -109,20 +110,24 @@ export function PlanRutaSidebar({ viajeId, onClose }: PlanRutaSidebarProps) {
                 )}
             </Box>
 
-            <Divider />
-            <Box p={3} bgcolor="grey.50">
-                <Button 
-                    variant="contained" 
-                    color="primary" 
-                    fullWidth 
-                    size="large"
-                    startIcon={<SaveIcon />}
-                    onClick={onClose}
-                    sx={{ py: 1.5, borderRadius: 2 }}
-                >
-                    Confirmar Ruta
-                </Button>
-            </Box>
+            {!isViewOnly && (
+                <>
+                    <Divider />
+                    <Box p={3} bgcolor="grey.50">
+                        <Button 
+                            variant="contained" 
+                            color="primary" 
+                            fullWidth 
+                            size="large"
+                            startIcon={<SaveIcon />}
+                            onClick={onClose}
+                            sx={{ py: 1.5, borderRadius: 2 }}
+                        >
+                            Confirmar Ruta
+                        </Button>
+                    </Box>
+                </>
+            )}
         </>
     );
 }

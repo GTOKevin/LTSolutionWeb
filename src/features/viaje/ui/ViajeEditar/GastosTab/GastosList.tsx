@@ -10,9 +10,10 @@ import { logger } from '@/shared/utils/logger';
 
 interface GastosListProps {
     viajeID: number;
+    isViewOnly?: boolean;
 }
 
-export function GastosList({ viajeID }: GastosListProps) {
+export function GastosList({ viajeID, isViewOnly }: GastosListProps) {
     const theme = useTheme();
     const [page, setPage] = useState(0);
     const rowsPerPage = 10;
@@ -136,15 +137,17 @@ export function GastosList({ viajeID }: GastosListProps) {
                                                 )}
                                             </Box>
                                             <Box component="td" sx={{ py: 2, textAlign: 'right', pr: 1 }}>
-                                                <IconButton 
-                                                    size="small" 
-                                                    color="error" 
-                                                    onClick={() => handleDelete(gasto.viajeGastoID)}
-                                                    disabled={deleteMutation.isPending}
-                                                    sx={{ opacity: 0.7, '&:hover': { opacity: 1 } }}
-                                                >
-                                                    <DeleteIcon fontSize="small" />
-                                                </IconButton>
+                                                {!isViewOnly && (
+                                                    <IconButton 
+                                                        size="small" 
+                                                        color="error" 
+                                                        onClick={() => handleDelete(gasto.viajeGastoID)}
+                                                        disabled={deleteMutation.isPending}
+                                                        sx={{ opacity: 0.7, '&:hover': { opacity: 1 } }}
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </IconButton>
+                                                )}
                                             </Box>
                                         </Box>
                                     );

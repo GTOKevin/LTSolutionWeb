@@ -3,7 +3,7 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions, 
     Button, TextField, Box, MenuItem, FormControlLabel, Switch, CircularProgress
 } from '@mui/material';
-import { useUpdateViajeRuta } from '../../hooks/useViajeRutas';
+import { useUpdateViajeRuta } from '@features/viaje/hooks/useViajeRutas';
 import { useQuery } from '@tanstack/react-query';
 import { maestroApi } from '@/shared/api/maestro.api';
 import { SECCION_MAESTRO } from '@/shared/constants/maestro';

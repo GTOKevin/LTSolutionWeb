@@ -5,9 +5,10 @@ import { PlanRutaMap } from './PlanRutaMap';
 interface ViajePlanRutaLayoutProps {
     viajeId: number;
     onClose?: () => void;
+    isViewOnly?: boolean;
 }
 
-export function ViajePlanRutaLayout({ viajeId, onClose }: ViajePlanRutaLayoutProps) {
+export function ViajePlanRutaLayout({ viajeId, onClose, isViewOnly }: ViajePlanRutaLayoutProps) {
     return (
         <Paper 
             elevation={4} 
@@ -35,7 +36,7 @@ export function ViajePlanRutaLayout({ viajeId, onClose }: ViajePlanRutaLayoutPro
                     zIndex: 10
                 }}
             >
-                <PlanRutaSidebar viajeId={viajeId} onClose={onClose} />
+                <PlanRutaSidebar viajeId={viajeId} onClose={onClose} isViewOnly={isViewOnly} />
             </Box>
         </Paper>
     );
