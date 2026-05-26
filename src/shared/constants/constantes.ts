@@ -36,9 +36,10 @@ export const ESTADO_VIAJE_ID = {
 } as const;
 
 export const ESTADO_FACTURA_ID = {
-    REGISTRADA: 301,
+    GENERADO: 301,
     EMITIDO: 302,
-    ENTREGADO: 303
+    ENTREGADO: 303,
+    ANULADO: 304
 } as const;
 
 export const ESTADO_FACTURA_PAGO_ID = {
@@ -72,10 +73,10 @@ export const TIPO_FLOTA={
 export const INPUT_VAL={
     PLACA_PERU_REGEX : /^[A-Z0-9]{3}-[0-9]{3,4}$/,
     TEXTO_SEGURO_REGEX : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\-_.,\s]+$/,
-    ALPHA_NUMERICO_ESPECIAL : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_\/()[\]:]*$/,
+    ALPHA_NUMERICO_ESPECIAL : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_/()[\]:]*$/,
     ALPHA_NUMERICO_ESPACIOS : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]*$/,
     LETRAS_ESPACIO: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/,
-    ALPHA_NUMERICO_GUION_SIN_ESPACIOS: /^[a-zA-Z0-9\-]*$/,
+    ALPHA_NUMERICO_GUION_SIN_ESPACIOS: /^[a-zA-Z0-9-]*$/,
     DECIMAL_10_2_REGEX : /^\d{1,8}(\.\d{1,2})?$/,
     TELEFONO_PERU_REGEX : /^9\d{8}$/,
     PASSWORD_SIN_ESPACIOS: /^\S+$/,

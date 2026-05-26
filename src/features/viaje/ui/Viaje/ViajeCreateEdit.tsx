@@ -317,6 +317,7 @@ export function ViajeCreateEdit({ viaje, isViewOnly, options, isPending }: Props
                 </Box>
             </Grid>
             <Grid size={{ xs: 12, md: 6 }} display="flex" alignItems="center" gap={1}>
+                {/* Requiere Escolta - Solo debe poder visualizarse y no ser editable en modo lectura*/}
                 <Controller
                     name="requiereEscolta"
                     control={control}

@@ -26,6 +26,8 @@ const ViajesPage = lazy(() => import('@pages/viajes').then(module => ({ default:
 const ViajeNuevoPage = lazy(() => import('@pages/viajes/nuevo').then(module => ({ default: module.ViajeNuevoPage })));
 const ViajeEditarPage = lazy(() => import('@/pages/viajes/editar').then(module => ({ default: module.ViajeEditarPage })));
 const FacturasPage = lazy(() => import('@/pages/facturas').then(module => ({ default: module.FacturasPage })));
+const FacturaNuevaPage = lazy(() => import('@/pages/facturas/nuevo').then(module => ({ default: module.FacturaNuevaPage })));
+const FacturaEditarPage = lazy(() => import('@/pages/facturas/editar').then(module => ({ default: module.FacturaEditarPage })));
 const GastoPage = lazy(() => import('@/pages/gasto').then(module => ({ default: module.GastoPage })));
 const MercaderiaPage = lazy(() => import('@/pages/mercaderia').then(module => ({ default: module.MercaderiaPage })));
 const TipoProductoPage = lazy(() => import('@/pages/tipo-producto').then(module => ({ default: module.TipoProductoPage })));
@@ -111,6 +113,16 @@ export function RouterProvider() {
                         <Route path="facturas" element={
                             <PermissionGuard permission={PERMISSIONS.FACTURAS.VER}>
                                 <FacturasPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="facturas/nueva" element={
+                            <PermissionGuard permission={PERMISSIONS.FACTURAS.VER}>
+                                <FacturaNuevaPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="facturas/:id" element={
+                            <PermissionGuard permission={PERMISSIONS.FACTURAS.VER}>
+                                <FacturaEditarPage />
                             </PermissionGuard>
                         } />
                         <Route path="flota" element={

@@ -131,12 +131,12 @@ export function ViajesMobileList({
                 dotColor: theme.palette.success.main
             };
         }
-        if (codigo === ESTADO_VIAJE_COD.Cancelado) {
+        if (codigo === ESTADO_VIAJE_COD.Descargando) {
             return {
                 label,
-                bg: alpha(theme.palette.error.main, 0.1),
-                color: theme.palette.error.main,
-                dotColor: theme.palette.error.main
+                bg: alpha(theme.palette.secondary.main, 0.1),
+                color: theme.palette.secondary.main,
+                dotColor: theme.palette.secondary.main
             };
         }
         return {

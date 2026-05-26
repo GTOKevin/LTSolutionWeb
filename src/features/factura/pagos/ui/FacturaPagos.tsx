@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Box, Typography, IconButton, Paper, Collapse, useTheme, alpha } from '@mui/material';
-import { Add as AddIcon, ExpandLess, ExpandMore } from '@mui/icons-material';
+import { Box, Typography, Button } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
 import type { Factura } from '@/entities/factura/model/types';
 import { useDeleteFacturaPago, useFacturaPagos } from '../../hooks/useFacturaPagoCrud';
 import { FacturaPagoForm } from './FacturaPagoForm';
@@ -22,7 +22,6 @@ export function FacturaPagos({ factura }: FacturaPagosProps) {
     
     const deleteMutation = useDeleteFacturaPago();
     const queryClient = useQueryClient();
-    const theme = useTheme();
 
     const { data: pagosFetch = [], isLoading } = useFacturaPagos(factura.facturaID);
 
@@ -57,70 +56,35 @@ export function FacturaPagos({ factura }: FacturaPagosProps) {
 
     const pagos = pagosFetch;
     const paginatedPagos = pagos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const isEditing = false; // Just for theme alpha, as there is no edit yet
-    const isReadOnly = factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO;
+    const isReadOnly = factura.estadoID === ESTADO_FACTURA_ID.GENERADO || factura.saldoPendiente <= 0;
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Paper
-                elevation={0}
-                sx={{
-                    p: 0,
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 3,
-                    bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02),
-                    overflow: 'hidden'
-                }}
-            >
-                <Box
-                    onClick={() => {
-                        if (factura.saldoPendiente <= 0 || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO) return;
-                        setIsFormOpen((prev) => !prev);
-                    }}
-                    sx={{
-                        px: 3,
-                        py: 2,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        borderBottom: isFormOpen ? `1px solid ${theme.palette.divider}` : 'none',
-                        cursor: (factura.saldoPendiente <= 0 || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO) ? 'default' : 'pointer'
-                    }}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, mt:2 }}>
+                <Typography variant="h6" color="primary.main" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <span className="material-symbols-outlined">payments</span>
+                    Amortizaciones
+                </Typography>
+                
+                <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setIsFormOpen(true)}
+                    disabled={factura.saldoPendiente <= 0 || isReadOnly}
+                    sx={{ borderRadius: 2 }}
                 >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ 
-                            bgcolor: theme.palette.primary.main, 
-                            color: 'white', 
-                            p: 0.5, 
-                            borderRadius: '50%', 
-                            display: 'flex' 
-                        }}>
-                            <AddIcon fontSize="small" />
-                        </Box>
-                        <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
-                            Agregar Pago
-                        </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <IconButton
-                            size="small"
-                            disabled={factura.saldoPendiente <= 0 || factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO}
-                        >
-                            {isFormOpen ? <ExpandLess /> : <ExpandMore />}
-                        </IconButton>
-                    </Box>
-                </Box>
-                <Collapse in={isFormOpen} unmountOnExit>
-                    <Box sx={{ p: 0 }}>
-                        <FacturaPagoForm
-                            onClose={() => setIsFormOpen(false)}
-                            facturaId={factura.facturaID}
-                            monedaId={factura.monedaID}
-                            maxAmount={factura.saldoPendiente}
-                        />
-                    </Box>
-                </Collapse>
-            </Paper>
+                    Agregar Pago
+                </Button>
+            </Box>
+
+            <FacturaPagoForm
+                open={isFormOpen}
+                onClose={() => setIsFormOpen(false)}
+                factura={factura}
+                facturaId={factura.facturaID}
+                monedaId={factura.monedaID}
+                maxAmount={factura.saldoPendiente}
+            />
 
             <Box sx={{ mt: 2 }}>
                 <Box sx={{ display: { xs: 'none', md: 'block' } }}>

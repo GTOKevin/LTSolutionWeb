@@ -8,12 +8,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 
 // Import sub-modules
 import { ViajeCreateEdit } from '../Viaje/ViajeCreateEdit';
-import { ViajeMercaderia } from '../ViajeMercaderia/Index';
-import { ViajeGasto } from '../ViajeGasto/Index';
-import { ViajeGuia } from '../ViajeGuia/Index';
 import { ViajeIncidente } from '../ViajeEditar/IncidenteTab/Index';
-import { ViajePermiso } from '../ViajePermiso/Index';
-import { ViajeEscolta } from '../ViajeEscolta/Index';
 import { ViajeTimeline } from './ViajeTimeline';
 
 export function ViajeDetalle() {
@@ -96,52 +91,7 @@ export function ViajeDetalle() {
                         </FormProvider>
 
                         <Grid2 container spacing={3}>
-                            <Grid2 size={{ xs: 12, lg: 6 }}>
-                                <Card sx={{ borderRadius: 3, boxShadow: 2, height: '100%' }}>
-                                    <CardContent>
-                                        <Typography variant="h6" fontWeight={700} gutterBottom>Mercadería</Typography>
-                                        <Divider sx={{ mb: 2 }} />
-                                        <ViajeMercaderia 
-                                            viewOnly={isViewOnly} 
-                                            tiposMedida={tiposMedida || []} 
-                                            tiposPeso={tiposPeso || []} 
-                                            mercaderias={mercaderias || []}
-                                            viajeId={viajeId}
-                                        />
-                                    </CardContent>
-                                </Card>
-                            </Grid2>
-
-                            <Grid2 size={{ xs: 12, lg: 6 }}>
-                                <Card sx={{ borderRadius: 3, boxShadow: 2, height: '100%' }}>
-                                    <CardContent>
-                                        <Typography variant="h6" fontWeight={700} gutterBottom>Guías</Typography>
-                                        <Divider sx={{ mb: 2 }} />
-                                        <ViajeGuia
-                                            viewOnly={isViewOnly}
-                                            tiposGuia={tiposGuia || []}
-                                            viajeId={viajeId}
-                                        />
-                                    </CardContent>
-                                </Card>
-                            </Grid2>
-
-                            <Grid2 size={{ xs: 12, lg: 6 }}>
-                                <Card sx={{ borderRadius: 3, boxShadow: 2, height: '100%' }}>
-                                    <CardContent>
-                                        <Typography variant="h6" fontWeight={700} gutterBottom>Gastos</Typography>
-                                        <Divider sx={{ mb: 2 }} />
-                                        <ViajeGasto 
-                                            viewOnly={isViewOnly} 
-                                            tiposGasto={tiposGasto || []} 
-                                            monedas={monedas || []}
-                                            viajeId={viajeId}
-                                        />
-                                    </CardContent>
-                                </Card>
-                            </Grid2>
-
-                            <Grid2 size={{ xs: 12, lg: 6 }}>
+                            <Grid2 size={{ xs: 12 }}>
                                 <Card sx={{ borderRadius: 3, boxShadow: 2, height: '100%' }}>
                                     <CardContent>
                                         <Typography variant="h6" fontWeight={700} gutterBottom>Incidentes</Typography>
@@ -154,31 +104,6 @@ export function ViajeDetalle() {
                                     </CardContent>
                                 </Card>
                             </Grid2>
-
-                                <Grid2 size={{ xs: 12, lg: 6 }}>
-                                    <Card sx={{ borderRadius: 3, boxShadow: 2, height: '100%' }}>
-                                        <CardContent>
-                                            <Typography variant="h6" fontWeight={700} gutterBottom>Permisos</Typography>
-                                            <Divider sx={{ mb: 2 }} />
-                                            <ViajePermiso viajeId={viajeId} viewOnly={isViewOnly} />
-                                        </CardContent>
-                                    </Card>
-                                </Grid2>
- 
-                                <Grid2 size={{ xs: 12, lg: 6 }}>
-                                    <Card sx={{ borderRadius: 3, boxShadow: 2, height: '100%' }}>
-                                        <CardContent>
-                                            <Typography variant="h6" fontWeight={700} gutterBottom>Escolta</Typography>
-                                            <Divider sx={{ mb: 2 }} />
-                                            <ViajeEscolta 
-                                                viewOnly={isViewOnly} 
-                                                viajeId={viajeId}
-                                                flotas={flotasEscolta || []}
-                                                colaboradores={colaboradores || []}
-                                            />
-                                        </CardContent>
-                                    </Card>
-                                </Grid2>
                         </Grid2>
                     </Stack>
                 </Grid2>

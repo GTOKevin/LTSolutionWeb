@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Box, Typography, IconButton, Paper, Collapse, useTheme, alpha } from '@mui/material';
-import { Add as AddIcon, ExpandLess, ExpandMore } from '@mui/icons-material';
+import { Box, Typography, Button } from '@mui/material';
+import { Add as AddIcon, ListAlt as ListAltIcon } from '@mui/icons-material';
 import type { Factura } from '@/entities/factura/model/types';
 import { useDeleteFacturaDetalle, useFacturaDetalles } from '../../hooks/useFacturaDetalleCrud';
 import { FacturaDetalleForm } from './FacturaDetalleForm';
@@ -21,7 +21,6 @@ export function FacturaDetalles({ factura }: FacturaDetallesProps) {
     
     const deleteMutation = useDeleteFacturaDetalle();
     const queryClient = useQueryClient();
-    const theme = useTheme();
 
     const { data: detallesFetch = [], isLoading } = useFacturaDetalles(factura.facturaID);
 
@@ -56,71 +55,34 @@ export function FacturaDetalles({ factura }: FacturaDetallesProps) {
 
     const detalles = detallesFetch;
     const paginatedDetalles = detalles.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const isEditing = isFormOpen;
     const isReadOnly = factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO || factura.estadoID === ESTADO_FACTURA_ID.EMITIDO;
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
-            <Paper
-                elevation={0}
-                sx={{
-                    p: 0,
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 3,
-                    bgcolor: alpha(isEditing ? theme.palette.warning.main : theme.palette.primary.main, 0.02),
-                    overflow: 'hidden'
-                }}
-            >
-                <Box
-                    onClick={() => {
-                        if (factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO) return;
-                        setIsFormOpen((prev) => !prev);
-                    }}
-                    sx={{
-                        px: 3,
-                        py: 2,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        borderBottom: isFormOpen ? `1px solid ${theme.palette.divider}` : 'none',
-                        cursor: (factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO) ? 'default' : 'pointer'
-                    }}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" color="primary.main" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <ListAltIcon />
+                    Detalle de Factura
+                </Typography>
+                
+                <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setIsFormOpen(true)}
+                    disabled={factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO || factura.estadoID === ESTADO_FACTURA_ID.EMITIDO}
+                    sx={{ borderRadius: 2 }}
                 >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ 
-                            bgcolor: theme.palette.primary.main, 
-                            color: 'white', 
-                            p: 0.5, 
-                            borderRadius: '50%', 
-                            display: 'flex' 
-                        }}>
-                            <AddIcon fontSize="small" />
-                        </Box>
-                        <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
-                            Agregar Detalle
-                        </Typography>
-                    </Box>
+                    Agregar Detalle
+                </Button>
+            </Box>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <IconButton
-                            size="small"
-                            disabled={factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO}
-                        >
-                            {isFormOpen ? <ExpandLess /> : <ExpandMore />}
-                        </IconButton>
-                    </Box>
-                </Box>
-                <Collapse in={isFormOpen} unmountOnExit>
-                    <Box sx={{ p: 0 }}>
-                        <FacturaDetalleForm
-                            facturaId={factura.facturaID}
-                            monedaId={factura.monedaID}
-                            clienteId={factura.clienteID}
-                            onClose={() => setIsFormOpen(false)}
-                        />
-                    </Box>
-                </Collapse>
-            </Paper>
+            <FacturaDetalleForm
+                open={isFormOpen}
+                facturaId={factura.facturaID}
+                monedaId={factura.monedaID}
+                clienteId={factura.clienteID}
+                onClose={() => setIsFormOpen(false)}
+            />
 
             <Box sx={{ mt: 2 }}>
                 <Box sx={{ display: { xs: 'none', md: 'block' } }}>

@@ -10,6 +10,7 @@ export interface FacturaDetalle {
     facturaID: number;
     viajeID: number;
     descripcion: string | null;
+    codigo?: string | null;
     monedaID: number;
     subTotal: number;
     igv: number;
@@ -59,6 +60,31 @@ export interface Factura {
 
 export interface FacturaFilters extends PagedFilters {
     search?: string;
+    estadoID?: number;
+    fechaInicio?: string;
+    fechaFin?: string;
+}
+
+export interface FacturasResumen {
+    totalFacturado: number;
+    saldoPendienteTotal: number;
+}
+
+export interface FacturaDetalleReporte extends FacturaDetalle {
+    viajeCodigo?: string;
+    origen?: string;
+    destino?: string;
+    tractoPlaca?: string;
+}
+
+export interface FacturaPagoReporte extends FacturaPago {
+    tipoPagoNombre?: string;
+    estadoNombre?: string;
+}
+
+export interface FacturaReporte extends Factura {
+    detalles: FacturaDetalleReporte[];
+    pagos: FacturaPagoReporte[];
 }
 
 export type PagedFacturas = PagedResponse<Factura>;
@@ -87,7 +113,7 @@ export interface CreateFacturaDto {
     serie: string;
     numero: string;
     fechaEmision: string;
-    fechaVencimiento: string;
+    fechaVencimiento?: string | null;
     fechaCompromisoPago?: string | null;
     diasCredito?: number | null;
     monedaID: number;
@@ -97,13 +123,7 @@ export interface CreateFacturaDto {
 }
 
 export interface UpdateFacturaDto {
-    clienteID: number;
-    serie: string;
-    numero: string;
-    fechaEmision: string;
-    fechaVencimiento: string;
     fechaCompromisoPago?: string | null;
-    diasCredito?: number | null;
     monedaID: number;
     estadoID: number;
     activo: boolean;

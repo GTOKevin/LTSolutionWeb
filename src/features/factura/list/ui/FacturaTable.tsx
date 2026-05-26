@@ -2,11 +2,11 @@ import React from 'react';
 import { Typography, Box, Chip, TableCell } from '@mui/material';
 import type { Factura } from '@/entities/factura/model/types';
 import type { PagedResponse } from '@/shared/model/types';
-import { TableActions } from '@/shared/components/ui/TableActions';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { formatCurrency } from '@/shared/utils/format-utils';
-import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
+import { ESTADO_FACTURA_ID, ESTADO_FACTURA_PAGO_ID } from '@/shared/constants/constantes';
+import { FacturaActionMenu } from './FacturaActionMenu';
 
 interface FacturaTableProps {
     data?: PagedResponse<Factura>;
@@ -18,6 +18,25 @@ interface FacturaTableProps {
     onView: (item: Factura) => void;
     onEdit: (item: Factura) => void;
     onDelete: (item: Factura) => void;
+    onPayment: (item: Factura) => void;
+    onViewPayments: (item: Factura) => void;
+    onUpdateStatus: (item: Factura, newStatusId: number) => void;
+}
+
+function statusColor(estadoId:number){
+
+    switch (estadoId) {
+        case ESTADO_FACTURA_ID.GENERADO:
+            return 'warning';
+        case ESTADO_FACTURA_ID.EMITIDO:
+            return 'info';
+        case ESTADO_FACTURA_ID.ENTREGADO:
+            return 'success';
+        case ESTADO_FACTURA_ID.ANULADO:
+            return 'error';
+        default:
+            return 'info';
+    }
 }
 
 export function FacturaTable({
@@ -29,7 +48,10 @@ export function FacturaTable({
     onRowsPerPageChange,
     onView,
     onEdit,
-    onDelete
+    onDelete,
+    onPayment,
+    onViewPayments,
+    onUpdateStatus
 }: FacturaTableProps) {
     const columns: Column[] = React.useMemo(() => [
         { id: 'factura', label: 'Factura' },
@@ -89,18 +111,23 @@ export function FacturaTable({
                     <TableCell>
                         <Chip 
                             label={item.estado?.nombre || 'N/A'} 
-                            color={item.estadoID === ESTADO_FACTURA_ID.REGISTRADA ? 'warning' : item.estadoID === ESTADO_FACTURA_ID.EMITIDO ? 'success' : 'error'}
+                            color={statusColor(item.estadoID)}
                             size="small" 
                             variant="filled"
                         />
                     </TableCell>
                     <TableCell align="right">
-                        <TableActions
-                            onView={() => onView(item)}
-                            onEdit={() => onEdit(item)}
-                            onDelete={() => onDelete(item)}
-                            deleteTooltip='Eliminar Factura'
-                        />
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                            <FacturaActionMenu
+                                factura={item}
+                                onView={onView}
+                                onEdit={onEdit}
+                                onDelete={onDelete}
+                                onPayment={onPayment}
+                                onViewPayments={onViewPayments}
+                                onUpdateStatus={onUpdateStatus}
+                            />
+                        </Box>
                     </TableCell>
                 </>
             )}

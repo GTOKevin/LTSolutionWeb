@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -43,7 +43,7 @@ interface ViajeSelectorModalProps {
 export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: ViajeSelectorModalProps) {
     const [isSelecting, setIsSelecting] = useState(false);
 
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, refetch } = useQuery({
         queryKey: ['viajes', 'selector', clienteId],
         queryFn: () => viajeApi.getAll({ 
             page: 1, 
@@ -53,10 +53,12 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
         enabled: open && !!clienteId
     });
 
-    // Filtramos localmente para estar seguros: completados y no facturados
-    // En LTSolution, Cerrado = true, Facturado = false suele ser la regla
-    // Asumiremos que el backend devuelve la lista y aquí filtramos si es necesario.
-    // Revisando ViajeListItem, tenemos estadoNombre o podemos depender del backend.
+    useEffect(() => {
+        if (open && clienteId) {
+            refetch();
+        }
+    }, [open, clienteId, refetch]);
+
     const viajesDisponibles = useMemo(() => {
         if (!data?.items) return [];
         return data.items.filter(v => v.cerrado && !v.facturado);
@@ -120,7 +122,7 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
                                         >
                                             <TableCell>
                                                 <Typography variant="body2" fontWeight="bold" color="primary">
-                                                    V-{viaje.viajeID}
+                                                    {viaje.codigo}
                                                 </Typography>
                                                 {viaje.guias && (
                                                     <Typography variant="caption" color="text.secondary" display="block">
