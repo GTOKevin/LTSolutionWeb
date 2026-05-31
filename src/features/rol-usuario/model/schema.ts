@@ -11,7 +11,8 @@ export const rolUsuarioSchema = z.object({
         .regex(INPUT_VAL.ALPHA_NUMERICO_ESPACIOS, ERROR_MESSAGES.ALPHA_NUMERICO_ESPACIOS)
         .optional()
         .or(z.literal('')),
-    estado: z.boolean().default(true)
+    estado: z.boolean().default(true),
+    permisosIds: z.array(z.number()).default([])
 });
 
 export type RolUsuarioSchema = z.infer<typeof rolUsuarioSchema>;

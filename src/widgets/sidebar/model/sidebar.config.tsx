@@ -103,19 +103,19 @@ export const SIDEBAR_MENU: MenuItem[] = [
                 text: 'Tipos de Producto', 
                 path: '/app/tipo-producto', 
                 icon: <LocalOfferIcon />,
-                permission: PERMISSIONS.SISTEMA.MAESTROS.VER // Assuming it shares maestro permission
+                permission: PERMISSIONS.CATALOGOS.TIPO_PRODUCTO.VER
             },
             { 
                 text: 'Mercaderías', 
                 path: '/app/mercaderia', 
                 icon: <InventoryIcon />,
-                permission: PERMISSIONS.SISTEMA.MAESTROS.VER
+                permission: PERMISSIONS.CATALOGOS.MERCADERIA.VER
             },
             { 
                 text: 'Gastos', 
                 path: '/app/gasto', 
                 icon: <AccountBalanceWalletIcon />,
-                permission: PERMISSIONS.SISTEMA.MAESTROS.VER
+                permission: PERMISSIONS.CATALOGOS.GASTO.VER
             },
         ]
     },
@@ -148,6 +148,7 @@ export const SIDEBAR_MENU: MenuItem[] = [
                 icon: <ListAltIcon />,
                 permission: PERMISSIONS.SISTEMA.MAESTROS.VER
             },
+
         ]
     }
 ];

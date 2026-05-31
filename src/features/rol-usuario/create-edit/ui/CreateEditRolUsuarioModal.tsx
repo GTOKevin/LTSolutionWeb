@@ -12,7 +12,9 @@ import {
     IconButton,
     FormControlLabel,
     Switch,
-    DialogActions
+    DialogActions,
+    Tabs,
+    Tab
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
@@ -23,6 +25,8 @@ import type { RolUsuario } from '@entities/rol-usuario/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { handleLettersOnlyKeyDown } from '@shared/utils/input-validators';
 import { useCreateRolUsuario, useUpdateRolUsuario } from '../../hooks/useRolUsuarioCrud';
+import { TabPanel } from '@/shared/components/ui/TabPanel';
+import { PermisosMatrix } from './PermisosMatrix';
 
 interface CreateEditRolUsuarioModalProps {
     open: boolean;
@@ -34,6 +38,7 @@ interface CreateEditRolUsuarioModalProps {
 export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess }: CreateEditRolUsuarioModalProps) {
     const theme = useTheme();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState(0);
     
     const isEdit = !!rolToEdit;
 
@@ -49,7 +54,8 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
         defaultValues: {
             nombre: '',
             descripcion: '',
-            estado: true
+            estado: true,
+            permisosIds: []
         }
     });
 
@@ -59,21 +65,28 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
     useEffect(() => {
         if (open) {
             setErrorMessage(null);
+            setActiveTab(0);
             if (rolToEdit) {
                 reset({
                     nombre: rolToEdit.nombre,
                     descripcion: rolToEdit.descripcion || '',
-                    estado: rolToEdit.estado
+                    estado: rolToEdit.estado,
+                    permisosIds: rolToEdit.permisosIds || []
                 });
             } else {
                 reset({
                     nombre: '',
                     descripcion: '',
-                    estado: true
+                    estado: true,
+                    permisosIds: []
                 });
             }
         }
     }, [open, rolToEdit, reset]);
+
+    const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+        setActiveTab(newValue);
+    };
 
     const onSubmit = (data: RolUsuarioSchema) => {
         if (isEdit && rolToEdit) {
@@ -125,7 +138,7 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
         <Dialog 
             open={open} 
             onClose={onClose} 
-            maxWidth="sm" 
+            maxWidth="md" 
             fullWidth
             PaperProps={{
                 sx: { 
@@ -137,9 +150,9 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
         >
             <DialogTitle sx={{ 
                 borderBottom: `1px solid ${theme.palette.divider}`,
-                pb: 2
+                pb: 0
             }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Box>
                         <Typography variant="h6" fontWeight="bold">
                             {isEdit ? 'Editar Rol' : 'Crear Rol'}
@@ -149,72 +162,98 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                         <CloseIcon />
                     </IconButton>
                 </Box>
+                <Tabs value={activeTab} onChange={handleTabChange} textColor="primary" indicatorColor="primary">
+                    <Tab label="Datos Generales" />
+                    <Tab label="Permisos" />
+                </Tabs>
             </DialogTitle>
             
-            <DialogContent sx={{ p: 3, mt: 2 }}>
+            <DialogContent sx={{ p: 0, minHeight: '300px' }}>
                 {errorMessage && (
-                    <Alert severity="error" sx={{ mb: 3 }} onClose={() => setErrorMessage(null)}>
-                        {errorMessage}
-                    </Alert>
+                    <Box sx={{ p: 2, pb: 0 }}>
+                        <Alert severity="error" onClose={() => setErrorMessage(null)}>
+                            {errorMessage}
+                        </Alert>
+                    </Box>
                 )}
 
                 <form id="rol-form" onSubmit={(e) => {
                     e.stopPropagation();
                     handleSubmit(onSubmit)(e);
                 }} noValidate>
-                    <Grid container spacing={2}>
-                        <Grid size={{xs: 12}}>
-                            <Typography variant="caption" fontWeight="bold" sx={{ mb: 0.5, display: 'block' }}>
-                                Nombre del Rol
-                            </Typography>
-                            <TextField
-                                placeholder="ej: Administrador"
-                                fullWidth
-                                {...register('nombre')}
-                                onKeyDown={handleLettersOnlyKeyDown}
-                                error={!!errors.nombre}
-                                helperText={errors.nombre?.message}
-                                disabled={isEdit}
-                                InputProps={{
-                                    sx: { borderRadius: 2 }
-                                }}
-                            />
-                        </Grid>
-                        <Grid size={{xs: 12}}>
-                            <Typography variant="caption" fontWeight="bold" sx={{ mb: 0.5, display: 'block' }}>
-                                Descripción
-                            </Typography>
-                            <TextField
-                                placeholder="Descripción breve de los permisos..."
-                                fullWidth
-                                multiline
-                                rows={3}
-                                {...register('descripcion')}
-                                error={!!errors.descripcion}
-                                helperText={errors.descripcion?.message}
-                                InputProps={{
-                                    sx: { borderRadius: 2 }
-                                }}
-                            />
-                        </Grid>
-                        <Grid size={{xs: 12}}>
+                    <TabPanel value={activeTab} index={0} name="rol-info">
+                        <Box sx={{ p: 3 }}>
+                            <Grid container spacing={2}>
+                                <Grid size={{xs: 12}}>
+                                    <Typography variant="caption" fontWeight="bold" sx={{ mb: 0.5, display: 'block' }}>
+                                        Nombre del Rol
+                                    </Typography>
+                                    <TextField
+                                        placeholder="ej: Administrador"
+                                        fullWidth
+                                        {...register('nombre')}
+                                        onKeyDown={handleLettersOnlyKeyDown}
+                                        error={!!errors.nombre}
+                                        helperText={errors.nombre?.message}
+                                        disabled={isEdit}
+                                        InputProps={{
+                                            sx: { borderRadius: 2 }
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid size={{xs: 12}}>
+                                    <Typography variant="caption" fontWeight="bold" sx={{ mb: 0.5, display: 'block' }}>
+                                        Descripción
+                                    </Typography>
+                                    <TextField
+                                        placeholder="Descripción breve de los permisos..."
+                                        fullWidth
+                                        multiline
+                                        rows={3}
+                                        {...register('descripcion')}
+                                        error={!!errors.descripcion}
+                                        helperText={errors.descripcion?.message}
+                                        InputProps={{
+                                            sx: { borderRadius: 2 }
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid size={{xs: 12}}>
+                                    <Controller
+                                        name="estado"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        checked={field.value}
+                                                        onChange={(e) => field.onChange(e.target.checked)}
+                                                    />
+                                                }
+                                                label={field.value ? "Activo" : "Inactivo"}
+                                            />
+                                        )}
+                                    />
+                                </Grid>
+                            </Grid>
+                        </Box>
+                    </TabPanel>
+                    
+                    <TabPanel value={activeTab} index={1} name="rol-permisos">
+                        <Box sx={{ p: 3 }}>
                             <Controller
-                                name="estado"
+                                name="permisosIds"
                                 control={control}
                                 render={({ field }) => (
-                                    <FormControlLabel
-                                        control={
-                                            <Switch
-                                                checked={field.value}
-                                                onChange={(e) => field.onChange(e.target.checked)}
-                                            />
-                                        }
-                                        label={field.value ? "Activo" : "Inactivo"}
+                                    <PermisosMatrix 
+                                        rolId={rolToEdit?.rolUsuarioID}
+                                        selectedIds={field.value || []}
+                                        onChange={field.onChange}
                                     />
                                 )}
                             />
-                        </Grid>
-                    </Grid>
+                        </Box>
+                    </TabPanel>
                 </form>
             </DialogContent>
             <DialogActions sx={{ p: 3, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>

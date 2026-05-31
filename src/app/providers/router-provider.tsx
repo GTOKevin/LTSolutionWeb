@@ -50,10 +50,8 @@ export function RouterProvider() {
         <BrowserRouter>
             <Suspense fallback={<LoadingFallback />}>
                 <Routes>
-                    {/* Root redirect based on auth status */}
                     <Route path="/" element={<RootRedirect />} />
 
-                    {/* Public routes */}
                     <Route
                         path="/login"
                         element={
@@ -101,12 +99,12 @@ export function RouterProvider() {
                             </PermissionGuard>
                         } />
                         <Route path="viajes/nuevo" element={
-                            <PermissionGuard permission={PERMISSIONS.VIAJES.VER}>
+                            <PermissionGuard permission={PERMISSIONS.VIAJES.GESTIONAR}>
                                 <ViajeNuevoPage />
                             </PermissionGuard>
                         } />
                         <Route path="viajes/:id" element={
-                            <PermissionGuard permission={PERMISSIONS.VIAJES.VER}>
+                            <PermissionGuard permission={PERMISSIONS.VIAJES.GESTIONAR}>
                                 <ViajeEditarPage />
                             </PermissionGuard>
                         } />
@@ -116,12 +114,12 @@ export function RouterProvider() {
                             </PermissionGuard>
                         } />
                         <Route path="facturas/nueva" element={
-                            <PermissionGuard permission={PERMISSIONS.FACTURAS.VER}>
+                            <PermissionGuard permission={PERMISSIONS.FACTURAS.GESTIONAR}>
                                 <FacturaNuevaPage />
                             </PermissionGuard>
                         } />
                         <Route path="facturas/:id" element={
-                            <PermissionGuard permission={PERMISSIONS.FACTURAS.VER}>
+                            <PermissionGuard permission={PERMISSIONS.FACTURAS.GESTIONAR}>
                                 <FacturaEditarPage />
                             </PermissionGuard>
                         } />
@@ -166,17 +164,17 @@ export function RouterProvider() {
                             </PermissionGuard>
                         } />
                         <Route path="gasto" element={
-                            <PermissionGuard permission={PERMISSIONS.SISTEMA.MAESTROS.VER}>
+                            <PermissionGuard permission={PERMISSIONS.CATALOGOS.GASTO.VER}>
                                 <GastoPage />
                             </PermissionGuard>
                         } />
                         <Route path="mercaderia" element={
-                            <PermissionGuard permission={PERMISSIONS.SISTEMA.MAESTROS.VER}>
+                            <PermissionGuard permission={PERMISSIONS.CATALOGOS.MERCADERIA.VER}>
                                 <MercaderiaPage />
                             </PermissionGuard>
                         } />
                         <Route path="tipo-producto" element={
-                            <PermissionGuard permission={PERMISSIONS.SISTEMA.MAESTROS.VER}>
+                            <PermissionGuard permission={PERMISSIONS.CATALOGOS.TIPO_PRODUCTO.VER}>
                                 <TipoProductoPage />
                             </PermissionGuard>
                         } />
