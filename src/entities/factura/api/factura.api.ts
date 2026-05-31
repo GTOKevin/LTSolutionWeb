@@ -18,6 +18,9 @@ export const facturaApi = {
         params.append('size', filters.size.toString());
         
         if (filters.search) params.append('search', filters.search);
+        if (filters.estadoID) params.append('estadoID', filters.estadoID.toString());
+        if (filters.fechaInicio) params.append('fechaInicio', filters.fechaInicio);
+        if (filters.fechaFin) params.append('fechaFin', filters.fechaFin);
 
         const response = await http.get<PagedFacturas>(`/factura?${params.toString()}`);
         return response.data;
@@ -25,6 +28,16 @@ export const facturaApi = {
 
     getById: async (id: number) => {
         const response = await http.get<Factura>(`/factura/${id}`);
+        return response.data;
+    },
+
+    getReporteById: async (id: number) => {
+        const response = await http.get<any>(`/factura/${id}/reporte`);
+        return response.data;
+    },
+
+    getResumen: async () => {
+        const response = await http.get<any>(`/factura/resumen`);
         return response.data;
     },
 

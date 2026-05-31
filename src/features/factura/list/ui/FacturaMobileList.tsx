@@ -5,6 +5,7 @@ import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { formatCurrency } from '@/shared/utils/format-utils';
 import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
+import { FacturaActionMenu } from './FacturaActionMenu';
 
 interface FacturaMobileListProps {
     data?: PagedResponse<Factura>;
@@ -16,6 +17,9 @@ interface FacturaMobileListProps {
     onView: (factura: Factura) => void;
     onEdit: (factura: Factura) => void;
     onDelete: (factura: Factura) => void;
+    onPayment: (factura: Factura) => void;
+    onViewPayments: (factura: Factura) => void;
+    onUpdateStatus: (factura: Factura, newStatusId: number) => void;
 }
 
 export function FacturaMobileList({
@@ -27,7 +31,10 @@ export function FacturaMobileList({
     onRowsPerPageChange,
     onView,
     onEdit,
-    onDelete
+    onDelete,
+    onPayment,
+    onViewPayments,
+    onUpdateStatus
 }: FacturaMobileListProps) {
 
     if (isLoading) {
@@ -47,9 +54,7 @@ export function FacturaMobileList({
                 onRowsPerPageChange={onRowsPerPageChange}
                 emptyMessage="No se encontraron Facturas"
                 keyExtractor={(item) => item.facturaID}
-                onView={onView}
-                onEdit={onEdit}
-                onDelete={onDelete}
+                viewOnly={true}
                 renderHeader={(row) => (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
                         <Box>
@@ -60,11 +65,22 @@ export function FacturaMobileList({
                                 {row.cliente?.razonSocial}
                             </Typography>
                         </Box>
-                        <Chip 
-                            label={row.estado?.nombre || 'N/A'} 
-                            color={row.estadoID === ESTADO_FACTURA_ID.REGISTRADA ? 'warning' : row.estadoID === ESTADO_FACTURA_ID.EMITIDO ? 'success' : 'error'}
-                            size="small" 
-                        />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Chip 
+                                label={row.estado?.nombre || 'N/A'} 
+                                color={row.estadoID === ESTADO_FACTURA_ID.GENERADO ? 'warning' : row.estadoID === ESTADO_FACTURA_ID.EMITIDO ? 'success' : 'error'}
+                                size="small" 
+                            />
+                            <FacturaActionMenu
+                                factura={row}
+                                onView={onView}
+                                onEdit={onEdit}
+                                onDelete={onDelete}
+                                onPayment={onPayment}
+                                onViewPayments={onViewPayments}
+                                onUpdateStatus={onUpdateStatus}
+                            />
+                        </Box>
                     </Box>
                 )}
                 renderBody={(row) => (

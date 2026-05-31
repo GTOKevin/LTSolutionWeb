@@ -17,7 +17,8 @@ import {
     Visibility as VisibilityIcon,
     TableView as ExcelIcon,
     PictureAsPdf as PdfIcon,
-    LockOpen as LockOpenIcon
+    LockOpen as LockOpenIcon,
+    Payments as PaymentsIcon
 } from '@mui/icons-material';
 import { useState, type ReactNode } from 'react';
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
@@ -45,6 +46,7 @@ interface MobileListShellProps<T> {
     onExportExcel?: (item: T) => void;
     onExportPdf?: (item: T) => void;
     onReopen?: (item: T) => void;
+    onPayment?: (item: T) => void;
     
     // Conditionals for actions (optional, returns boolean if action should be shown for specific item)
     canEdit?: (item: T) => boolean;
@@ -52,6 +54,7 @@ interface MobileListShellProps<T> {
     canExportExcel?: (item: T) => boolean;
     canExportPdf?: (item: T) => boolean;
     canReopen?: (item: T) => boolean;
+    canPayment?: (item: T) => boolean;
     
     // Styling
     getCardStyle?: (item: T, theme: any) => object;
@@ -76,11 +79,13 @@ export function MobileListShell<T>({
     onExportExcel,
     onExportPdf,
     onReopen,
+    onPayment,
     canEdit = () => true,
     canDelete = () => true,
     canExportExcel = () => true,
     canExportPdf = () => true,
     canReopen = () => false,
+    canPayment = () => false,
     getCardStyle
 }: MobileListShellProps<T>) {
     const theme = useTheme();
@@ -97,7 +102,7 @@ export function MobileListShell<T>({
         setSelectedItem(null);
     };
 
-    const handleAction = (action: 'edit' | 'delete' | 'preview' | 'view' | 'excel' | 'pdf' | 'reopen') => {
+    const handleAction = (action: 'edit' | 'delete' | 'preview' | 'view' | 'excel' | 'pdf' | 'reopen' | 'payment') => {
         if (!selectedItem) return;
 
         switch (action) {
@@ -121,6 +126,9 @@ export function MobileListShell<T>({
                 break;
             case 'reopen':
                 onReopen?.(selectedItem);
+                break;
+            case 'payment':
+                onPayment?.(selectedItem);
                 break;
         }
         handleMenuClose();
@@ -226,6 +234,13 @@ export function MobileListShell<T>({
                     <MenuItem onClick={() => handleAction('excel')}>
                         <ExcelIcon fontSize="small" sx={{ mr: 1.5, color: 'success.main' }} />
                         Exportar Excel
+                    </MenuItem>
+                )}
+                
+                {onPayment && selectedItem && canPayment(selectedItem) && (
+                    <MenuItem onClick={() => handleAction('payment')}>
+                        <PaymentsIcon fontSize="small" color="success" sx={{ mr: 1.5 }} />
+                        Registrar Pago
                     </MenuItem>
                 )}
                 

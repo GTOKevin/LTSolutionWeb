@@ -42,7 +42,7 @@ export function FacturaDetalleList({
 
     const renderRow = (detalle: FacturaDetalle) => (
         <>
-            <TableCell>{detalle.viajeID}</TableCell>
+            <TableCell>{detalle.codigo}</TableCell>
             <TableCell>{detalle.descripcion || '-'}</TableCell>
             <TableCell align="right">{formatCurrency(detalle.subTotal, detalle.moneda?.simbolo)}</TableCell>
             <TableCell align="right">{formatCurrency(detalle.igv, detalle.moneda?.simbolo)}</TableCell>

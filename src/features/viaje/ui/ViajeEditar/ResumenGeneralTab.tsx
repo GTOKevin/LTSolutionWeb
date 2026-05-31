@@ -376,7 +376,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange, isViewOnl
                     
                     <Box sx={{ display: 'flex', gap: 4 }}>
                         <FormControlLabel
-                            disabled={isViewOnly}
+                            disabled={true}
                             control={
                                 <Switch 
                                     checked={formData.requiereEscolta}

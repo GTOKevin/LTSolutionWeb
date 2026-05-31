@@ -17,9 +17,8 @@ export const createFacturaSchema = z.object({
             message: ERROR_MESSAGES.FACTURA_NUMERO_INVALIDO
         }),
     fechaEmision: z.string().min(1, 'Fecha de Emisión es requerida'),
-    fechaVencimiento: z.string().min(1, 'Fecha de Vencimiento es requerida'),
     fechaCompromisoPago: z.string().optional().nullable(),
-    diasCredito: z.number().optional().nullable(),
+    diasCredito: z.coerce.number().optional().nullable(),
     monedaID: z.number().min(1, 'Moneda es requerida'),
     estadoID: z.number().min(1, 'Estado es requerido')
 });
@@ -32,8 +31,9 @@ export const createFacturaDetalleSchema = z.object({
         message: ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL
     }),
     monedaID: z.number().min(1, 'Moneda es requerida'),
-    subTotal: z.number().min(0, 'Debe ser mayor o igual a 0'),
-    igv: z.boolean()
+    subTotal: z.coerce.number().min(0, 'Debe ser mayor o igual a 0'),
+    igv: z.boolean(),
+    total: z.coerce.number().min(10, 'Debe ser mayor o igual a 10')
 });
 
 export type CreateFacturaDetalleSchema = z.infer<typeof createFacturaDetalleSchema>;
@@ -44,7 +44,7 @@ export const createFacturaPagoSchema = z.object({
     tipoPagoID: z.number().min(1, 'Tipo de Pago es requerido'),
     estadoID: z.number().min(1, 'Estado es requerido'),
     monedaID: z.number().min(1, 'Moneda es requerida'),
-    montoAbonado: z.number().min(0.01, 'Monto debe ser mayor a 0'),
+    montoAbonado: z.coerce.number().min(0.01, 'Monto debe ser mayor a 0'),
     numeroOperacion: z.string().optional().nullable().refine(val => !val || INPUT_VAL.NUMERO_OPERACION_PERU.test(val), {
         message: ERROR_MESSAGES.NUMERO_OPERACION_INVALIDO
     }),
