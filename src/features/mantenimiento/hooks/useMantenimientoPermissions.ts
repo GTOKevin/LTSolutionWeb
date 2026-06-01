@@ -23,7 +23,7 @@ export function useMantenimientoPermissions() {
         if (!user) return false;
         
         const roleId = Number(user.roleId);
-        return roleId === ROL_USUARIO_ID.ADMINISTRADOR || roleId === ROL_USUARIO_ID.GERENTE_GENERAL;
+        return roleId === ROL_USUARIO_ID.ADMINISTRADOR;
     };
 
     const canEdit = (item: Mantenimiento | null | undefined): boolean => {

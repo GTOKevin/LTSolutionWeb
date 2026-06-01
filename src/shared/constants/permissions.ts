@@ -4,14 +4,15 @@ export const PERMISSIONS = {
     },
     CLIENTES: {
         VER: 'CLIENTES_VER',
-        EDITAR: 'CLIENTES_EDITAR',
+        GESTIONAR: 'CLIENTES_GESTIONAR',
     },
     COTIZACIONES: {
         VER: 'COTIZACIONES_VER',
-        EDITAR: 'COTIZACIONES_EDITAR',
+        GESTIONAR: 'COTIZACIONES_GESTIONAR',
     },
     FACTURAS: {
         VER: 'FACTURAS_VER',
+        GESTIONAR: 'FACTURAS_GESTIONAR',
     },
     VIAJES: {
         VER: 'VIAJES_VER',
@@ -40,5 +41,10 @@ export const PERMISSIONS = {
         MAESTROS: {
             VER: 'MAESTROS_VER',
         }
+    },
+    CATALOGOS: {
+        TIPO_PRODUCTO: { VER: 'TIPO_PRODUCTO_VER' },
+        MERCADERIA: { VER: 'MERCADERIA_VER' },
+        GASTO: { VER: 'GASTO_VER' },
     }
 } as const;

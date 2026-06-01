@@ -3,10 +3,12 @@ export interface RolUsuario {
     nombre: string;
     descripcion?: string;
     estado: boolean;
+    permisosIds?: number[];
 }
 
 export interface CreateRolUsuarioDto {
     nombre: string;
     descripcion?: string;
     estado: boolean;
+    permisosIds?: number[];
 }
