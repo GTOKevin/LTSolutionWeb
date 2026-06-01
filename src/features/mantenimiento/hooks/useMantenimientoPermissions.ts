@@ -23,7 +23,6 @@ export function useMantenimientoPermissions() {
         if (!user) return false;
         
         const roleId = Number(user.roleId);
-        console.log("roleId", roleId);
         return roleId === ROL_USUARIO_ID.ADMINISTRADOR;
     };
 
