@@ -31,6 +31,7 @@ import { useLayoutStore } from '@shared/store/layout.store';
 import { useAuthStore } from '@shared/store/auth.store';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { SIDEBAR_MENU, type MenuItem } from '../model/sidebar.config';
+import { ChangePasswordModal } from '@features/usuario/change-password/ui/ChangePasswordModal';
 
 export const DRAWER_WIDTH = 280;
 
@@ -42,6 +43,7 @@ export function Sidebar() {
     const { user, logout } = useAuthStore();
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [changePasswordOpen, setChangePasswordOpen] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
     const [pendingPath, setPendingPath] = useState<string | null>(null);
     const [navigationLabel, setNavigationLabel] = useState('');
@@ -167,6 +169,11 @@ export function Sidebar() {
         handleMenuClose();
         logout();
         navigate('/login');
+    };
+
+    const handleOpenChangePassword = () => {
+        handleMenuClose();
+        setChangePasswordOpen(true);
     };
 
     const isPathActive = (path?: string) => {
@@ -439,7 +446,7 @@ export function Sidebar() {
                         </ListItemIcon>
                         <ListItemText>Mi Perfil</ListItemText>
                     </MuiMenuItem>
-                    <MuiMenuItem onClick={handleMenuClose}>
+                    <MuiMenuItem onClick={handleOpenChangePassword}>
                         <ListItemIcon>
                             <Key fontSize="small" />
                         </ListItemIcon>
@@ -468,6 +475,13 @@ export function Sidebar() {
                     Ingresando a {navigationLabel || 'la vista'}...
                 </Typography>
             </Backdrop>
+            <ChangePasswordModal
+                open={changePasswordOpen}
+                onClose={() => setChangePasswordOpen(false)}
+                usuarioId={user?.userId ? Number(user.userId) : null}
+                usuarioNombre={user?.name ?? undefined}
+                onSuccess={() => setChangePasswordOpen(false)}
+            />
         </Box>
     );
 

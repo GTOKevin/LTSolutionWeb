@@ -31,10 +31,6 @@ export function useMantenimientos() {
     const [searchQuery, setSearchQuery] = useState('');
     const [appliedFilters, setAppliedFilters] = useState<MantenimientoFiltersState>(INITIAL_FILTERS);
 
-    // --- Modal State ---
-    const [openModal, setOpenModal] = useState(false);
-    const [selectedItem, setSelectedItem] = useState<Mantenimiento | null>(null);
-    const [viewOnly, setViewOnly] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<Mantenimiento | null>(null);
     const [openReopenDialog, setOpenReopenDialog] = useState(false);
@@ -82,7 +78,6 @@ export function useMantenimientos() {
         onError: (error: ApiMutationError) => {
             const message = error.response?.data?.message || error.response?.data?.detail;
             showToast({ entity: 'Mantenimiento', action: 'reopen', isError: true, message });
-            if (message) console.error("Validation error:", message);
         }
     });
 
@@ -122,24 +117,6 @@ export function useMantenimientos() {
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
-    };
-
-    const handleCreate = () => {
-        setSelectedItem(null);
-        setViewOnly(false);
-        setOpenModal(true);
-    };
-
-    const handleEdit = (item: Mantenimiento) => {
-        setSelectedItem(item);
-        setViewOnly(false);
-        setOpenModal(true);
-    };
-
-    const handleView = (item: Mantenimiento) => {
-        setSelectedItem(item);
-        setViewOnly(true);
-        setOpenModal(true);
     };
 
     const handleDeleteClick = (item: Mantenimiento) => {
@@ -182,11 +159,7 @@ export function useMantenimientos() {
         searchQuery,
         appliedFilters,
         initialFilters: INITIAL_FILTERS,
-        
-        // Modal State
-        openModal,
-        selectedItem,
-        viewOnly,
+
         openDeleteDialog,
         itemToDelete,
         openReopenDialog,
@@ -198,7 +171,6 @@ export function useMantenimientos() {
         listaEstados: estados?.data || [],
 
         // Setters
-        setOpenModal,
         setOpenDeleteDialog,
         setOpenReopenDialog,
 
@@ -208,9 +180,6 @@ export function useMantenimientos() {
         handleClear,
         handleChangePage,
         handleChangeRowsPerPage,
-        handleCreate,
-        handleEdit,
-        handleView,
         handleDeleteClick,
         handleConfirmDelete,
         handleReopenClick,

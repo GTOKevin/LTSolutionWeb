@@ -13,27 +13,23 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import { useState, useEffect } from 'react';
-import { CreateEditFlotaModal } from '../../features/flota/create-edit/ui/CreateEditFlotaModal';
 import { ConfirmDialog } from '../../shared/components/ui/ConfirmDialog';
 import type { Flota } from '@entities/flota/model/types';
 import { FlotaTable } from '../../features/flota/list/ui/FlotaTable';
 import { FlotaMobileList } from '../../features/flota/list/ui/FlotaMobileList';
 import { useDeleteFlota } from '@features/flota/hooks/useFlotaCrud';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
+import { useNavigate } from 'react-router-dom';
 
 export function FlotasPage() {
     const theme = useTheme();
+    const navigate = useNavigate();
     
     // State
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    
-    // Modal State
-    const [openModal, setOpenModal] = useState(false);
-    const [selectedFlota, setSelectedFlota] = useState<Flota | null>(null);
-    const [viewOnly, setViewOnly] = useState(false);
     
     // Delete Dialog State
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -71,21 +67,15 @@ export function FlotasPage() {
     };
 
     const handleCreate = () => {
-        setSelectedFlota(null);
-        setViewOnly(false);
-        setOpenModal(true);
+        navigate('/app/flota/nuevo');
     };
 
     const handleEdit = (flota: Flota) => {
-        setSelectedFlota(flota);
-        setViewOnly(false);
-        setOpenModal(true);
+        navigate(`/app/flota/${flota.flotaID}`);
     };
 
     const handleView = (flota: Flota) => {
-        setSelectedFlota(flota);
-        setViewOnly(true);
-        setOpenModal(true);
+        navigate(`/app/flota/${flota.flotaID}/ver`);
     };
 
     const handleDeleteClick = (flota: Flota) => {
@@ -102,10 +92,6 @@ export function FlotasPage() {
                 }
             });
         }
-    };
-
-    const handleSuccess = (_: number) => {
-        setOpenModal(false);
     };
 
     return (
@@ -206,14 +192,6 @@ export function FlotasPage() {
                     onView={handleView}
                 />
             </Box>
-
-            <CreateEditFlotaModal 
-                open={openModal}
-                onClose={() => setOpenModal(false)}
-                flotaToEdit={selectedFlota}
-                onSuccess={handleSuccess}
-                viewOnly={viewOnly}
-            />
 
             <ConfirmDialog
                 open={openDeleteDialog}

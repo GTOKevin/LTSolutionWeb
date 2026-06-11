@@ -17,21 +17,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         initialized.current = true;
 
         const initAuth = async () => {
-            // If already authenticated, nothing to do
             if (isAuthenticated) {
                 setIsInitialized(true);
                 return;
             }
 
-            // If we have a persisted user but no token (e.g. page reload), try to refresh
             if (user) {
                 try {
-                    // Send empty tokens, backend checks cookie
                     const res = await authApi.refreshToken({ token: '', refreshToken: '' });
                     setAuth(res.token, res.refreshToken);
                 } catch (error) {
                     console.error('Failed to restore session:', error);
-                    logout(); // Clear invalid/stale user data
+                    logout();
                 }
             }
 
@@ -39,7 +36,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
 
         initAuth();
-    }, []); // Run once on mount
+    }, []);
 
     if (!isInitialized) {
         return (

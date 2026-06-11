@@ -26,11 +26,13 @@ import { useMantenimientoReport } from '@features/mantenimiento/hooks/useManteni
 import { MantenimientoFilter } from '@features/mantenimiento/list/ui/MantenimientoFilter';
 import { MantenimientoTable } from '@features/mantenimiento/list/ui/MantenimientoTable';
 import { MantenimientoMobileList } from '@features/mantenimiento/list/ui/MantenimientoMobileList';
-import { CreateEditMantenimientoModal } from '@features/mantenimiento/create-edit/ui/CreateEditMantenimientoModal';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
+import { useNavigate } from 'react-router-dom';
+import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 
 export function MantenimientosPage() {
     const theme = useTheme();
+    const navigate = useNavigate();
     const [showFilters, setShowFilters] = useState(true);
 
     const {
@@ -43,11 +45,6 @@ export function MantenimientosPage() {
         appliedFilters,
         initialFilters,
         
-        // Modal State
-        openModal,
-        setOpenModal,
-        selectedItem,
-        viewOnly,
         openDeleteDialog,
         setOpenDeleteDialog,
         itemToDelete,
@@ -66,9 +63,6 @@ export function MantenimientosPage() {
         handleClear,
         handleChangePage,
         handleChangeRowsPerPage,
-        handleCreate,
-        handleEdit,
-        handleView,
         handleDeleteClick,
         handleConfirmDelete,
         handleReopenClick,
@@ -106,6 +100,18 @@ export function MantenimientosPage() {
     const handleExportPdf = () => {
         handleExportClose();
         generateSummaryPdf(currentParams);
+    };
+
+    const handleCreate = () => {
+        navigate('/app/mantenimientos/nuevo');
+    };
+
+    const handleEdit = (item: Mantenimiento) => {
+        navigate(`/app/mantenimientos/${item.mantenimientoID}`);
+    };
+
+    const handleView = (item: Mantenimiento) => {
+        navigate(`/app/mantenimientos/${item.mantenimientoID}/ver`);
     };
 
     return (
@@ -262,15 +268,6 @@ export function MantenimientosPage() {
                     onEdit={handleEdit}
                     onDelete={handleDeleteClick}
                     onReopen={handleReopenClick}
-                />
-
-                {/* Modals */}
-                <CreateEditMantenimientoModal
-                    open={openModal}
-                    onClose={() => setOpenModal(false)}
-                    mantenimientoToEdit={selectedItem}
-                    onSuccess={handleRefresh}
-                    viewOnly={viewOnly}
                 />
 
                 <ConfirmDialog
