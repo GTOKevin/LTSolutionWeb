@@ -11,6 +11,7 @@ import { AppLayout } from '@widgets/layout/ui/AppLayout';
 // Lazy loaded pages
 const LoginPage = lazy(() => import('@pages/login').then(module => ({ default: module.LoginPage })));
 const DashboardPage = lazy(() => import('@pages/dashboard').then(module => ({ default: module.DashboardPage })));
+const PerfilPage = lazy(() => import('@pages/perfil').then(module => ({ default: module.PerfilPage })));
 const ClientesPage = lazy(() => import('@pages/clientes').then(module => ({ default: module.ClientesPage })));
 const ClienteNuevoPage = lazy(() => import('@pages/clientes/nuevo').then(module => ({ default: module.ClienteNuevoPage })));
 const ClienteEditarPage = lazy(() => import('@pages/clientes/editar').then(module => ({ default: module.ClienteEditarPage })));
@@ -99,6 +100,7 @@ export function RouterProvider() {
                                 <DashboardPage />
                             </PermissionGuard>
                         } />
+                        <Route path="perfil" element={<PerfilPage />} />
                         <Route path="clientes" element={
                             <PermissionGuard permission={PERMISSIONS.CLIENTES.VER}>
                                 <ClientesPage />
