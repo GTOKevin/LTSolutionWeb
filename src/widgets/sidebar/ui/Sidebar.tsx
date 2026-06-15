@@ -31,7 +31,7 @@ import { useLayoutStore } from '@shared/store/layout.store';
 import { useAuthStore } from '@shared/store/auth.store';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { SIDEBAR_MENU, type MenuItem } from '../model/sidebar.config';
-import { ChangePasswordModal } from '@features/usuario/change-password/ui/ChangePasswordModal';
+import { SelfChangePasswordModal } from '@features/auth/change-password/ui/SelfChangePasswordModal';
 
 export const DRAWER_WIDTH = 280;
 
@@ -475,10 +475,9 @@ export function Sidebar() {
                     Ingresando a {navigationLabel || 'la vista'}...
                 </Typography>
             </Backdrop>
-            <ChangePasswordModal
+            <SelfChangePasswordModal
                 open={changePasswordOpen}
                 onClose={() => setChangePasswordOpen(false)}
-                usuarioId={user?.userId ? Number(user.userId) : null}
                 usuarioNombre={user?.name ?? undefined}
                 onSuccess={() => setChangePasswordOpen(false)}
             />

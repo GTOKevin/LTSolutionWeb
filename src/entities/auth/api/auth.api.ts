@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api/http';
-import type { LoginRequest, LoginResponse, RefreshTokenRequest } from '../model/types';
+import type { ChangeOwnPasswordRequest, LoginRequest, LoginResponse, RefreshTokenRequest } from '../model/types';
 
 export const authApi = {
     login: async (nombre: string, clave: string): Promise<LoginResponse> => {
@@ -11,5 +11,9 @@ export const authApi = {
     refreshToken: async (request: RefreshTokenRequest): Promise<LoginResponse> => {
         const response = await httpClient.post<LoginResponse>('/auth/refresh-token', request);
         return response.data;
-    }
+    },
+
+    changeOwnPassword: async (request: ChangeOwnPasswordRequest): Promise<void> => {
+        await httpClient.put('/auth/change-password', request);
+    },
 };

@@ -33,6 +33,11 @@ export function DashboardOverview({
     onRetry,
 }: DashboardOverviewProps) {
     const canViewViajes = usePermission(PERMISSIONS.VIAJES.VER);
+    const canViewFacturas = usePermission(PERMISSIONS.FACTURAS.VER);
+    const canViewFlota = usePermission(PERMISSIONS.FLOTA.VER);
+    const canViewColaboradores = usePermission(PERMISSIONS.COLABORADORES.VER);
+    const canViewSecurityAlerts = canViewFacturas || canViewFlota || canViewColaboradores;
+    const hasVisibleDashboardSections = canViewViajes || canViewFacturas || canViewFlota || canViewSecurityAlerts;
     const currentPeriodMeta = DASHBOARD_PERIOD_OPTIONS.find(item => item.value === period) ?? DASHBOARD_PERIOD_OPTIONS[1];
 
     if (isError) {
@@ -74,17 +79,35 @@ export function DashboardOverview({
                 isFetching={isFetching}
                 onRetry={onRetry}
             />
-            <DashboardKpisSection data={data} />
-            <DashboardChartsSection
-                data={data}
-                period={period}
-                onPeriodChange={onPeriodChange}
-                description={currentPeriodMeta.description}
-            />
-            <DashboardBottomSection
-                data={data}
-                canViewViajes={canViewViajes}
-            />
+            {hasVisibleDashboardSections ? (
+                <>
+                    <DashboardKpisSection
+                        data={data}
+                        canViewViajes={canViewViajes}
+                        canViewFacturas={canViewFacturas}
+                        canViewSecurityAlerts={canViewSecurityAlerts}
+                        canViewFlota={canViewFlota}
+                    />
+                    <DashboardChartsSection
+                        data={data}
+                        period={period}
+                        onPeriodChange={onPeriodChange}
+                        description={currentPeriodMeta.description}
+                        canViewViajes={canViewViajes}
+                        canViewFacturas={canViewFacturas}
+                    />
+                    <DashboardBottomSection
+                        data={data}
+                        canViewViajes={canViewViajes}
+                        canViewFacturas={canViewFacturas}
+                        canViewSecurityAlerts={canViewSecurityAlerts}
+                    />
+                </>
+            ) : (
+                <Alert severity="info" sx={{ borderRadius: 3 }}>
+                    No tienes permisos de módulo suficientes para visualizar secciones del dashboard.
+                </Alert>
+            )}
         </Box>
     );
 }

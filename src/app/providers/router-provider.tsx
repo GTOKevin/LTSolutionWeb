@@ -175,12 +175,12 @@ export function RouterProvider() {
                             </PermissionGuard>
                         } />
                         <Route path="colaboradores/nuevo" element={
-                            <PermissionGuard permission={PERMISSIONS.COLABORADORES.VER}>
+                            <PermissionGuard permission={PERMISSIONS.COLABORADORES.GESTIONAR}>
                                 <ColaboradorNuevoPage />
                             </PermissionGuard>
                         } />
                         <Route path="colaboradores/:id" element={
-                            <PermissionGuard permission={PERMISSIONS.COLABORADORES.VER}>
+                            <PermissionGuard permission={PERMISSIONS.COLABORADORES.GESTIONAR}>
                                 <ColaboradorEditarPage />
                             </PermissionGuard>
                         } />
