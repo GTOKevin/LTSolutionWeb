@@ -15,7 +15,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
 import { useState, useEffect } from 'react';
-import { CreateEditClienteModal } from '../../features/cliente/create-edit/ui/CreateEditClienteModal';
+import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog } from '../../shared/components/ui/ConfirmDialog';
 import type { Cliente } from '@entities/cliente/model/types';
 import { ClientesTable } from '../../features/cliente/list/ui/ClientesTable';
@@ -25,23 +25,14 @@ import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 
 export function ClientesPage() {
     const theme = useTheme();
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [statusFilter, setStatusFilter] = useState(' ');
-    const [modalOpen, setModalOpen] = useState(false);
-    const [clienteToEdit, setClienteToEdit] = useState<Cliente | null>(null);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [clienteToDelete, setClienteToDelete] = useState<Cliente | null>(null);
-
-    const [viewOnlyMode, setViewOnlyMode] = useState(false);
-
-    useEffect(() => {
-        const handleOpenCreateModal = () => handleCreate();
-        window.addEventListener('open-create-client-modal', handleOpenCreateModal);
-        return () => window.removeEventListener('open-create-client-modal', handleOpenCreateModal);
-    }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -64,21 +55,15 @@ export function ClientesPage() {
     const deleteMutation = useDeleteCliente();
 
     const handleCreate = () => {
-        setClienteToEdit(null);
-        setViewOnlyMode(false);
-        setModalOpen(true);
+        navigate('/app/clientes/nuevo');
     };
 
     const handleEdit = (cliente: Cliente) => {
-        setClienteToEdit(cliente);
-        setViewOnlyMode(false);
-        setModalOpen(true);
+        navigate(`/app/clientes/${cliente.clienteID}`);
     };
 
     const handleView = (cliente: Cliente) => {
-        setClienteToEdit(cliente);
-        setViewOnlyMode(true);
-        setModalOpen(true);
+        navigate(`/app/clientes/${cliente.clienteID}`);
     };
 
     const handleDeleteClick = (cliente: Cliente) => {
@@ -96,16 +81,6 @@ export function ClientesPage() {
                 }
             });
         }
-    };
-
-    const handleCloseModal = () => {
-        setModalOpen(false);
-        setClienteToEdit(null);
-        setViewOnlyMode(false);
-    };
-
-    const handleSuccess = (_: number) => {
-        refetch();
     };
 
     const handleChangePage = (_: unknown, newPage: number) => {
@@ -230,14 +205,6 @@ export function ClientesPage() {
                     onDelete={handleDeleteClick}
                 />
             </Box>
-
-            <CreateEditClienteModal 
-                open={modalOpen}
-                onClose={handleCloseModal}
-                clienteToEdit={clienteToEdit}
-                onSuccess={handleSuccess}
-                viewOnly={viewOnlyMode}
-            />
 
             <ConfirmDialog
                 open={deleteConfirmOpen}

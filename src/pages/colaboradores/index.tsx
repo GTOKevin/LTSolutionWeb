@@ -16,23 +16,19 @@ import { colaboradorApi } from '@entities/colaborador/api/colaborador.api';
 import type { Colaborador } from '@entities/colaborador/model/types';
 import { ColaboradorTable } from '@features/colaborador/list/ui/ColaboradorTable';
 import { ColaboradorMobileList } from '@features/colaborador/list/ui/ColaboradorMobileList';
-import { CreateEditColaboradorModal } from '@features/colaborador/create-edit/ui/CreateEditColaboradorModal';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { useDeleteColaborador } from '@features/colaborador/hooks/useColaboradorCrud';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
+import { useNavigate } from 'react-router-dom';
 
 export function ColaboradoresPage() {
     const theme = useTheme();
+    const navigate = useNavigate();
     
     // State
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
-    
-    // Modal State
-    const [openModal, setOpenModal] = useState(false);
-    const [selectedColaborador, setSelectedColaborador] = useState<Colaborador | null>(null);
-    const [viewOnly, setViewOnly] = useState(false);
     
     // Delete Dialog State
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -62,21 +58,15 @@ export function ColaboradoresPage() {
     };
 
     const handleCreate = () => {
-        setSelectedColaborador(null);
-        setViewOnly(false);
-        setOpenModal(true);
+        navigate('/app/colaboradores/nuevo');
     };
 
     const handleEdit = (colaborador: Colaborador) => {
-        setSelectedColaborador(colaborador);
-        setViewOnly(false);
-        setOpenModal(true);
+        navigate(`/app/colaboradores/${colaborador.colaboradorID}`);
     };
 
     const handleView = (colaborador: Colaborador) => {
-        setSelectedColaborador(colaborador);
-        setViewOnly(true);
-        setOpenModal(true);
+        navigate(`/app/colaboradores/${colaborador.colaboradorID}/ver`);
     };
 
     const handleDeleteClick = (colaborador: Colaborador) => {
@@ -192,17 +182,6 @@ export function ColaboradoresPage() {
                     onView={handleView}
                 />
             </Box>
-
-            {/* Modals */}
-            <CreateEditColaboradorModal
-                open={openModal}
-                onClose={() => setOpenModal(false)}
-                colaboradorToEdit={selectedColaborador}
-                onSuccess={() => {
-                    setOpenModal(false);
-                }}
-                viewOnly={viewOnly}
-            />
 
             <ConfirmDialog
                 open={openDeleteDialog}
