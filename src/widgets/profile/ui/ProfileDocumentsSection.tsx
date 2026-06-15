@@ -12,6 +12,22 @@ export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDo
     const theme = useTheme();
     const mode = theme.palette.mode;
 
+    const resolveDocumentHref = (raw?: string | null) => {
+        if (!raw) return undefined;
+
+        const value = raw.trim();
+        if (!value) return undefined;
+
+        const lower = value.toLowerCase();
+        if (lower.startsWith('https://') || lower.startsWith('http://')) return value;
+
+        if (value.startsWith('/') && !value.startsWith('//') && !value.includes('..') && !value.includes('\\')) {
+            return value;
+        }
+
+        return undefined;
+    };
+
     return (
         <Card sx={cardSx(mode)}>
             <CardContent sx={{ p: 3 }}>
@@ -64,23 +80,26 @@ export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDo
                             </Box>
 
                             <Stack spacing={1}>
-                                {documentos.map((d) => (
-                                    <Box
-                                        key={d.colaboradorDocumentoId}
-                                        sx={{
-                                            display: 'grid',
-                                            gridTemplateColumns: '2.1fr 1.4fr 1fr 1fr 1fr auto',
-                                            gap: 1.5,
-                                            alignItems: 'center',
-                                            p: 1.5,
-                                            borderRadius: 3,
-                                            bgcolor: d.vigenciaEstado === 'vencido'
-                                                ? alpha('#ba1a1a', 0.06)
-                                                : mode === 'dark'
-                                                    ? alpha('#ffffff', 0.04)
-                                                    : '#f7f8fa',
-                                        }}
-                                    >
+                                {documentos.map((d) => {
+                                    const href = resolveDocumentHref(d.rutaArchivo);
+
+                                    return (
+                                        <Box
+                                            key={d.colaboradorDocumentoId}
+                                            sx={{
+                                                display: 'grid',
+                                                gridTemplateColumns: '2.1fr 1.4fr 1fr 1fr 1fr auto',
+                                                gap: 1.5,
+                                                alignItems: 'center',
+                                                p: 1.5,
+                                                borderRadius: 3,
+                                                bgcolor: d.vigenciaEstado === 'vencido'
+                                                    ? alpha('#ba1a1a', 0.06)
+                                                    : mode === 'dark'
+                                                        ? alpha('#ffffff', 0.04)
+                                                        : '#f7f8fa',
+                                            }}
+                                        >
                                         <Stack direction="row" spacing={1.25} alignItems="center">
                                             <Box
                                                 sx={{
@@ -120,10 +139,10 @@ export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDo
                                             />
                                         </Box>
                                         <Box sx={{ textAlign: 'right' }}>
-                                            {d.rutaArchivo ? (
+                                            {href ? (
                                                 <Button
                                                     size="small"
-                                                    href={d.rutaArchivo}
+                                                    href={href}
                                                     target="_blank"
                                                     rel="noreferrer"
                                                     sx={{ minWidth: 0, fontWeight: 700 }}
@@ -134,8 +153,9 @@ export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDo
                                                 <Typography sx={{ ...tableCellSx, textAlign: 'right' }}>—</Typography>
                                             )}
                                         </Box>
-                                    </Box>
-                                ))}
+                                        </Box>
+                                    );
+                                })}
                             </Stack>
                         </Box>
                     </Box>
@@ -144,4 +164,3 @@ export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDo
         </Card>
     );
 }
-

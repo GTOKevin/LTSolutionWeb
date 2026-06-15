@@ -165,6 +165,11 @@ export function Sidebar() {
         setAnchorEl(null);
     };
 
+    const handleGoToMyProfile = () => {
+        handleMenuClose();
+        navigate('/app/perfil');
+    };
+
     const handleLogout = () => {
         handleMenuClose();
         logout();
@@ -440,7 +445,7 @@ export function Sidebar() {
                         }
                     }}
                 >
-                    <MuiMenuItem onClick={handleMenuClose}>
+                    <MuiMenuItem onClick={handleGoToMyProfile}>
                         <ListItemIcon>
                             <AccountCircle fontSize="small" />
                         </ListItemIcon>
