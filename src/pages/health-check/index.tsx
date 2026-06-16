@@ -37,16 +37,15 @@ export function HealthCheckPage() {
         setApiMessage('');
 
         try {
-            // Try to make a simple request to the API
-            await httpClient.get('/');
+            await httpClient.get('/health');
             setApiStatus('connected');
-            setApiMessage('API is reachable');
+            setApiMessage('El endpoint de salud del backend responde correctamente.');
         } catch (error: unknown) {
             setApiStatus('error');
             if (error && typeof error === 'object' && 'detail' in error) {
-                setApiMessage((error as { detail: string }).detail || 'Failed to connect to API');
+                setApiMessage((error as { detail: string }).detail || 'No se pudo verificar el estado del backend.');
             } else {
-                setApiMessage('Failed to connect to API');
+                setApiMessage('No se pudo verificar el estado del backend.');
             }
         }
     };
@@ -145,10 +144,10 @@ export function HealthCheckPage() {
                             <Stack spacing={2}>
                                 <Box>
                                     <Typography variant="body2" color="text.secondary">
-                                        API URL:
+                                        Disponibilidad:
                                     </Typography>
-                                    <Typography variant="body1" fontFamily="monospace">
-                                        {env.apiUrl}
+                                    <Typography variant="body1">
+                                        Solo visible en desarrollo
                                     </Typography>
                                 </Box>
 
@@ -165,9 +164,9 @@ export function HealthCheckPage() {
                                     <Typography variant="body2" color="text.secondary">
                                         Tema:
                                     </Typography>
-                                    {/* <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>
-                                        {mode === 'dark' ? 'Oscuro' : 'Claro'}
-                                    </Typography> */}
+                                    <Typography variant="body1">
+                                        Selector habilitado para pruebas visuales
+                                    </Typography>
                                 </Box>
                             </Stack>
                         </CardContent>
