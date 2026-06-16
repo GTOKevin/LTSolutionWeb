@@ -13,7 +13,7 @@ import {
     IconButton
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Receipt as ReceiptIcon } from '@mui/icons-material';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, type Resolver, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -40,7 +40,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
     const isSaving = createMutation.isPending || updateMutation.isPending;
 
     const { control, handleSubmit, reset, formState: { errors } } = useForm<CreateFacturaSchema>({
-        resolver: zodResolver(createFacturaSchema),
+        resolver: zodResolver(createFacturaSchema) as Resolver<CreateFacturaSchema>,
         defaultValues: {
             clienteID: 1,
             serie: '',
@@ -78,7 +78,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
         queryFn: () => monedaApi.getSelect("", 50)
     });
 
-    const handleFormSubmit = async (data: CreateFacturaSchema) => {
+    const handleFormSubmit: SubmitHandler<CreateFacturaSchema> = async (data) => {
         try {
             const formattedData = {
                 ...data,

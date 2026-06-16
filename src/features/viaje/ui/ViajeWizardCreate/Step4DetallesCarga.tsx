@@ -3,7 +3,7 @@ import { useFormContext, useFieldArray } from 'react-hook-form';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { Add, Delete, Inventory2, Straighten, Scale, LibraryAdd, WarningAmber } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
-import type { CreateViajeDto } from '@/entities/viaje/model/types';
+import type { ViajeWizardFormData } from '../../model/schema';
 import { MEDIDA_ID, PESO_ID } from '@/shared/constants/maestro';
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
 
 export function Step4DetallesCarga({ options }: Props) {
     const theme = useTheme();
-    const { control, register, formState: { errors } } = useFormContext<CreateViajeDto>();
+    const { control, register, formState: { errors } } = useFormContext<ViajeWizardFormData>();
     const { mercaderias, tiposMedida, tiposPeso } = options;
 
     const { fields, append, remove } = useFieldArray({
@@ -29,11 +29,11 @@ export function Step4DetallesCarga({ options }: Props) {
             mercaderiaID: 0,
             descripcion: '',
             tipoMedidaID: MEDIDA_ID.Metro,
-            largo: undefined,
-            ancho: undefined,
-            alto: undefined,
+            largo: 0,
+            ancho: 0,
+            alto: 0,
             tipoPesoID: PESO_ID.Kilogramo,
-            peso: undefined
+            peso: 0
         });
     };
 

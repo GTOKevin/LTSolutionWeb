@@ -28,7 +28,6 @@ export function ProfileHero({
     telefono,
     initials,
     isFetching,
-    isActivoColaborador,
     isPerfilColaborador,
     onOpenChangePassword,
     onRetry,
@@ -130,4 +129,3 @@ export function ProfileHero({
         </Card>
     );
 }
-

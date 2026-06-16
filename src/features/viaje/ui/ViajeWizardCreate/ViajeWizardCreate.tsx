@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, type Path, type Resolver, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { 
     Box, 
@@ -26,8 +26,7 @@ import {
     Verified 
 } from '@mui/icons-material';
 import { useViajeOptions } from '../../hooks/useViajeOptions';
-import { z } from 'zod';
-import { viajeSchema, viajeMercaderiaSchema } from '../../model/schema';
+import { viajeWizardSchema, type ViajeWizardFormData } from '../../model/schema';
 import type { CreateViajeDto } from '@/entities/viaje/model/types';
 import { Step1DatosBase } from './Step1DatosBase';
 import { Step2Ruta } from './Step2Ruta';
@@ -44,10 +43,6 @@ import { VIAJE_QUERY_KEYS } from '@/features/viaje/model/query-keys';
 import { notifyMutationError, type ApiMutationError } from '@/shared/utils/api-errors';
 import { addDaysToDateISO, toInputDate } from '@/shared/utils/date-utils';
 import { MEDIDA_ID, PESO_ID } from '@/shared/constants/maestro';
-
-const wizardSchema = viajeSchema.extend({
-    mercaderias: z.array(viajeMercaderiaSchema).min(1, 'Debe registrar al menos una mercaderia')
-});
 
 const steps = [
     { label: 'Información General', icon: <Assignment /> },
@@ -114,8 +109,8 @@ export function ViajeWizardCreate() {
     const [activeStep, setActiveStep] = useState(0);
     const options = useViajeOptions(true);
 
-    const methods = useForm<CreateViajeDto>({
-        resolver: zodResolver(wizardSchema),
+    const methods = useForm<ViajeWizardFormData>({
+        resolver: zodResolver(viajeWizardSchema) as Resolver<ViajeWizardFormData>,
         defaultValues: {
             clienteID: 0,
             estadoID: 0,
@@ -135,7 +130,7 @@ export function ViajeWizardCreate() {
     const { handleSubmit, trigger } = methods;
 
     const handleNext = async () => {
-        let fieldsToValidate: string[] = [];
+        let fieldsToValidate: Path<ViajeWizardFormData>[] = [];
         
         if (activeStep === 0) {
             fieldsToValidate = ['clienteID', 'estadoID', 'fechaCarga'];
@@ -147,7 +142,7 @@ export function ViajeWizardCreate() {
             fieldsToValidate = ['mercaderias'];
         }
 
-        const isStepValid = await trigger(fieldsToValidate as any);
+        const isStepValid = await trigger(fieldsToValidate);
         if (isStepValid) {
             setActiveStep((prev) => prev + 1);
         }
@@ -162,7 +157,7 @@ export function ViajeWizardCreate() {
 
     const mutation = useMutation<number | void, ApiMutationError, CreateViajeDto>({
         mutationFn: async (data: CreateViajeDto) => {
-            const cleanData = {
+            const cleanData: CreateViajeDto = {
                 ...data,
                 tipoMedidaID: MEDIDA_ID.Metro,
                 tipoPesoID: PESO_ID.Kilogramo,
@@ -214,7 +209,7 @@ export function ViajeWizardCreate() {
         }
     });
 
-    const onSubmit = (data: CreateViajeDto) => {
+    const onSubmit: SubmitHandler<ViajeWizardFormData> = (data) => {
         mutation.mutate(data);
     };
 

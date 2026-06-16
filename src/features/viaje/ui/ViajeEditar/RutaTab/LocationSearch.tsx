@@ -86,10 +86,10 @@ export function LocationSearch({ onSelectLocation }: { onSelectLocation: (lat: n
                     options={options}
                     loading={loading}
                     filterOptions={(x) => x} // Disable built-in filtering, we use server-side
-                    onInputChange={(event, newInputValue) => {
+                    onInputChange={(_event, newInputValue) => {
                         setInputValue(newInputValue);
                     }}
-                    onChange={(event, newValue) => {
+                    onChange={(_event, newValue) => {
                         if (newValue && typeof newValue !== 'string') {
                             const lat = parseFloat(newValue.lat);
                             const lng = parseFloat(newValue.lon);

@@ -5,7 +5,7 @@ import type { PagedResponse } from '@/shared/model/types';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { formatCurrency } from '@/shared/utils/format-utils';
-import { ESTADO_FACTURA_ID, ESTADO_FACTURA_PAGO_ID } from '@/shared/constants/constantes';
+import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
 import { FacturaActionMenu } from './FacturaActionMenu';
 
 interface FacturaTableProps {

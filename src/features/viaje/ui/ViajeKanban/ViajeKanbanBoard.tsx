@@ -16,7 +16,7 @@ import { KanbanColumn } from './KanbanColumn';
 import { KanbanCard } from './KanbanCard';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
 import { ESTADO_VIAJE_COD, ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
-import { useTheme, alpha } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import { useToast } from '@/shared/components/ui/Toast';
 import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
 
@@ -31,7 +31,6 @@ interface KanbanBoardProps {
 }
 
 export function ViajeKanbanBoard({ viajes, isLoading, onViajeClick, onEditViaje, onViewViaje, onDeleteViaje }: KanbanBoardProps) {
-    const theme = useTheme();
     const { showToast } = useToast();
 
     // Local state for optimistic updates during drag
@@ -149,7 +148,7 @@ export function ViajeKanbanBoard({ viajes, isLoading, onViajeClick, onEditViaje,
                 onDragEnd={handleDragEnd}
             >
                 <Box sx={{ display: 'flex', height: '100%', minWidth: 'min-content' }}>
-                    {columns.map((col, index) => (
+                    {columns.map((col) => (
                         <KanbanColumn 
                             key={col.id}
                             id={col.id}

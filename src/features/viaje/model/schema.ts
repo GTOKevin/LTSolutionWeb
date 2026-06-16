@@ -187,7 +187,12 @@ export const viajeSchema = z.object({
     }
 });
 
+export const viajeWizardSchema = viajeSchema.extend({
+    mercaderias: z.array(viajeMercaderiaSchema).min(1, 'Debe registrar al menos una mercaderia')
+});
+
 export type ViajeFormData = z.infer<typeof viajeSchema>;
+export type ViajeWizardFormData = z.infer<typeof viajeWizardSchema>;
 export type ViajeEscoltaFormData = z.infer<typeof viajeEscoltaSchema>;
 export type ViajeGastoFormData = z.infer<typeof viajeGastoSchema>;
 export type ViajeGuiaFormData = z.infer<typeof viajeGuiaSchema>;
