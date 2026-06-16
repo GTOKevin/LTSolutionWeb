@@ -1,59 +1,48 @@
 import { createTheme, CssBaseline, ThemeProvider as MuiThemeProvider } from '@mui/material';
 import { useMemo } from 'react';
 import { useThemeStore } from '../../shared/store/theme.store';
-import { themePalette } from '../../shared/config/theme/palette';
+import { appThemePresets } from '../../shared/config/theme/palette';
 
 interface ThemeProviderProps {
     children: React.ReactNode;
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-    const mode = useThemeStore((state) => state.mode);
+    const themeId = useThemeStore((state) => state.themeId);
 
     const theme = useMemo(
-        () =>
-            createTheme({
+        () => {
+            const preset = appThemePresets[themeId];
+            const mode = preset.mode;
+
+            return createTheme({
                 palette: {
                     mode,
+                    divider: preset.palette.divider,
                     primary: {
-                        // Industrial deep blue - professional and trustworthy for logistics
-                        main: mode === 'light' ? themePalette.primary.main : '#1976d2',
-                        light: themePalette.primary.light,
-                        dark: themePalette.primary.dark,
-                        contrastText: themePalette.primary.contrastText,
+                        main: preset.palette.primary.main,
+                        contrastText: preset.palette.primary.contrastText,
                     },
                     secondary: {
-                        // Safety orange/amber - for alerts and dangerous goods
-                        main: mode === 'light' ? themePalette.secondary.main : '#ffa726',
-                        light: themePalette.secondary.light,
-                        dark: themePalette.secondary.dark,
-                        contrastText: themePalette.secondary.contrastText,
+                        main: preset.palette.secondary.main,
+                        contrastText: preset.palette.secondary.contrastText,
                     },
                     warning: {
-                        // High visibility yellow for warnings
-                        main: themePalette.warning.main,
-                        light: themePalette.warning.light,
-                        dark: themePalette.warning.dark,
+                        main: preset.palette.warning.main,
                     },
                     error: {
-                        // Strong red for critical alerts
-                        main: themePalette.error.main,
-                        light: themePalette.error.light,
-                        dark: themePalette.error.dark,
+                        main: preset.palette.error.main,
                     },
                     success: {
-                        // Industrial green for success states
-                        main: themePalette.success.main,
-                        light: themePalette.success.light,
-                        dark: themePalette.success.dark,
+                        main: preset.palette.success.main,
                     },
                     background: {
-                        default: mode === 'light' ? themePalette.background.light.default : themePalette.background.dark.default,
-                        paper: mode === 'light' ? themePalette.background.light.paper : themePalette.background.dark.paper,
+                        default: preset.palette.background.default,
+                        paper: preset.palette.background.paper,
                     },
                     text: {
-                        primary: mode === 'light' ? themePalette.text.light.primary : themePalette.text.dark.primary,
-                        secondary: mode === 'light' ? themePalette.text.light.secondary : themePalette.text.dark.secondary,
+                        primary: preset.palette.text.primary,
+                        secondary: preset.palette.text.secondary,
                     },
                 },
                 typography: {
@@ -92,7 +81,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                     },
                 },
                 shape: {
-                    borderRadius: 4,
+                    borderRadius: preset.shapeBorderRadius,
                 },
                 shadows: [
                     'none',
@@ -167,7 +156,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                         : '0px 12px 24px rgba(0,0,0,0.7)',
                     mode === 'light'
                         ? '0px 12px 24px rgba(0,0,0,0.14)'
-                        : '0px 12px 24px rgba(0,0,0,0.7)',
+                        : '0px 12px 24px rgba(0,0,0,0.7)'
                 ],
                 components: {
                     MuiButton: {
@@ -175,7 +164,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                             root: {
                                 textTransform: 'none',
                                 fontWeight: 600,
-                                borderRadius: 4,
+                                borderRadius: preset.shapeBorderRadius,
                                 padding: '10px 24px',
                                 fontSize: '0.9375rem',
                             },
@@ -195,7 +184,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                                     mode === 'light'
                                         ? '0 2px 8px rgba(0,0,0,0.08)'
                                         : '0 2px 8px rgba(0,0,0,0.4)',
-                                border: mode === 'light' ? '1px solid #e0e0e0' : '1px solid #2a2f3e',
+                                border: `1px solid ${preset.palette.divider}`,
                             },
                         },
                     },
@@ -209,14 +198,16 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                     MuiAppBar: {
                         styleOverrides: {
                             root: {
-                                boxShadow: mode === 'light' ? '0 2px 8px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.5)',
+                                boxShadow: mode === 'light'
+                                    ? '0 2px 8px rgba(0,0,0,0.1)'
+                                    : '0 2px 8px rgba(0,0,0,0.5)',
                             },
                         },
                     },
                     MuiDrawer: {
                         styleOverrides: {
                             paper: {
-                                borderRight: mode === 'light' ? '1px solid #e0e0e0' : '1px solid #2a2f3e',
+                                borderRight: `1px solid ${preset.palette.divider}`,
                             },
                         },
                     },
@@ -224,7 +215,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                         styleOverrides: {
                             root: {
                                 '& .MuiOutlinedInput-root': {
-                                    borderRadius: 4,
+                                    borderRadius: preset.shapeBorderRadius,
                                 },
                             },
                         },
@@ -238,8 +229,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                         },
                     },
                 },
-            }),
-        [mode]
+            });
+        },
+        [themeId]
     );
 
     return (

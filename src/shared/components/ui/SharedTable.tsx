@@ -39,6 +39,7 @@ interface SharedTableProps<T> {
     emptyMessage?: string;
     containerSx?: SxProps<Theme>;
     rowHeight?: number; // Optional row height for virtualization
+    headerSx?: SxProps<Theme>;
 }
 
 export function SharedTable<T>({
@@ -53,7 +54,8 @@ export function SharedTable<T>({
     renderRow,
     emptyMessage = "No se encontraron registros",
     containerSx,
-    rowHeight = 53
+    rowHeight = 53,
+    headerSx
 }: SharedTableProps<T>) {
     const theme = useTheme();
     const parentRef = useRef<HTMLDivElement>(null);
@@ -72,7 +74,7 @@ export function SharedTable<T>({
             flexDirection: 'column', 
             overflow: 'hidden',
             border: `1px solid ${theme.palette.divider}`,
-            borderRadius: 3,
+            borderRadius: 1.5,
             boxShadow: theme.shadows[1],
             ...containerSx
         }}>
@@ -86,11 +88,12 @@ export function SharedTable<T>({
                                     align={column.align || 'left'}
                                     style={{ width: column.width, minWidth: column.minWidth }}
                                     sx={{ 
-                                        backgroundColor: theme.palette.grey[100],
-                                        color: 'text.secondary', 
+                                        backgroundColor: theme.palette.primary.main,
+                                        color: theme.palette.primary.contrastText,
                                         fontWeight: 'bold', 
                                         textTransform: 'uppercase', 
-                                        fontSize: '0.75rem' 
+                                        fontSize: '0.75rem',
+                                        ...headerSx
                                     }}
                                 >
                                     {column.label}

@@ -7,6 +7,10 @@ import {
     IconButton,
     InputAdornment,
     Link,
+    ListItemIcon,
+    ListItemText,
+    Menu,
+    MenuItem,
     Stack,
     TextField,
     Typography,
@@ -16,9 +20,9 @@ import {
     LocalShipping as TruckIcon,
     Visibility,
     VisibilityOff,
-    DarkMode as DarkModeIcon,
-    LightMode as LightModeIcon,
     Person as PersonIcon,
+    PaletteOutlined as PaletteIcon,
+    Check as CheckIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -27,11 +31,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginFormData } from '../model/schema';
 import { useLogin } from '../api/use-login';
 import { useThemeStore } from '@shared/store/theme.store';
+import { appThemePresets } from '@/shared/config/theme/palette';
 
 export function LoginForm() {
     const theme = useTheme();
     const isDark = theme.palette.mode === 'dark';
-    const { toggleMode } = useThemeStore();
+    const { themeId, setThemeId } = useThemeStore();
+    const [themeAnchorEl, setThemeAnchorEl] = useState<null | HTMLElement>(null);
+    const themeMenuOpen = Boolean(themeAnchorEl);
     const [showPassword, setShowPassword] = useState(false);
 
     // Use theme colors directly
@@ -88,9 +95,38 @@ export function LoginForm() {
                         HAZMAT Logística
                     </Typography>
                 </Stack>
-                <IconButton onClick={toggleMode} sx={{ color: colors.primary }}>
-                    {isDark ? <LightModeIcon /> : <DarkModeIcon />}
+                <IconButton onClick={(e) => setThemeAnchorEl(e.currentTarget)} sx={{ color: colors.primary }}>
+                    <PaletteIcon />
                 </IconButton>
+                <Menu
+                    anchorEl={themeAnchorEl}
+                    open={themeMenuOpen}
+                    onClose={() => setThemeAnchorEl(null)}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                    {[
+                        appThemePresets.logistica_light,
+                        appThemePresets.logistica_dark,
+                        appThemePresets.midnight_tech,
+                        appThemePresets.nordic_ice,
+                        appThemePresets.sunset_express,
+                    ].map((t) => (
+                        <MenuItem
+                            key={t.id}
+                            selected={t.id === themeId}
+                            onClick={() => {
+                                setThemeId(t.id);
+                                setThemeAnchorEl(null);
+                            }}
+                        >
+                            <ListItemIcon sx={{ minWidth: 34 }}>
+                                {t.id === themeId ? <CheckIcon fontSize="small" /> : null}
+                            </ListItemIcon>
+                            <ListItemText>{t.label}</ListItemText>
+                        </MenuItem>
+                    ))}
+                </Menu>
             </Stack>
 
             {/* Main Login Content */}

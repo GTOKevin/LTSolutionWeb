@@ -5,25 +5,32 @@ import {
     Chip,
     Container,
     IconButton,
+    ListItemIcon,
+    ListItemText,
+    Menu,
+    MenuItem,
     Stack,
     Typography,
 } from '@mui/material';
 import {
-    Brightness4 as DarkModeIcon,
-    Brightness7 as LightModeIcon,
     CheckCircle as CheckCircleIcon,
     Error as ErrorIcon,
     Refresh as RefreshIcon,
+    PaletteOutlined as PaletteIcon,
+    Check as CheckIcon,
 } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { httpClient } from '../../shared/api/http';
 import { env } from '../../shared/config/env';
 import { useThemeStore } from '../../shared/store/theme.store';
+import { appThemePresets } from '@/shared/config/theme/palette';
 
 export function HealthCheckPage() {
-    const { mode, toggleMode } = useThemeStore();
+    const { themeId, setThemeId } = useThemeStore();
     const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
     const [apiMessage, setApiMessage] = useState<string>('');
+    const [themeAnchorEl, setThemeAnchorEl] = useState<null | HTMLElement>(null);
+    const themeMenuOpen = Boolean(themeAnchorEl);
 
     const checkApiConnection = async () => {
         setApiStatus('checking');
@@ -57,9 +64,38 @@ export function HealthCheckPage() {
                         <Typography variant="h3" component="h1">
                             Sistema de Logística y Transporte
                         </Typography>
-                        <IconButton onClick={toggleMode} color="inherit">
-                            {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+                        <IconButton onClick={(e) => setThemeAnchorEl(e.currentTarget)} color="inherit">
+                            <PaletteIcon />
                         </IconButton>
+                        <Menu
+                            anchorEl={themeAnchorEl}
+                            open={themeMenuOpen}
+                            onClose={() => setThemeAnchorEl(null)}
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                        >
+                            {[
+                                appThemePresets.logistica_light,
+                                appThemePresets.logistica_dark,
+                                appThemePresets.midnight_tech,
+                                appThemePresets.nordic_ice,
+                                appThemePresets.sunset_express,
+                            ].map((t) => (
+                                <MenuItem
+                                    key={t.id}
+                                    selected={t.id === themeId}
+                                    onClick={() => {
+                                        setThemeId(t.id);
+                                        setThemeAnchorEl(null);
+                                    }}
+                                >
+                                    <ListItemIcon sx={{ minWidth: 34 }}>
+                                        {t.id === themeId ? <CheckIcon fontSize="small" /> : null}
+                                    </ListItemIcon>
+                                    <ListItemText>{t.label}</ListItemText>
+                                </MenuItem>
+                            ))}
+                        </Menu>
                     </Stack>
 
                     {/* Sprint 0 Status */}
@@ -129,9 +165,9 @@ export function HealthCheckPage() {
                                     <Typography variant="body2" color="text.secondary">
                                         Tema:
                                     </Typography>
-                                    <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>
+                                    {/* <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>
                                         {mode === 'dark' ? 'Oscuro' : 'Claro'}
-                                    </Typography>
+                                    </Typography> */}
                                 </Box>
                             </Stack>
                         </CardContent>
