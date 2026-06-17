@@ -16,7 +16,7 @@ import {
     IconButton
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, type Resolver, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { createFacturaPagoSchema, type CreateFacturaPagoSchema } from '../../model/schema';
@@ -43,7 +43,7 @@ export function FacturaPagoForm({ open, onClose, factura, facturaId, monedaId, m
     const createMutation = useCreateFacturaPago();
 
     const { control, handleSubmit, reset } = useForm<CreateFacturaPagoSchema>({
-        resolver: zodResolver(createFacturaPagoSchema),
+        resolver: zodResolver(createFacturaPagoSchema) as Resolver<CreateFacturaPagoSchema>,
         defaultValues: {
             fechaPago: new Date().toISOString().split('T')[0],
             fechaAcreditacion: '',
@@ -84,7 +84,7 @@ export function FacturaPagoForm({ open, onClose, factura, facturaId, monedaId, m
         queryFn: () => monedaApi.getSelect()
     });
 
-    const onSubmit = async (data: CreateFacturaPagoSchema) => {
+    const onSubmit: SubmitHandler<CreateFacturaPagoSchema> = async (data) => {
         await createMutation.mutateAsync({
             facturaId,
             data: {

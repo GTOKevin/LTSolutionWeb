@@ -31,7 +31,7 @@ import { useLayoutStore } from '@shared/store/layout.store';
 import { useAuthStore } from '@shared/store/auth.store';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { SIDEBAR_MENU, type MenuItem } from '../model/sidebar.config';
-import { ChangePasswordModal } from '@features/usuario/change-password/ui/ChangePasswordModal';
+import { SelfChangePasswordModal } from '@features/auth/change-password/ui/SelfChangePasswordModal';
 
 export const DRAWER_WIDTH = 280;
 
@@ -48,6 +48,17 @@ export function Sidebar() {
     const [pendingPath, setPendingPath] = useState<string | null>(null);
     const [navigationLabel, setNavigationLabel] = useState('');
     const openMenu = Boolean(anchorEl);
+    const userInitials = useMemo(() => {
+        const baseValue = user?.name || user?.email || 'Usuario';
+        const initials = baseValue
+            .split(/[\s.@_-]+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part[0]?.toUpperCase() ?? '')
+            .join('');
+
+        return initials || 'U';
+    }, [user?.email, user?.name]);
 
     const navigationTimeoutRef = useRef<number | null>(null);
 
@@ -163,6 +174,11 @@ export function Sidebar() {
 
     const handleMenuClose = () => {
         setAnchorEl(null);
+    };
+
+    const handleGoToMyProfile = () => {
+        handleMenuClose();
+        navigate('/app/perfil');
     };
 
     const handleLogout = () => {
@@ -393,11 +409,10 @@ export function Sidebar() {
                     }}
                     onClick={handleMenuClick}
                 >
-                    <Avatar 
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6OVG_QZtlE27G6Ja4RO2KTtjk-cMNFBU4D-nCgCI2P5rDs41_GnpE4glBK-PzV8_JQxw7dJi8H-p6dFGowQbPHpEm1F5emW5xVf-ZatYDiTIBmx0LQrPeNHITnQkKVFf0Jn8gjffXI2w6vGVGS6qfjGqgOBM55MHEtFSfAAV_Bd7r83UdcZIf-5jObmp_LxZZngSJpfNsL3_YDBAVNR0f88m9xoNnUEG6drlpHhVieNC54MCkTQACOpJIPxu-bcfNtcHg7vc0uV0"
+                    <Avatar
                         sx={{ width: 36, height: 36, bgcolor: 'grey.700' }}
                     >
-                        {user?.name?.[0] || 'U'}
+                        {userInitials}
                     </Avatar>
                     <Box sx={{ flex: 1, overflow: 'hidden' }}>
                         <Typography variant="body2" fontWeight={500} noWrap>
@@ -440,7 +455,7 @@ export function Sidebar() {
                         }
                     }}
                 >
-                    <MuiMenuItem onClick={handleMenuClose}>
+                    <MuiMenuItem onClick={handleGoToMyProfile}>
                         <ListItemIcon>
                             <AccountCircle fontSize="small" />
                         </ListItemIcon>
@@ -475,10 +490,9 @@ export function Sidebar() {
                     Ingresando a {navigationLabel || 'la vista'}...
                 </Typography>
             </Backdrop>
-            <ChangePasswordModal
+            <SelfChangePasswordModal
                 open={changePasswordOpen}
                 onClose={() => setChangePasswordOpen(false)}
-                usuarioId={user?.userId ? Number(user.userId) : null}
                 usuarioNombre={user?.name ?? undefined}
                 onSuccess={() => setChangePasswordOpen(false)}
             />

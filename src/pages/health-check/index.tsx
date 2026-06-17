@@ -5,41 +5,47 @@ import {
     Chip,
     Container,
     IconButton,
+    ListItemIcon,
+    ListItemText,
+    Menu,
+    MenuItem,
     Stack,
     Typography,
 } from '@mui/material';
 import {
-    Brightness4 as DarkModeIcon,
-    Brightness7 as LightModeIcon,
     CheckCircle as CheckCircleIcon,
     Error as ErrorIcon,
     Refresh as RefreshIcon,
+    PaletteOutlined as PaletteIcon,
+    Check as CheckIcon,
 } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { httpClient } from '../../shared/api/http';
 import { env } from '../../shared/config/env';
 import { useThemeStore } from '../../shared/store/theme.store';
+import { appThemePresets } from '@/shared/config/theme/palette';
 
 export function HealthCheckPage() {
-    const { mode, toggleMode } = useThemeStore();
+    const { themeId, setThemeId } = useThemeStore();
     const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
     const [apiMessage, setApiMessage] = useState<string>('');
+    const [themeAnchorEl, setThemeAnchorEl] = useState<null | HTMLElement>(null);
+    const themeMenuOpen = Boolean(themeAnchorEl);
 
     const checkApiConnection = async () => {
         setApiStatus('checking');
         setApiMessage('');
 
         try {
-            // Try to make a simple request to the API
-            await httpClient.get('/');
+            await httpClient.get('/health');
             setApiStatus('connected');
-            setApiMessage('API is reachable');
+            setApiMessage('El endpoint de salud del backend responde correctamente.');
         } catch (error: unknown) {
             setApiStatus('error');
             if (error && typeof error === 'object' && 'detail' in error) {
-                setApiMessage((error as { detail: string }).detail || 'Failed to connect to API');
+                setApiMessage((error as { detail: string }).detail || 'No se pudo verificar el estado del backend.');
             } else {
-                setApiMessage('Failed to connect to API');
+                setApiMessage('No se pudo verificar el estado del backend.');
             }
         }
     };
@@ -57,9 +63,38 @@ export function HealthCheckPage() {
                         <Typography variant="h3" component="h1">
                             Sistema de Logística y Transporte
                         </Typography>
-                        <IconButton onClick={toggleMode} color="inherit">
-                            {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+                        <IconButton onClick={(e) => setThemeAnchorEl(e.currentTarget)} color="inherit">
+                            <PaletteIcon />
                         </IconButton>
+                        <Menu
+                            anchorEl={themeAnchorEl}
+                            open={themeMenuOpen}
+                            onClose={() => setThemeAnchorEl(null)}
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                        >
+                            {[
+                                appThemePresets.logistica_light,
+                                appThemePresets.logistica_dark,
+                                appThemePresets.midnight_tech,
+                                appThemePresets.nordic_ice,
+                                appThemePresets.sunset_express,
+                            ].map((t) => (
+                                <MenuItem
+                                    key={t.id}
+                                    selected={t.id === themeId}
+                                    onClick={() => {
+                                        setThemeId(t.id);
+                                        setThemeAnchorEl(null);
+                                    }}
+                                >
+                                    <ListItemIcon sx={{ minWidth: 34 }}>
+                                        {t.id === themeId ? <CheckIcon fontSize="small" /> : null}
+                                    </ListItemIcon>
+                                    <ListItemText>{t.label}</ListItemText>
+                                </MenuItem>
+                            ))}
+                        </Menu>
                     </Stack>
 
                     {/* Sprint 0 Status */}
@@ -109,10 +144,10 @@ export function HealthCheckPage() {
                             <Stack spacing={2}>
                                 <Box>
                                     <Typography variant="body2" color="text.secondary">
-                                        API URL:
+                                        Disponibilidad:
                                     </Typography>
-                                    <Typography variant="body1" fontFamily="monospace">
-                                        {env.apiUrl}
+                                    <Typography variant="body1">
+                                        Solo visible en desarrollo
                                     </Typography>
                                 </Box>
 
@@ -129,8 +164,8 @@ export function HealthCheckPage() {
                                     <Typography variant="body2" color="text.secondary">
                                         Tema:
                                     </Typography>
-                                    <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>
-                                        {mode === 'dark' ? 'Oscuro' : 'Claro'}
+                                    <Typography variant="body1">
+                                        Selector habilitado para pruebas visuales
                                     </Typography>
                                 </Box>
                             </Stack>

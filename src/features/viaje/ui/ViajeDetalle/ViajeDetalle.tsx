@@ -25,11 +25,6 @@ export function ViajeDetalle() {
     });
 
     const options = useViajeOptions(true);
-    const { 
-        flotasEscolta, colaboradores, 
-        tiposMedida, tiposPeso, tiposGasto, monedas,
-        tiposGuia, tiposIncidente, mercaderias
-    } = options;
 
     const methods = useForm({
         defaultValues: viaje || {}
@@ -98,7 +93,7 @@ export function ViajeDetalle() {
                                         <Divider sx={{ mb: 2 }} />
                                         <ViajeIncidente
                                             viewOnly={isViewOnly}
-                                            tiposIncidente={tiposIncidente || []}
+                                            tiposIncidente={options.tiposIncidente || []}
                                             viajeId={viajeId}
                                         />
                                     </CardContent>

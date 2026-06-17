@@ -150,19 +150,19 @@ export function FacturaActionMenu({
                 )}
 
                 {/* Descarga de Reportes */}
-                {isEntregado && (
-                    <>
-                        <Divider />
-                        <MenuItem onClick={() => handleGenerateReport('pdf')} disabled={isGenerating}>
-                            <ListItemIcon><PdfIcon fontSize="small" color="error" /></ListItemIcon>
-                            <ListItemText>Descargar PDF</ListItemText>
-                        </MenuItem>
-                        <MenuItem onClick={() => handleGenerateReport('excel')} disabled={isGenerating}>
-                            <ListItemIcon><ExcelIcon fontSize="small" color="success" /></ListItemIcon>
-                            <ListItemText>Descargar Excel</ListItemText>
-                        </MenuItem>
-                    </>
-                )}
+                {isEntregado
+                    ? [
+                          <Divider key="report-divider" />,
+                          <MenuItem key="report-pdf" onClick={() => handleGenerateReport('pdf')} disabled={isGenerating}>
+                              <ListItemIcon><PdfIcon fontSize="small" color="error" /></ListItemIcon>
+                              <ListItemText>Descargar PDF</ListItemText>
+                          </MenuItem>,
+                          <MenuItem key="report-excel" onClick={() => handleGenerateReport('excel')} disabled={isGenerating}>
+                              <ListItemIcon><ExcelIcon fontSize="small" color="success" /></ListItemIcon>
+                              <ListItemText>Descargar Excel</ListItemText>
+                          </MenuItem>,
+                      ]
+                    : null}
 
                 {/* Eliminar (Generalmente solo si está Generado, pero dejaremos según lógica anterior) */}
                 <Divider />

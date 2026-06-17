@@ -15,6 +15,11 @@ export interface RefreshTokenRequest {
     refreshToken: string;
 }
 
+export interface ChangeOwnPasswordRequest {
+    currentPassword: string;
+    newPassword: string;
+}
+
 export interface User {
     userId: string;
     roleId: string;

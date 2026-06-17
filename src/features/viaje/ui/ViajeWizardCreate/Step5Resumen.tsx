@@ -1,7 +1,7 @@
 import { Box, Typography, Paper, Grid, Divider, Alert } from '@mui/material';
 import { useFormContext } from 'react-hook-form';
 import { Assignment, RouteOutlined, GroupAdd, Inventory2, CheckCircleOutline } from '@mui/icons-material';
-import type { CreateViajeDto } from '@/entities/viaje/model/types';
+import type { ViajeWizardFormData } from '../../model/schema';
 import type { SelectItem } from '@/shared/model/types';
 import { useUbigeoDetails } from '@/shared/hooks/useUbigeoDetails';
 
@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function Step5Resumen({ options }: Props) {
-    const { watch } = useFormContext<CreateViajeDto>();
+    const { watch } = useFormContext<ViajeWizardFormData>();
     const formData = watch();
 
     const getLabel = (items?: SelectItem[], id?: number) => {

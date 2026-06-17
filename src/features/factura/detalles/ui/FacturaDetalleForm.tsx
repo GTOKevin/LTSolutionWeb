@@ -17,7 +17,7 @@ import {
     useTheme
 } from '@mui/material';
 import { Search as SearchIcon, LocalShipping as LocalShippingIcon } from '@mui/icons-material';
-import { useForm, Controller, useWatch } from 'react-hook-form';
+import { useForm, Controller, useWatch, type Resolver, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { createFacturaDetalleSchema, type CreateFacturaDetalleSchema } from '../../model/schema';
@@ -42,7 +42,7 @@ export function FacturaDetalleForm({ open, onClose, facturaId, monedaId, cliente
     const [selectedViajeText, setSelectedViajeText] = useState('');
 
     const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<CreateFacturaDetalleSchema>({
-        resolver: zodResolver(createFacturaDetalleSchema),
+        resolver: zodResolver(createFacturaDetalleSchema) as Resolver<CreateFacturaDetalleSchema>,
         defaultValues: {
             viajeID: 0,
             descripcion: '',
@@ -115,7 +115,7 @@ export function FacturaDetalleForm({ open, onClose, facturaId, monedaId, cliente
         setValue('descripcion', desc, { shouldValidate: true });
     };
 
-    const onSubmit = async (data: CreateFacturaDetalleSchema) => {
+    const onSubmit: SubmitHandler<CreateFacturaDetalleSchema> = async (data) => {
         await createMutation.mutateAsync({ facturaId, data: { ...data, descripcion: data.descripcion?.trim() } });
         onClose();
     };

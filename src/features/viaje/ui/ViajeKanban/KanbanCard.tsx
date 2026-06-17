@@ -33,8 +33,7 @@ export function KanbanCard({ viaje, onClick, onEdit, onView, onDelete }: KanbanC
         setAnchorEl(event.currentTarget);
     };
 
-    const handleClose = (event?: React.MouseEvent<HTMLElement>) => {
-        if (event) event.stopPropagation();
+    const handleClose = () => {
         setAnchorEl(null);
     };
 
