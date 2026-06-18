@@ -38,6 +38,7 @@ import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 import { TableActions } from '@/shared/components/ui/TableActions';
+import { buildInternalFileUrl } from '@/shared/config/env';
 
 interface FlotaDocumentosListProps {
     flotaId: number;
@@ -124,7 +125,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
     };
 
     const handlePreview = (path: string) => {
-        setPreviewUrl(path);
+        setPreviewUrl(buildInternalFileUrl(path) || null);
     };
 
     const handleClosePreview = () => {
@@ -333,7 +334,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
                                                 }}
                                             >
                                                 {doc.rutaArchivo ? (
-                                                    <Avatar variant="rounded" src={doc.rutaArchivo} alt="Doc" sx={{ width: '100%', height: '100%' }} />
+                                                    <Avatar variant="rounded" src={buildInternalFileUrl(doc.rutaArchivo)} alt="Doc" sx={{ width: '100%', height: '100%' }} />
                                                 ) : (
                                                     <FileIcon />
                                                 )}
@@ -423,7 +424,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
                                             }}
                                         >
                                             {doc.rutaArchivo ? (
-                                                <Avatar variant="rounded" src={doc.rutaArchivo} alt="Doc" sx={{ width: '100%', height: '100%' }} />
+                                                <Avatar variant="rounded" src={buildInternalFileUrl(doc.rutaArchivo)} alt="Doc" sx={{ width: '100%', height: '100%' }} />
                                             ) : (
                                                 <FileIcon />
                                             )}

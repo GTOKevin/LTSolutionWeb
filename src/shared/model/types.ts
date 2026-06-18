@@ -1,3 +1,9 @@
+export interface ApiResponse<T>{
+    data: T;
+    message?: string;
+    success: boolean;
+    errors?: ApiError;
+}
 export interface ValidationError {
     field: string;
     message: string;

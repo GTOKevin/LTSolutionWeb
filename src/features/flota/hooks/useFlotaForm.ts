@@ -136,7 +136,7 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
         }
     };
 
-    const handleSuccess = (id: number) => {
+    const handleSuccess = (id: any) => {
         onSuccess(id);
         if (!isEdit && !createdFlotaId) {
             setCreatedFlotaId(id);
@@ -167,7 +167,7 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
             createMutation.mutate(
                 data,
                 {
-                    onSuccess: (response) => handleSuccess(response.data),
+                    onSuccess: (response) => handleSuccess(response),
                     onError: handleError
                 }
             );
