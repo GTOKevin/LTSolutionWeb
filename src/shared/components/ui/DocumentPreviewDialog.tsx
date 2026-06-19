@@ -26,17 +26,26 @@ export function DocumentPreviewDialog({ open, onClose, previewUrl, title = 'Vist
     const handleDownload = async () => {
         if (!previewUrl) return;
         try {
-            const response = await fetch(previewUrl);
+            const downloadUrl = new URL(previewUrl, window.location.origin);
+            downloadUrl.searchParams.set('t', Date.now().toString());
+
+            const response = await fetch(downloadUrl.toString(), {
+                cache: 'no-store'
+            });
+            if (!response.ok) {
+                throw new Error(`Download failed with status ${response.status}`);
+            }
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            const filename = previewUrl.split('/').pop() || 'documento';
+            const filename = previewUrl.split('/').pop()?.split('?')[0] || 'documento';
             link.download = filename;
+            link.style.display = 'none';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            window.setTimeout(() => window.URL.revokeObjectURL(url), 1000);
         } catch (error) {
             console.error('Error downloading:', error);
             window.open(previewUrl, '_blank');
