@@ -19,6 +19,7 @@ export interface ResumenGeneralData {
     fechaLlegadaBase: Dayjs | null;
     kmInicio: number | '';
     kmLlegada: number | '';
+    kmLlegadaBase: number | '';
     largo: number | '';
     ancho: number | '';
     alto: number | '';
@@ -179,6 +180,19 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange, isViewOnl
                         </Box>
                         
                         <Grid container spacing={2}>
+                            <Grid size={{ xs: 12 }}>
+                                <Box sx={{ position: 'relative' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                        Fecha Carga
+                                    </Typography>
+                                    <DatePicker 
+                                        slotProps={{ textField: { fullWidth: true, size: "small", sx: { bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } } } }}
+                                        value={formData.fechaCarga}
+                                        onChange={(date) => onChange({ fechaCarga: date })}
+                                        disabled={isViewOnly}
+                                    />
+                                </Box>
+                            </Grid>
                             <Grid size={{ xs: 6 }}>
                                 <Box sx={{ position: 'relative' }}>
                                     <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
@@ -273,8 +287,9 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange, isViewOnl
                                         type="number"
                                         size="small" 
                                         sx={{ bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                                        value={viajeListItem.kmLlegadaBase || ''}
-                                        disabled
+                                        value={formData.kmLlegadaBase ?? ''}
+                                        onChange={handleNumberChange('kmLlegadaBase')}
+                                        disabled={isViewOnly}
                                     />
                                 </Box>
                             </Grid>

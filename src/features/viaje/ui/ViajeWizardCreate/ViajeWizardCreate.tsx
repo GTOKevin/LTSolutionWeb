@@ -173,20 +173,20 @@ export function ViajeWizardCreate() {
                 direccionOrigen: data.direccionOrigen || undefined,
                 direccionDestino: data.direccionDestino || undefined,
                 ejesCarreta: data.ejesCarreta || undefined,
-                largo: data.largo || undefined,
-                alto: data.alto || undefined,
-                ancho: data.ancho || undefined,
-                peso: data.peso || undefined,
-                kmInicio: data.kmInicio || undefined,
-                kmLlegada: data.kmLlegada || undefined,
-                kmLlegadaBase: data.kmLlegadaBase || undefined,
+                largo: data.largo ?? undefined,
+                alto: data.alto ?? undefined,
+                ancho: data.ancho ?? undefined,
+                peso: data.peso ?? undefined,
+                kmInicio: data.kmInicio ?? undefined,
+                kmLlegada: data.kmLlegada ?? undefined,
+                kmLlegadaBase: data.kmLlegadaBase ?? undefined,
                 mercaderias: data.mercaderias?.map(m => ({
                     ...m,
                     descripcion: m.descripcion || undefined,
-                    largo: m.largo || undefined,
-                    alto: m.alto || undefined,
-                    ancho: m.ancho || undefined,
-                    peso: m.peso || undefined
+                    largo: m.largo ?? undefined,
+                    alto: m.alto ?? undefined,
+                    ancho: m.ancho ?? undefined,
+                    peso: m.peso ?? undefined
                 }))
             };
 

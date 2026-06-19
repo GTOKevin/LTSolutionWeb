@@ -128,6 +128,7 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
         onSuccess(id);
         if (!isEdit && !createdId) {
             setCreatedId(id);
+            setActiveTab(2);
         } else {
             onClose();
         }
@@ -154,7 +155,7 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
             createMutation.mutate(
                 data,
                 {
-                    onSuccess: (response) => handleSuccess(response.data),
+                    onSuccess: (result) => handleSuccess(result),
                     onError: handleError
                 }
             );
