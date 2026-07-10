@@ -18,9 +18,12 @@ import type { RolUsuario } from '@entities/rol-usuario/model/types';
 import { RolUsuarioTable } from '../../features/rol-usuario/list/ui/RolUsuarioTable';
 import { RolUsuarioMobileList } from '../../features/rol-usuario/list/ui/RolUsuarioMobileList';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function RolesPage() {
     const theme = useTheme();
+    const canManageRoles = usePermission(PERMISSIONS.SISTEMA.ROLES.GESTIONAR);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [page, setPage] = useState(0);
@@ -87,20 +90,22 @@ export function RolesPage() {
                         Administra los roles y permisos de acceso al sistema
                     </Typography>
                 </Box>
-                <Button 
-                    variant="contained" 
-                    startIcon={<AddIcon />}
-                    onClick={handleCreate}
-                    sx={{ 
-                            boxShadow: 2, 
-                            fontWeight: 'bold', 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2
-                    }}
-                >
-                    Nuevo Rol
-                </Button>
+                {canManageRoles && (
+                    <Button 
+                        variant="contained" 
+                        startIcon={<AddIcon />}
+                        onClick={handleCreate}
+                        sx={{ 
+                                boxShadow: 2, 
+                                fontWeight: 'bold', 
+                                px: 3, 
+                                py: 1.2,
+                                borderRadius: 2
+                        }}
+                    >
+                        Nuevo Rol
+                    </Button>
+                )}
             </Box>
 
             {/* Toolbar Section */}
@@ -146,7 +151,7 @@ export function RolesPage() {
                         rowsPerPage={rowsPerPage}
                         onPageChange={handleChangePage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
-                        onEdit={handleEdit}
+                        onEdit={canManageRoles ? handleEdit : undefined}
                     />
                 </Box>
 
@@ -159,7 +164,7 @@ export function RolesPage() {
                         rowsPerPage={rowsPerPage}
                         onPageChange={handleChangePage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
-                        onEdit={handleEdit}
+                        onEdit={canManageRoles ? handleEdit : undefined}
                     />
                 </Box>
             </Box>

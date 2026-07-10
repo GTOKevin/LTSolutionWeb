@@ -1,9 +1,10 @@
-import { useAuthStore } from '@/shared/store/auth.store';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
-import { ESTADO_MANTENIMIENTO_ID, ROL_USUARIO_ID } from '@/shared/constants/constantes';
+import { ESTADO_MANTENIMIENTO_ID } from '@/shared/constants/constantes';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function useMantenimientoPermissions() {
-    const user = useAuthStore((state) => state.user);
+    const canManageMantenimientos = usePermission(PERMISSIONS.MANTENIMIENTOS.GESTIONAR);
 
     const isCompleted = (item: Mantenimiento | null | undefined): boolean => {
         if (!item) return false;
@@ -20,22 +21,19 @@ export function useMantenimientoPermissions() {
 
     const canReopen = (item: Mantenimiento | null | undefined): boolean => {
         if (!isClosed(item)) return false;
-        if (!user) return false;
-        
-        const roleId = Number(user.roleId);
-        return roleId === ROL_USUARIO_ID.ADMINISTRADOR;
+        return canManageMantenimientos;
     };
 
     const canEdit = (item: Mantenimiento | null | undefined): boolean => {
-        return !isClosed(item);
+        return canManageMantenimientos && !isClosed(item);
     };
 
     const canDelete = (item: Mantenimiento | null | undefined): boolean => {
-        return !isClosed(item);
+        return canManageMantenimientos && !isClosed(item);
     };
 
     const canExport = (item: Mantenimiento | null | undefined): boolean => {
-        return isClosed(item);
+        return canManageMantenimientos && isClosed(item);
     };
 
     return {

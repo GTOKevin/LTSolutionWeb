@@ -43,11 +43,15 @@ export function Header() {
         if (location.pathname.startsWith('/app/cotizaciones')) return 'Gestión de Cotizaciones';
         if (location.pathname.startsWith('/app/facturas')) return 'Gestión de Facturas';
         if (location.pathname.startsWith('/app/flota')) return 'Gestión de Flota';
-        if (location.pathname.startsWith('/app/mercaderia')) return 'Catálogo de Mercadería';
+        if (location.pathname.startsWith('/app/roles-usuario')) return 'Gestión de Roles';
+        if (location.pathname.startsWith('/app/roles-colaborador')) return 'Gestión de Roles de Colaborador';
+        if (location.pathname.startsWith('/app/tipo-producto')) return 'Tipos de Producto';
+        if (location.pathname.startsWith('/app/mercaderia')) return 'Catálogo de Mercaderías';
         if (location.pathname.startsWith('/app/colaboradores')) return 'Gestión de Colaboradores';
-        if (location.pathname.startsWith('/app/gastos')) return 'Gestión de Gastos';
+        if (location.pathname.startsWith('/app/gasto')) return 'Catálogo de Gastos';
         if (location.pathname.startsWith('/app/usuarios')) return 'Gestión de Usuarios';
-        if (location.pathname.startsWith('/app/maestros')) return 'Maestros';
+        if (location.pathname.startsWith('/app/maestros')) return 'Gestión de Maestros';
+        if (location.pathname.startsWith('/app/mis-viajes')) return 'Mis Viajes';
         if (location.pathname.startsWith('/app/reportes')) return 'Reportes';
         return 'Dashboard';
     };

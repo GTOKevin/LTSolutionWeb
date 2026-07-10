@@ -29,6 +29,8 @@ import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shar
 import { useToast } from '@/shared/components/ui/Toast';
 import { useViajeReports } from '@/features/viaje/hooks/useViajeReports';
 import { ViajeKanbanBoard } from '@/features/viaje/ui/ViajeKanban/ViajeKanbanBoard';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -36,6 +38,7 @@ export function ViajesPage() {
     const theme = useTheme();
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const canManageViajes = usePermission(PERMISSIONS.VIAJES.GESTIONAR);
     const { 
         loadingMessage, 
         handleExportListExcel, 
@@ -123,6 +126,8 @@ export function ViajesPage() {
         setReopenDialogOpen(true);
     }, []);
 
+    const handleNoopViajeAction = useCallback(() => {}, []);
+
     const handleChangePage = useCallback((_: unknown, newPage: number) => {
         setPage(newPage);
     }, []);
@@ -155,22 +160,24 @@ export function ViajesPage() {
                     </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button 
-                        variant="contained" 
-                        startIcon={<AddIcon />}
-                        onClick={handleCreate}
-                        sx={{ 
-                            boxShadow: theme.shadows[4],
-                            fontWeight: 700, 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontSize: '0.95rem'
-                        }}
-                    >
-                        Nuevo Viaje
-                    </Button>
+                    {canManageViajes && (
+                        <Button 
+                            variant="contained" 
+                            startIcon={<AddIcon />}
+                            onClick={handleCreate}
+                            sx={{ 
+                                boxShadow: theme.shadows[4],
+                                fontWeight: 700, 
+                                px: 3, 
+                                py: 1.2,
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontSize: '0.95rem'
+                            }}
+                        >
+                            Nuevo Viaje
+                        </Button>
+                    )}
                 </Box>
             </Box>
 
@@ -181,7 +188,7 @@ export function ViajesPage() {
                         title="Agendados"
                         value={data?.totalAgendados?.toString() || "0"}
                         icon={<CalendarMonth sx={{ fontSize: 24 }} />}
-                        trend={0} 
+                        caption="Estado actual" 
                         color={theme.palette.info.main}
                     />
                 </Grid>
@@ -190,7 +197,7 @@ export function ViajesPage() {
                         title="En Tránsito"
                         value={data?.totalEnTransito?.toString() || "0"}
                         icon={<NearMe sx={{ fontSize: 24 }} />}
-                        trend={0}
+                        caption="Estado actual"
                         color={theme.palette.warning.main}
                     />
                 </Grid>
@@ -199,7 +206,7 @@ export function ViajesPage() {
                         title="Completados"
                         value={data?.totalCompletados?.toString() || "0"}
                         icon={<TaskAlt sx={{ fontSize: 24 }} />}
-                        trend={0}
+                        caption="Estado actual"
                         color={theme.palette.success.main}
                     />
                 </Grid>
@@ -237,34 +244,38 @@ export function ViajesPage() {
                 </Box>
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button 
-                        variant="outlined" 
-                        startIcon={<PictureAsPdf />}
-                        onClick={onExportListPdf}
-                        color="error"
-                        size="small"
-                        sx={{ 
-                            fontWeight: 600, 
-                            borderRadius: 2,
-                            textTransform: 'none'
-                        }}
-                    >
-                        Exportar PDF
-                    </Button>
-                    <Button 
-                        variant="outlined" 
-                        startIcon={<TableView />}
-                        onClick={onExportListExcel}
-                        color="success"
-                        size="small"
-                        sx={{ 
-                            fontWeight: 600, 
-                            borderRadius: 2,
-                            textTransform: 'none'
-                        }}
-                    >
-                        Exportar Excel
-                    </Button>
+                    {canManageViajes && (
+                        <>
+                            <Button 
+                                variant="outlined" 
+                                startIcon={<PictureAsPdf />}
+                                onClick={onExportListPdf}
+                                color="error"
+                                size="small"
+                                sx={{ 
+                                    fontWeight: 600, 
+                                    borderRadius: 2,
+                                    textTransform: 'none'
+                                }}
+                            >
+                                Exportar PDF
+                            </Button>
+                            <Button 
+                                variant="outlined" 
+                                startIcon={<TableView />}
+                                onClick={onExportListExcel}
+                                color="success"
+                                size="small"
+                                sx={{ 
+                                    fontWeight: 600, 
+                                    borderRadius: 2,
+                                    textTransform: 'none'
+                                }}
+                            >
+                                Exportar Excel
+                            </Button>
+                        </>
+                    )}
                 </Box>
             </Box>
 
@@ -272,10 +283,11 @@ export function ViajesPage() {
                 <ViajeKanbanBoard 
                     viajes={data?.items || []} 
                     isLoading={isLoading} 
-                    onViajeClick={handleView}
-                    onViewViaje={handleView}
-                    onEditViaje={handleEdit}
-                    onDeleteViaje={handleDelete}
+                    canManage={canManageViajes}
+                    onViajeClick={canManageViajes ? handleView : handleNoopViajeAction}
+                    onViewViaje={canManageViajes ? handleView : undefined}
+                    onEditViaje={canManageViajes ? handleEdit : undefined}
+                    onDeleteViaje={canManageViajes ? handleDelete : undefined}
                 />
             ) : (
                 <>
@@ -287,12 +299,13 @@ export function ViajesPage() {
                             rowsPerPage={rowsPerPage}
                             onPageChange={handleChangePage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
-                            onEdit={handleEdit}
-                            onView={handleView}
-                            onDelete={handleDelete}
-                            onExportExcel={handleExportExcel}
-                            onExportPdf={handleExportPdf}
-                            onReopen={handleReopen}
+                            canManage={canManageViajes}
+                            onEdit={canManageViajes ? handleEdit : undefined}
+                            onView={canManageViajes ? handleView : undefined}
+                            onDelete={canManageViajes ? handleDelete : undefined}
+                            onExportExcel={canManageViajes ? handleExportExcel : undefined}
+                            onExportPdf={canManageViajes ? handleExportPdf : undefined}
+                            onReopen={canManageViajes ? handleReopen : undefined}
                         />
                     </Box>
                     <ViajesMobileList
@@ -302,12 +315,13 @@ export function ViajesPage() {
                         rowsPerPage={rowsPerPage}
                         onPageChange={handleChangePage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
-                        onEdit={handleEdit}
-                        onView={handleView}
-                        onDelete={handleDelete}
-                        onExportExcel={handleExportExcel}
-                        onExportPdf={handleExportPdf}
-                        onReopen={handleReopen}
+                        canManage={canManageViajes}
+                        onEdit={canManageViajes ? handleEdit : undefined}
+                        onView={canManageViajes ? handleView : undefined}
+                        onDelete={canManageViajes ? handleDelete : undefined}
+                        onExportExcel={canManageViajes ? handleExportExcel : undefined}
+                        onExportPdf={canManageViajes ? handleExportPdf : undefined}
+                        onReopen={canManageViajes ? handleReopen : undefined}
                     />
                 </>
             )}

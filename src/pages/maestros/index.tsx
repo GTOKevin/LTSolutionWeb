@@ -20,9 +20,12 @@ import type { TipoMaestro } from '@entities/tipo-maestro/model/types';
 import { TipoMaestroTable } from '../../features/tipo-maestro/list/ui/TipoMaestroTable';
 import { TipoMaestroMobileList } from '../../features/tipo-maestro/list/ui/TipoMaestroMobileList';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function MaestrosPage() {
     const theme = useTheme();
+    const canManageMaestros = usePermission(PERMISSIONS.SISTEMA.MAESTROS.GESTIONAR);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedSeccion, setSelectedSeccion] = useState<string | null>(null);
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -39,11 +42,6 @@ export function MaestrosPage() {
         }, 1000);
         return () => clearTimeout(timer);
     }, [searchTerm]);
-
-    // Reset page when section filter changes
-    useEffect(() => {
-        setPage(0);
-    }, [selectedSeccion]);
 
     const { data, isLoading, refetch } = useQuery({
         queryKey: ['tipo-maestros', page, rowsPerPage, debouncedSearch, selectedSeccion],
@@ -108,20 +106,22 @@ export function MaestrosPage() {
                         Administra las tablas maestras y configuraciones del sistema
                     </Typography>
                 </Box>
-                <Button 
-                    variant="contained" 
-                    startIcon={<AddIcon />}
-                    onClick={handleCreate}
-                    sx={{ 
-                            boxShadow: 2, 
-                            fontWeight: 'bold', 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2
-                    }}
-                >
-                    Nuevo Maestro
-                </Button>
+                {canManageMaestros && (
+                    <Button 
+                        variant="contained" 
+                        startIcon={<AddIcon />}
+                        onClick={handleCreate}
+                        sx={{ 
+                                boxShadow: 2, 
+                                fontWeight: 'bold', 
+                                px: 3, 
+                                py: 1.2,
+                                borderRadius: 2
+                        }}
+                    >
+                        Nuevo Maestro
+                    </Button>
+                )}
             </Box>
 
             {/* Toolbar Section */}
@@ -157,7 +157,10 @@ export function MaestrosPage() {
                     <Autocomplete
                         options={secciones?.data || []}
                         value={selectedSeccion}
-                        onChange={(_, newValue) => setSelectedSeccion(newValue)}
+                        onChange={(_, newValue) => {
+                            setSelectedSeccion(newValue);
+                            setPage(0);
+                        }}
                         renderInput={(params) => (
                             <TextField 
                                 {...params} 
@@ -198,7 +201,7 @@ export function MaestrosPage() {
                         rowsPerPage={rowsPerPage}
                         onPageChange={handleChangePage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
-                        onEdit={handleEdit}
+                        onEdit={canManageMaestros ? handleEdit : undefined}
                     />
                 </Box>
 
@@ -211,7 +214,7 @@ export function MaestrosPage() {
                         rowsPerPage={rowsPerPage}
                         onPageChange={handleChangePage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
-                        onEdit={handleEdit}
+                        onEdit={canManageMaestros ? handleEdit : undefined}
                     />
                 </Box>
             </Box>

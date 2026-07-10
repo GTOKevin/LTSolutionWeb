@@ -51,7 +51,7 @@ export function Step5Resumen({ options }: Props) {
                             <Box><Typography variant="caption" color="text.secondary">Cliente Contratante</Typography><Typography variant="body2" fontWeight={600}>{getLabel(options.clientes, formData.clienteID)}</Typography></Box>
                             <Box><Typography variant="caption" color="text.secondary">Estado Inicial</Typography><Typography variant="body2" fontWeight={600}>{getLabel(options.estados, formData.estadoID)}</Typography></Box>
                             <Box><Typography variant="caption" color="text.secondary">Fecha de Carga</Typography><Typography variant="body2" fontWeight={600}>{formData.fechaCarga || 'No especificada'}</Typography></Box>
-                            <Box><Typography variant="caption" color="text.secondary">Cotización Referencia</Typography><Typography variant="body2" fontWeight={600}>{formData.cotizacionID || 'N/A'}</Typography></Box>
+                            <Box><Typography variant="caption" color="text.secondary">Cotización Referencia</Typography><Typography variant="body2" fontWeight={600}>{formData.cotizacionID || 'Sin cotización asociada'}</Typography></Box>
                         </Box>
                     </Paper>
                 </Grid>

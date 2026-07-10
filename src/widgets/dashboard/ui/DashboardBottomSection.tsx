@@ -56,14 +56,6 @@ export function DashboardBottomSection({
                             <Button size="small" onClick={() => navigate('/app/viajes')}>
                                 Ver todos
                             </Button>
-                            <Box>
-                                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                    Viajes Recientes
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Últimos {data.viajesRecientes.length} registros cargados.
-                                </Typography>
-                            </Box>
                         </Box>
 
                         <Box sx={{ overflowX: 'auto' }}>

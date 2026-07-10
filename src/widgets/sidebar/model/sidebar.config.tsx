@@ -15,7 +15,11 @@ import {
     Category as CategoryIcon,
     Inventory as InventoryIcon,
     LocalOffer as LocalOfferIcon,
-    AccountBalanceWallet as AccountBalanceWalletIcon
+    AccountBalanceWallet as AccountBalanceWalletIcon,
+    Badge as BadgeIcon,
+    Description as DescriptionIcon,
+    Route as RouteIcon,
+    EventNote as EventNoteIcon
 } from '@mui/icons-material';
 import { PERMISSIONS } from '@/shared/constants/permissions';
 
@@ -34,6 +38,40 @@ export const SIDEBAR_MENU: MenuItem[] = [
         path: '/app/dashboard', 
         icon: <DashboardIcon />,
         permission: PERMISSIONS.DASHBOARD.VER
+    },
+    {
+        text: 'Portal del Empleado',
+        icon: <BadgeIcon />,
+        section: 'Autoservicio',
+        children: [
+            {
+                text: 'Mis Viajes',
+                path: '/app/mis-viajes',
+                icon: <RouteIcon />,
+                permission: [PERMISSIONS.EMPLOYEE.VIAJES.VER, PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR]
+            },
+            {
+                text: 'Mis Pagos',
+                path: '/app/mis-pagos',
+                icon: <AccountBalanceWalletIcon />,
+                permission: [PERMISSIONS.EMPLOYEE.PAGOS.VER, PERMISSIONS.EMPLOYEE.PAGOS.CONFIRMAR]
+            },
+            {
+                text: 'Mis Licencias',
+                path: '/app/mis-licencias',
+                icon: <EventNoteIcon />,
+                permission: [PERMISSIONS.EMPLOYEE.LICENCIAS.VER, PERMISSIONS.EMPLOYEE.LICENCIAS.SOLICITAR]
+            },
+            {
+                text: 'Mis Documentos',
+                path: '/app/mis-documentos',
+                icon: <DescriptionIcon />,
+                permission: [
+                    PERMISSIONS.EMPLOYEE.DOCUMENTOS.VER,
+                    PERMISSIONS.EMPLOYEE.DOCUMENTOS.SOLICITAR_ACTUALIZACION
+                ]
+            }
+        ]
     },
     {
         text: 'Gestión Comercial',

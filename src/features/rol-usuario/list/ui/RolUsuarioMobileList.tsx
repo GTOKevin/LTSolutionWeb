@@ -12,7 +12,7 @@ interface RolUsuarioMobileListProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onEdit: (rol: RolUsuario) => void;
+    onEdit?: (rol: RolUsuario) => void;
 }
 
 export function RolUsuarioMobileList({

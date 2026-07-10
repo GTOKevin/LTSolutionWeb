@@ -24,13 +24,22 @@ import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
 interface KanbanBoardProps {
     viajes: ViajeListItem[];
     isLoading: boolean;
+    canManage?: boolean;
     onViajeClick: (viaje: ViajeListItem) => void;
     onEditViaje?: (viaje: ViajeListItem) => void;
     onViewViaje?: (viaje: ViajeListItem) => void;
     onDeleteViaje?: (viaje: ViajeListItem) => void;
 }
 
-export function ViajeKanbanBoard({ viajes, isLoading, onViajeClick, onEditViaje, onViewViaje, onDeleteViaje }: KanbanBoardProps) {
+export function ViajeKanbanBoard({
+    viajes,
+    isLoading,
+    canManage = false,
+    onViajeClick,
+    onEditViaje,
+    onViewViaje,
+    onDeleteViaje
+}: KanbanBoardProps) {
     const { showToast } = useToast();
 
     // Local state for optimistic updates during drag
@@ -114,6 +123,10 @@ export function ViajeKanbanBoard({ viajes, isLoading, onViajeClick, onEditViaje,
             }
         }
 
+        if (!canManage) {
+            return;
+        }
+
         if (targetColumnId && activeViaje.estadoCodigo !== targetColumnId) {
             // Regla: No se puede cambiar a Agendado si ya no está en Agendado
             if (targetColumnId === ESTADO_VIAJE_COD.Agendado && activeViaje.estadoCodigo !== ESTADO_VIAJE_COD.Agendado) {
@@ -156,17 +169,18 @@ export function ViajeKanbanBoard({ viajes, isLoading, onViajeClick, onEditViaje,
                             color={col.color}
                             bgColor={col.bgColor}
                             viajes={getColumnViajes(col.id)}
+                            draggable={canManage}
                             onCardClick={onViajeClick}
-                            onEditCard={onEditViaje}
-                            onViewCard={onViewViaje}
-                            onDeleteCard={onDeleteViaje}
+                            onEditCard={canManage ? onEditViaje : undefined}
+                            onViewCard={canManage ? onViewViaje : undefined}
+                            onDeleteCard={canManage ? onDeleteViaje : undefined}
                         />
                     ))}
                 </Box>
 
                 <DragOverlay>
                     {activeViaje ? (
-                        <KanbanCard viaje={activeViaje} onClick={() => {}} />
+                        <KanbanCard viaje={activeViaje} onClick={() => {}} draggable={canManage} />
                     ) : null}
                 </DragOverlay>
             </DndContext>

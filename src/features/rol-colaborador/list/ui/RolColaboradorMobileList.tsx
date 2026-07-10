@@ -12,7 +12,7 @@ interface RolColaboradorMobileListProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onEdit: (rol: RolColaborador) => void;
+    onEdit?: (rol: RolColaborador) => void;
 }
 
 export function RolColaboradorMobileList({

@@ -19,17 +19,20 @@ import { FacturaTable } from '@/features/factura/list/ui/FacturaTable';
 import { FacturaMobileList } from '@/features/factura/list/ui/FacturaMobileList';
 import { FacturaPagoForm } from '@/features/factura/pagos/ui/FacturaPagoForm';
 import { FacturaPagosModal } from '@/features/factura/pagos/ui/FacturaPagosModal';
-import { useUpdateFactura } from '@/features/factura/hooks/useFacturaCrud';
+import { useDeleteFactura, useUpdateFactura } from '@/features/factura/hooks/useFacturaCrud';
 import { useMediaQuery } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import type { Factura, FacturaFilters } from '@/entities/factura/model/types';
 import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
 import { formatCurrency } from '@/shared/utils/format-utils';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function FacturasPage() {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const navigate = useNavigate();
+    const canManageFacturas = usePermission(PERMISSIONS.FACTURAS.GESTIONAR);
     const [filters, setFilters] = useState<FacturaFilters>({ page: 1, size: 10, search: '' });
 
     const { data, isLoading } = useQuery({
@@ -43,6 +46,7 @@ export function FacturasPage() {
     });
 
     const updateMutation = useUpdateFactura();
+    const deleteMutation = useDeleteFactura();
 
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [pagosListModalOpen, setPagosListModalOpen] = useState(false);
@@ -61,8 +65,7 @@ export function FacturasPage() {
     };
 
     const handleDeleteClick = async (factura: Factura) => {
-        // Implement delete logic if needed
-        console.log("Delete factura", factura);
+        await deleteMutation.mutateAsync(factura.facturaID);
     };
 
     const handlePaymentClick = (factura: Factura) => {
@@ -112,26 +115,28 @@ export function FacturasPage() {
                             Control total de la emisión fiscal y cobranza de la flota.
                         </Typography>
                     </Box>
-                    <Button
-                        variant="contained"
-                        startIcon={<AddCircleIcon />}
-                        onClick={handleCreateClick}
-                        fullWidth={isMobile}
-                        sx={{ 
-                            borderRadius: 3, 
-                            px: 3, 
-                            py: 1.5,
-                            fontWeight: 600,
-                            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                            boxShadow: theme.shadows[4],
-                            transition: 'all 0.2s',
-                            '&:hover': {
-                                transform: 'scale(1.02)'
-                            }
-                        }}
-                    >
-                        Nueva Factura
-                    </Button>
+                    {canManageFacturas && (
+                        <Button
+                            variant="contained"
+                            startIcon={<AddCircleIcon />}
+                            onClick={handleCreateClick}
+                            fullWidth={isMobile}
+                            sx={{ 
+                                borderRadius: 3, 
+                                px: 3, 
+                                py: 1.5,
+                                fontWeight: 600,
+                                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                                boxShadow: theme.shadows[4],
+                                transition: 'all 0.2s',
+                                '&:hover': {
+                                    transform: 'scale(1.02)'
+                                }
+                            }}
+                        >
+                            Nueva Factura
+                        </Button>
+                    )}
                 </Box>
 
                 {/* Bento Grid Filters & Overview */}
@@ -240,12 +245,12 @@ export function FacturasPage() {
                             rowsPerPage={filters.size}
                             onPageChange={(_, page) => setFilters(prev => ({ ...prev, page }))}
                             onRowsPerPageChange={(e) => setFilters(prev => ({ ...prev, size: parseInt(e.target.value, 10), page: 1 }))}
-                            onView={handleViewClick}
-                            onEdit={handleEditClick}
-                            onDelete={handleDeleteClick}
-                            onPayment={handlePaymentClick}
-                            onViewPayments={handleViewPaymentsClick}
-                            onUpdateStatus={handleUpdateStatus}
+                            onView={canManageFacturas ? handleViewClick : undefined}
+                            onEdit={canManageFacturas ? handleEditClick : undefined}
+                            onDelete={canManageFacturas ? handleDeleteClick : undefined}
+                            onPayment={canManageFacturas ? handlePaymentClick : undefined}
+                            onViewPayments={canManageFacturas ? handleViewPaymentsClick : undefined}
+                            onUpdateStatus={canManageFacturas ? handleUpdateStatus : undefined}
                         />
                     ) : (
                         <FacturaTable
@@ -255,12 +260,12 @@ export function FacturasPage() {
                             rowsPerPage={filters.size}
                             onPageChange={(_, page) => setFilters(prev => ({ ...prev, page }))}
                             onRowsPerPageChange={(e) => setFilters(prev => ({ ...prev, size: parseInt(e.target.value, 10), page: 1 }))}
-                            onView={handleViewClick}
-                            onEdit={handleEditClick}
-                            onDelete={handleDeleteClick}
-                            onPayment={handlePaymentClick}
-                            onViewPayments={handleViewPaymentsClick}
-                            onUpdateStatus={handleUpdateStatus}
+                            onView={canManageFacturas ? handleViewClick : undefined}
+                            onEdit={canManageFacturas ? handleEditClick : undefined}
+                            onDelete={canManageFacturas ? handleDeleteClick : undefined}
+                            onPayment={canManageFacturas ? handlePaymentClick : undefined}
+                            onViewPayments={canManageFacturas ? handleViewPaymentsClick : undefined}
+                            onUpdateStatus={canManageFacturas ? handleUpdateStatus : undefined}
                         />
                     )}
                 </Box>

@@ -8,6 +8,7 @@ interface KanbanColumnProps {
     id: string;
     title: string;
     viajes: ViajeListItem[];
+    draggable?: boolean;
     onCardClick: (viaje: ViajeListItem) => void;
     onEditCard?: (viaje: ViajeListItem) => void;
     onViewCard?: (viaje: ViajeListItem) => void;
@@ -16,7 +17,7 @@ interface KanbanColumnProps {
     bgColor: string;
 }
 
-export function KanbanColumn({ id, title, viajes, onCardClick, onEditCard, onViewCard, onDeleteCard, color, bgColor }: KanbanColumnProps) {
+export function KanbanColumn({ id, title, viajes, draggable = true, onCardClick, onEditCard, onViewCard, onDeleteCard, color, bgColor }: KanbanColumnProps) {
     const { setNodeRef, isOver } = useDroppable({
         id,
         data: {
@@ -89,6 +90,7 @@ export function KanbanColumn({ id, title, viajes, onCardClick, onEditCard, onVie
                             <KanbanCard 
                                 key={viaje.viajeID} 
                                 viaje={viaje} 
+                                draggable={draggable}
                                 onClick={onCardClick} 
                                 onEdit={onEditCard}
                                 onView={onViewCard}

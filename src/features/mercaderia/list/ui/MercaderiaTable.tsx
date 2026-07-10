@@ -13,8 +13,8 @@ interface Props {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onEdit: (mercaderia: Mercaderia) => void;
-    onDelete: (mercaderia: Mercaderia) => void;
+    onEdit?: (mercaderia: Mercaderia) => void;
+    onDelete?: (mercaderia: Mercaderia) => void;
 }
 
 export function MercaderiaTable({
@@ -59,8 +59,8 @@ export function MercaderiaTable({
                     </TableCell>
                     <TableCell align="center">
                         <TableActions
-                            onEdit={() => onEdit(row)}
-                            onDelete={() => onDelete(row)}
+                            onEdit={onEdit ? () => onEdit(row) : undefined}
+                            onDelete={onDelete ? () => onDelete(row) : undefined}
                             editTooltip="Editar"
                             deleteTooltip="Eliminar"
                         />

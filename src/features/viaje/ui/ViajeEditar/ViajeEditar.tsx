@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
-import type { UpdateViajeDto, ViajeListItem } from '@/entities/viaje/model/types';
+import type { UpdateViajeDto } from '@/entities/viaje/model/types';
 import dayjs from 'dayjs';
 
 import { ResumenGeneralTab, type ResumenGeneralData } from './ResumenGeneralTab';
@@ -101,10 +101,10 @@ export function ViajeEditar() {
 
         const payload: UpdateViajeDto = {
             viajeID: viaje.viajeID,
-            cotizacionID: viaje.cotizacionID || undefined,
+            cotizacionID: viaje.cotizacionID ?? null,
             clienteID: viaje.clienteID,
             tractoID: viaje.tractoID,
-            carretaID: viaje.carretaID || 0, // 0 if null, assuming backend handles or ignores if 0
+            carretaID: viaje.carretaID ?? null,
             colaboradorID: viaje.colaboradorID,
             origenID: viaje.origenID,
             destinoID: viaje.destinoID,
@@ -149,39 +149,13 @@ export function ViajeEditar() {
         );
     }
 
-    // Convert Viaje to a mock ViajeListItem for ResumenGeneralTab
-    const mockViajeListItem: ViajeListItem = {
-        viajeID: viaje.viajeID,
-        fechaCarga: viaje.fechaCarga,
-        fechaPartida: viaje.fechaPartida || undefined,
-        requiereEscolta: viaje.requiereEscolta || undefined,
-        codigo: viaje.codigo, // Assuming generic code if not present
-        clienteID: viaje.clienteID,
-        clienteRazonSocial: viaje.cliente?.razonSocial || 'N/A',
-        clienteRuc: viaje.cliente?.numeroDocumento || 'N/A',
-        origenID: viaje.origenID,
-        origenDescripcion: viaje.origen ? `${viaje.origen.departamento}, ${viaje.origen.provincia}, ${viaje.origen.distrito}` : 'N/A',
-        destinoID: viaje.destinoID,
-        destinoDescripcion: viaje.destino ? `${viaje.destino.departamento}, ${viaje.destino.provincia}, ${viaje.destino.distrito}` : 'N/A',
-        colaboradorID: viaje.colaboradorID,
-        conductorNombreCompleto: viaje.colaborador ? `${viaje.colaborador.nombres} ${viaje.colaborador.primerApellido} ${viaje.colaborador.segundoApellido}` : 'N/A',
-        tractoID: viaje.tractoID,
-        tractoPlaca: viaje.tracto?.placa || 'N/A',
-        carretaID: viaje.carretaID || 0,
-        carretaPlaca: viaje.carreta?.placa || 'N/A',
-        estadoID: viaje.estadoID,
-        estadoNombre: viaje.estado?.nombre || 'N/A',
-        estadoCodigo: viaje.estado?.codigo,
-        cerrado: false
-    };
-
     return (
         <Box sx={{marginBottom:'24px'}}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box>
                         <Typography variant="h5" fontWeight={700} color="text.primary" sx={{letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 1}}>
-                            Edición de Viaje <Box component="span" sx={{color: 'text.secondary', fontWeight: 400}}>Codigo: {mockViajeListItem.codigo}</Box>
+                            Edición de Viaje <Box component="span" sx={{color: 'text.secondary', fontWeight: 400}}>Codigo: {viaje.codigo || `#${viaje.viajeID}`}</Box>
                         </Typography>
                     </Box>
                 </Box>
@@ -238,7 +212,7 @@ export function ViajeEditar() {
                 <Box sx={{ p: 3, minHeight: '60vh'}}>
                     <TabPanel value={activeTab} index={0}>
                         <ResumenGeneralTab 
-                            viajeListItem={mockViajeListItem}
+                            viaje={viaje}
                             formData={formData}
                             onChange={handleFormDataChange}
                             isViewOnly={isViewOnly}

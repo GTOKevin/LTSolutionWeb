@@ -13,9 +13,9 @@ interface ClientesTableProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onView: (cliente: Cliente) => void;
-    onEdit: (cliente: Cliente) => void;
-    onDelete: (cliente: Cliente) => void;
+    onView?: (cliente: Cliente) => void;
+    onEdit?: (cliente: Cliente) => void;
+    onDelete?: (cliente: Cliente) => void;
 }
 
 export function ClientesTable({
@@ -83,9 +83,9 @@ export function ClientesTable({
                     <TableCell>{cliente.telefono || '-'}</TableCell>
                     <TableCell align="right">
                         <TableActions 
-                            onView={() => onView(cliente)}
-                            onEdit={() => onEdit(cliente)}
-                            onDelete={() => onDelete(cliente)}
+                            onView={onView ? () => onView(cliente) : undefined}
+                            onEdit={onEdit ? () => onEdit(cliente) : undefined}
+                            onDelete={onDelete ? () => onDelete(cliente) : undefined}
                         />
                     </TableCell>
                 </>

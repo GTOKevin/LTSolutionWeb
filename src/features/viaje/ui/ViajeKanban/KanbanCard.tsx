@@ -10,20 +10,20 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import RvHookupIcon from '@mui/icons-material/RvHookup';
 import PersonIcon from '@mui/icons-material/Person';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
-import WarningIcon from '@mui/icons-material/Warning';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
 import { ESTADO_VIAJE_COD } from '@/shared/constants/constantes';
 import { useTheme } from '@mui/material/styles';
 
 interface KanbanCardProps {
     viaje: ViajeListItem;
+    draggable?: boolean;
     onClick: (viaje: ViajeListItem) => void;
     onEdit?: (viaje: ViajeListItem) => void;
     onView?: (viaje: ViajeListItem) => void;
     onDelete?: (viaje: ViajeListItem) => void;
 }
 
-export function KanbanCard({ viaje, onClick, onEdit, onView, onDelete }: KanbanCardProps) {
+export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, onDelete }: KanbanCardProps) {
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
@@ -47,6 +47,7 @@ export function KanbanCard({ viaje, onClick, onEdit, onView, onDelete }: KanbanC
 
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: viaje.viajeID,
+        disabled: !draggable,
         data: {
             type: 'Card',
             viaje
@@ -57,9 +58,11 @@ export function KanbanCard({ viaje, onClick, onEdit, onView, onDelete }: KanbanC
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.5 : 1,
-        cursor: 'grab',
+        cursor: draggable ? 'grab' : 'default',
         marginBottom: theme.spacing(2)
     };
+
+    const hasActions = Boolean(onEdit || onView || onDelete);
 
     return (
         <Card 
@@ -86,49 +89,55 @@ export function KanbanCard({ viaje, onClick, onEdit, onView, onDelete }: KanbanC
                     <Typography variant="subtitle2" fontWeight="bold" sx={{ color: 'text.primary' }}>
                         {viaje.codigo}
                     </Typography>
-                    <Box>
-                        <IconButton 
-                            size="small" 
-                            sx={{ p: 0 }} 
-                            onClick={handleClick}
-                            aria-controls={open ? 'viaje-menu' : undefined}
-                            aria-haspopup="true"
-                            aria-expanded={open ? 'true' : undefined}
-                        >
-                            <MoreVertIcon fontSize="small" />
-                        </IconButton>
-                        <Menu
-                            id="viaje-menu"
-                            anchorEl={anchorEl}
-                            open={open}
-                            onClose={handleClose}
-                            MenuListProps={{
-                                'aria-labelledby': 'viaje-button',
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <MenuItem onClick={handleAction('edit')}>
-                                <ListItemIcon>
-                                    <EditIcon fontSize="small" />
-                                </ListItemIcon>
-                                <ListItemText>Modificar</ListItemText>
-                            </MenuItem>
-                            <MenuItem onClick={handleAction('view')}>
-                                <ListItemIcon>
-                                    <VisibilityIcon fontSize="small" />
-                                </ListItemIcon>
-                                <ListItemText>Visualizar</ListItemText>
-                            </MenuItem>
-                            {viaje.estadoCodigo === ESTADO_VIAJE_COD.Agendado && !viaje.fechaPartida && (
-                                <MenuItem onClick={handleAction('delete')} sx={{ color: 'error.main' }}>
-                                    <ListItemIcon>
-                                        <DeleteIcon fontSize="small" color="error" />
-                                    </ListItemIcon>
-                                    <ListItemText>Eliminar</ListItemText>
-                                </MenuItem>
-                            )}
-                        </Menu>
-                    </Box>
+                    {hasActions && (
+                        <Box>
+                            <IconButton 
+                                size="small" 
+                                sx={{ p: 0 }} 
+                                onClick={handleClick}
+                                aria-controls={open ? 'viaje-menu' : undefined}
+                                aria-haspopup="true"
+                                aria-expanded={open ? 'true' : undefined}
+                            >
+                                <MoreVertIcon fontSize="small" />
+                            </IconButton>
+                            <Menu
+                                id="viaje-menu"
+                                anchorEl={anchorEl}
+                                open={open}
+                                onClose={handleClose}
+                                MenuListProps={{
+                                    'aria-labelledby': 'viaje-button',
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {onEdit && (
+                                    <MenuItem onClick={handleAction('edit')}>
+                                        <ListItemIcon>
+                                            <EditIcon fontSize="small" />
+                                        </ListItemIcon>
+                                        <ListItemText>Modificar</ListItemText>
+                                    </MenuItem>
+                                )}
+                                {onView && (
+                                    <MenuItem onClick={handleAction('view')}>
+                                        <ListItemIcon>
+                                            <VisibilityIcon fontSize="small" />
+                                        </ListItemIcon>
+                                        <ListItemText>Visualizar</ListItemText>
+                                    </MenuItem>
+                                )}
+                                {onDelete && viaje.estadoCodigo === ESTADO_VIAJE_COD.Agendado && !viaje.fechaPartida && (
+                                    <MenuItem onClick={handleAction('delete')} sx={{ color: 'error.main' }}>
+                                        <ListItemIcon>
+                                            <DeleteIcon fontSize="small" color="error" />
+                                        </ListItemIcon>
+                                        <ListItemText>Eliminar</ListItemText>
+                                    </MenuItem>
+                                )}
+                            </Menu>
+                        </Box>
+                    )}
                 </Stack>
 
                 {/* Ruta */}
@@ -195,11 +204,6 @@ export function KanbanCard({ viaje, onClick, onEdit, onView, onDelete }: KanbanC
                         />
                     )}
                     {/* Placeholder para incidentes si aplica a futuro */}
-                    {false && (
-                        <Tooltip title="Incidente reportado">
-                            <WarningIcon color="error" fontSize="small" />
-                        </Tooltip>
-                    )}
                 </Stack>
 
                 {/* Footer */}

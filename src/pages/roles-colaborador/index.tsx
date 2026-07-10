@@ -18,9 +18,12 @@ import type { RolColaborador } from '@entities/rol-colaborador/model/types';
 import { RolColaboradorTable } from '../../features/rol-colaborador/list/ui/RolColaboradorTable';
 import { RolColaboradorMobileList } from '../../features/rol-colaborador/list/ui/RolColaboradorMobileList';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function RolesColaboradorPage() {
     const theme = useTheme();
+    const canManageRoles = usePermission(PERMISSIONS.SISTEMA.ROLES.GESTIONAR);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [page, setPage] = useState(0);
@@ -94,20 +97,22 @@ export function RolesColaboradorPage() {
                         Administra los roles específicos para los colaboradores
                     </Typography>
                 </Box>
-                <Button 
-                    variant="contained" 
-                    startIcon={<AddIcon />}
-                    onClick={handleCreate}
-                    sx={{ 
-                            boxShadow: 2, 
-                            fontWeight: 'bold', 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2
-                    }}
-                >
-                    Nuevo Rol
-                </Button>
+                {canManageRoles && (
+                    <Button 
+                        variant="contained" 
+                        startIcon={<AddIcon />}
+                        onClick={handleCreate}
+                        sx={{ 
+                                boxShadow: 2, 
+                                fontWeight: 'bold', 
+                                px: 3, 
+                                py: 1.2,
+                                borderRadius: 2
+                        }}
+                    >
+                        Nuevo Rol
+                    </Button>
+                )}
             </Box>
 
             {/* Toolbar Section */}
@@ -153,7 +158,7 @@ export function RolesColaboradorPage() {
                         rowsPerPage={rowsPerPage}
                         onPageChange={handleChangePage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
-                        onEdit={handleEdit}
+                        onEdit={canManageRoles ? handleEdit : undefined}
                     />
                 </Box>
 
@@ -166,7 +171,7 @@ export function RolesColaboradorPage() {
                         rowsPerPage={rowsPerPage}
                         onPageChange={handleChangePage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
-                        onEdit={handleEdit}
+                        onEdit={canManageRoles ? handleEdit : undefined}
                     />
                 </Box>
             </Box>

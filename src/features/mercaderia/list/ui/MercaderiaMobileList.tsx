@@ -12,8 +12,8 @@ interface Props {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onEdit: (mercaderia: Mercaderia) => void;
-    onDelete: (mercaderia: Mercaderia) => void;
+    onEdit?: (mercaderia: Mercaderia) => void;
+    onDelete?: (mercaderia: Mercaderia) => void;
 }
 
 export function MercaderiaMobileList({

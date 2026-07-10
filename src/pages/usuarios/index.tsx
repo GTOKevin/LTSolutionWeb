@@ -26,11 +26,13 @@ import { UsuarioMobileList } from '../../features/usuario/list/ui/UsuarioMobileL
 import { UsuarioFilter } from '@/features/usuario/list/ui/UsuarioFilter';
 import { ESTADO_SECCIONES } from '@/shared/constants/constantes';
 import { useDeleteUsuario } from '@/features/usuario/hooks/useUsuarioCrud';
-
 import { StatsCard } from '@/shared/components/ui/StatsCard';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function UsuariosPage() {
     const theme = useTheme();
+    const canManageUsuarios = usePermission(PERMISSIONS.SISTEMA.USUARIOS.GESTIONAR);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [page, setPage] = useState(0);
@@ -179,20 +181,22 @@ export function UsuariosPage() {
                         </Typography>
                     </Box>
 
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        sx={{ 
-                            boxShadow: 2, 
-                            fontWeight: 'bold', 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2
-                        }}
-                        onClick={handleCreate}
-                    >
-                        Nuevo Usuario
-                    </Button>
+                    {canManageUsuarios && (
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            sx={{ 
+                                boxShadow: 2, 
+                                fontWeight: 'bold', 
+                                px: 3, 
+                                py: 1.2,
+                                borderRadius: 2
+                            }}
+                            onClick={handleCreate}
+                        >
+                            Nuevo Usuario
+                        </Button>
+                    )}
                 </Box>
 
                 {/* Stats Section */}
@@ -202,7 +206,6 @@ export function UsuariosPage() {
                             title="Total Usuarios" 
                             value={data?.total || 0} 
                             icon={<GroupIcon />} 
-                            trend={5} 
                             color={theme.palette.primary.main} 
                         />
                     </Grid>
@@ -211,7 +214,6 @@ export function UsuariosPage() {
                             title="Activos" 
                             value={data?.activos || 0} 
                             icon={<CheckCircleIcon />} 
-                            trend={2} 
                             color={theme.palette.success.main} 
                         />
                     </Grid>
@@ -220,7 +222,6 @@ export function UsuariosPage() {
                             title="Inactivos" 
                             value={data?.inactivos || 0} 
                             icon={<RemoveCircleIcon />} 
-                            trend={0} 
                             color={theme.palette.warning.main} 
                         />
                     </Grid>
@@ -229,7 +230,6 @@ export function UsuariosPage() {
                             title="Bloqueados" 
                             value={data?.bloqueados || 0} 
                             icon={<BlockIcon />} 
-                            trend={-1} 
                             color={theme.palette.error.main} 
                         />
                     </Grid>
@@ -268,9 +268,9 @@ export function UsuariosPage() {
                             onPageChange={handleChangePage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
                             onView={handleView}
-                            onEdit={handleEdit}
-                            onDelete={handleDeleteClick}
-                            onChangePassword={handleChangePassword}
+                        onEdit={canManageUsuarios ? handleEdit : undefined}
+                        onDelete={canManageUsuarios ? handleDeleteClick : undefined}
+                        onChangePassword={canManageUsuarios ? handleChangePassword : undefined}
                         />
                     </Box>
 
@@ -284,9 +284,9 @@ export function UsuariosPage() {
                             onPageChange={handleChangePage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
                             onView={handleView}
-                            onEdit={handleEdit}
-                            onDelete={handleDeleteClick}
-                            onChangePassword={handleChangePassword}
+                        onEdit={canManageUsuarios ? handleEdit : undefined}
+                        onDelete={canManageUsuarios ? handleDeleteClick : undefined}
+                        onChangePassword={canManageUsuarios ? handleChangePassword : undefined}
                         />
                     </Box>
                 </Box>
