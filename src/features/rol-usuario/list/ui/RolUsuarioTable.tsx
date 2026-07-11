@@ -13,7 +13,7 @@ interface RolUsuarioTableProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onEdit: (rol: RolUsuario) => void;
+    onEdit?: (rol: RolUsuario) => void;
 }
 
 export function RolUsuarioTable({
@@ -73,7 +73,7 @@ export function RolUsuarioTable({
                     <TableCell align="right" width={120}>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                             <TableActions 
-                                onEdit={() => onEdit(item)}
+                                onEdit={onEdit ? () => onEdit(item) : undefined}
                                 editTooltip="Editar Rol"
                             />
                         </Box>

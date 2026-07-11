@@ -29,10 +29,13 @@ import { MantenimientoMobileList } from '@features/mantenimiento/list/ui/Manteni
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { useNavigate } from 'react-router-dom';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function MantenimientosPage() {
     const theme = useTheme();
     const navigate = useNavigate();
+    const canManageMantenimientos = usePermission(PERMISSIONS.MANTENIMIENTOS.GESTIONAR);
     const [showFilters, setShowFilters] = useState(true);
 
     const {
@@ -174,59 +177,63 @@ export function MantenimientosPage() {
                             </IconButton>
                         </Tooltip>
                         
-                        <Button
-                            variant="outlined"
-                            startIcon={<FileDownloadIcon />}
-                            onClick={handleExportClick}
-                            sx={{ 
-                                border: `1px solid ${theme.palette.divider}`,
-                                color: 'text.primary',
-                                fontWeight: 'bold'
-                            }}
-                        >
-                            Exportar
-                        </Button>
-                        <Menu
-                            anchorEl={exportAnchorEl}
-                            open={openExportMenu}
-                            onClose={handleExportClose}
-                            anchorOrigin={{
-                                vertical: 'bottom',
-                                horizontal: 'right',
-                            }}
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                        >
-                            <MenuItem onClick={handleExportExcel}>
-                                <ListItemIcon>
-                                    <ExcelIcon color="success" fontSize="small" />
-                                </ListItemIcon>
-                                <ListItemText>Excel (.xlsx)</ListItemText>
-                            </MenuItem>
-                            <MenuItem onClick={handleExportPdf}>
-                                <ListItemIcon>
-                                    <PdfIcon color="error" fontSize="small" />
-                                </ListItemIcon>
-                                <ListItemText>PDF (.pdf)</ListItemText>
-                            </MenuItem>
-                        </Menu>
+                        {canManageMantenimientos && (
+                            <>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<FileDownloadIcon />}
+                                    onClick={handleExportClick}
+                                    sx={{ 
+                                        border: `1px solid ${theme.palette.divider}`,
+                                        color: 'text.primary',
+                                        fontWeight: 'bold'
+                                    }}
+                                >
+                                    Exportar
+                                </Button>
+                                <Menu
+                                    anchorEl={exportAnchorEl}
+                                    open={openExportMenu}
+                                    onClose={handleExportClose}
+                                    anchorOrigin={{
+                                        vertical: 'bottom',
+                                        horizontal: 'right',
+                                    }}
+                                    transformOrigin={{
+                                        vertical: 'top',
+                                        horizontal: 'right',
+                                    }}
+                                >
+                                    <MenuItem onClick={handleExportExcel}>
+                                        <ListItemIcon>
+                                            <ExcelIcon color="success" fontSize="small" />
+                                        </ListItemIcon>
+                                        <ListItemText>Excel (.xlsx)</ListItemText>
+                                    </MenuItem>
+                                    <MenuItem onClick={handleExportPdf}>
+                                        <ListItemIcon>
+                                            <PdfIcon color="error" fontSize="small" />
+                                        </ListItemIcon>
+                                        <ListItemText>PDF (.pdf)</ListItemText>
+                                    </MenuItem>
+                                </Menu>
 
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={handleCreate}
-                            sx={{ 
-                            boxShadow: 2, 
-                            fontWeight: 'bold', 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2
-                             }}
-                        >
-                            Nuevo Registro
-                        </Button>
+                                <Button
+                                    variant="contained"
+                                    startIcon={<AddIcon />}
+                                    onClick={handleCreate}
+                                    sx={{ 
+                                    boxShadow: 2, 
+                                    fontWeight: 'bold', 
+                                    px: 3, 
+                                    py: 1.2,
+                                    borderRadius: 2
+                                     }}
+                                >
+                                    Nuevo Registro
+                                </Button>
+                            </>
+                        )}
                     </Box>
                 </Box>
 

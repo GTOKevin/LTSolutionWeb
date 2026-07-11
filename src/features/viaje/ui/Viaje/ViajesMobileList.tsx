@@ -29,8 +29,7 @@ import {
 import type { ViajeListItem } from '@entities/viaje/model/types';
 import type { PagedResponse } from '@/shared/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import { ESTADO_VIAJE_COD, ROL_USUARIO_ID } from '@/shared/constants/constantes';
-import { useAuthStore } from '@/shared/store/auth.store';
+import { ESTADO_VIAJE_COD } from '@/shared/constants/constantes';
 import { useState } from 'react';
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 
@@ -41,11 +40,12 @@ interface ViajesMobileListProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onView: (viaje: ViajeListItem) => void;
-    onEdit: (viaje: ViajeListItem) => void;
-    onDelete: (viaje: ViajeListItem) => void;
-    onExportExcel: (viaje: ViajeListItem) => void;
-    onExportPdf: (viaje: ViajeListItem) => void;
+    canManage?: boolean;
+    onView?: (viaje: ViajeListItem) => void;
+    onEdit?: (viaje: ViajeListItem) => void;
+    onDelete?: (viaje: ViajeListItem) => void;
+    onExportExcel?: (viaje: ViajeListItem) => void;
+    onExportPdf?: (viaje: ViajeListItem) => void;
     onReopen?: (viaje: ViajeListItem) => void;
 }
 
@@ -56,6 +56,7 @@ export function ViajesMobileList({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
+    canManage = false,
     onView,
     onEdit,
     onDelete,
@@ -64,9 +65,10 @@ export function ViajesMobileList({
     onReopen
 }: ViajesMobileListProps) {
     const theme = useTheme();
-    const user = useAuthStore((state) => state.user);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedViaje, setSelectedViaje] = useState<ViajeListItem | null>(null);
+    const getRouteLabel = (value?: string) => value?.split('-')[2]?.trim() || value || 'Ruta no registrada';
+    const getDisplayValue = (value: string | undefined, fallback: string) => value?.trim() || fallback;
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, viaje: ViajeListItem) => {
         setAnchorEl(event.currentTarget);
@@ -83,22 +85,22 @@ export function ViajesMobileList({
 
         switch (action) {
             case 'view':
-                onView(selectedViaje);
+                onView?.(selectedViaje);
                 break;
             case 'edit':
-                onEdit(selectedViaje);
+                onEdit?.(selectedViaje);
                 break;
             case 'delete':
-                onDelete(selectedViaje);
+                onDelete?.(selectedViaje);
                 break;
             case 'reopen':
-                onReopen && onReopen(selectedViaje);
+                onReopen?.(selectedViaje);
                 break;
             case 'excel':
-                onExportExcel(selectedViaje);
+                onExportExcel?.(selectedViaje);
                 break;
             case 'pdf':
-                onExportPdf(selectedViaje);
+                onExportPdf?.(selectedViaje);
                 break;
         }
         handleMenuClose();
@@ -155,11 +157,9 @@ export function ViajesMobileList({
         return <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>No se encontraron viajes registrados</Box>;
     }
 
-    // Determine visibility/permissions for the currently selected item in menu
-    const isAdminOrManager = user && (Number(user.roleId) === ROL_USUARIO_ID.ADMINISTRADOR || Number(user.roleId) === ROL_USUARIO_ID.GERENTE_GENERAL);
-    const isEditable = selectedViaje && !selectedViaje.cerrado;
-    const showReports = selectedViaje?.cerrado;
-    const showReopen = selectedViaje?.cerrado && isAdminOrManager;
+    const isEditable = canManage && Boolean(selectedViaje && !selectedViaje.cerrado);
+    const showReports = canManage && Boolean(selectedViaje?.cerrado);
+    const showReopen = canManage && Boolean(selectedViaje?.cerrado);
 
     return (
         <Box sx={{ display: { xs: 'block', md: 'none' }, pb: 12 }}>
@@ -201,7 +201,7 @@ export function ViajesMobileList({
                                                 {viaje.clienteRazonSocial}
                                             </Typography>
                                             <Typography variant="caption" fontFamily="monospace" color="text.secondary">
-                                                RUC: {viaje.clienteRuc || 'N/A'}
+                                                {getDisplayValue(viaje.clienteRuc, 'Sin RUC registrado')}
                                             </Typography>
                                         </Box>
                                     </Box>
@@ -220,11 +220,11 @@ export function ViajesMobileList({
                                 <Stack spacing={1.5}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                                         <Typography variant="body2" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase' }}>
-                                            {viaje.origenDescripcion.split('-')[2]?.trim() || viaje.origenDescripcion}
+                                            {getRouteLabel(viaje.origenDescripcion)}
                                         </Typography>
                                         <ArrowForwardIcon sx={{ fontSize: 16, color: 'primary.main' }} />
                                         <Typography variant="body2" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase' }}>
-                                            {viaje.destinoDescripcion.split('-')[2]?.trim() || viaje.destinoDescripcion}
+                                            {getRouteLabel(viaje.destinoDescripcion)}
                                         </Typography>
                                     </Box>
 
@@ -233,7 +233,7 @@ export function ViajesMobileList({
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                             <CalendarIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                                             <Typography variant="body2" fontWeight={500}>
-                                                {viaje.fechaPartida ? formatDateShort(viaje.fechaPartida) : 'N/A'}
+                                                {viaje.fechaPartida ? formatDateShort(viaje.fechaPartida) : 'Pendiente de partida'}
                                             </Typography>
                                         </Box>
                                         
@@ -263,14 +263,14 @@ export function ViajesMobileList({
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             <PersonIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                                             <Typography variant="body2" noWrap>
-                                                {viaje.conductorNombreCompleto}
+                                                {getDisplayValue(viaje.conductorNombreCompleto, 'Sin conductor asignado')}
                                             </Typography>
                                         </Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             <TruckIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                                             <Stack direction="row" spacing={1}>
                                                 <Typography variant="caption" fontFamily="monospace" sx={{ bgcolor: alpha(theme.palette.common.black, 0.05), px: 0.5, borderRadius: 0.5 }}>
-                                                    {viaje.tractoPlaca}
+                                                    {getDisplayValue(viaje.tractoPlaca, 'Sin tracto')}
                                                 </Typography>
                                                 {viaje.carretaPlaca && (
                                                     <Typography variant="caption" fontFamily="monospace" sx={{ bgcolor: alpha(theme.palette.common.black, 0.05), px: 0.5, borderRadius: 0.5 }}>
@@ -318,10 +318,12 @@ export function ViajesMobileList({
                     </MenuItem>
                 )}
                 
-                <MenuItem onClick={() => handleAction('view')}>
-                    <VisibilityIcon fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />
-                    Ver Detalle
-                </MenuItem>
+                {onView && (
+                    <MenuItem onClick={() => handleAction('view')}>
+                        <VisibilityIcon fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />
+                        Ver Detalle
+                    </MenuItem>
+                )}
                 
                 {isEditable && (
                     <MenuItem onClick={() => handleAction('edit')}>

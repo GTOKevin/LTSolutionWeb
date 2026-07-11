@@ -13,10 +13,9 @@ import { ArrowForward, LockOpen } from '@mui/icons-material';
 import type { ViajeListItem } from '@entities/viaje/model/types';
 import type { PagedResponse } from '@/shared/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import { ESTADO_VIAJE_COD, ROL_USUARIO_ID } from '@/shared/constants/constantes';
+import { ESTADO_VIAJE_COD } from '@/shared/constants/constantes';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
-import { useAuthStore } from '@/shared/store/auth.store';
 
 interface Props {
     data?: PagedResponse<ViajeListItem>;
@@ -25,11 +24,12 @@ interface Props {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onEdit: (viaje: ViajeListItem) => void;
-    onDelete: (viaje: ViajeListItem) => void;
-    onView: (viaje: ViajeListItem) => void;
-    onExportExcel: (viaje: ViajeListItem) => void;
-    onExportPdf: (viaje: ViajeListItem) => void;
+    canManage?: boolean;
+    onEdit?: (viaje: ViajeListItem) => void;
+    onDelete?: (viaje: ViajeListItem) => void;
+    onView?: (viaje: ViajeListItem) => void;
+    onExportExcel?: (viaje: ViajeListItem) => void;
+    onExportPdf?: (viaje: ViajeListItem) => void;
     onReopen?: (viaje: ViajeListItem) => void;
 }
 
@@ -40,6 +40,7 @@ export function ViajesTable({
     rowsPerPage, 
     onPageChange, 
     onRowsPerPageChange,
+    canManage = false,
     onEdit, 
     onDelete, 
     onView,
@@ -48,7 +49,8 @@ export function ViajesTable({
     onReopen
 }: Props) {
     const theme = useTheme();
-    const user = useAuthStore((state) => state.user);
+    const getRouteLabel = (value?: string) => value?.split('-')[2]?.trim() || value || 'Ruta no registrada';
+    const getDisplayValue = (value: string | undefined, fallback: string) => value?.trim() || fallback;
 
     const columns: Column[] = [
         { id: 'cliente', label: 'Cliente' },
@@ -116,20 +118,9 @@ export function ViajesTable({
             emptyMessage="No se encontraron viajes registrados."
             renderRow={(viaje) => {
                 const estado = getEstadoConfig(viaje.estadoCodigo, viaje.estadoNombre);
-                
-                // Logic for Edit/Delete
-                const isAdminOrManager = user && (Number(user.roleId) === ROL_USUARIO_ID.ADMINISTRADOR || Number(user.roleId) === ROL_USUARIO_ID.GERENTE_GENERAL);
-                
-                // Editable if NOT Closed
-                // If Closed, nobody edits (must reopen first).
-                let isEditable = !viaje.cerrado;
-
-                // Logic for Reports
-                // Only show reports if Cerrado is true (completed and closed)
-                const showReports = viaje.cerrado;
-
-                // Logic for Reopen
-                const showReopen = viaje.cerrado && isAdminOrManager;
+                const isEditable = canManage && !viaje.cerrado;
+                const showReports = canManage && viaje.cerrado;
+                const showReopen = canManage && viaje.cerrado;
 
                 return (
                     <>
@@ -139,24 +130,24 @@ export function ViajesTable({
                                     {viaje.clienteRazonSocial}
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                    RUC: {viaje.clienteRuc || 'N/A'}
+                                    {getDisplayValue(viaje.clienteRuc, 'Sin RUC registrado')}
                                 </Typography>
                             </Box>
                         </TableCell>
                         <TableCell>
                             <Stack direction="row" alignItems="center" spacing={1}>
                                 <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase' }}>
-                                    {viaje.origenDescripcion.split('-')[2]?.trim() || viaje.origenDescripcion}
+                                    {getRouteLabel(viaje.origenDescripcion)}
                                 </Typography>
                                 <ArrowForward sx={{ fontSize: 14, color: 'primary.main' }} />
                                 <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase' }}>
-                                    {viaje.destinoDescripcion.split('-')[2]?.trim() || viaje.destinoDescripcion}
+                                    {getRouteLabel(viaje.destinoDescripcion)}
                                 </Typography>
                             </Stack>
                         </TableCell>
                         <TableCell>
                             <Typography variant="body2" fontWeight={600} color="text.primary">
-                                {viaje.fechaPartida ? formatDateShort(viaje.fechaPartida) : 'N/A'}
+                                {viaje.fechaPartida ? formatDateShort(viaje.fechaPartida) : 'Pendiente de partida'}
                             </Typography>
                         </TableCell>
                         <TableCell>
@@ -166,11 +157,11 @@ export function ViajesTable({
                                     src="" // No image URL in DTO yet
                                     alt={viaje.conductorNombreCompleto}
                                 >
-                                    {viaje.conductorNombreCompleto.charAt(0)}
+                                    {viaje.conductorNombreCompleto.charAt(0) || '?'}
                                 </Avatar>
                                 <Box>
                                     <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem' }}>
-                                        {viaje.conductorNombreCompleto}
+                                        {getDisplayValue(viaje.conductorNombreCompleto, 'Sin conductor asignado')}
                                     </Typography>
                                     <Stack direction="row" spacing={1} mt={0.5}>
                                         <Typography
@@ -186,7 +177,7 @@ export function ViajesTable({
                                                 color: 'text.secondary'
                                             }}
                                         >
-                                            {viaje.tractoPlaca}
+                                            {getDisplayValue(viaje.tractoPlaca, 'Sin tracto')}
                                         </Typography>
                                         {viaje.carretaPlaca && (
                                             <Typography
@@ -242,7 +233,7 @@ export function ViajesTable({
                                             color="warning" 
                                             onClick={(e) => { 
                                                 e.stopPropagation(); 
-                                                onReopen && onReopen(viaje); 
+                                                onReopen?.(viaje); 
                                             }}
                                             sx={{ 
                                                 bgcolor: alpha(theme.palette.warning.main, 0.1),
@@ -257,11 +248,11 @@ export function ViajesTable({
                                 )}
                                 <TableActions
                                     useMenu={true}
-                                    onView={() => onView(viaje)}
-                                    onEdit={isEditable ? () => onEdit(viaje) : undefined}
-                                    onDelete={isEditable && viaje.estadoCodigo === ESTADO_VIAJE_COD.Agendado && !viaje.fechaPartida ? () => onDelete(viaje) : undefined}
-                                    onExportExcel={showReports ? () => onExportExcel(viaje) : undefined}
-                                    onExportPdf={showReports ? () => onExportPdf(viaje) : undefined}
+                                    onView={onView ? () => onView(viaje) : undefined}
+                                    onEdit={isEditable && onEdit ? () => onEdit(viaje) : undefined}
+                                    onDelete={isEditable && viaje.estadoCodigo === ESTADO_VIAJE_COD.Agendado && !viaje.fechaPartida && onDelete ? () => onDelete(viaje) : undefined}
+                                    onExportExcel={showReports && onExportExcel ? () => onExportExcel(viaje) : undefined}
+                                    onExportPdf={showReports && onExportPdf ? () => onExportPdf(viaje) : undefined}
                                     viewTooltip="Visualizar"
                                     editTooltip="Modificar"
                                     deleteTooltip="Eliminar"

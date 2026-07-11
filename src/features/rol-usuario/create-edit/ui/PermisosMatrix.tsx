@@ -1,7 +1,7 @@
 import { Box, Typography, Checkbox, FormControlLabel, CircularProgress, Alert, Paper, alpha, useTheme, Grid } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { permisoApi } from '@/entities/permiso/api/permiso.api';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 interface PermisosMatrixProps {
     rolId?: number;
@@ -19,20 +19,36 @@ export function PermisosMatrix({ rolId, selectedIds, onChange, disabled }: Permi
         staleTime: 0 // Fetch always to ensure accurate checks
     });
 
-    useEffect(() => {
-        if (groupedPermisos && rolId) {
-            const assignedIds = groupedPermisos
-                .flatMap(g => g.permisos)
-                .filter(p => p.asignado)
-                .map(p => p.permisoID);
-            
-            // Only update if they differ to avoid loops
-            if (JSON.stringify(assignedIds.sort()) !== JSON.stringify([...selectedIds].sort())) {
-                onChange(assignedIds);
-            }
+    const assignedIdsFromRole = useMemo(() => {
+        if (!groupedPermisos || !rolId) {
+            return null;
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+        return groupedPermisos
+            .flatMap(g => g.permisos)
+            .filter(p => p.asignado)
+            .map(p => p.permisoID)
+            .sort((a, b) => a - b);
     }, [groupedPermisos, rolId]);
+
+    const normalizedSelectedIds = useMemo(
+        () => [...selectedIds].sort((a, b) => a - b),
+        [selectedIds]
+    );
+
+    useEffect(() => {
+        if (!assignedIdsFromRole) {
+            return;
+        }
+
+        const hasDifferences =
+            assignedIdsFromRole.length !== normalizedSelectedIds.length ||
+            assignedIdsFromRole.some((id, index) => id !== normalizedSelectedIds[index]);
+
+        if (hasDifferences) {
+            onChange([...assignedIdsFromRole]);
+        }
+    }, [assignedIdsFromRole, normalizedSelectedIds, onChange]);
 
     if (isLoading) {
         return (

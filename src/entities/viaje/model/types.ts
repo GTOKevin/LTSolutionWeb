@@ -418,10 +418,10 @@ export interface CreateViajeEscoltaDto {
 }
 
 export interface CreateViajeDto {
-    cotizacionID?: number;
+    cotizacionID?: number | null;
     clienteID: number;
     tractoID: number;
-    carretaID: number;
+    carretaID?: number | null;
     colaboradorID: number;
     origenID: number;
     destinoID: number;

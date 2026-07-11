@@ -4,11 +4,11 @@ interface StatsCardProps {
     title: string;
     value: string | number;
     icon: React.ReactNode;
-    trend: number;
+    caption?: string;
     color: string;
 }
 
-export function StatsCard({ title, value, icon, trend, color }: StatsCardProps) {
+export function StatsCard({ title, value, icon, caption, color }: StatsCardProps) {
     const theme = useTheme();
     
     return (
@@ -37,11 +37,13 @@ export function StatsCard({ title, value, icon, trend, color }: StatsCardProps) 
                 <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
                     {value}
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Typography variant="caption" color="text.secondary">
-                        {trend > 0 ? 'este mes' : 'esta semana'}
-                    </Typography>
-                </Box>
+                {caption ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography variant="caption" color="text.secondary">
+                            {caption}
+                        </Typography>
+                    </Box>
+                ) : null}
             </CardContent>
         </Card>
     );

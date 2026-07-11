@@ -15,12 +15,12 @@ interface FacturaTableProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onView: (item: Factura) => void;
-    onEdit: (item: Factura) => void;
-    onDelete: (item: Factura) => void;
-    onPayment: (item: Factura) => void;
-    onViewPayments: (item: Factura) => void;
-    onUpdateStatus: (item: Factura, newStatusId: number) => void;
+    onView?: (item: Factura) => void;
+    onEdit?: (item: Factura) => void;
+    onDelete?: (item: Factura) => void;
+    onPayment?: (item: Factura) => void;
+    onViewPayments?: (item: Factura) => void;
+    onUpdateStatus?: (item: Factura, newStatusId: number) => void;
 }
 
 function statusColor(estadoId:number){
@@ -118,15 +118,17 @@ export function FacturaTable({
                     </TableCell>
                     <TableCell align="right">
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                            <FacturaActionMenu
-                                factura={item}
-                                onView={onView}
-                                onEdit={onEdit}
-                                onDelete={onDelete}
-                                onPayment={onPayment}
-                                onViewPayments={onViewPayments}
-                                onUpdateStatus={onUpdateStatus}
-                            />
+                            {(onView || onEdit || onDelete || onPayment || onViewPayments || onUpdateStatus) && (
+                                <FacturaActionMenu
+                                    factura={item}
+                                    onView={onView}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                    onPayment={onPayment}
+                                    onViewPayments={onViewPayments}
+                                    onUpdateStatus={onUpdateStatus}
+                                />
+                            )}
                         </Box>
                     </TableCell>
                 </>

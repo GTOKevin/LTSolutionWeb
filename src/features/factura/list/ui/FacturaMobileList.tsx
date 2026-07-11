@@ -14,12 +14,12 @@ interface FacturaMobileListProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onView: (factura: Factura) => void;
-    onEdit: (factura: Factura) => void;
-    onDelete: (factura: Factura) => void;
-    onPayment: (factura: Factura) => void;
-    onViewPayments: (factura: Factura) => void;
-    onUpdateStatus: (factura: Factura, newStatusId: number) => void;
+    onView?: (factura: Factura) => void;
+    onEdit?: (factura: Factura) => void;
+    onDelete?: (factura: Factura) => void;
+    onPayment?: (factura: Factura) => void;
+    onViewPayments?: (factura: Factura) => void;
+    onUpdateStatus?: (factura: Factura, newStatusId: number) => void;
 }
 
 export function FacturaMobileList({
@@ -71,15 +71,17 @@ export function FacturaMobileList({
                                 color={row.estadoID === ESTADO_FACTURA_ID.GENERADO ? 'warning' : row.estadoID === ESTADO_FACTURA_ID.EMITIDO ? 'success' : 'error'}
                                 size="small" 
                             />
-                            <FacturaActionMenu
-                                factura={row}
-                                onView={onView}
-                                onEdit={onEdit}
-                                onDelete={onDelete}
-                                onPayment={onPayment}
-                                onViewPayments={onViewPayments}
-                                onUpdateStatus={onUpdateStatus}
-                            />
+                            {(onView || onEdit || onDelete || onPayment || onViewPayments || onUpdateStatus) && (
+                                <FacturaActionMenu
+                                    factura={row}
+                                    onView={onView}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                    onPayment={onPayment}
+                                    onViewPayments={onViewPayments}
+                                    onUpdateStatus={onUpdateStatus}
+                                />
+                            )}
                         </Box>
                     </Box>
                 )}

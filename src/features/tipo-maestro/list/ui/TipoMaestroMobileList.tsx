@@ -12,7 +12,7 @@ interface TipoMaestroMobileListProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onEdit: (maestro: TipoMaestro) => void;
+    onEdit?: (maestro: TipoMaestro) => void;
 }
 
 export function TipoMaestroMobileList({

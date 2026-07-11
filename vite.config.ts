@@ -9,7 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
-        enabled: true,
+        enabled: false,
         suppressWarnings: true
       },
       manifest: {
@@ -51,4 +51,44 @@ export default defineConfig({
     port: 5173,
     open: true,
   },
+  build: {
+    chunkSizeWarningLimit: 1700,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) {
+            return;
+          }
+
+          if (id.includes('@react-pdf') || id.includes('pdfjs-dist')) {
+            return 'vendor-react-pdf';
+          }
+
+          if (id.includes('jspdf') || id.includes('html2canvas')) {
+            return 'vendor-pdf-export';
+          }
+
+          if (id.includes('leaflet-routing-machine') || id.includes('leaflet')) {
+            return 'vendor-maps';
+          }
+
+          if (id.includes('exceljs') || id.includes('file-saver')) {
+            return 'vendor-export';
+          }
+
+          if (id.includes('@mui') || id.includes('@emotion')) {
+            return 'vendor-mui';
+          }
+
+          if (id.includes('@tanstack')) {
+            return 'vendor-query';
+          }
+
+          if (id.includes('react') || id.includes('scheduler')) {
+            return 'vendor-react';
+          }
+        }
+      }
+    }
+  }
 });

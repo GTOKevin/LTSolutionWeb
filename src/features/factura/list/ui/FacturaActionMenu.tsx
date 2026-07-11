@@ -23,16 +23,17 @@ import {
 import type { Factura } from '@/entities/factura/model/types';
 import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
 import { facturaApi } from '@/entities/factura/api/factura.api';
+import { logger } from '@/shared/utils/logger';
 import { generateFacturaPdf, generateFacturaExcel } from '../../utils/facturaReportGenerator';
 
 interface FacturaActionMenuProps {
     factura: Factura;
-    onView: (f: Factura) => void;
-    onEdit: (f: Factura) => void;
-    onDelete: (f: Factura) => void;
-    onPayment: (f: Factura) => void;
-    onViewPayments: (f: Factura) => void;
-    onUpdateStatus: (f: Factura, newStatusId: number) => void;
+    onView?: (f: Factura) => void;
+    onEdit?: (f: Factura) => void;
+    onDelete?: (f: Factura) => void;
+    onPayment?: (f: Factura) => void;
+    onViewPayments?: (f: Factura) => void;
+    onUpdateStatus?: (f: Factura, newStatusId: number) => void;
 }
 
 export function FacturaActionMenu({
@@ -68,7 +69,7 @@ export function FacturaActionMenu({
                 await generateFacturaExcel(reportData);
             }
         } catch (error) {
-            console.error('Error al generar el reporte', error);
+            logger.error('Error al generar el reporte', error);
         } finally {
             setIsGenerating(false);
             handleClose();
@@ -79,6 +80,17 @@ export function FacturaActionMenu({
     const isEmitido = factura.estadoID === ESTADO_FACTURA_ID.EMITIDO;
     const isAnulado = factura.estadoID === ESTADO_FACTURA_ID.ANULADO;
     const isEntregado = factura.estadoID == ESTADO_FACTURA_ID.ENTREGADO;
+    const canManageFactura =
+        Boolean(onEdit) ||
+        Boolean(onDelete) ||
+        Boolean(onPayment) ||
+        Boolean(onViewPayments) ||
+        Boolean(onUpdateStatus) ||
+        Boolean(onView);
+
+    if (!canManageFactura) {
+        return null;
+    }
 
     return (
         <>
@@ -97,13 +109,15 @@ export function FacturaActionMenu({
                 }}
             >
                 {/* Visualización y Edición */}
-                <MenuItem onClick={() => { onView(factura); handleClose(); }}>
-                    <ListItemIcon><ViewIcon fontSize="small" color="info" /></ListItemIcon>
-                    <ListItemText>Ver Detalle</ListItemText>
-                </MenuItem>
+                {onView && (
+                    <MenuItem onClick={() => { onView(factura); handleClose(); }}>
+                        <ListItemIcon><ViewIcon fontSize="small" color="info" /></ListItemIcon>
+                        <ListItemText>Ver Detalle</ListItemText>
+                    </MenuItem>
+                )}
                 
                 {/* Solo se edita si está GENERADO */}
-                {isGenerado && (
+                {isGenerado && onEdit && (
                     <MenuItem onClick={() => { onEdit(factura); handleClose(); }}>
                         <ListItemIcon><EditIcon fontSize="small" color="primary" /></ListItemIcon>
                         <ListItemText>Editar Factura</ListItemText>
@@ -111,38 +125,42 @@ export function FacturaActionMenu({
                 )}
 
                 {/* Acciones de Pagos */}
-                <Divider />
-                <MenuItem onClick={() => { onViewPayments(factura); handleClose(); }}>
-                    <ListItemIcon><ReceiptLongIcon fontSize="small" color="action" /></ListItemIcon>
-                    <ListItemText>Ver Amortizaciones</ListItemText>
-                </MenuItem>
+                {(onViewPayments || onPayment) && <Divider />}
+                {onViewPayments && (
+                    <MenuItem onClick={() => { onViewPayments(factura); handleClose(); }}>
+                        <ListItemIcon><ReceiptLongIcon fontSize="small" color="action" /></ListItemIcon>
+                        <ListItemText>Ver Amortizaciones</ListItemText>
+                    </MenuItem>
+                )}
                 
                 {/* Registrar Amortización: Permitido si hay saldo y no está anulada o recién generada */}
-                <MenuItem 
-                    onClick={() => { onPayment(factura); handleClose(); }}
-                    disabled={factura.saldoPendiente <= 0 || isAnulado || isGenerado}
-                >
-                    <ListItemIcon><PaymentsIcon fontSize="small" color={factura.saldoPendiente > 0 && !isAnulado && !isGenerado ? "success" : "disabled"} /></ListItemIcon>
-                    <ListItemText>Registrar Pago</ListItemText>
-                </MenuItem>
+                {onPayment && (
+                    <MenuItem 
+                        onClick={() => { onPayment(factura); handleClose(); }}
+                        disabled={factura.saldoPendiente <= 0 || isAnulado || isGenerado}
+                    >
+                        <ListItemIcon><PaymentsIcon fontSize="small" color={factura.saldoPendiente > 0 && !isAnulado && !isGenerado ? "success" : "disabled"} /></ListItemIcon>
+                        <ListItemText>Registrar Pago</ListItemText>
+                    </MenuItem>
+                )}
 
                 {/* Cambios de Estado */}
-                <Divider />
-                {isGenerado && (
+                {onUpdateStatus && <Divider />}
+                {isGenerado && onUpdateStatus && (
                     <MenuItem onClick={() => { onUpdateStatus(factura, ESTADO_FACTURA_ID.EMITIDO); handleClose(); }}>
                         <ListItemIcon><SendIcon fontSize="small" color="primary" /></ListItemIcon>
                         <ListItemText>Emitir Factura</ListItemText>
                     </MenuItem>
                 )}
                 
-                {isEmitido && (
+                {isEmitido && onUpdateStatus && (
                     <MenuItem onClick={() => { onUpdateStatus(factura, ESTADO_FACTURA_ID.ENTREGADO); handleClose(); }}>
                         <ListItemIcon><CheckCircleIcon fontSize="small" color="success" /></ListItemIcon>
                         <ListItemText>Marcar como Entregado</ListItemText>
                     </MenuItem>
                 )}
 
-                {(isGenerado || isEmitido) && (
+                {(isGenerado || isEmitido) && onUpdateStatus && (
                     <MenuItem onClick={() => { onUpdateStatus(factura, ESTADO_FACTURA_ID.ANULADO); handleClose(); }}>
                         <ListItemIcon><CancelIcon fontSize="small" color="error" /></ListItemIcon>
                         <ListItemText sx={{ color: 'error.main' }}>Anular Factura</ListItemText>
@@ -150,7 +168,7 @@ export function FacturaActionMenu({
                 )}
 
                 {/* Descarga de Reportes */}
-                {isEntregado
+                {isEntregado && onUpdateStatus
                     ? [
                           <Divider key="report-divider" />,
                           <MenuItem key="report-pdf" onClick={() => handleGenerateReport('pdf')} disabled={isGenerating}>
@@ -165,11 +183,15 @@ export function FacturaActionMenu({
                     : null}
 
                 {/* Eliminar (Generalmente solo si está Generado, pero dejaremos según lógica anterior) */}
-                <Divider />
-                <MenuItem onClick={() => { onDelete(factura); handleClose(); }}>
-                    <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
-                    <ListItemText sx={{ color: 'error.main' }}>Eliminar</ListItemText>
-                </MenuItem>
+                {onDelete && (
+                    <>
+                        <Divider />
+                        <MenuItem onClick={() => { onDelete(factura); handleClose(); }}>
+                            <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
+                            <ListItemText sx={{ color: 'error.main' }}>Eliminar</ListItemText>
+                        </MenuItem>
+                    </>
+                )}
             </Menu>
         </>
     );

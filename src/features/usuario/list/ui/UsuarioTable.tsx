@@ -28,9 +28,9 @@ interface UsuarioTableProps {
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onView: (usuario: Usuario) => void;
-    onEdit: (usuario: Usuario) => void;
-    onDelete: (usuario: Usuario) => void;
-    onChangePassword: (usuario: Usuario) => void;
+    onEdit?: (usuario: Usuario) => void;
+    onDelete?: (usuario: Usuario) => void;
+    onChangePassword?: (usuario: Usuario) => void;
 }
 
 export function UsuarioTable({
@@ -146,19 +146,21 @@ export function UsuarioTable({
                     </TableCell>
                     <TableCell align="right" width={140}>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                            <Tooltip title="Cambiar Contraseña">
-                                <IconButton 
-                                    size="small" 
-                                    onClick={(e) => { e.stopPropagation(); onChangePassword(item); }}
-                                    sx={{ color: 'warning.main', mr: 0.5 }}
-                                >
-                                    <LockResetIcon fontSize="small" />
-                                </IconButton>
-                            </Tooltip>
+                            {onChangePassword && (
+                                <Tooltip title="Cambiar Contraseña">
+                                    <IconButton 
+                                        size="small" 
+                                        onClick={(e) => { e.stopPropagation(); onChangePassword(item); }}
+                                        sx={{ color: 'warning.main', mr: 0.5 }}
+                                    >
+                                        <LockResetIcon fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
                             <TableActions 
                                 onView={() => onView(item)}
-                                onEdit={() => onEdit(item)}
-                                onDelete={() => onDelete(item)}
+                                onEdit={onEdit ? () => onEdit(item) : undefined}
+                                onDelete={onDelete ? () => onDelete(item) : undefined}
                                 editTooltip="Editar Usuario"
                                 viewTooltip="Ver Detalle"
                                 deleteTooltip="Eliminar Usuario"

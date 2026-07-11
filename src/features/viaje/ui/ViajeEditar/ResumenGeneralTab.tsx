@@ -3,7 +3,7 @@ import {
     FormControlLabel, Switch, 
     Grid, Divider
 } from '@mui/material';
-import type { ViajeListItem } from '@/entities/viaje/model/types';
+import type { Viaje } from '@/entities/viaje/model/types';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Dayjs } from 'dayjs';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -28,17 +28,36 @@ export interface ResumenGeneralData {
 }
 
 interface ResumenGeneralTabProps {
-    viajeListItem: ViajeListItem;
+    viaje: Viaje;
     formData: ResumenGeneralData;
     onChange: (data: Partial<ResumenGeneralData>) => void;
     isViewOnly?: boolean;
 }
 
-export function ResumenGeneralTab({ viajeListItem, formData, onChange, isViewOnly }: ResumenGeneralTabProps) {
+const getConductorNombre = (viaje: Viaje) =>
+    [viaje.colaborador?.nombres, viaje.colaborador?.primerApellido, viaje.colaborador?.segundoApellido]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+
+const getUbigeoDescripcion = (ubigeo?: Viaje['origen']) =>
+    [ubigeo?.departamento, ubigeo?.provincia, ubigeo?.distrito]
+        .filter(Boolean)
+        .join(', ')
+        .trim();
+
+const getDisplayValue = (value: string | null | undefined, fallback: string) =>
+    value?.trim() ? value : fallback;
+
+export function ResumenGeneralTab({ viaje, formData, onChange, isViewOnly }: ResumenGeneralTabProps) {
     const handleNumberChange = (field: keyof ResumenGeneralData) => (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         onChange({ [field]: val === '' ? '' : Number(val) });
     };
+
+    const conductorNombre = getConductorNombre(viaje);
+    const origenDescripcion = getUbigeoDescripcion(viaje.origen);
+    const destinoDescripcion = getUbigeoDescripcion(viaje.destino);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -69,7 +88,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange, isViewOnl
                                 bgcolor: 'background.paper' 
                             }}>
                                 <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
-                                    {viajeListItem.clienteRazonSocial || 'N/A'}
+                                    {getDisplayValue(viaje.cliente?.razonSocial, 'Sin cliente asociado')}
                                 </Typography>
                             </Box>
                         </Box>
@@ -91,7 +110,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange, isViewOnl
                                 bgcolor: 'background.paper' 
                             }}>
                                 <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
-                                    {viajeListItem.conductorNombreCompleto || 'N/A'}
+                                    {getDisplayValue(conductorNombre, 'Sin conductor asignado')}
                                 </Typography>
                             </Box>
                         </Box>
@@ -113,7 +132,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange, isViewOnl
                                 bgcolor: 'background.paper' 
                             }}>
                                 <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
-                                    {viajeListItem.tractoPlaca || 'N/A'}
+                                    {getDisplayValue(viaje.tracto?.placa, 'Sin tracto asignado')}
                                 </Typography>
                             </Box>
                         </Box>
@@ -135,7 +154,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange, isViewOnl
                                 bgcolor: 'background.paper' 
                             }}>
                                 <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
-                                    {viajeListItem.carretaPlaca || 'N/A'}
+                                    {getDisplayValue(viaje.carreta?.placa, 'Sin carreta asignada')}
                                 </Typography>
                             </Box>
                         </Box>
@@ -149,7 +168,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange, isViewOnl
                                     PUNTO DE ORIGEN
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
-                                    {viajeListItem.origenDescripcion || 'N/A'}
+                                    {getDisplayValue(origenDescripcion, 'Origen no registrado')}
                                 </Typography>
                             </Box>
                             
@@ -158,7 +177,7 @@ export function ResumenGeneralTab({ viajeListItem, formData, onChange, isViewOnl
                                     PUNTO DE DESTINO
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
-                                    {viajeListItem.destinoDescripcion || 'N/A'}
+                                    {getDisplayValue(destinoDescripcion, 'Destino no registrado')}
                                 </Typography>
                             </Box>
                         </Box>

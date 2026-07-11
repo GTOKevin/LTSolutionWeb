@@ -8,6 +8,7 @@ import { PermissionGuard } from '@shared/lib/guards/PermissionGuard';
 import { PERMISSIONS } from '@/shared/constants/permissions';
 import { AppLayout } from '@widgets/layout/ui/AppLayout';
 import { env } from '@shared/config/env';
+import { getDefaultAppRoute } from '@shared/lib/permissions/default-app-route';
 
 // Lazy loaded pages
 const LoginPage = lazy(() => import('@pages/login').then(module => ({ default: module.LoginPage })));
@@ -44,6 +45,11 @@ const FacturaEditarPage = lazy(() => import('@/pages/facturas/editar').then(modu
 const GastoPage = lazy(() => import('@/pages/gasto').then(module => ({ default: module.GastoPage })));
 const MercaderiaPage = lazy(() => import('@/pages/mercaderia').then(module => ({ default: module.MercaderiaPage })));
 const TipoProductoPage = lazy(() => import('@/pages/tipo-producto').then(module => ({ default: module.TipoProductoPage })));
+const MisViajesPage = lazy(() => import('@pages/mis-viajes').then(module => ({ default: module.MisViajesPage })));
+const MisViajesDetallePage = lazy(() => import('@pages/mis-viajes/detalle').then(module => ({ default: module.MisViajesDetallePage })));
+const MisPagosPage = lazy(() => import('@pages/mis-pagos').then(module => ({ default: module.MisPagosPage })));
+const MisLicenciasPage = lazy(() => import('@pages/mis-licencias').then(module => ({ default: module.MisLicenciasPage })));
+const MisDocumentosPage = lazy(() => import('@pages/mis-documentos').then(module => ({ default: module.MisDocumentosPage })));
 
 function LoadingFallback() {
     return (
@@ -55,7 +61,13 @@ function LoadingFallback() {
 
 function RootRedirect() {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-    return <Navigate to={isAuthenticated ? '/app' : '/login'} replace />;
+    const user = useAuthStore((state) => state.user);
+    return <Navigate to={isAuthenticated ? getDefaultAppRoute(user) : '/login'} replace />;
+}
+
+function AppIndexRedirect() {
+    const user = useAuthStore((state) => state.user);
+    return <Navigate to={getDefaultAppRoute(user)} replace />;
 }
 
 export function RouterProvider() {
@@ -94,10 +106,50 @@ export function RouterProvider() {
                             </ProtectedRoute>
                         }
                     >
-                        <Route index element={<Navigate to="dashboard" replace />} />
+                        <Route index element={<AppIndexRedirect />} />
                         <Route path="dashboard" element={
                             <PermissionGuard permission={PERMISSIONS.DASHBOARD.VER}>
                                 <DashboardPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="mis-viajes">
+                            <Route index element={
+                                <PermissionGuard
+                                    permission={[PERMISSIONS.EMPLOYEE.VIAJES.VER, PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR]}
+                                >
+                                    <MisViajesPage />
+                                </PermissionGuard>
+                            } />
+                            <Route path=":id" element={
+                                <PermissionGuard
+                                    permission={[PERMISSIONS.EMPLOYEE.VIAJES.VER, PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR]}
+                                >
+                                    <MisViajesDetallePage />
+                                </PermissionGuard>
+                            } />
+                        </Route>
+                        <Route path="mis-pagos" element={
+                            <PermissionGuard
+                                permission={[PERMISSIONS.EMPLOYEE.PAGOS.VER, PERMISSIONS.EMPLOYEE.PAGOS.CONFIRMAR]}
+                            >
+                                <MisPagosPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="mis-licencias" element={
+                            <PermissionGuard
+                                permission={[PERMISSIONS.EMPLOYEE.LICENCIAS.VER, PERMISSIONS.EMPLOYEE.LICENCIAS.SOLICITAR]}
+                            >
+                                <MisLicenciasPage />
+                            </PermissionGuard>
+                        } />
+                        <Route path="mis-documentos" element={
+                            <PermissionGuard
+                                permission={[
+                                    PERMISSIONS.EMPLOYEE.DOCUMENTOS.VER,
+                                    PERMISSIONS.EMPLOYEE.DOCUMENTOS.SOLICITAR_ACTUALIZACION
+                                ]}
+                            >
+                                <MisDocumentosPage />
                             </PermissionGuard>
                         } />
                         <Route path="perfil" element={<PerfilPage />} />

@@ -12,8 +12,8 @@ interface Props {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onEdit: (gasto: Gasto) => void;
-    onDelete: (gasto: Gasto) => void;
+    onEdit?: (gasto: Gasto) => void;
+    onDelete?: (gasto: Gasto) => void;
 }
 
 export function GastoMobileList({

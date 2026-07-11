@@ -22,10 +22,13 @@ import { ClientesTable } from '../../features/cliente/list/ui/ClientesTable';
 import { ClientesMobileList } from '../../features/cliente/list/ui/ClientesMobileList';
 import { useDeleteCliente } from '@features/cliente/hooks/useClienteCrud';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function ClientesPage() {
     const theme = useTheme();
     const navigate = useNavigate();
+    const canManageClientes = usePermission(PERMISSIONS.CLIENTES.GESTIONAR);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [page, setPage] = useState(0);
@@ -120,20 +123,22 @@ export function ClientesPage() {
                         </Typography>
                     </Box>
 
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        sx={{ 
-                            boxShadow: 2, 
-                            fontWeight: 'bold', 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2
-                        }}
-                        onClick={handleCreate}
-                    >
-                        Nuevo Cliente
-                    </Button>
+                    {canManageClientes && (
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            sx={{ 
+                                boxShadow: 2, 
+                                fontWeight: 'bold', 
+                                px: 3, 
+                                py: 1.2,
+                                borderRadius: 2
+                            }}
+                            onClick={handleCreate}
+                        >
+                            Nuevo Cliente
+                        </Button>
+                    )}
                 </Box>
 
                 {/* Toolbar Section */}
@@ -187,9 +192,9 @@ export function ClientesPage() {
                     rowsPerPage={rowsPerPage}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    onView={handleView}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
+                    onView={canManageClientes ? handleView : undefined}
+                    onEdit={canManageClientes ? handleEdit : undefined}
+                    onDelete={canManageClientes ? handleDeleteClick : undefined}
                 />
 
                 {/* Mobile Content (Cards) */}
@@ -200,9 +205,9 @@ export function ClientesPage() {
                     rowsPerPage={rowsPerPage}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    onView={handleView}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
+                    onView={canManageClientes ? handleView : undefined}
+                    onEdit={canManageClientes ? handleEdit : undefined}
+                    onDelete={canManageClientes ? handleDeleteClick : undefined}
                 />
             </Box>
 

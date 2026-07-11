@@ -20,6 +20,7 @@ import {
     Check as CheckIcon
 } from '@mui/icons-material';
 import { useThemeStore } from '@shared/store/theme.store';
+import { useLayoutStore } from '@shared/store/layout.store';
 import { DRAWER_WIDTH } from '@widgets/sidebar/ui/Sidebar';
 import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
@@ -29,6 +30,7 @@ import { appThemePresets, getThemePreviewSwatches, orderedAppThemeIds } from '@/
 
 export function Header() {
     const { themeId, setThemeId } = useThemeStore();
+    const pageTitle = useLayoutStore((state) => state.pageTitle);
     const theme = useTheme();
     const location = useLocation();
     const [searchQuery, setSearchQuery] = useState('');
@@ -43,13 +45,26 @@ export function Header() {
         if (location.pathname.startsWith('/app/cotizaciones')) return 'Gestión de Cotizaciones';
         if (location.pathname.startsWith('/app/facturas')) return 'Gestión de Facturas';
         if (location.pathname.startsWith('/app/flota')) return 'Gestión de Flota';
-        if (location.pathname.startsWith('/app/mercaderia')) return 'Catálogo de Mercadería';
+        if (location.pathname.startsWith('/app/roles-usuario')) return 'Gestión de Roles';
+        if (location.pathname.startsWith('/app/roles-colaborador')) return 'Gestión de Roles de Colaborador';
+        if (location.pathname.startsWith('/app/tipo-producto')) return 'Tipos de Producto';
+        if (location.pathname.startsWith('/app/mercaderia')) return 'Catálogo de Mercaderías';
         if (location.pathname.startsWith('/app/colaboradores')) return 'Gestión de Colaboradores';
-        if (location.pathname.startsWith('/app/gastos')) return 'Gestión de Gastos';
+        if (location.pathname.startsWith('/app/gasto')) return 'Catálogo de Gastos';
         if (location.pathname.startsWith('/app/usuarios')) return 'Gestión de Usuarios';
-        if (location.pathname.startsWith('/app/maestros')) return 'Maestros';
+        if (location.pathname.startsWith('/app/maestros')) return 'Gestión de Maestros';
+        if (location.pathname.startsWith('/app/mis-viajes')) return 'Mis Viajes';
+        if (location.pathname.startsWith('/app/mis-pagos')) return 'Mis Pagos';
+        if (location.pathname.startsWith('/app/mis-licencias')) return 'Mis Licencias';
+        if (location.pathname.startsWith('/app/mis-documentos')) return 'Mis Documentos';
         if (location.pathname.startsWith('/app/reportes')) return 'Reportes';
-        return 'Dashboard';
+        return pageTitle || 'Dashboard';
+    };
+
+    const getSectionTitle = () => {
+        if (location.pathname.startsWith('/app/mis-')) return 'Portal del Empleado';
+        if (location.pathname.startsWith('/app/reportes')) return 'Reportes';
+        return 'Administración';
     };
 
     return (
@@ -87,7 +102,7 @@ export function Header() {
                         color="text.secondary"
                         sx={{ cursor: 'pointer', '&:hover': { color: theme.palette.primary.main } }}
                     >
-                        Administración
+                        {getSectionTitle()}
                     </Typography>
                     <ChevronRightIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                     <Typography variant="body2" fontWeight={500}>

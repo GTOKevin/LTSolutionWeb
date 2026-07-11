@@ -18,9 +18,9 @@ interface UsuarioMobileListProps {
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onView: (usuario: Usuario) => void;
-    onEdit: (usuario: Usuario) => void;
-    onDelete: (usuario: Usuario) => void;
-    onChangePassword: (usuario: Usuario) => void;
+    onEdit?: (usuario: Usuario) => void;
+    onDelete?: (usuario: Usuario) => void;
+    onChangePassword?: (usuario: Usuario) => void;
 }
 
 export function UsuarioMobileList({
@@ -93,13 +93,15 @@ export function UsuarioMobileList({
                                 variant={user.estadoID === EstadoUsuarioEnum.Activo ? 'filled' : 'outlined'}
                             />
                             <Box sx={{ display: 'flex', gap: 1 }}>
-                                <Button 
-                                    size="small" 
-                                    startIcon={<LockIcon />}
-                                    onClick={() => onChangePassword(user)}
-                                >
-                                    Contraseña
-                                </Button>
+                                {onChangePassword && (
+                                    <Button 
+                                        size="small" 
+                                        startIcon={<LockIcon />}
+                                        onClick={() => onChangePassword(user)}
+                                    >
+                                        Contraseña
+                                    </Button>
+                                )}
                                 <Button 
                                     size="small" 
                                     startIcon={<VisibilityIcon />}

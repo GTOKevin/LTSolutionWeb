@@ -13,8 +13,8 @@ interface Props {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onEdit: (gasto: Gasto) => void;
-    onDelete: (gasto: Gasto) => void;
+    onEdit?: (gasto: Gasto) => void;
+    onDelete?: (gasto: Gasto) => void;
 }
 
 export function GastoTable({
@@ -59,8 +59,8 @@ export function GastoTable({
                     </TableCell>
                     <TableCell align="center">
                         <TableActions
-                            onEdit={() => onEdit(row)}
-                            onDelete={() => onDelete(row)}
+                            onEdit={onEdit ? () => onEdit(row) : undefined}
+                            onDelete={onDelete ? () => onDelete(row) : undefined}
                             editTooltip="Editar"
                             deleteTooltip="Eliminar"
                         />

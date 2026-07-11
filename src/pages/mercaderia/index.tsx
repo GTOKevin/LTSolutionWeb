@@ -21,10 +21,13 @@ import { MercaderiaMobileList } from '../../features/mercaderia/list/ui/Mercader
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import { useDeleteMercaderia } from '@/features/mercaderia/hooks/useMercaderiaCrud';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function MercaderiaPage() {
     const theme = useTheme();
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
+    const canManageMercaderia = usePermission(PERMISSIONS.CATALOGOS.MERCADERIA.GESTIONAR);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -81,7 +84,7 @@ export function MercaderiaPage() {
             await deleteMutation.mutateAsync(mercaderiaToDelete.mercaderiaID);
             setDeleteDialogOpen(false);
             setMercaderiaToDelete(null);
-        } catch (error: unknown) {
+        } catch {
             // Error is handled by useGenericCrud
         }
     };
@@ -123,20 +126,22 @@ export function MercaderiaPage() {
                             Administra el catálogo de mercaderías
                         </Typography>
                     </Box>
-                    <Button 
-                        variant="contained" 
-                        startIcon={<AddIcon />}
-                        onClick={handleCreate}
-                        sx={{ 
-                            boxShadow: 2, 
-                            fontWeight: 'bold', 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2
-                        }}
-                    >
-                        Nueva Mercadería
-                    </Button>
+                    {canManageMercaderia && (
+                        <Button 
+                            variant="contained" 
+                            startIcon={<AddIcon />}
+                            onClick={handleCreate}
+                            sx={{ 
+                                boxShadow: 2, 
+                                fontWeight: 'bold', 
+                                px: 3, 
+                                py: 1.2,
+                                borderRadius: 2
+                            }}
+                        >
+                            Nueva Mercadería
+                        </Button>
+                    )}
                 </Box>
 
                 {/* Toolbar Section */}
@@ -185,8 +190,8 @@ export function MercaderiaPage() {
                             rowsPerPage={rowsPerPage}
                             onPageChange={handleChangePage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
-                            onEdit={handleEdit}
-                            onDelete={handleDeleteClick}
+                            onEdit={canManageMercaderia ? handleEdit : undefined}
+                            onDelete={canManageMercaderia ? handleDeleteClick : undefined}
                         />
                     </Box>
 
@@ -199,32 +204,36 @@ export function MercaderiaPage() {
                             rowsPerPage={rowsPerPage}
                             onPageChange={handleChangePage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
-                            onEdit={handleEdit}
-                            onDelete={handleDeleteClick}
+                            onEdit={canManageMercaderia ? handleEdit : undefined}
+                            onDelete={canManageMercaderia ? handleDeleteClick : undefined}
                         />
                     </Box>
                 </Box>
 
-                <CreateEditMercaderiaModal 
-                    open={modalOpen}
-                    onClose={() => setModalOpen(false)}
-                    mercaderiaToEdit={mercaderiaToEdit}
-                    onSuccess={handleSuccess}
-                />
+                {canManageMercaderia && (
+                    <>
+                        <CreateEditMercaderiaModal 
+                            open={modalOpen}
+                            onClose={() => setModalOpen(false)}
+                            mercaderiaToEdit={mercaderiaToEdit}
+                            onSuccess={handleSuccess}
+                        />
 
-                <ConfirmDialog
-                    open={deleteDialogOpen}
-                    title="Eliminar Mercadería"
-                    content={`¿Estás seguro que deseas eliminar "${mercaderiaToDelete?.nombre}"? Esta acción no se puede deshacer.`}
-                    onConfirm={handleConfirmDelete}
-                    onClose={() => {
-                        setDeleteDialogOpen(false);
-                        setMercaderiaToDelete(null);
-                    }}
-                    confirmText="Eliminar"
-                    cancelText="Cancelar"
-                    severity="error"
-                />
+                        <ConfirmDialog
+                            open={deleteDialogOpen}
+                            title="Eliminar Mercadería"
+                            content={`¿Estás seguro que deseas eliminar "${mercaderiaToDelete?.nombre}"? Esta acción no se puede deshacer.`}
+                            onConfirm={handleConfirmDelete}
+                            onClose={() => {
+                                setDeleteDialogOpen(false);
+                                setMercaderiaToDelete(null);
+                            }}
+                            confirmText="Eliminar"
+                            cancelText="Cancelar"
+                            severity="error"
+                        />
+                    </>
+                )}
             </Box>
         </Box>
     );

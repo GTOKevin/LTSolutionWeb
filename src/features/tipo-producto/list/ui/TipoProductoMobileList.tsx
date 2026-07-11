@@ -12,8 +12,8 @@ interface Props {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onEdit: (tipoProducto: TipoProducto) => void;
-    onDelete: (tipoProducto: TipoProducto) => void;
+    onEdit?: (tipoProducto: TipoProducto) => void;
+    onDelete?: (tipoProducto: TipoProducto) => void;
 }
 
 export function TipoProductoMobileList({

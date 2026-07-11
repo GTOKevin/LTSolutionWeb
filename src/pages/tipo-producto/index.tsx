@@ -23,10 +23,13 @@ import { TipoProductoMobileList } from '../../features/tipo-producto/list/ui/Tip
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import { useDeleteTipoProducto } from '@/features/tipo-producto/hooks/useTipoProductoCrud';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function TipoProductoPage() {
     const theme = useTheme();
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
+    const canManageTipoProducto = usePermission(PERMISSIONS.CATALOGOS.TIPO_PRODUCTO.GESTIONAR);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategoria, setSelectedCategoria] = useState<string | null>(null);
@@ -53,10 +56,6 @@ export function TipoProductoPage() {
         }, 1000);
         return () => clearTimeout(timer);
     }, [searchTerm]);
-
-    useEffect(() => {
-        setPage(0);
-    }, [selectedCategoria]);
 
     const { data, isLoading, refetch } = useQuery({
         queryKey: ['tipo-productos', page, rowsPerPage, debouncedSearch, selectedCategoria],
@@ -94,7 +93,7 @@ export function TipoProductoPage() {
             await deleteMutation.mutateAsync(tipoToDelete.tipoProductoID);
             setDeleteDialogOpen(false);
             setTipoToDelete(null);
-        } catch (error: unknown) {
+        } catch {
             // Error is handled by useGenericCrud
         }
     };
@@ -136,20 +135,22 @@ export function TipoProductoPage() {
                             Administra los productos y servicios
                         </Typography>
                     </Box>
-                    <Button 
-                        variant="contained" 
-                        startIcon={<AddIcon />}
-                        onClick={handleCreate}
-                        sx={{ 
-                            boxShadow: 2, 
-                            fontWeight: 'bold', 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2
-                        }}
-                    >
-                        Nuevo Tipo
-                    </Button>
+                    {canManageTipoProducto && (
+                        <Button 
+                            variant="contained" 
+                            startIcon={<AddIcon />}
+                            onClick={handleCreate}
+                            sx={{ 
+                                boxShadow: 2, 
+                                fontWeight: 'bold', 
+                                px: 3, 
+                                py: 1.2,
+                                borderRadius: 2
+                            }}
+                        >
+                            Nuevo Tipo
+                        </Button>
+                    )}
                 </Box>
 
                 {/* Toolbar Section */}
@@ -185,7 +186,10 @@ export function TipoProductoPage() {
                         <Autocomplete
                             options={categorias?.data?.map(c => c.text) || []}
                             value={selectedCategoria}
-                            onChange={(_, newValue) => setSelectedCategoria(newValue)}
+                            onChange={(_, newValue) => {
+                                setSelectedCategoria(newValue);
+                                setPage(0);
+                            }}
                             renderInput={(params) => (
                                 <TextField 
                                     {...params} 
@@ -226,8 +230,8 @@ export function TipoProductoPage() {
                             rowsPerPage={rowsPerPage}
                             onPageChange={handleChangePage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
-                            onEdit={handleEdit}
-                            onDelete={handleDeleteClick}
+                            onEdit={canManageTipoProducto ? handleEdit : undefined}
+                            onDelete={canManageTipoProducto ? handleDeleteClick : undefined}
                         />
                     </Box>
 
@@ -240,32 +244,36 @@ export function TipoProductoPage() {
                             rowsPerPage={rowsPerPage}
                             onPageChange={handleChangePage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
-                            onEdit={handleEdit}
-                            onDelete={handleDeleteClick}
+                            onEdit={canManageTipoProducto ? handleEdit : undefined}
+                            onDelete={canManageTipoProducto ? handleDeleteClick : undefined}
                         />
                     </Box>
                 </Box>
 
-                <CreateEditTipoProductoModal 
-                    open={modalOpen}
-                    onClose={() => setModalOpen(false)}
-                    tipoProductoToEdit={tipoToEdit}
-                    onSuccess={handleSuccess}
-                />
+                {canManageTipoProducto && (
+                    <>
+                        <CreateEditTipoProductoModal 
+                            open={modalOpen}
+                            onClose={() => setModalOpen(false)}
+                            tipoProductoToEdit={tipoToEdit}
+                            onSuccess={handleSuccess}
+                        />
 
-                <ConfirmDialog
-                    open={deleteDialogOpen}
-                    title="Eliminar Tipo de Producto"
-                    content={`¿Estás seguro que deseas eliminar "${tipoToDelete?.nombre}"? Esta acción no se puede deshacer.`}
-                    onConfirm={handleConfirmDelete}
-                    onClose={() => {
-                        setDeleteDialogOpen(false);
-                        setTipoToDelete(null);
-                    }}
-                    confirmText="Eliminar"
-                    cancelText="Cancelar"
-                    severity="error"
-                />
+                        <ConfirmDialog
+                            open={deleteDialogOpen}
+                            title="Eliminar Tipo de Producto"
+                            content={`¿Estás seguro que deseas eliminar "${tipoToDelete?.nombre}"? Esta acción no se puede deshacer.`}
+                            onConfirm={handleConfirmDelete}
+                            onClose={() => {
+                                setDeleteDialogOpen(false);
+                                setTipoToDelete(null);
+                            }}
+                            confirmText="Eliminar"
+                            cancelText="Cancelar"
+                            severity="error"
+                        />
+                    </>
+                )}
             </Box>
         </Box>
     );

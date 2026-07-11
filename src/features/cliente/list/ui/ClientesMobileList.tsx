@@ -23,9 +23,9 @@ interface ClientesMobileListProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onView: (cliente: Cliente) => void;
-    onEdit: (cliente: Cliente) => void;
-    onDelete: (cliente: Cliente) => void;
+    onView?: (cliente: Cliente) => void;
+    onEdit?: (cliente: Cliente) => void;
+    onDelete?: (cliente: Cliente) => void;
 }
 
 export function ClientesMobileList({

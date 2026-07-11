@@ -21,10 +21,13 @@ import { GastoMobileList } from '../../features/gasto/list/ui/GastoMobileList';
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import { useDeleteGasto } from '@/features/gasto/hooks/useGastoCrud';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function GastoPage() {
     const theme = useTheme();
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
+    const canManageGasto = usePermission(PERMISSIONS.CATALOGOS.GASTO.GESTIONAR);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -81,7 +84,7 @@ export function GastoPage() {
             await deleteMutation.mutateAsync(gastoToDelete.gastoID);
             setDeleteDialogOpen(false);
             setGastoToDelete(null);
-        } catch (error: unknown) {
+        } catch {
             // Error is handled by useGenericCrud
         }
     };
@@ -123,20 +126,22 @@ export function GastoPage() {
                             Administra el catálogo de gastos
                         </Typography>
                     </Box>
-                    <Button 
-                        variant="contained" 
-                        startIcon={<AddIcon />}
-                        onClick={handleCreate}
-                        sx={{ 
-                            boxShadow: 2, 
-                            fontWeight: 'bold', 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2
-                        }}
-                    >
-                        Nuevo Gasto
-                    </Button>
+                    {canManageGasto && (
+                        <Button 
+                            variant="contained" 
+                            startIcon={<AddIcon />}
+                            onClick={handleCreate}
+                            sx={{ 
+                                boxShadow: 2, 
+                                fontWeight: 'bold', 
+                                px: 3, 
+                                py: 1.2,
+                                borderRadius: 2
+                            }}
+                        >
+                            Nuevo Gasto
+                        </Button>
+                    )}
                 </Box>
 
                 {/* Toolbar Section */}
@@ -185,8 +190,8 @@ export function GastoPage() {
                             rowsPerPage={rowsPerPage}
                             onPageChange={handleChangePage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
-                            onEdit={handleEdit}
-                            onDelete={handleDeleteClick}
+                            onEdit={canManageGasto ? handleEdit : undefined}
+                            onDelete={canManageGasto ? handleDeleteClick : undefined}
                         />
                     </Box>
 
@@ -199,32 +204,36 @@ export function GastoPage() {
                             rowsPerPage={rowsPerPage}
                             onPageChange={handleChangePage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
-                            onEdit={handleEdit}
-                            onDelete={handleDeleteClick}
+                            onEdit={canManageGasto ? handleEdit : undefined}
+                            onDelete={canManageGasto ? handleDeleteClick : undefined}
                         />
                     </Box>
                 </Box>
 
-                <CreateEditGastoModal 
-                    open={modalOpen}
-                    onClose={() => setModalOpen(false)}
-                    gastoToEdit={gastoToEdit}
-                    onSuccess={handleSuccess}
-                />
+                {canManageGasto && (
+                    <>
+                        <CreateEditGastoModal 
+                            open={modalOpen}
+                            onClose={() => setModalOpen(false)}
+                            gastoToEdit={gastoToEdit}
+                            onSuccess={handleSuccess}
+                        />
 
-                <ConfirmDialog
-                    open={deleteDialogOpen}
-                    title="Eliminar Gasto"
-                    content={`¿Estás seguro que deseas eliminar "${gastoToDelete?.nombre}"? Esta acción no se puede deshacer.`}
-                    onConfirm={handleConfirmDelete}
-                    onClose={() => {
-                        setDeleteDialogOpen(false);
-                        setGastoToDelete(null);
-                    }}
-                    confirmText="Eliminar"
-                    cancelText="Cancelar"
-                    severity="error"
-                />
+                        <ConfirmDialog
+                            open={deleteDialogOpen}
+                            title="Eliminar Gasto"
+                            content={`¿Estás seguro que deseas eliminar "${gastoToDelete?.nombre}"? Esta acción no se puede deshacer.`}
+                            onConfirm={handleConfirmDelete}
+                            onClose={() => {
+                                setDeleteDialogOpen(false);
+                                setGastoToDelete(null);
+                            }}
+                            confirmText="Eliminar"
+                            cancelText="Cancelar"
+                            severity="error"
+                        />
+                    </>
+                )}
             </Box>
         </Box>
     );

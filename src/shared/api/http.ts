@@ -6,8 +6,8 @@ import { authApi } from '@entities/auth/api/auth.api';
 export interface ApiError {
     message: string;
     success: boolean;
-    data: any;
-    errors?: any;
+    data: unknown;
+    errors?: unknown;
     detail?: string; // Kept for backwards compatibility
 }
 
@@ -105,7 +105,7 @@ httpClient.interceptors.response.use(
             originalRequest._retry = true;
             isRefreshing = true;
 
-            const { token, setAuth } = useAuthStore.getState();
+            const { token, setAuth, setSessionExpired } = useAuthStore.getState();
 
             // Note: We don't check for refreshToken here anymore because it's in a cookie
             
@@ -126,8 +126,7 @@ httpClient.interceptors.response.use(
                 return httpClient(originalRequest);
             } catch (refreshError) {
                 processQueue(refreshError, null);
-                // Optional: Logout user on refresh failure
-                useAuthStore.getState().logout();
+                setSessionExpired(true);
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;
