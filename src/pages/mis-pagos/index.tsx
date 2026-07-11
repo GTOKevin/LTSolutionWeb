@@ -14,12 +14,14 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
+import { usePermission } from '@shared/lib/hooks/usePermission';
 import { useToast } from '@shared/components/ui/Toast/useToast';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
 import type { MiPagoDto, MiPagoFilters } from '@entities/employee/model/types';
 import { maestroApi } from '@shared/api/maestro.api';
 import { monedaApi } from '@shared/api/moneda.api';
 import { SECCION_MAESTRO } from '@shared/constants/maestro';
+import { PERMISSIONS } from '@shared/constants/permissions';
 import {
     formatDateOnly,
     getFirstDayOfCurrentMonthISO,
@@ -72,6 +74,7 @@ export function MisPagosPage() {
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const queryClient = useQueryClient();
     const { showToast } = useToast();
+    const canConfirmPayments = usePermission(PERMISSIONS.EMPLOYEE.PAGOS.CONFIRMAR);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [tipoPagoID, setTipoPagoID] = useState<number | ''>('');
@@ -127,7 +130,7 @@ export function MisPagosPage() {
         const items = data?.items ?? [];
         return {
             total: data?.total ?? 0,
-            pendingCount: items.filter((item) => item.confirmadoPago !== true).length,
+            pendingCount: items.filter((item) => item.confirmadoPago == null).length,
             confirmedCount: items.filter((item) => item.confirmadoPago === true).length,
             visibleAmount: items.reduce((sum, item) => sum + item.monto, 0),
         };
@@ -201,6 +204,7 @@ export function MisPagosPage() {
                 paymentStats={paymentStats}
                 dataItems={data?.items}
                 onSelectPending={setSelectedPago}
+                canConfirmPayments={canConfirmPayments}
             />
 
             <MisPagosFilters 
@@ -233,7 +237,7 @@ export function MisPagosPage() {
                     headerSx={portalTableHeaderFlatSx}
                     variant="flat"
                     renderRow={(item) => {
-                        const isPending = item.confirmadoPago !== true;
+                        const isPending = item.confirmadoPago == null;
                         return (
                             <>
                                 <TableCell sx={{ py: 2.5 }}>
@@ -263,7 +267,7 @@ export function MisPagosPage() {
                                     )}
                                 </TableCell>
                                 <TableCell sx={{ py: 2.5, textAlign: 'right' }}>
-                                    {isPending ? (
+                                    {isPending && canConfirmPayments ? (
                                         <Button 
                                             onClick={() => setSelectedPago(item)}
                                             sx={{ fontWeight: 900, letterSpacing: '0.1em', color: 'primary.main', '&:hover': { textDecoration: 'underline', textUnderlineOffset: 4, bgcolor: 'transparent' } }}

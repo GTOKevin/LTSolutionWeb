@@ -9,25 +9,139 @@ import {
     Groups as GroupsIcon,
     LocalShipping as TruckIcon,
     Description as DescriptionIcon,
-    Menu as MenuIcon
+    Menu as MenuIcon,
+    Payments as PaymentsIcon,
+    EventNote as EventNoteIcon,
+    Badge as BadgeIcon,
+    Person as PersonIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLayoutStore } from '@shared/store/layout.store';
+import { useAuthStore } from '@shared/store/auth.store';
+import { PERMISSIONS } from '@shared/constants/permissions';
+
+interface NavItem {
+    label: string;
+    icon: React.ReactNode;
+    path?: string;
+    onClick?: () => void;
+}
 
 export function BottomNav() {
     const theme = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
     const { toggleSidebar } = useLayoutStore();
+    const user = useAuthStore((state) => state.user);
+
+    const hasPermission = (requiredPermission?: string | string[]) => {
+        if (!requiredPermission) {
+            return true;
+        }
+
+        if (!user?.permissions) {
+            return false;
+        }
+
+        if (Array.isArray(requiredPermission)) {
+            return requiredPermission.some((permission) => user.permissions.includes(permission));
+        }
+
+        return user.permissions.includes(requiredPermission);
+    };
+
+    const isPortalRoute = location.pathname.startsWith('/app/mis-') || location.pathname.startsWith('/app/perfil');
+
+    const portalItems: NavItem[] = [
+        {
+            label: 'Viajes',
+            icon: <TruckIcon />,
+            path: '/app/mis-viajes',
+        },
+        {
+            label: 'Pagos',
+            icon: <PaymentsIcon />,
+            path: '/app/mis-pagos',
+        },
+        {
+            label: 'Licencias',
+            icon: <EventNoteIcon />,
+            path: '/app/mis-licencias',
+        },
+        {
+            label: 'Documentos',
+            icon: <BadgeIcon />,
+            path: '/app/mis-documentos',
+        },
+        {
+            label: 'Perfil',
+            icon: <PersonIcon />,
+            path: '/app/perfil',
+        },
+    ].filter((item) => {
+        switch (item.path) {
+            case '/app/mis-viajes':
+                return hasPermission([PERMISSIONS.EMPLOYEE.VIAJES.VER, PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR]);
+            case '/app/mis-pagos':
+                return hasPermission([PERMISSIONS.EMPLOYEE.PAGOS.VER, PERMISSIONS.EMPLOYEE.PAGOS.CONFIRMAR]);
+            case '/app/mis-licencias':
+                return hasPermission([PERMISSIONS.EMPLOYEE.LICENCIAS.VER, PERMISSIONS.EMPLOYEE.LICENCIAS.SOLICITAR]);
+            case '/app/mis-documentos':
+                return hasPermission([
+                    PERMISSIONS.EMPLOYEE.DOCUMENTOS.VER,
+                    PERMISSIONS.EMPLOYEE.DOCUMENTOS.SOLICITAR_ACTUALIZACION,
+                ]);
+            default:
+                return true;
+        }
+    });
+
+    const adminItems: NavItem[] = [
+        {
+            label: 'Inicio',
+            icon: <DashboardIcon />,
+            path: '/app/dashboard',
+        },
+        {
+            label: 'Clientes',
+            icon: <GroupsIcon />,
+            path: '/app/clientes',
+        },
+        {
+            label: 'Pedidos',
+            icon: <DescriptionIcon />,
+            path: '/app/cotizaciones',
+        },
+        {
+            label: 'Flota',
+            icon: <TruckIcon />,
+            path: '/app/flota',
+        },
+        {
+            label: 'Menú',
+            icon: <MenuIcon />,
+            onClick: toggleSidebar,
+        },
+    ].filter((item) => {
+        switch (item.path) {
+            case '/app/dashboard':
+                return hasPermission(PERMISSIONS.DASHBOARD.VER);
+            case '/app/clientes':
+                return hasPermission(PERMISSIONS.CLIENTES.VER);
+            case '/app/cotizaciones':
+                return hasPermission(PERMISSIONS.COTIZACIONES.VER);
+            case '/app/flota':
+                return hasPermission(PERMISSIONS.FLOTA.VER);
+            default:
+                return true;
+        }
+    });
+
+    const navItems = isPortalRoute && portalItems.length > 0 ? portalItems : adminItems;
 
     // Determine value based on path
     const getValue = () => {
-        const path = location.pathname;
-        if (path === '/app' || path.startsWith('/app/dashboard')) return 0;
-        if (path.startsWith('/app/clientes')) return 1;
-        if (path.startsWith('/app/cotizaciones')) return 2;
-        if (path.startsWith('/app/flota')) return 3;
-        return -1; // No selection or Menu
+        return navItems.findIndex((item) => item.path && location.pathname.startsWith(item.path));
     };
 
     return (
@@ -48,12 +162,19 @@ export function BottomNav() {
                 showLabels
                 value={getValue()}
                 onChange={(_, newValue) => {
-                    switch (newValue) {
-                        case 0: navigate('/app/dashboard'); break;
-                        case 1: navigate('/app/clientes'); break;
-                        case 2: navigate('/app/cotizaciones'); break;
-                        case 3: navigate('/app/flota'); break;
-                        case 4: toggleSidebar(); break; // Menu opens drawer
+                    const selectedItem = navItems[newValue];
+
+                    if (!selectedItem) {
+                        return;
+                    }
+
+                    if (selectedItem.path) {
+                        navigate(selectedItem.path);
+                        return;
+                    }
+
+                    if (selectedItem.onClick) {
+                        selectedItem.onClick();
                     }
                 }}
                 sx={{
@@ -81,11 +202,13 @@ export function BottomNav() {
                     }
                 }}
             >
-                <BottomNavigationAction label="Inicio" icon={<DashboardIcon />} />
-                <BottomNavigationAction label="Clientes" icon={<GroupsIcon />} />
-                <BottomNavigationAction label="Pedidos" icon={<DescriptionIcon />} />
-                <BottomNavigationAction label="Flota" icon={<TruckIcon />} />
-                <BottomNavigationAction label="Menú" icon={<MenuIcon />} />
+                {navItems.map((item) => (
+                    <BottomNavigationAction
+                        key={item.label}
+                        label={item.label}
+                        icon={item.icon}
+                    />
+                ))}
             </BottomNavigation>
         </Paper>
     );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -11,45 +11,34 @@ import {
     useTheme
 } from '@mui/material';
 import { Warning as WarningIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@shared/store/auth.store';
 
-export function SessionExpiredModal() {
-    const { isSessionExpired, logout } = useAuthStore();
+function SessionExpiredDialog({ onLogout }: { onLogout: () => void }) {
     const [countdown, setCountdown] = useState(5);
     const theme = useTheme();
 
     useEffect(() => {
-        let timer: ReturnType<typeof setInterval>;
+        const timer = setInterval(() => {
+            setCountdown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    onLogout();
+                    return 0;
+                }
 
-        if (isSessionExpired) {
-            setCountdown(5);
-            timer = setInterval(() => {
-                setCountdown((prev) => {
-                    if (prev <= 1) {
-                        clearInterval(timer);
-                        handleLogout();
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-        }
+                return prev - 1;
+            });
+        }, 1000);
 
         return () => {
-            if (timer) clearInterval(timer);
+            clearInterval(timer);
         };
-    }, [isSessionExpired]);
-
-    const handleLogout = () => {
-        logout();
-        window.location.href = '/login';
-    };
-
-    if (!isSessionExpired) return null;
+    }, [onLogout]);
 
     return (
         <Dialog
-            open={isSessionExpired}
+            open
             maxWidth="xs"
             fullWidth
             disableEscapeKeyDown
@@ -61,7 +50,7 @@ export function SessionExpiredModal() {
                     borderTop: `6px solid ${theme.palette.warning.main}`
                 }
             }}
-            onClose={() => {}} // Disable closing by clicking outside
+            onClose={() => {}}
         >
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 3 }}>
                 <WarningIcon color="warning" sx={{ fontSize: 48, mb: 2 }} />
@@ -71,18 +60,18 @@ export function SessionExpiredModal() {
                 <Typography variant="body1" color="text.secondary" paragraph sx={{ fontSize: '1.1rem' }}>
                     Cerrando en {countdown}...
                 </Typography>
-                <LinearProgress 
-                    variant="determinate" 
-                    value={(5 - countdown) * 20} 
+                <LinearProgress
+                    variant="determinate"
+                    value={(5 - countdown) * 20}
                     color="warning"
                     sx={{ height: 8, borderRadius: 4, mt: 1 }}
                 />
             </DialogContent>
             <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
-                <Button 
-                    variant="contained" 
+                <Button
+                    variant="contained"
                     color="warning"
-                    onClick={handleLogout}
+                    onClick={onLogout}
                     fullWidth
                     sx={{ mx: 2, fontWeight: 'bold' }}
                 >
@@ -91,4 +80,18 @@ export function SessionExpiredModal() {
             </DialogActions>
         </Dialog>
     );
+}
+
+export function SessionExpiredModal() {
+    const { isSessionExpired, logout } = useAuthStore();
+    const navigate = useNavigate();
+
+    const handleLogout = useCallback(() => {
+        logout();
+        navigate('/login', { replace: true });
+    }, [logout, navigate]);
+
+    if (!isSessionExpired) return null;
+
+    return <SessionExpiredDialog onLogout={handleLogout} />;
 }

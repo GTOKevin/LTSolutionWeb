@@ -9,9 +9,11 @@ interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
     isSessionExpired: boolean;
+    hasHydrated: boolean;
 
     setAuth: (token: string, refreshToken: string) => void;
     setSessionExpired: (value: boolean) => void;
+    setHasHydrated: (value: boolean) => void;
     logout: () => void;
     checkAuth: () => void;
 }
@@ -24,6 +26,7 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             isAuthenticated: false,
             isSessionExpired: false,
+            hasHydrated: false,
 
             setAuth: (token: string, refreshToken: string) => {
                 const user = getUserFromToken(token);
@@ -38,6 +41,10 @@ export const useAuthStore = create<AuthState>()(
             
             setSessionExpired: (value: boolean) => {
                 set({ isSessionExpired: value });
+            },
+
+            setHasHydrated: (value: boolean) => {
+                set({ hasHydrated: value });
             },
 
             logout: () => {
@@ -65,6 +72,9 @@ export const useAuthStore = create<AuthState>()(
             partialize: (state) => ({ 
                 user: state.user 
             }), // Only persist user info, NOT tokens
+            onRehydrateStorage: () => (state) => {
+                state?.setHasHydrated(true);
+            },
         }
     )
 );

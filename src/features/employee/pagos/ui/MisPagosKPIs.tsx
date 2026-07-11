@@ -12,9 +12,15 @@ interface MisPagosKPIsProps {
     paymentStats: PaymentStats;
     dataItems?: MiPagoDto[];
     onSelectPending: (pago: MiPagoDto) => void;
+    canConfirmPayments: boolean;
 }
 
-export function MisPagosKPIs({ paymentStats, dataItems = [], onSelectPending }: MisPagosKPIsProps) {
+export function MisPagosKPIs({
+    paymentStats,
+    dataItems = [],
+    onSelectPending,
+    canConfirmPayments,
+}: MisPagosKPIsProps) {
     return (
         <Grid container spacing={4}>
             <Grid size={{ xs: 12, md: 8 }}>
@@ -46,9 +52,9 @@ export function MisPagosKPIs({ paymentStats, dataItems = [], onSelectPending }: 
                     <Button
                         fullWidth
                         variant="contained"
-                        disabled={paymentStats.pendingCount === 0}
+                        disabled={!canConfirmPayments || paymentStats.pendingCount === 0}
                         onClick={() => {
-                            const firstPending = dataItems.find((item) => item.confirmadoPago !== true);
+                            const firstPending = dataItems.find((item) => item.confirmadoPago == null);
                             if (firstPending) onSelectPending(firstPending);
                         }}
                         sx={{ mt: 4, py: 1.5, borderRadius: 3, bgcolor: 'error.light', color: 'error.dark', fontWeight: 800, letterSpacing: '0.1em', boxShadow: 'none', '&:hover': { bgcolor: 'error.main', color: 'error.contrastText', boxShadow: 'none' }, '&.Mui-disabled': { bgcolor: 'action.disabledBackground' } }}

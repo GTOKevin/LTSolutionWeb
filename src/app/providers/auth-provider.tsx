@@ -8,11 +8,15 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-    const { isAuthenticated, user, setAuth, logout } = useAuthStore();
+    const { isAuthenticated, user, hasHydrated, setAuth, logout } = useAuthStore();
     const [isInitialized, setIsInitialized] = useState(false);
     const initialized = useRef(false);
 
     useEffect(() => {
+        if (!hasHydrated) {
+            return;
+        }
+
         if (initialized.current) return;
         initialized.current = true;
 
@@ -26,8 +30,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 try {
                     const res = await authApi.refreshToken({ token: '', refreshToken: '' });
                     setAuth(res.token, res.refreshToken);
-                } catch (error) {
-                    console.error('Failed to restore session:', error);
+                } catch {
                     logout();
                 }
             }
@@ -36,7 +39,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
 
         initAuth();
-    }, []);
+    }, [hasHydrated, isAuthenticated, logout, setAuth, user]);
 
     if (!isInitialized) {
         return (

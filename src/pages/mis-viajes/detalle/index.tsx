@@ -21,6 +21,9 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@shared/components/ui/Toast/useToast';
+import { useLayoutStore } from '@shared/store/layout.store';
+import { usePermission } from '@shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@shared/constants/permissions';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@/entities/employee/api/employee-portal.api';
 import type { UpdateMiViajeKmsDto } from '@/entities/employee/model/types';
 import {
@@ -92,7 +95,9 @@ export function MisViajesDetallePage() {
     const navigate = useNavigate();
     const { showToast } = useToast();
     const queryClient = useQueryClient();
+    const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const viajeId = Number(id);
+    const canManageViajeKms = usePermission(PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR);
 
     const [activeTab, setActiveTab] = useState(0);
 
@@ -123,6 +128,10 @@ export function MisViajesDetallePage() {
         resolver: zodResolver(updateMisViajesKmsSchema),
         defaultValues: getUpdateMisViajesKmsDefaultValues(),
     });
+
+    useEffect(() => {
+        setPageTitle('Mis Viajes');
+    }, [setPageTitle]);
 
     useEffect(() => {
         if (!viaje) {
@@ -163,6 +172,9 @@ export function MisViajesDetallePage() {
 
     const isCerrado = viaje.cerrado;
     const isFacturado = viaje.facturado;
+    const showKmsTab = canManageViajeKms;
+    const currentTab = showKmsTab ? activeTab : 0;
+    const isKmsTabActive = showKmsTab && currentTab === 1;
 
     return (
         <Box sx={{ minHeight: '100%', display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
@@ -201,13 +213,19 @@ export function MisViajesDetallePage() {
             {/* Title Section */}
             <Box sx={{ px: { xs: 2, md: 4 }, py: 4, bgcolor: 'background.default' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, color: 'text.secondary', '& > span': { fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '0.1em', textTransform: 'uppercase' } }}>
-                    <span>Viajes</span>
+                    <span>Portal del Empleado</span>
+                    <span>›</span>
+                    <span>Mis Viajes</span>
                     <span>›</span>
                     <span>{viaje.codigo}</span>
-                    <span>›</span>
-                    <Typography component="span" color="primary.main" fontWeight="bold">
-                        {activeTab === 0 ? 'Resumen' : 'Gestión de KMs'}
-                    </Typography>
+                    {isKmsTabActive ? (
+                        <>
+                            <span>›</span>
+                            <Typography component="span" color="primary.main" fontWeight="bold">
+                                Gestión de KMs
+                            </Typography>
+                        </>
+                    ) : null}
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
                     <Box>
@@ -223,15 +241,25 @@ export function MisViajesDetallePage() {
 
             {/* Tabs Navigation */}
             <Box sx={{ px: { xs: 2, md: 4 }, borderBottom: 1, borderColor: 'divider', bgcolor: 'background.default' }}>
-                <Tabs value={activeTab} onChange={(_, nv) => setActiveTab(nv)} sx={{ minHeight: 48, '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, fontSize: '0.875rem', minWidth: 'auto', px: 3, py: 1.5 } }}>
+                <Tabs
+                    value={currentTab}
+                    onChange={(_, nv) => {
+                        if (!showKmsTab && nv !== 0) {
+                            return;
+                        }
+
+                        setActiveTab(nv);
+                    }}
+                    sx={{ minHeight: 48, '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, fontSize: '0.875rem', minWidth: 'auto', px: 3, py: 1.5 } }}
+                >
                     <Tab label="Resumen" />
-                    <Tab label="KMs" />
+                    {showKmsTab ? <Tab label="KMs" /> : null}
                 </Tabs>
             </Box>
 
             {/* Content Canvas */}
             <Box sx={{ flex: 1, bgcolor: 'background.paper', p: { xs: 2, md: 4 } }}>
-                {activeTab === 0 && (
+                {currentTab === 0 && (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'repeat(12, 1fr)' }, gap: 3 }}>
                             <Box sx={{ ...styles.card, gridColumn: { xs: 'span 1', xl: 'span 5' } }}>
@@ -281,7 +309,7 @@ export function MisViajesDetallePage() {
                     </Box>
                 )}
 
-                {activeTab === 1 && (
+                {isKmsTabActive && (
                     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 4 }}>
                         <Box sx={{ width: { xs: '100%', lg: '33%' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
                             <Box sx={{ ...styles.card }}>
@@ -302,7 +330,9 @@ export function MisViajesDetallePage() {
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
                                     <Box>
                                         <Typography variant="h5" fontWeight="bold" gutterBottom>Registro de Kilometraje</Typography>
-                                        <Typography variant="body2" color="text.secondary">Introduzca los valores actuales para actualizar la hoja de ruta.</Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Introduzca los valores actuales para actualizar la hoja de ruta.
+                                        </Typography>
                                     </Box>
                                 </Box>
 
@@ -319,7 +349,7 @@ export function MisViajesDetallePage() {
                                                         fullWidth
                                                         type="number"
                                                         placeholder="0"
-                                                        disabled={isCerrado}
+                                                        disabled={!canManageViajeKms || isCerrado}
                                                         error={!!errors.kmInicio}
                                                         helperText={errors.kmInicio?.message}
                                                         InputProps={{
@@ -341,7 +371,7 @@ export function MisViajesDetallePage() {
                                                         fullWidth
                                                         type="number"
                                                         placeholder="0"
-                                                        disabled={isCerrado}
+                                                        disabled={!canManageViajeKms || isCerrado}
                                                         error={!!errors.kmLlegada}
                                                         helperText={errors.kmLlegada?.message}
                                                         InputProps={{
@@ -365,7 +395,7 @@ export function MisViajesDetallePage() {
                                                     fullWidth
                                                     type="number"
                                                     placeholder="0"
-                                                    disabled={isCerrado}
+                                                    disabled={!canManageViajeKms || isCerrado}
                                                     error={!!errors.kmLlegadaBase}
                                                     helperText={errors.kmLlegadaBase?.message}
                                                     InputProps={{
@@ -382,12 +412,14 @@ export function MisViajesDetallePage() {
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'warning.main' }}>
                                             <InfoIcon fontSize="small" />
-                                            <Typography variant="body2">Los campos se bloquearán una vez guardado el cierre de viaje.</Typography>
+                                            <Typography variant="body2">
+                                                Los campos se bloquearán una vez guardado el cierre de viaje.
+                                            </Typography>
                                         </Box>
                                         <Button
                                             type="submit"
                                             variant="contained"
-                                            disabled={isCerrado || updateKmsMutation.isPending}
+                                            disabled={!canManageViajeKms || isCerrado || updateKmsMutation.isPending}
                                             startIcon={<SaveIcon />}
                                             sx={{ px: 4, py: 1.5, borderRadius: 2, fontWeight: 'bold', fontSize: '1rem', boxShadow: '0 8px 16px rgba(0,93,168,0.2)' }}
                                         >

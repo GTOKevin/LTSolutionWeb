@@ -21,6 +21,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
 import { useToast } from '@shared/components/ui/Toast';
+import { usePermission } from '@shared/lib/hooks/usePermission';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
 import type {
     MiDocumentoDto,
@@ -33,6 +34,7 @@ import { getEstadoColor } from '@entities/employee/lib/status-utils';
 import { SolicitudActualizacionModal } from '@features/employee/documentos/ui/SolicitudActualizacionModal';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 import { portalTableContainerFlatSx, portalTableHeaderFlatSx } from '@shared/components/ui/employee-portal-shell.styles';
+import { PERMISSIONS } from '@shared/constants/permissions';
 import { tipoDocumentoApi } from '@/entities/tipo-documento/api/tipo-documento.api';
 
 const documentColumns: Column[] = [
@@ -54,6 +56,7 @@ const requestColumns: Column[] = [
 export function MisDocumentosPage() {
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const { showToast } = useToast();
+    const canRequestDocumentUpdate = usePermission(PERMISSIONS.EMPLOYEE.DOCUMENTOS.SOLICITAR_ACTUALIZACION);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [activo, setActivo] = useState<string>('');
@@ -268,9 +271,17 @@ export function MisDocumentosPage() {
             <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
                 <Box sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="h6" fontWeight={800} color="text.primary">Documentos Oficiales</Typography>
-                    <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => { setSelectedDocumentoId(undefined); setDialogOpen(true); }} sx={{ borderRadius: 2, boxShadow: 'none' }}>
-                        Nueva Solicitud
-                    </Button>
+                    {canRequestDocumentUpdate ? (
+                        <Button
+                            variant="contained"
+                            size="small"
+                            startIcon={<AddIcon />}
+                            onClick={() => { setSelectedDocumentoId(undefined); setDialogOpen(true); }}
+                            sx={{ borderRadius: 2, boxShadow: 'none' }}
+                        >
+                            Nueva Solicitud
+                        </Button>
+                    ) : null}
                 </Box>
                 <SharedTable
                     data={documentos ? { ...documentos, items: visibleDocumentos } : documentos}
@@ -314,15 +325,17 @@ export function MisDocumentosPage() {
                                     <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => handleDownloadDocument(item)}>
                                         <DownloadIcon fontSize="small" />
                                     </Button>
-                                    <Button 
-                                        sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-                                        onClick={() => {
-                                            setSelectedDocumentoId(item.colaboradorDocumentoId);
-                                            setDialogOpen(true);
-                                        }}
-                                    >
-                                        <SyncOutlined fontSize="small" />
-                                    </Button>
+                                    {canRequestDocumentUpdate ? (
+                                        <Button 
+                                            sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+                                            onClick={() => {
+                                                setSelectedDocumentoId(item.colaboradorDocumentoId);
+                                                setDialogOpen(true);
+                                            }}
+                                        >
+                                            <SyncOutlined fontSize="small" />
+                                        </Button>
+                                    ) : null}
                                 </Box>
                             </TableCell>
                         </>
