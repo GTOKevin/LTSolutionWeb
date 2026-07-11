@@ -20,6 +20,7 @@ import {
     Check as CheckIcon
 } from '@mui/icons-material';
 import { useThemeStore } from '@shared/store/theme.store';
+import { useLayoutStore } from '@shared/store/layout.store';
 import { DRAWER_WIDTH } from '@widgets/sidebar/ui/Sidebar';
 import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
@@ -29,6 +30,7 @@ import { appThemePresets, getThemePreviewSwatches, orderedAppThemeIds } from '@/
 
 export function Header() {
     const { themeId, setThemeId } = useThemeStore();
+    const pageTitle = useLayoutStore((state) => state.pageTitle);
     const theme = useTheme();
     const location = useLocation();
     const [searchQuery, setSearchQuery] = useState('');
@@ -52,8 +54,17 @@ export function Header() {
         if (location.pathname.startsWith('/app/usuarios')) return 'Gestión de Usuarios';
         if (location.pathname.startsWith('/app/maestros')) return 'Gestión de Maestros';
         if (location.pathname.startsWith('/app/mis-viajes')) return 'Mis Viajes';
+        if (location.pathname.startsWith('/app/mis-pagos')) return 'Mis Pagos';
+        if (location.pathname.startsWith('/app/mis-licencias')) return 'Mis Licencias';
+        if (location.pathname.startsWith('/app/mis-documentos')) return 'Mis Documentos';
         if (location.pathname.startsWith('/app/reportes')) return 'Reportes';
-        return 'Dashboard';
+        return pageTitle || 'Dashboard';
+    };
+
+    const getSectionTitle = () => {
+        if (location.pathname.startsWith('/app/mis-')) return 'Portal del Empleado';
+        if (location.pathname.startsWith('/app/reportes')) return 'Reportes';
+        return 'Administración';
     };
 
     return (
@@ -91,7 +102,7 @@ export function Header() {
                         color="text.secondary"
                         sx={{ cursor: 'pointer', '&:hover': { color: theme.palette.primary.main } }}
                     >
-                        Administración
+                        {getSectionTitle()}
                     </Typography>
                     <ChevronRightIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                     <Typography variant="body2" fontWeight={500}>

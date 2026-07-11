@@ -12,7 +12,6 @@ import {
 } from '@mui/material';
 import {
     Description as EditDocumentIcon,
-    CloudUpload as CloudUploadIcon,
     Send as SendIcon,
 } from '@mui/icons-material';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,6 +27,7 @@ import {
     type CreateSolicitudActualizacionForm,
     type CreateSolicitudActualizacionFormInput,
 } from '../model/schema';
+import { ImageUpload } from '@shared/components/ui/ImageUpload';
 
 interface SolicitudActualizacionModalProps {
     open: boolean;
@@ -199,13 +199,20 @@ export function SolicitudActualizacionModal({ open, onClose, documentos, initial
                         <Typography variant="overline" fontWeight="bold" color="text.primary" sx={{ display: 'block', mb: 1, letterSpacing: '0.1em' }}>
                             ADJUNTAR DOCUMENTO
                         </Typography>
-                        <Box sx={{ border: '2px dashed', borderColor: 'divider', borderRadius: 3, p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover', transition: 'all 0.2s', cursor: 'pointer', '&:hover': { bgcolor: 'action.selected' } }}>
-                            <Box sx={{ width: 48, height: 48, borderRadius: '50%', bgcolor: 'background.paper', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'primary.main', mb: 2, boxShadow: 1 }}>
-                                <CloudUploadIcon />
-                            </Box>
-                            <Typography variant="body2" fontWeight="medium">Arrastra y suelta el archivo o haz clic para buscar</Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>PDF, JPG o PNG hasta 10MB</Typography>
-                        </Box>
+                        <Controller
+                            control={form.control}
+                            name="rutaArchivoPropuesta"
+                            render={({ field, fieldState }) => (
+                                <ImageUpload
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    folder="temp/colaboradores/documentos"
+                                    label="Adjuntar sustento documental"
+                                    error={Boolean(fieldState.error)}
+                                    helperText={fieldState.error?.message || 'Adjunta una imagen JPG o PNG del documento si deseas sustentar la actualización.'}
+                                />
+                            )}
+                        />
                     </Box>
                 </Stack>
             </DialogContent>
@@ -220,6 +227,7 @@ export function SolicitudActualizacionModal({ open, onClose, documentos, initial
                         createMutation.mutate({
                             colaboradorDocumentoID: values.colaboradorDocumentoID,
                             numeroDocumentoPropuesto: values.numeroDocumentoPropuesto || undefined,
+                            rutaArchivoPropuesta: values.rutaArchivoPropuesta || undefined,
                             fechaEmisionPropuesta: values.fechaEmisionPropuesta || undefined,
                             fechaVencimientoPropuesta: values.fechaVencimientoPropuesta || undefined,
                             motivoSolicitud: values.motivoSolicitud || undefined,

@@ -1,5 +1,4 @@
 import { Box, Button, Grid, Typography } from '@mui/material';
-import { TrendingUp as TrendingUpIcon } from '@mui/icons-material';
 import type { MiPagoDto } from '@entities/employee/model/types';
 
 interface PaymentStats {
@@ -21,17 +20,16 @@ export function MisPagosKPIs({ paymentStats, dataItems = [], onSelectPending }: 
             <Grid size={{ xs: 12, md: 8 }}>
                 <Box sx={{ bgcolor: 'background.paper', p: 4, borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
                     <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Typography variant="overline" fontWeight={800} color="text.secondary" sx={{ letterSpacing: '0.1em', opacity: 0.6 }}>Balance Anual</Typography>
+                        <Typography variant="overline" fontWeight={800} color="text.secondary" sx={{ letterSpacing: '0.1em', opacity: 0.6 }}>Resumen del Periodo</Typography>
                         <Typography variant="h2" fontWeight={900} color="primary.main" sx={{ mt: 1, letterSpacing: '-0.02em' }}>
                             S/ {paymentStats.visibleAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 2, maxWidth: 300 }}>
-                            Total de pagos procesados y confirmados en el periodo actual.
+                            Monto visible en la tabla actual segun los filtros aplicados.
                         </Typography>
                     </Box>
-                    <Box sx={{ mt: 4, display: 'flex', alignItems: 'center', gap: 1, color: 'success.main', fontWeight: 'bold', fontSize: '0.875rem' }}>
-                        <TrendingUpIcon fontSize="small" />
-                        +12% respecto al año anterior
+                    <Box sx={{ mt: 4, display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', fontWeight: 'bold', fontSize: '0.875rem' }}>
+                        {paymentStats.confirmedCount} pagos confirmados de {paymentStats.total} registros consultados
                     </Box>
                     <Box sx={{ position: 'absolute', right: -48, bottom: -48, width: 192, height: 192, bgcolor: 'primary.main', opacity: 0.05, borderRadius: '50%', filter: 'blur(40px)' }} />
                 </Box>

@@ -3,12 +3,14 @@ import { z } from 'zod';
 export const createSolicitudActualizacionSchema = z.object({
     colaboradorDocumentoID: z.coerce.number().int().positive('Selecciona un documento.'),
     numeroDocumentoPropuesto: z.string().max(100, 'El número propuesto es demasiado largo.').optional(),
+    rutaArchivoPropuesta: z.string().max(500, 'La ruta del archivo es demasiado larga.').optional(),
     fechaEmisionPropuesta: z.string().optional(),
     fechaVencimientoPropuesta: z.string().optional(),
     motivoSolicitud: z.string().max(500, 'El motivo no puede exceder 500 caracteres.').optional(),
 }).refine((value) => {
     return Boolean(
         value.numeroDocumentoPropuesto?.trim()
+        || value.rutaArchivoPropuesta?.trim()
         || value.fechaEmisionPropuesta
         || value.fechaVencimientoPropuesta
         || value.motivoSolicitud?.trim()
@@ -34,6 +36,7 @@ export function getCreateSolicitudActualizacionDefaultValues(initialDocumentoId?
     return {
         colaboradorDocumentoID: initialDocumentoId,
         numeroDocumentoPropuesto: '',
+        rutaArchivoPropuesta: '',
         fechaEmisionPropuesta: '',
         fechaVencimientoPropuesta: '',
         motivoSolicitud: '',

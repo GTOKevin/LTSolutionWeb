@@ -28,7 +28,7 @@ import type {
     MiDocumentoSolicitudesFilters,
 } from '@entities/employee/model/types';
 import { formatDateOnly, formatDateTime } from '@shared/utils/date-utils';
-import { isImageUrl } from '@shared/utils/file-utils';
+import { isPreviewableImageUrl } from '@shared/utils/file-utils';
 import { getEstadoColor } from '@entities/employee/lib/status-utils';
 import { SolicitudActualizacionModal } from '@features/employee/documentos/ui/SolicitudActualizacionModal';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
@@ -96,7 +96,7 @@ export function MisDocumentosPage() {
         }));
     }, [documentos?.items, tiposDocumento]);
 
-    const filteredDocumentos = useMemo(() => {
+    const visibleDocumentos = useMemo(() => {
         const normalizedSearch = searchTerm.trim().toLowerCase();
 
         if (!normalizedSearch) {
@@ -108,18 +108,6 @@ export function MisDocumentosPage() {
             (item.numeroDocumento ?? '').toLowerCase().includes(normalizedSearch)
         );
     }, [documentosEnriquecidos, searchTerm]);
-
-    const documentosData = useMemo(() => {
-        if (!documentos) {
-            return documentos;
-        }
-
-        return {
-            ...documentos,
-            items: filteredDocumentos,
-            total: filteredDocumentos.length,
-        };
-    }, [documentos, filteredDocumentos]);
 
     const requestFilters = useMemo<MiDocumentoSolicitudesFilters>(() => ({
         page: 1,
@@ -169,13 +157,15 @@ export function MisDocumentosPage() {
         });
     };
 
-    const handleOpenDocument = (item: MiDocumentoDto) => {
+    const handleOpenDocument = async (item: MiDocumentoDto) => {
         if (!item.rutaArchivo) {
             showToast({ message: 'El documento no tiene archivo asociado.', severity: 'warning' });
             return;
         }
 
-        if (isImageUrl(item.rutaArchivo)) {
+        const canPreviewInline = await isPreviewableImageUrl(item.rutaArchivo);
+
+        if (canPreviewInline) {
             setPreviewTitle(item.tipoDocumentoNombre);
             setPreviewUrl(item.rutaArchivo);
             return;
@@ -257,7 +247,7 @@ export function MisDocumentosPage() {
             {/* Filter Section */}
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'center', justifyContent: 'space-between' }}>
                 <TextField
-                    placeholder="Buscar por nombre o número..."
+                    placeholder="Filtrar documentos visibles por nombre o número..."
                     size="small"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
@@ -270,6 +260,10 @@ export function MisDocumentosPage() {
                 </Box>
             </Box>
 
+            <Typography variant="caption" color="text.secondary" sx={{ mt: -2 }}>
+                El filtro de texto se aplica sobre los documentos visibles en la página actual.
+            </Typography>
+
             {/* Document List Table */}
             <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
                 <Box sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -279,7 +273,7 @@ export function MisDocumentosPage() {
                     </Button>
                 </Box>
                 <SharedTable
-                    data={documentosData}
+                    data={documentos ? { ...documentos, items: visibleDocumentos } : documentos}
                     isLoading={isLoadingDocumentos}
                     page={page}
                     rowsPerPage={rowsPerPage}
