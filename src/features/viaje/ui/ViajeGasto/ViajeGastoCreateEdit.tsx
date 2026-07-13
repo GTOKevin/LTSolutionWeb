@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { CreateViajeGastoDto, ViajeGasto } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
@@ -35,7 +35,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
     const isEditing = !!gasto;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, register, handleSubmit, reset, watch, setValue, setError, formState: { errors } } = useForm<ViajeGastoFormData>({
+    const { control, register, handleSubmit, reset, setValue, setError, formState: { errors } } = useForm<ViajeGastoFormData>({
         resolver: zodResolver(viajeGastoSchema),
         defaultValues: {
             gastoID: 0,
@@ -50,10 +50,10 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
         }
     });
 
-    const hasComprobante = watch('comprobante');
-    const isCombustible = watch('combustible');
-    const selectedGastoID = watch('gastoID');
-    const selectedMonedaID = watch('monedaID');
+    const hasComprobante = useWatch({ control, name: 'comprobante', defaultValue: false });
+    const isCombustible = useWatch({ control, name: 'combustible', defaultValue: false });
+    const selectedGastoID = useWatch({ control, name: 'gastoID', defaultValue: 0 });
+    const selectedMonedaID = useWatch({ control, name: 'monedaID', defaultValue: MONEDA_ID.SOLES });
 
     // Determine if currency should be restricted to Soles (Combustible/Peaje)
     const selectedGasto = tiposGasto.find(t => t.id === selectedGastoID);

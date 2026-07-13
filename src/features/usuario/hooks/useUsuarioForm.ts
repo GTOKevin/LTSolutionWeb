@@ -68,10 +68,6 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
     // --- Effects ---
     useEffect(() => {
         if (open) {
-            setErrorMessage(null);
-            setShowPassword(false);
-            setActiveTab(0);
-            
             if (usuarioToEdit) {
                 reset({
                     nombre: usuarioToEdit.nombre,
@@ -91,6 +87,16 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
                     clave: ''
                 });
             }
+
+            const resetUiTimer = window.setTimeout(() => {
+                setErrorMessage(null);
+                setShowPassword(false);
+                setActiveTab(0);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, usuarioToEdit, reset]);
 

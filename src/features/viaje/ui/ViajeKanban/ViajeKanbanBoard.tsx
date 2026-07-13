@@ -172,7 +172,7 @@ export function ViajeKanbanBoard({
                             draggable={canManage}
                             onCardClick={onViajeClick}
                             onEditCard={canManage ? onEditViaje : undefined}
-                            onViewCard={canManage ? onViewViaje : undefined}
+                            onViewCard={onViewViaje}
                             onDeleteCard={canManage ? onDeleteViaje : undefined}
                         />
                     ))}

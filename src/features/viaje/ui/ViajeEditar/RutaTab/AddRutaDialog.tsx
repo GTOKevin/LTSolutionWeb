@@ -37,11 +37,17 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
 
     useEffect(() => {
         if (open && initialData) {
-            setFormData(prev => ({
-                ...prev,
-                nombreLugar: initialData.nombreLugar || '',
-                esOpcionPrincipal: true,
-            }));
+            const resetUiTimer = window.setTimeout(() => {
+                setFormData(prev => ({
+                    ...prev,
+                    nombreLugar: initialData.nombreLugar || '',
+                    esOpcionPrincipal: true,
+                }));
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, initialData]);
 
@@ -50,7 +56,13 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
         if (tiposPunto && tiposPunto.data?.length > 0 && formData.tipoPuntoId === 0) {
             // Buscamos un valor razonable como 'Almuerzo' (1104) o el primero de la lista
             const defaultValue = tiposPunto.data?.find(t => t.text.includes('Almuerzo')) || tiposPunto.data[0];
-            setFormData(prev => ({ ...prev, tipoPuntoId: Number(defaultValue) }));
+            const resetUiTimer = window.setTimeout(() => {
+                setFormData(prev => ({ ...prev, tipoPuntoId: defaultValue.id }));
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [tiposPunto, formData.tipoPuntoId]);
 

@@ -1,6 +1,6 @@
 import { Box, Button, Typography, TextField, Paper, alpha, useTheme, Tabs, Tab } from '@mui/material';
 import { AddModerator as AddModeratorIcon, Sync as SyncIcon } from '@mui/icons-material';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { viajeEscoltaSchema, type ViajeEscoltaFormData } from '@/features/viaje/model/schema';
 import { useCreateViajeEscolta } from '@/features/viaje/hooks/useViajeEscoltas';
@@ -16,7 +16,7 @@ export function EscoltasForm({ viajeId }: EscoltasFormProps) {
     const createMutation = useCreateViajeEscolta();
     const { flotasEscolta, colaboradores } = useViajeOptions(true);
 
-    const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ViajeEscoltaFormData>({
+    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajeEscoltaFormData>({
         resolver: zodResolver(viajeEscoltaSchema),
         defaultValues: {
             tercero: false,
@@ -27,7 +27,7 @@ export function EscoltasForm({ viajeId }: EscoltasFormProps) {
         }
     });
 
-    const isTercero = watch('tercero');
+    const isTercero = useWatch({ control, name: 'tercero', defaultValue: false });
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
         const isTerceroMode = newValue === 1;

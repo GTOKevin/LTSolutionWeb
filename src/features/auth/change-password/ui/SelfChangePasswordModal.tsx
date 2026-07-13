@@ -15,8 +15,9 @@ import {
     Close as CloseIcon,
     LockReset as LockResetIcon,
 } from '@mui/icons-material';
+import { isAxiosError } from 'axios';
 import { useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { authApi } from '@entities/auth/api/auth.api';
@@ -36,6 +37,17 @@ interface SelfChangePasswordModalProps {
     onSuccess: () => void;
 }
 
+interface ChangePasswordFieldError {
+    field?: string;
+    message?: string;
+}
+
+interface ChangePasswordErrorResponse {
+    detail?: string;
+    message?: string;
+    errors?: string | ChangePasswordFieldError[];
+}
+
 export function SelfChangePasswordModal({ open, onClose, usuarioNombre, onSuccess }: SelfChangePasswordModalProps) {
     const theme = useTheme();
     const { showToast } = useToast();
@@ -45,18 +57,22 @@ export function SelfChangePasswordModal({ open, onClose, usuarioNombre, onSucces
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const {
+        control,
         register,
         handleSubmit,
         reset,
         setError,
-        watch,
         formState: { errors },
     } = useForm<SelfChangePasswordSchema>({
         resolver: zodResolver(selfChangePasswordSchema),
         mode: 'onChange',
     });
 
-    const newPassword = watch('newPassword', '');
+    const newPassword = useWatch({
+        control,
+        name: 'newPassword',
+        defaultValue: '',
+    });
 
     const strength = useMemo(() => {
         const baseStrength = getPasswordStrength(newPassword);
@@ -73,15 +89,22 @@ export function SelfChangePasswordModal({ open, onClose, usuarioNombre, onSucces
 
     useEffect(() => {
         if (open) {
-            setErrorMessage(null);
             reset({
                 currentPassword: '',
                 newPassword: '',
                 confirmPassword: '',
             });
-            setShowCurrentPassword(false);
-            setShowNewPassword(false);
-            setShowConfirmPassword(false);
+
+            const resetUiTimer = window.setTimeout(() => {
+                setErrorMessage(null);
+                setShowCurrentPassword(false);
+                setShowNewPassword(false);
+                setShowConfirmPassword(false);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, reset]);
 
@@ -98,13 +121,18 @@ export function SelfChangePasswordModal({ open, onClose, usuarioNombre, onSucces
             onSuccess();
             onClose();
         },
-        onError: (error: any) => {
+        onError: (error: unknown) => {
+            if (!isAxiosError<ChangePasswordErrorResponse>(error)) {
+                setErrorMessage('No se pudo actualizar la contraseña.');
+                return;
+            }
+
             const apiError = error.response?.data;
 
-            if (error.response?.status === 400 && apiError?.errors && Array.isArray(apiError.errors)) {
+            if (error.response?.status === 400 && Array.isArray(apiError?.errors)) {
                 let hasFieldErrors = false;
 
-                apiError.errors.forEach((err: any) => {
+                apiError.errors.forEach((err) => {
                     if (err.field === 'Dto.CurrentPassword') {
                         setError('currentPassword', { type: 'server', message: err.message }, { shouldFocus: true });
                         hasFieldErrors = true;
@@ -121,7 +149,11 @@ export function SelfChangePasswordModal({ open, onClose, usuarioNombre, onSucces
                 }
             }
 
-            setErrorMessage(apiError?.errors || apiError?.detail || apiError?.message || 'No se pudo actualizar la contraseña.');
+            setErrorMessage(
+                typeof apiError?.errors === 'string'
+                    ? apiError.errors
+                    : apiError?.detail || apiError?.message || 'No se pudo actualizar la contraseña.'
+            );
         },
     });
 

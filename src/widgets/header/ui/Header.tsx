@@ -44,6 +44,7 @@ export function Header() {
         if (location.pathname.startsWith('/app/clientes')) return 'Gestión de Clientes';
         if (location.pathname.startsWith('/app/cotizaciones')) return 'Gestión de Cotizaciones';
         if (location.pathname.startsWith('/app/facturas')) return 'Gestión de Facturas';
+        if (location.pathname.startsWith('/app/viajes')) return 'Gestión de Viajes';
         if (location.pathname.startsWith('/app/flota')) return 'Gestión de Flota';
         if (location.pathname.startsWith('/app/roles-usuario')) return 'Gestión de Roles';
         if (location.pathname.startsWith('/app/roles-colaborador')) return 'Gestión de Roles de Colaborador';
@@ -64,6 +65,20 @@ export function Header() {
     const getSectionTitle = () => {
         if (location.pathname.startsWith('/app/mis-')) return 'Portal del Empleado';
         if (location.pathname.startsWith('/app/reportes')) return 'Reportes';
+        if (
+            location.pathname.startsWith('/app/viajes') ||
+            location.pathname.startsWith('/app/flota') ||
+            location.pathname.startsWith('/app/colaboradores')
+        ) {
+            return 'Operaciones';
+        }
+        if (
+            location.pathname.startsWith('/app/gasto') ||
+            location.pathname.startsWith('/app/mercaderia') ||
+            location.pathname.startsWith('/app/tipo-producto')
+        ) {
+            return 'Catálogos';
+        }
         return 'Administración';
     };
 

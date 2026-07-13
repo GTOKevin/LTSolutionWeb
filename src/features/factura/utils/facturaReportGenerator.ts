@@ -6,6 +6,12 @@ import { formatDateShort } from '@/shared/utils/date-utils';
 import { formatCurrency } from '@/shared/utils/format-utils';
 import type { FacturaReporte } from '@/entities/factura/model/types';
 
+type JsPdfWithAutoTable = jsPDF & {
+    lastAutoTable?: {
+        finalY: number;
+    };
+};
+
 export const generateFacturaPdf = (reportData: FacturaReporte) => {
     const doc = new jsPDF('p', 'pt', 'a4');
     const currencySymbol = reportData.moneda?.simbolo || 'S/';
@@ -66,7 +72,7 @@ export const generateFacturaPdf = (reportData: FacturaReporte) => {
         }
     });
 
-    currentY = (doc as any).lastAutoTable.finalY + 30;
+    currentY = ((doc as JsPdfWithAutoTable).lastAutoTable?.finalY ?? currentY) + 30;
 
     // --- Pagos / Amortizaciones ---
     doc.setFontSize(12);

@@ -8,16 +8,28 @@ import type { ApiError, ValidationError } from '../model/types';
  * @param setError The setError function from react-hook-form.
  * @returns A string message if there's a general error, or null if all errors were mapped to fields.
  */
-export const handleBackendErrors = <T extends Record<string, any>>(
+type AxiosLikeError = {
+    response: {
+        data: ApiError;
+        status: number;
+    };
+};
+
+function isAxiosLikeError(error: unknown): error is AxiosLikeError {
+    if (!error || typeof error !== 'object' || !('response' in error)) {
+        return false;
+    }
+
+    const response = error.response;
+
+    return !!response && typeof response === 'object' && 'data' in response && 'status' in response;
+}
+
+export const handleBackendErrors = <T extends Record<string, unknown>>(
     error: unknown,
     setError: UseFormSetError<T>
 ): string | null => {
-    // Check if error is an object and has 'response' property (basic Axios error check)
-    const isAxiosError = (err: any): err is { response: { data: ApiError; status: number } } => {
-        return err && typeof err === 'object' && 'response' in err && 'data' in err.response;
-    };
-
-    if (!isAxiosError(error)) {
+    if (!isAxiosLikeError(error)) {
         return 'Ocurrió un error inesperado.';
     }
 

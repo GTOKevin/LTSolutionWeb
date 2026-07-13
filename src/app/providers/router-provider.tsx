@@ -179,7 +179,7 @@ export function RouterProvider() {
                             </PermissionGuard>
                         } />
                         <Route path="viajes/:id" element={
-                            <PermissionGuard permission={PERMISSIONS.VIAJES.GESTIONAR}>
+                            <PermissionGuard permission={[PERMISSIONS.VIAJES.VER, PERMISSIONS.VIAJES.GESTIONAR]}>
                                 <ViajeEditarPage />
                             </PermissionGuard>
                         } />

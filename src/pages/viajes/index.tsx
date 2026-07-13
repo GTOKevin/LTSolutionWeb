@@ -38,6 +38,7 @@ export function ViajesPage() {
     const theme = useTheme();
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const canViewViajes = usePermission(PERMISSIONS.VIAJES.VER);
     const canManageViajes = usePermission(PERMISSIONS.VIAJES.GESTIONAR);
     const { 
         loadingMessage, 
@@ -125,8 +126,6 @@ export function ViajesPage() {
         setViajeToReopen(item);
         setReopenDialogOpen(true);
     }, []);
-
-    const handleNoopViajeAction = useCallback(() => {}, []);
 
     const handleChangePage = useCallback((_: unknown, newPage: number) => {
         setPage(newPage);
@@ -284,8 +283,8 @@ export function ViajesPage() {
                     viajes={data?.items || []} 
                     isLoading={isLoading} 
                     canManage={canManageViajes}
-                    onViajeClick={canManageViajes ? handleView : handleNoopViajeAction}
-                    onViewViaje={canManageViajes ? handleView : undefined}
+                    onViajeClick={handleView}
+                    onViewViaje={canViewViajes ? handleView : undefined}
                     onEditViaje={canManageViajes ? handleEdit : undefined}
                     onDeleteViaje={canManageViajes ? handleDelete : undefined}
                 />
@@ -301,7 +300,7 @@ export function ViajesPage() {
                             onRowsPerPageChange={handleChangeRowsPerPage}
                             canManage={canManageViajes}
                             onEdit={canManageViajes ? handleEdit : undefined}
-                            onView={canManageViajes ? handleView : undefined}
+                            onView={canViewViajes ? handleView : undefined}
                             onDelete={canManageViajes ? handleDelete : undefined}
                             onExportExcel={canManageViajes ? handleExportExcel : undefined}
                             onExportPdf={canManageViajes ? handleExportPdf : undefined}
@@ -317,7 +316,7 @@ export function ViajesPage() {
                         onRowsPerPageChange={handleChangeRowsPerPage}
                         canManage={canManageViajes}
                         onEdit={canManageViajes ? handleEdit : undefined}
-                        onView={canManageViajes ? handleView : undefined}
+                        onView={canViewViajes ? handleView : undefined}
                         onDelete={canManageViajes ? handleDelete : undefined}
                         onExportExcel={canManageViajes ? handleExportExcel : undefined}
                         onExportPdf={canManageViajes ? handleExportPdf : undefined}

@@ -65,7 +65,6 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
 
     useEffect(() => {
         if (open) {
-            setErrorMessage(null);
             if (tipoProductoToEdit) {
                 reset({
                     nombre: tipoProductoToEdit.nombre,
@@ -73,16 +72,24 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
                     categoria: tipoProductoToEdit.categoria,
                     activo: tipoProductoToEdit.activo ?? true
                 });
-                setInputValue(tipoProductoToEdit.categoria);
             } else {
                 reset({
                     nombre: '',
                     tipo: 'PROD',
                     categoria: '',
-                    activo: true || undefined
+                    activo: true
                 });
-                setInputValue('');
             }
+
+            const nextInputValue = tipoProductoToEdit?.categoria ?? '';
+            const resetUiTimer = window.setTimeout(() => {
+                setErrorMessage(null);
+                setInputValue(nextInputValue);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, tipoProductoToEdit, reset]);
 

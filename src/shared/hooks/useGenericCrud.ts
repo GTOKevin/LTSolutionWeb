@@ -1,17 +1,28 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { useToast } from '@/shared/components/ui/Toast';
 import { notifyMutationError, type ApiMutationError } from '@/shared/utils/api-errors';
 
 export interface CrudApi<TCreateArgs, TUpdateArgs, TDeleteArgs> {
-    create: (args: TCreateArgs) => Promise<any>;
-    update: (args: TUpdateArgs) => Promise<any>;
-    delete: (args: TDeleteArgs) => Promise<any>;
+    create: (args: TCreateArgs) => Promise<unknown>;
+    update: (args: TUpdateArgs) => Promise<unknown>;
+    delete: (args: TDeleteArgs) => Promise<unknown>;
 }
 
-export function createGenericCrudHooks<TCreateArgs, TUpdateArgs, TDeleteArgs>(
-    api: CrudApi<TCreateArgs, TUpdateArgs, TDeleteArgs>,
+export function createGenericCrudHooks<
+    TCreateArgs,
+    TUpdateArgs,
+    TDeleteArgs,
+    TCreateResult = unknown,
+    TUpdateResult = unknown,
+    TDeleteResult = unknown,
+>(
+    api: {
+        create: (args: TCreateArgs) => Promise<TCreateResult>;
+        update: (args: TUpdateArgs) => Promise<TUpdateResult>;
+        delete: (args: TDeleteArgs) => Promise<TDeleteResult>;
+    },
     entityName: string,
-    queryKeyFactory?: (args: any) => (readonly unknown[])[]
+    queryKeyFactory?: (args: TCreateArgs | TUpdateArgs | TDeleteArgs) => QueryKey[]
 ) {
     const useCreate = () => {
         const queryClient = useQueryClient();

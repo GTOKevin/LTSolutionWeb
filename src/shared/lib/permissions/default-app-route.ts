@@ -6,7 +6,6 @@ const DEFAULT_APP_ROUTE = '/app/perfil';
 export function hasPermission(user: User | null, requiredPermission?: string | string[]): boolean {
     if (!requiredPermission) return true;
     if (!user?.permissions) return false;
-    if (user.role === 'Administrador') return true;
 
     if (Array.isArray(requiredPermission)) {
         return requiredPermission.some((permission) => user.permissions.includes(permission));
@@ -39,6 +38,7 @@ export function getDefaultAppRoute(user: User | null): string {
         },
         { route: '/app/clientes', permission: PERMISSIONS.CLIENTES.VER },
         { route: '/app/viajes', permission: PERMISSIONS.VIAJES.VER },
+        { route: '/app/gasto', permission: PERMISSIONS.CATALOGOS.GASTO.VER },
         { route: '/app/flota', permission: PERMISSIONS.FLOTA.VER },
         { route: '/app/colaboradores', permission: PERMISSIONS.COLABORADORES.VER },
     ];

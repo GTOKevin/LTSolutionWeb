@@ -30,7 +30,7 @@ export function LocationSearch({ onSelectLocation }: { onSelectLocation: (lat: n
         let active = true;
 
         if (inputValue === '') {
-            setOptions(options.length > 0 ? [] : options);
+            setOptions(prevOptions => (prevOptions.length > 0 ? [] : prevOptions));
             return undefined;
         }
 

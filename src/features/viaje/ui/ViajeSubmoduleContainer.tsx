@@ -28,13 +28,17 @@ export function ViajeSubmoduleContainer({
     const theme = useTheme();
     const [isFormExpanded, setIsFormExpanded] = useState(true);
     const formRef = useRef<HTMLDivElement>(null);
+    const resolvedFormExpanded = isEditing || isFormExpanded;
 
     useEffect(() => {
         if (isEditing) {
-            setIsFormExpanded(true);
-            setTimeout(() => {
+            const scrollTimer = window.setTimeout(() => {
                 formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
+
+            return () => {
+                window.clearTimeout(scrollTimer);
+            };
         }
     }, [isEditing]);
 
@@ -75,7 +79,7 @@ export function ViajeSubmoduleContainer({
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            borderBottom: isFormExpanded ? `1px solid ${theme.palette.divider}` : 'none',
+                            borderBottom: resolvedFormExpanded ? `1px solid ${theme.palette.divider}` : 'none',
                             cursor: 'pointer'
                         }}
                     >
@@ -116,11 +120,11 @@ export function ViajeSubmoduleContainer({
                                     setIsFormExpanded((prev) => !prev);
                                 }}
                             >
-                                {isFormExpanded ? <ExpandLess /> : <ExpandMore />}
+                                {resolvedFormExpanded ? <ExpandLess /> : <ExpandMore />}
                             </IconButton>
                         </Box>
                     </Box>
-                    <Collapse in={isFormExpanded} unmountOnExit>
+                    <Collapse in={resolvedFormExpanded} unmountOnExit>
                         <Box sx={{ p: 0 }}>
                             {renderForm(() => setIsFormExpanded(false))}
                         </Box>

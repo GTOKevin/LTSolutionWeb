@@ -31,7 +31,7 @@ import {
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
-import type { Viaje } from '@/entities/viaje/model/types';
+import type { Viaje, ViajeListItem } from '@/entities/viaje/model/types';
 
 interface ViajeSelectorModalProps {
     open: boolean;
@@ -114,7 +114,7 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    viajesDisponibles.map((viaje: any) => (
+                                    viajesDisponibles.map((viaje: ViajeListItem) => (
                                         <TableRow 
                                             key={viaje.viajeID}
                                             hover

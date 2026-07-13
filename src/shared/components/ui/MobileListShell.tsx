@@ -10,6 +10,7 @@ import {
     Typography,
     useTheme
 } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material/styles';
 import {
     Edit as EditIcon,
     Delete as DeleteIcon,
@@ -57,7 +58,7 @@ interface MobileListShellProps<T> {
     canPayment?: (item: T) => boolean;
     
     // Styling
-    getCardStyle?: (item: T, theme: any) => object;
+    getCardStyle?: (item: T, theme: Theme) => SxProps<Theme>;
 }
 
 export function MobileListShell<T>({

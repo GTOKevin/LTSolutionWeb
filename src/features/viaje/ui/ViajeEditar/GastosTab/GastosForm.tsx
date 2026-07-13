@@ -5,7 +5,7 @@ import {
     Checkbox, FormControlLabel
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateViajeGasto } from '@features/viaje/hooks/useViajeGastos';
 import { useViajeOptions } from '@features/viaje/hooks/useViajeOptions';
@@ -24,7 +24,7 @@ export function GastosForm({ viajeID }: GastosFormProps) {
     const createMutation = useCreateViajeGasto();
     const { tiposGasto, monedas } = useViajeOptions(true);
 
-    const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ViajeGastoFormData>({
+    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajeGastoFormData>({
         resolver: zodResolver(viajeGastoSchema),
         defaultValues: {
             gastoID: 0,
@@ -39,9 +39,9 @@ export function GastosForm({ viajeID }: GastosFormProps) {
         }
     });
 
-    const selectedGastoID = watch('gastoID');
-    const hasComprobante = watch('comprobante');
-    const isCombustible = watch('combustible');
+    const selectedGastoID = useWatch({ control, name: 'gastoID', defaultValue: 0 });
+    const hasComprobante = useWatch({ control, name: 'comprobante', defaultValue: false });
+    const isCombustible = useWatch({ control, name: 'combustible', defaultValue: false });
 
     useEffect(() => {
         if (selectedGastoID && tiposGasto && tiposGasto.length > 0) {

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import { estadoApi } from '@shared/api/estado.api';
 import { maestroApi } from '@shared/api/maestro.api';
-import { createMantenimientoSchema, type CreateMantenimientoSchema } from '../model/schema';
+import { createMantenimientoSchema, type CreateMantenimientoFormInput, type CreateMantenimientoSchema } from '../model/schema';
 import { useEffect, useState } from 'react';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
@@ -55,7 +55,7 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
     const listaEstados = estados?.data || [];
 
     // --- Form ---
-    const form = useForm({
+    const form = useForm<CreateMantenimientoFormInput, unknown, CreateMantenimientoSchema>({
         resolver: zodResolver(createMantenimientoSchema)
     });
 
@@ -67,9 +67,6 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
     // --- Effects ---
     useEffect(() => {
         if (open) {
-            setActiveTab(0);
-            setCreatedId(null);
-            setErrorMessage(null);
             if (mantenimientoToEdit) {
                 reset({
                     flotaID: mantenimientoToEdit.flotaID,
@@ -97,6 +94,16 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
                     estadoID: 0
                 });
             }
+
+            const resetUiTimer = window.setTimeout(() => {
+                setActiveTab(0);
+                setCreatedId(null);
+                setErrorMessage(null);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, mantenimientoToEdit, reset]);
 
@@ -111,7 +118,7 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
         }
     };
 
-    const handleError = (error: any) => {
+    const handleError = (error: unknown) => {
         const genericError = handleBackendErrors<CreateMantenimientoSchema>(error, setError);
         if (genericError) {
             setErrorMessage(genericError);
@@ -137,7 +144,7 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
             );
         } else {
             createMutation.mutate(data, {
-                onSuccess: (response: any) => handleSuccess(response?.data || response),
+                onSuccess: (response: number) => handleSuccess(response),
                 onError: handleError
             });
         }

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useForm, type UseFormReturn, type Resolver } from 'react-hook-form';
+import { useState, useEffect, useCallback } from 'react';
+import { useForm, useWatch, type UseFormReturn, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { useToast } from '@/shared/components/ui/Toast';
@@ -56,6 +56,12 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
     const { tractos, carretas } = options;
 
     const currentViajeId = viaje?.viajeID || createdViajeId || 0;
+    const resetUiState = useCallback(() => {
+        setActiveTab(TAB_INDICES.GENERAL);
+        setShowConfirmDialog(false);
+        setPendingData(null);
+        setCreatedViajeId(null);
+    }, []);
 
     const methods = useForm<CreateViajeDto>({
         resolver: zodResolver(viajeSchema) as Resolver<CreateViajeDto>,
@@ -65,11 +71,11 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
         }
     });
 
-    const { reset, watch, setValue } = methods;
+    const { reset, setValue } = methods;
     
-    const requiereEscolta = watch('requiereEscolta');
-    const selectedTractoID = watch('tractoID');
-    const selectedCarretaID = watch('carretaID');
+    const requiereEscolta = useWatch({ control: methods.control, name: 'requiereEscolta', defaultValue: false });
+    const selectedTractoID = useWatch({ control: methods.control, name: 'tractoID', defaultValue: 0 });
+    const selectedCarretaID = useWatch({ control: methods.control, name: 'carretaID', defaultValue: 0 });
 
     // Update Ejes when Tracto changes
     useEffect(() => {
@@ -193,12 +199,9 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
                     kmLlegadaBase: 0,
                 });
             }
-            setActiveTab(TAB_INDICES.GENERAL);
-            setShowConfirmDialog(false);
-            setPendingData(null);
-            setCreatedViajeId(null);
+            queueMicrotask(resetUiState);
         }
-    }, [open, viaje, reset, queryClient]);
+    }, [open, viaje, reset, queryClient, resetUiState]);
 
     const onSubmit = (data: CreateViajeDto) => {
         if (data.estadoID === ESTADO_VIAJE_ID.COMPLETADO || data.estadoID === ESTADO_VIAJE_ID.DESCARGANDO) {

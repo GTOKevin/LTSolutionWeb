@@ -36,15 +36,21 @@ export function EditRutaDialog({ open, onClose, viajeId, ruta }: EditRutaDialogP
 
     useEffect(() => {
         if (open && ruta) {
-            setFormData({
-                tipoPuntoId: ruta.tipoPuntoId,
-                nombreLugar: ruta.nombreLugar || '',
-                esOpcionPrincipal: ruta.esOpcionPrincipal,
-                // Format to datetime-local expected format (YYYY-MM-DDThh:mm)
-                fechaEstimadaLlegada: ruta.fechaEstimadaLlegada 
-                    ? dayjs(ruta.fechaEstimadaLlegada).format('YYYY-MM-DDTHH:mm') 
-                    : '',
-            });
+            const resetUiTimer = window.setTimeout(() => {
+                setFormData({
+                    tipoPuntoId: ruta.tipoPuntoId,
+                    nombreLugar: ruta.nombreLugar || '',
+                    esOpcionPrincipal: ruta.esOpcionPrincipal,
+                    // Format to datetime-local expected format (YYYY-MM-DDThh:mm)
+                    fechaEstimadaLlegada: ruta.fechaEstimadaLlegada
+                        ? dayjs(ruta.fechaEstimadaLlegada).format('YYYY-MM-DDTHH:mm')
+                        : '',
+                });
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, ruta]);
 

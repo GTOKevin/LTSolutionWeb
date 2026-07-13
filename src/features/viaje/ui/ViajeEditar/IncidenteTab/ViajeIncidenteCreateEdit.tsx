@@ -27,6 +27,20 @@ interface Props {
     onCancel?: () => void;
 }
 
+const getIncidenteFormDefaults = (incidente?: ViajeIncidente | null): ViajeIncidenteFormData => ({
+    fechaHora: incidente?.fechaHora ?? new Date().toISOString(),
+    tipoIncidenteID: incidente?.tipoIncidenteID ?? 0,
+    descripcion: incidente?.descripcion || '',
+    ubigeoID: incidente?.ubigeoID ?? 0,
+    lugar: incidente?.lugar || '',
+    rutaFoto: incidente?.rutaFoto || '',
+});
+
+const getIncidenteDateTimeDefaults = (incidente?: ViajeIncidente | null) => ({
+    date: incidente ? toInputDate(incidente.fechaHora) : getCurrentDateISO(),
+    time: incidente ? toInputTime(incidente.fechaHora) : getCurrentTimeISO(),
+});
+
 export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, onCancel }: Props) {
     const theme = useTheme();
     const createMutation = useCreateViajeIncidente();
@@ -52,31 +66,17 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
     });
 
     useEffect(() => {
-        if (incidente) {
-            setDate(toInputDate(incidente.fechaHora));
-            setTime(toInputTime(incidente.fechaHora));
+        const defaults = getIncidenteDateTimeDefaults(incidente);
+        reset(getIncidenteFormDefaults(incidente));
 
-            reset({
-                fechaHora: incidente.fechaHora,
-                tipoIncidenteID: incidente.tipoIncidenteID,
-                descripcion: incidente.descripcion || '',
-                ubigeoID: incidente.ubigeoID,
-                lugar: incidente.lugar || '',
-                rutaFoto: incidente.rutaFoto || ''
-            });
-        } else {
-            setDate(getCurrentDateISO());
-            setTime(getCurrentTimeISO());
-            
-            reset({
-                fechaHora: new Date().toISOString(),
-                tipoIncidenteID: 0,
-                descripcion: '',
-                ubigeoID: 0,
-                lugar: '',
-                rutaFoto: ''
-            });
-        }
+        const resetUiTimer = window.setTimeout(() => {
+            setDate(defaults.date);
+            setTime(defaults.time);
+        }, 0);
+
+        return () => {
+            window.clearTimeout(resetUiTimer);
+        };
     }, [incidente, reset]);
 
     useEffect(() => {
@@ -88,7 +88,7 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
                     setValue('fechaHora', combined, { shouldValidate: true });
                 }
             }
-        } catch (e) {
+        } catch {
             logger.error("Invalid date/time format");
         }
     }, [date, time, setValue]);
@@ -111,14 +111,7 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
             setDate(getCurrentDateISO());
             setTime(getCurrentTimeISO());
 
-            reset({
-                fechaHora: new Date().toISOString(),
-                tipoIncidenteID: 0,
-                descripcion: '',
-                ubigeoID: 0,
-                lugar: '',
-                rutaFoto: ''
-            });
+            reset(getIncidenteFormDefaults());
             
             if (onCancel) onCancel();
         } catch (error) {

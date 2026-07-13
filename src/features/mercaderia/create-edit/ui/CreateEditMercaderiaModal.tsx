@@ -45,13 +45,12 @@ export function CreateEditMercaderiaModal({ open, onClose, mercaderiaToEdit, onS
         resolver: zodResolver(createMercaderiaSchema),
         defaultValues: {
             nombre: '',
-            activo: true || undefined
+            activo: true
         }
     });
 
     useEffect(() => {
         if (open) {
-            setErrorMessage(null);
             if (mercaderiaToEdit) {
                 reset({
                     nombre: mercaderiaToEdit.nombre,
@@ -63,6 +62,14 @@ export function CreateEditMercaderiaModal({ open, onClose, mercaderiaToEdit, onS
                     activo: true
                 });
             }
+
+            const resetUiTimer = window.setTimeout(() => {
+                setErrorMessage(null);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, mercaderiaToEdit, reset]);
 

@@ -8,7 +8,6 @@ import type { Flota } from '@entities/flota/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { SECCION_MAESTRO } from '@/shared/constants/maestro';
 import { useCreateFlota, useUpdateFlota } from './useFlotaCrud';
-import type { AxiosError } from 'axios';
 
 interface UseFlotaFormProps {
     flotaToEdit?: Flota | null;
@@ -81,9 +80,6 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
     // --- Effects ---
     useEffect(() => {
         if (open) {
-            setActiveTab(0);
-            setCreatedFlotaId(null);
-            setErrorMessage(null);
             if (flotaToEdit) {
                 reset({
                     tipoFlota: flotaToEdit.tipoFlota,
@@ -125,18 +121,28 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
                     activo: true,
                 });
             }
+
+            const resetUiTimer = window.setTimeout(() => {
+                setActiveTab(0);
+                setCreatedFlotaId(null);
+                setErrorMessage(null);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, flotaToEdit, reset]);
 
     // --- Mutations ---
-    const handleError = (error: AxiosError | any) => {
+    const handleError = (error: unknown) => {
         const genericError = handleBackendErrors<CreateFlotaSchema>(error, setError);
         if (genericError) {
             setErrorMessage(genericError);
         }
     };
 
-    const handleSuccess = (id: any) => {
+    const handleSuccess = (id: number) => {
         onSuccess(id);
         if (!isEdit && !createdFlotaId) {
             setCreatedFlotaId(id);

@@ -26,9 +26,8 @@ export const formatCurrency = (amount: number, currencyCodeOrSymbol = 'USD'): st
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         }).format(amount);
-    } catch (e) {
+    } catch {
         // Fallback en caso de que se pase un string que no sea un código ISO válido
         return `${currencyCodeOrSymbol} ${amount.toFixed(2)}`;
     }
 };
-

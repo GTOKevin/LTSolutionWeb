@@ -1,35 +1,28 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { useQueryClient } from '@tanstack/react-query';
 import { env } from '@/shared/config/env';
 import { useAuthStore } from '@/shared/store/auth.store';
-import { useToast } from '@/shared/components/ui/Toast';
 import { VIAJE_QUERY_KEYS } from '@/features/viaje/model/query-keys';
 import { NOTIFICACION_KEYS } from '@/entities/notificacion/api/notificacion.api';
 import { logger } from '../utils/logger';
 
 export function useSignalR() {
-    const [connection, setConnection] = useState<HubConnection | null>(null);
     const queryClient = useQueryClient();
     const token = useAuthStore(state => state.token);
-    const { showToast } = useToast();
 
-    useEffect(() => {
-        if (!token) return;
+    const connection = useMemo<HubConnection | null>(() => {
+        if (!token) {
+            return null;
+        }
 
-        const newConnection = new HubConnectionBuilder()
+        return new HubConnectionBuilder()
             .withUrl(`${env.imgUrlBase}/hubs/dispatch`, {
                 accessTokenFactory: () => token
             })
             .withAutomaticReconnect()
             .configureLogging(LogLevel.Information)
             .build();
-
-        setConnection(newConnection);
-
-        return () => {
-            newConnection.stop();
-        };
     }, [token]);
 
     useEffect(() => {
@@ -49,18 +42,19 @@ export function useSignalR() {
         connection.on('ReceiveNotification', handleReceiveNotification);
 
         if (connection.state === 'Disconnected') {
-            connection.start()
+            void connection.start()
                 .then(() => {
                     logger.log('SignalR Connected!');
                 })
-                .catch(e => logger.error('Connection failed: ', e));
+                .catch((error: unknown) => logger.error('Connection failed: ', error));
         }
 
         return () => {
             connection.off('ViajeActualizado', handleViajeActualizado);
             connection.off('ReceiveNotification', handleReceiveNotification);
+            void connection.stop();
         };
-    }, [connection, queryClient, showToast]);
+    }, [connection, queryClient]);
 
     return connection;
 }

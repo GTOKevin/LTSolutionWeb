@@ -1,6 +1,7 @@
 import { AccountCircleOutlined } from '@mui/icons-material';
 import { Card, CardContent, Chip, Stack, Typography, useTheme } from '@mui/material';
-import { Field, SectionTitle, cardSx } from './ProfileShared';
+import { Field, SectionTitle } from './ProfileShared';
+import { cardSx } from './ProfileShared.helpers';
 
 interface ProfileCollaboratorSectionProps {
     nombreCompleto: string;
@@ -34,4 +35,3 @@ export function ProfileCollaboratorSection({ nombreCompleto, rolColaborador, tel
         </Card>
     );
 }
-

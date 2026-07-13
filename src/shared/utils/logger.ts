@@ -1,20 +1,20 @@
 export const logger = {
-    error: (message: string, ...optionalParams: any[]) => {
+    error: (message: string, ...optionalParams: unknown[]) => {
         if (import.meta.env.DEV) {
             console.error(message, ...optionalParams);
         }
     },
-    warn: (message: string, ...optionalParams: any[]) => {
+    warn: (message: string, ...optionalParams: unknown[]) => {
         if (import.meta.env.DEV) {
             console.warn(message, ...optionalParams);
         }
     },
-    info: (message: string, ...optionalParams: any[]) => {
+    info: (message: string, ...optionalParams: unknown[]) => {
         if (import.meta.env.DEV) {
             console.info(message, ...optionalParams);
         }
     },
-    log: (message: string, ...optionalParams: any[]) => {
+    log: (message: string, ...optionalParams: unknown[]) => {
         if (import.meta.env.DEV) {
             console.log(message, ...optionalParams);
         }

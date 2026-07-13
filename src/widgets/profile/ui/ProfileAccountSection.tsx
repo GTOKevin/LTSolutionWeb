@@ -1,7 +1,8 @@
 import { BadgeOutlined } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Stack, Typography, useTheme } from '@mui/material';
 import type { ReactNode } from 'react';
-import { Field, SectionTitle, cardSx, formatDate, formatDateTime } from './ProfileShared';
+import { Field, SectionTitle } from './ProfileShared';
+import { cardSx, formatDate, formatDateTime } from './ProfileShared.helpers';
 
 interface ProfileAccountSectionProps {
     nombreUsuario: string;
@@ -53,4 +54,3 @@ export function ProfileAccountSection(props: ProfileAccountSectionProps) {
         </Card>
     );
 }
-

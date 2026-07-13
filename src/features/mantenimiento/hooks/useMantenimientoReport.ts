@@ -7,6 +7,14 @@ import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api'
 import { formatDateLong } from '@shared/utils/date-utils';
 import type { MantenimientoParams, Mantenimiento, MantenimientoDetalle } from '@entities/mantenimiento/model/types';
 
+type ExcelStyle = Partial<ExcelJS.Style>;
+type TableRow = (string | number)[];
+type JsPdfWithAutoTable = jsPDF & {
+    lastAutoTable?: {
+        finalY: number;
+    };
+};
+
 export const useMantenimientoReport = () => {
     
     const fetchReportData = async (mantenimientoId: number) => {
@@ -29,7 +37,7 @@ export const useMantenimientoReport = () => {
         }
     };
 
-    const generateFileName = (mantenimiento: any, ext: string) => {
+    const generateFileName = (mantenimiento: Mantenimiento | null | undefined, ext: string) => {
         const tipo = mantenimiento?.tipoServicio?.nombre || 'General';
         const placa = mantenimiento?.flota?.placa || 'SinPlaca';
         const fecha = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -50,17 +58,17 @@ export const useMantenimientoReport = () => {
             const worksheet = workbook.addWorksheet('Reporte Mantenimiento');
 
             // --- Header Styles ---
-            const headerStyle = {
+            const headerStyle: ExcelStyle = {
                 font: { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 },
                 fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }, // Excel Green
                 alignment: { horizontal: 'center', vertical: 'middle' },
                 border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-            } as any;
+            };
 
-            const dataStyle = {
+            const dataStyle: ExcelStyle = {
                 border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
                 alignment: { vertical: 'middle' }
-            } as any;
+            };
 
             // --- Title ---
             worksheet.mergeCells('A1:J1');
@@ -257,7 +265,7 @@ export const useMantenimientoReport = () => {
 
             // --- Details Table ---
             const tableColumn = ["Categoría", "Producto", "Descripción", "Cant.", "Mon.", "Costo", "IGV", "Total"];
-            const tableRows: any[] = [];
+            const tableRows: TableRow[] = [];
 
             reportData.detalles.forEach(item => {
                 const row = [
@@ -265,7 +273,7 @@ export const useMantenimientoReport = () => {
                     item.tipoProducto?.nombre || '',
                     item.descripcion || '',
                     item.cantidad,
-                    item.moneda?.codigo,
+                    item.moneda?.codigo || '',
                     item.costo.toFixed(2),
                     item.montoIGV.toFixed(2),
                     item.total.toFixed(2)
@@ -292,7 +300,7 @@ export const useMantenimientoReport = () => {
                 }
             });
 
-            const finalY = (doc as any).lastAutoTable.finalY + 10;
+            const finalY = ((doc as JsPdfWithAutoTable).lastAutoTable?.finalY ?? startY) + 10;
             
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
@@ -319,17 +327,17 @@ export const useMantenimientoReport = () => {
             const worksheet = workbook.addWorksheet('Reporte Total Mantenimientos');
 
             // --- Header Styles ---
-            const headerStyle = {
+            const headerStyle: ExcelStyle = {
                 font: { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 },
                 fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }, // Excel Green
                 alignment: { horizontal: 'center', vertical: 'middle' },
                 border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-            } as any;
+            };
 
-            const dataStyle = {
+            const dataStyle: ExcelStyle = {
                 border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
                 alignment: { vertical: 'middle' }
-            } as any;
+            };
 
             // --- Title ---
             worksheet.mergeCells('A1:I1');
@@ -446,7 +454,7 @@ export const useMantenimientoReport = () => {
             doc.setTextColor(46, 125, 50); // Green
             doc.text('REPORTE TOTAL DE MANTENIMIENTOS', 148, 15, { align: 'center' });
 
-            let startY = 25;
+            const startY = 25;
 
             // --- Data Table ---
             const currencies = Object.keys(reportData.totalsByCurrency || {});
@@ -507,7 +515,7 @@ export const useMantenimientoReport = () => {
                 columnStyles: columnStyles
             });
 
-            const finalY = (doc as any).lastAutoTable.finalY + 10;
+            const finalY = ((doc as JsPdfWithAutoTable).lastAutoTable?.finalY ?? startY) + 10;
             
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');

@@ -3,6 +3,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { Badge, LocalShipping, RvHookup, WarningAmber } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
+import type { ViajeWizardFormData } from '../../model/schema';
 
 interface Props {
     options: {
@@ -14,10 +15,10 @@ interface Props {
 
 export function Step3Recursos({ options }: Props) {
     const theme = useTheme();
-    const { register, control, setValue, formState: { errors } } = useFormContext();
+    const { register, control, setValue, formState: { errors } } = useFormContext<ViajeWizardFormData>();
     const { tractos, carretas, colaboradores } = options;
 
-    const handleTractoChange = (tractoID: number, onChangeField: (...event: any[]) => void) => {
+    const handleTractoChange = (tractoID: number, onChangeField: (value: number) => void) => {
         onChangeField(tractoID); // Update form state
         if (tractoID && tractos) {
             const selectedTracto = tractos.find(t => t.id === tractoID);
@@ -28,7 +29,7 @@ export function Step3Recursos({ options }: Props) {
         }
     };
 
-    const handleCarretaChange = (carretaID: number, onChangeField: (...event: any[]) => void) => {
+    const handleCarretaChange = (carretaID: number, onChangeField: (value: number) => void) => {
         onChangeField(carretaID); // Update form state
         if (carretaID && carretas) {
             const selectedCarreta = carretas.find(c => c.id === carretaID);

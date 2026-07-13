@@ -6,6 +6,16 @@ import type { RolColaborador } from '@entities/rol-colaborador/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { useCreateRolColaborador, useUpdateRolColaborador } from './useRolColaboradorCrud';
 
+type ConflictApiError = {
+    response?: {
+        status?: number;
+    };
+};
+
+function isConflictApiError(error: unknown): error is ConflictApiError {
+    return typeof error === 'object' && error !== null && 'response' in error;
+}
+
 interface UseRolColaboradorFormProps {
     open: boolean;
     onClose: () => void;
@@ -34,7 +44,6 @@ export function useRolColaboradorForm({ open, onClose, onSuccess, rolToEdit }: U
 
     useEffect(() => {
         if (open) {
-            setErrorMessage(null);
             if (rolToEdit) {
                 reset({
                     nombre: rolToEdit.nombre,
@@ -48,6 +57,14 @@ export function useRolColaboradorForm({ open, onClose, onSuccess, rolToEdit }: U
                     activo: true
                 });
             }
+
+            const resetUiTimer = window.setTimeout(() => {
+                setErrorMessage(null);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, rolToEdit, reset]);
 
@@ -60,8 +77,8 @@ export function useRolColaboradorForm({ open, onClose, onSuccess, rolToEdit }: U
                         onSuccess();
                         onClose();
                     },
-                    onError: (error: any) => {
-                        if (error?.response?.status === 409) {
+                    onError: (error: unknown) => {
+                        if (isConflictApiError(error) && error.response?.status === 409) {
                             setErrorMessage('El nombre del rol ya se encuentra registrado.');
                         } else {
                             const genericError = handleBackendErrors<RolColaboradorSchema>(error, setError);
@@ -80,8 +97,8 @@ export function useRolColaboradorForm({ open, onClose, onSuccess, rolToEdit }: U
                         onSuccess();
                         onClose();
                     },
-                    onError: (error: any) => {
-                        if (error?.response?.status === 409) {
+                    onError: (error: unknown) => {
+                        if (isConflictApiError(error) && error.response?.status === 409) {
                             setErrorMessage('El nombre del rol ya se encuentra registrado.');
                         } else {
                             const genericError = handleBackendErrors<RolColaboradorSchema>(error, setError);

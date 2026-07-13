@@ -1,7 +1,7 @@
 import { Box, Typography, Checkbox, FormControlLabel, CircularProgress, Alert, Paper, alpha, useTheme, Grid } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { permisoApi } from '@/entities/permiso/api/permiso.api';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 interface PermisosMatrixProps {
     rolId?: number;
@@ -12,7 +12,9 @@ interface PermisosMatrixProps {
 
 export function PermisosMatrix({ rolId, selectedIds, onChange, disabled }: PermisosMatrixProps) {
     const theme = useTheme();
+    const hydratedRoleKeyRef = useRef<string | null>(null);
     
+
     const { data: groupedPermisos, isLoading, error } = useQuery({
         queryKey: ['permisos-grouped', rolId],
         queryFn: () => rolId ? permisoApi.getGroupedByRol(rolId) : permisoApi.getGrouped(),
@@ -37,7 +39,18 @@ export function PermisosMatrix({ rolId, selectedIds, onChange, disabled }: Permi
     );
 
     useEffect(() => {
+        hydratedRoleKeyRef.current = null;
+    }, [rolId]);
+
+    useEffect(() => {
         if (!assignedIdsFromRole) {
+            return;
+        }
+
+        const assignedIdsKey = assignedIdsFromRole.join(',');
+        const hydrationKey = `${rolId ?? 'new'}:${assignedIdsKey}`;
+
+        if (hydratedRoleKeyRef.current === hydrationKey) {
             return;
         }
 
@@ -48,7 +61,9 @@ export function PermisosMatrix({ rolId, selectedIds, onChange, disabled }: Permi
         if (hasDifferences) {
             onChange([...assignedIdsFromRole]);
         }
-    }, [assignedIdsFromRole, normalizedSelectedIds, onChange]);
+
+        hydratedRoleKeyRef.current = hydrationKey;
+    }, [assignedIdsFromRole, normalizedSelectedIds, onChange, rolId]);
 
     if (isLoading) {
         return (

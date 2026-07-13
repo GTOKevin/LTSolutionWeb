@@ -36,10 +36,6 @@ export function useClienteForm({ open, onClose, onSuccess, clienteToEdit }: UseC
 
     useEffect(() => {
         if (open) {
-            setActiveTab(0);
-            setCreatedClientId(null);
-            setErrorMessage(null);
-
             if (clienteToEdit) {
                 reset({
                     ruc: clienteToEdit.ruc,
@@ -63,6 +59,16 @@ export function useClienteForm({ open, onClose, onSuccess, clienteToEdit }: UseC
                     activo: true
                 });
             }
+
+            const resetUiTimer = window.setTimeout(() => {
+                setActiveTab(0);
+                setCreatedClientId(null);
+                setErrorMessage(null);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, clienteToEdit, reset]);
 
@@ -76,7 +82,7 @@ export function useClienteForm({ open, onClose, onSuccess, clienteToEdit }: UseC
         }
     };
 
-    const handleError = (error: any) => {
+    const handleError = (error: unknown) => {
         const genericError = handleBackendErrors<CreateClienteSchema>(error, setError);
         if (genericError) {
             setErrorMessage(genericError);

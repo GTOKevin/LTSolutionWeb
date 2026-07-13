@@ -134,7 +134,7 @@ export function MantenimientoTable({
                                         size="small" 
                                         onClick={(e) => { 
                                             e.stopPropagation(); 
-                                            onReopen && onReopen(item); 
+                                            onReopen?.(item); 
                                         }}
                                         sx={{ 
                                             bgcolor: alpha(theme.palette.warning.main, 0.1),

@@ -1,7 +1,8 @@
 import { ArrowOutwardRounded, LocalShippingOutlined, RouteOutlined } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, IconButton, Stack, Typography, alpha, useTheme } from '@mui/material';
 import type { MyProfileRecentTripDto } from '@entities/profile/model/types';
-import { SectionTitle, TripStat, cardSx, formatDate, tripArrowSx } from './ProfileShared';
+import { SectionTitle, TripStat } from './ProfileShared';
+import { cardSx, formatDate, tripArrowSx } from './ProfileShared.helpers';
 
 interface ProfileRecentTripsSectionProps {
     viajes: MyProfileRecentTripDto[];
@@ -119,4 +120,3 @@ export function ProfileRecentTripsSection({ viajes }: ProfileRecentTripsSectionP
         </Card>
     );
 }
-

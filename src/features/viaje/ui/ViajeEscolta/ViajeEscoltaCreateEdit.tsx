@@ -7,7 +7,7 @@ import {
     Save as SaveIcon
 } from '@mui/icons-material';
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { CreateViajeEscoltaDto, ViajeEscolta } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
@@ -32,7 +32,7 @@ export function ViajeEscoltaCreateEdit({ viajeId, flotas, colaboradores, escolta
     const isEditing = !!escolta;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, handleSubmit, reset, watch, setValue, setError, formState: { errors } } = useForm<ViajeEscoltaFormData>({
+    const { control, handleSubmit, reset, setValue, setError, formState: { errors } } = useForm<ViajeEscoltaFormData>({
         resolver: zodResolver(viajeEscoltaSchema),
         defaultValues: {
             tercero: false,
@@ -43,7 +43,11 @@ export function ViajeEscoltaCreateEdit({ viajeId, flotas, colaboradores, escolta
         }
     });
 
-    const isTercero = watch('tercero');
+    const isTercero = useWatch({
+        control,
+        name: 'tercero',
+        defaultValue: false
+    });
 
     useEffect(() => {
         if (escolta) {

@@ -29,7 +29,8 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { useAuthStore } from '@shared/store/auth.store';
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, type MouseEvent } from 'react';
+import { hasPermission as hasUserPermission } from '@shared/lib/permissions/default-app-route';
 import { SIDEBAR_MENU, type MenuItem } from '../model/sidebar.config';
 import { SelfChangePasswordModal } from '@features/auth/change-password/ui/SelfChangePasswordModal';
 
@@ -44,9 +45,7 @@ export function Sidebar() {
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [changePasswordOpen, setChangePasswordOpen] = useState(false);
-    const [isNavigating, setIsNavigating] = useState(false);
-    const [pendingPath, setPendingPath] = useState<string | null>(null);
-    const [navigationLabel, setNavigationLabel] = useState('');
+    const [pendingNavigation, setPendingNavigation] = useState<{ path: string; label: string } | null>(null);
     const openMenu = Boolean(anchorEl);
     const userInitials = useMemo(() => {
         const baseValue = user?.name || user?.email || 'Usuario';
@@ -61,29 +60,19 @@ export function Sidebar() {
     }, [user?.email, user?.name]);
 
     const navigationTimeoutRef = useRef<number | null>(null);
-
-    // Permission check helper logic
-    const hasPermission = (requiredPermission?: string | string[]) => {
-        if (!requiredPermission) return true;
-        if (!user || !user.permissions) return false;
-        if (user.role === 'Administrador') return true;
-        
-        if (Array.isArray(requiredPermission)) {
-            return requiredPermission.some(p => user.permissions?.includes(p));
-        }
-        return user.permissions.includes(requiredPermission);
-    };
+    const isNavigating = pendingNavigation !== null && location.pathname !== pendingNavigation.path;
+    const navigationLabel = pendingNavigation?.label ?? '';
 
     // Filter menu items based on permissions
     const filteredMenu = useMemo(() => {
         return SIDEBAR_MENU.reduce<MenuItem[]>((acc, item) => {
             // Check if parent has permission
-            if (!hasPermission(item.permission)) return acc;
+            if (!hasUserPermission(user, item.permission)) return acc;
 
             // If it has children, filter them too
             if (item.children) {
                 const filteredChildren = item.children.filter(child => 
-                    hasPermission(child.permission)
+                    hasUserPermission(user, child.permission)
                 );
                 
                 // If after filtering children none remain, and it was a category (no path), skip it
@@ -127,18 +116,6 @@ export function Sidebar() {
         }));
     };
 
-    useEffect(() => {
-        if (isNavigating && pendingPath && location.pathname === pendingPath) {
-            setIsNavigating(false);
-            setPendingPath(null);
-            setNavigationLabel('');
-            if (navigationTimeoutRef.current) {
-                clearTimeout(navigationTimeoutRef.current);
-                navigationTimeoutRef.current = null;
-            }
-        }
-    }, [isNavigating, pendingPath, location.pathname]);
-
     // Cleanup timeout on unmount
     useEffect(() => {
         return () => {
@@ -156,19 +133,15 @@ export function Sidebar() {
             clearTimeout(navigationTimeoutRef.current);
         }
 
-        setIsNavigating(true);
-        setPendingPath(path);
-        setNavigationLabel(label);
+        setPendingNavigation({ path, label });
         navigate(path);
         
         navigationTimeoutRef.current = window.setTimeout(() => {
-            setIsNavigating(false);
-            setPendingPath(null);
-            setNavigationLabel('');
+            setPendingNavigation(null);
         }, 4000);
     };
 
-    const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    const handleMenuClick = (event: MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
 
@@ -348,7 +321,7 @@ export function Sidebar() {
             <Box sx={{ 
                 p: 3, 
                 display: 'flex', 
-                items: 'center', 
+                alignItems: 'center', 
                 gap: 1.5
             }}>
                 <Box sx={{

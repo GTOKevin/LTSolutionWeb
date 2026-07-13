@@ -10,7 +10,6 @@ import type { Colaborador } from '@entities/colaborador/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { SECCION_MAESTRO } from '@/shared/constants/maestro';
 import { useCreateColaborador, useUpdateColaborador } from './useColaboradorCrud';
-import type { AxiosError } from 'axios';
 
 interface UseColaboradorFormProps {
     colaboradorToEdit?: Colaborador | null;
@@ -76,9 +75,6 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
     // --- Effects ---
     useEffect(() => {
         if (open) {
-            setActiveTab(0);
-            setCreatedId(null);
-            setErrorMessage(null);
             if (colaboradorToEdit) {
                 reset({
                     rolColaboradorID: colaboradorToEdit.rolColaboradorID,
@@ -112,11 +108,21 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
                     activo: true
                 });
             }
+
+            const resetUiTimer = window.setTimeout(() => {
+                setActiveTab(0);
+                setCreatedId(null);
+                setErrorMessage(null);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, colaboradorToEdit, reset]);
 
     // --- Mutations ---
-    const handleError = (error: AxiosError | any) => {
+    const handleError = (error: unknown) => {
         const genericError = handleBackendErrors<CreateColaboradorSchema>(error, setError);
         if (genericError) {
             setErrorMessage(genericError);

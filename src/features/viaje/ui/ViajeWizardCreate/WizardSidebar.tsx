@@ -1,8 +1,9 @@
 import { Box, Typography, Paper, Divider, Stack } from '@mui/material';
-import { useFormContext } from 'react-hook-form';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { InfoOutlined } from '@mui/icons-material';
 import { ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
 import type { SelectItem } from '@/shared/model/types';
+import type { ViajeWizardFormData } from '../../model/schema';
 
 interface SidebarProps {
     activeStep: number;
@@ -13,13 +14,13 @@ interface SidebarProps {
 }
 
 export function WizardSidebar({ activeStep, totalSteps, options }: SidebarProps) {
-    const { watch } = useFormContext();
+    const { control } = useFormContext<ViajeWizardFormData>();
     
     // Watch relevant fields for the summary
-    const clienteID = watch('clienteID');
-    const origenID = watch('origenID');
-    const estadoID = watch('estadoID');
-    const peso = watch('peso');
+    const clienteID = useWatch({ control, name: 'clienteID', defaultValue: 0 });
+    const origenID = useWatch({ control, name: 'origenID', defaultValue: 0 });
+    const estadoID = useWatch({ control, name: 'estadoID', defaultValue: 0 });
+    const peso = useWatch({ control, name: 'peso' });
 
     const clienteSeleccionado = options.clientes?.find(c => c.id === clienteID);
     const nombreCliente = clienteSeleccionado ? clienteSeleccionado.text : null;

@@ -6,7 +6,8 @@ import {
     PhoneIphoneOutlined,
     VerifiedUserOutlined,
 } from '@mui/icons-material';
-import { MetaLine, cardSx, heroActionSx } from './ProfileShared';
+import { MetaLine } from './ProfileShared';
+import { cardSx, heroActionSx } from './ProfileShared.helpers';
 
 interface ProfileHeroProps {
     title: string;

@@ -13,9 +13,8 @@ import {
     alpha,
     Stack
 } from '@mui/material';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { usuarioApi } from '@entities/usuario/api/usuario.api';
 import { useState, useEffect, useMemo } from 'react';
@@ -27,10 +26,8 @@ import {
     CheckCircle as CheckCircleIcon,
     RadioButtonUnchecked as CircleIcon
 } from '@mui/icons-material';
-
-import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
-
 import { useToast } from '@/shared/components/ui/Toast';
+import { changePasswordSchema, type ChangePasswordSchema } from '../model/schema';
 
 interface ChangePasswordModalProps {
     open: boolean;
@@ -40,21 +37,26 @@ interface ChangePasswordModalProps {
     onSuccess: () => void;
 }
 
-const changePasswordSchema = z.object({
-    password: z.string()
-        .min(8, 'La contraseña debe tener al menos 8 caracteres')
-        .max(20, 'La contraseña no debe exceder 20 caracteres')
-        .regex(INPUT_VAL.PASSWORD_SIN_ESPACIOS, ERROR_MESSAGES.PASSWORD_SIN_ESPACIOS)
-        .regex(INPUT_VAL.PASSWORD_AL_MENOS_UNA_LETRA, ERROR_MESSAGES.PASSWORD_AL_MENOS_UNA_LETRA)
-        .regex(INPUT_VAL.PASSWORD_AL_MENOS_UN_NUMERO, ERROR_MESSAGES.PASSWORD_AL_MENOS_UN_NUMERO)
-        .regex(INPUT_VAL.PASSWORD_AL_MENOS_UN_ESPECIAL, ERROR_MESSAGES.PASSWORD_AL_MENOS_UN_ESPECIAL),
-    confirmPassword: z.string().min(1, 'Confirmar contraseña es requerida')
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Las contraseñas no coinciden",
-    path: ["confirmPassword"],
-});
+type ChangePasswordApiFieldError = {
+    field?: string;
+    message: string;
+};
 
-type ChangePasswordSchema = z.infer<typeof changePasswordSchema>;
+type ChangePasswordApiErrorData = {
+    detail?: string;
+    errors?: ChangePasswordApiFieldError[];
+};
+
+type ChangePasswordApiError = {
+    response?: {
+        status?: number;
+        data?: ChangePasswordApiErrorData;
+    };
+};
+
+function isChangePasswordApiError(error: unknown): error is ChangePasswordApiError {
+    return typeof error === 'object' && error !== null && 'response' in error;
+}
 
 export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, onSuccess }: ChangePasswordModalProps) {
     const theme = useTheme();
@@ -66,7 +68,7 @@ export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, o
         register,
         handleSubmit,
         reset,
-        watch,
+        control,
         setError,
         formState: { errors, isSubmitting }
     } = useForm<ChangePasswordSchema>({
@@ -74,7 +76,11 @@ export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, o
         mode: 'onChange'
     });
 
-    const password = watch('password', '');
+    const password = useWatch({
+        control,
+        name: 'password',
+        defaultValue: ''
+    });
 
     // Password Strength Logic
     const strength = useMemo(() => {
@@ -99,10 +105,16 @@ export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, o
 
     useEffect(() => {
         if (open) {
-            setErrorMessage(null);
             reset({ password: '', confirmPassword: '' });
-            setShowPassword(false);
-            setShowConfirmPassword(false);
+            const resetUiTimer = window.setTimeout(() => {
+                setErrorMessage(null);
+                setShowPassword(false);
+                setShowConfirmPassword(false);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, reset]);
 
@@ -119,12 +131,14 @@ export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, o
             onSuccess();
             onClose();
         },
-        onError: (error: any) => {
+        onError: (error: unknown) => {
             console.error(error);
-            const apiError = error.response?.data;
-            if (error.response?.status === 400 && apiError?.errors && Array.isArray(apiError.errors)) {
+            const apiError = isChangePasswordApiError(error) ? error.response?.data : undefined;
+            const statusCode = isChangePasswordApiError(error) ? error.response?.status : undefined;
+
+            if (statusCode === 400 && apiError?.errors && Array.isArray(apiError.errors)) {
                 let hasFieldErrors = false;
-                apiError.errors.forEach((err: any) => {
+                apiError.errors.forEach((err) => {
                     if (err.field === 'NuevaClave') {
                         setError('password', {
                             type: 'server',
@@ -135,7 +149,7 @@ export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, o
                 });
                 if (hasFieldErrors) return;
             }
-            setErrorMessage(apiError?.detail || "Error al cambiar la contraseña");
+            setErrorMessage(apiError?.detail || 'Error al cambiar la contraseña');
         }
     });
 
