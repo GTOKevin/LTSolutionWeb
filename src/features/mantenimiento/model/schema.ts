@@ -55,6 +55,7 @@ export const createMantenimientoSchema = z.object({
 });
 
 export type CreateMantenimientoSchema = z.infer<typeof createMantenimientoSchema>;
+export type CreateMantenimientoFormInput = z.input<typeof createMantenimientoSchema>;
 
 export const createMantenimientoDetalleSchema = z.object({
     tipoProductoID: z.coerce.number().min(1, 'Tipo de Producto es requerido'),
@@ -71,3 +72,4 @@ export const createMantenimientoDetalleSchema = z.object({
 });
 
 export type CreateMantenimientoDetalleSchema = z.infer<typeof createMantenimientoDetalleSchema>;
+export type CreateMantenimientoDetalleFormInput = z.input<typeof createMantenimientoDetalleSchema>;

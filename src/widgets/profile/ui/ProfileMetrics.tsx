@@ -1,6 +1,6 @@
 import { Card, CardContent, Stack, Typography, Box, alpha, useTheme } from '@mui/material';
 import { LocalShippingOutlined, TrendingUpRounded } from '@mui/icons-material';
-import { cardSx, formatDate, metricLabelDarkSx, metricLabelSx } from './ProfileShared';
+import { cardSx, formatDate, metricLabelDarkSx, metricLabelSx } from './ProfileShared.helpers';
 
 interface ProfileMetricsProps {
     viajesCount: number;
@@ -78,4 +78,3 @@ export function ProfileMetrics({ viajesCount, ultimaFechaViaje, actividadPercent
         </Stack>
     );
 }
-

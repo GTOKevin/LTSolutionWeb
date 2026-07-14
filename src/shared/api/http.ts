@@ -2,14 +2,9 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { env } from '../config/env';
 import { useAuthStore } from '../store/auth.store';
 import { authApi } from '@entities/auth/api/auth.api';
+import type { ApiError } from '@/shared/model/types';
 
-export interface ApiError {
-    message: string;
-    success: boolean;
-    data: unknown;
-    errors?: unknown;
-    detail?: string; // Kept for backwards compatibility
-}
+export type { ApiError } from '@/shared/model/types';
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
     _retry?: boolean;

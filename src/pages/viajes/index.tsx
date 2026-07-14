@@ -17,14 +17,12 @@ import {
     ViewList
 } from '@mui/icons-material';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import type { AxiosError } from 'axios';
 import { viajeApi } from '@entities/viaje/api/viaje.api';
-import { ViajesFilters ,ViajesMobileList, ViajesTable} from '@/features/viaje/ui/Viaje/Index';
+import { ViajesFilters, ViajesMobileList, ViajesTable } from '@features/viaje/ui/Viaje';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { LoadingModal } from '@shared/components/ui/LoadingModal';
 import { StatsCard } from '@shared/components/ui/StatsCard';
 import type { ViajeListItem, ViajeFilters as ViajeFiltersType } from '@entities/viaje/model/types';
-import type { ApiError } from '@/shared/api/http';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
 import { useToast } from '@/shared/components/ui/Toast';
 import { useViajeReports } from '@/features/viaje/hooks/useViajeReports';
@@ -33,12 +31,16 @@ import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
 
 import { useNavigate } from 'react-router-dom';
+import { getErrorMessage, type ApiMutationError } from '@/shared/utils/api-errors';
+import { logger } from '@/shared/utils/logger';
 
 export function ViajesPage() {
     const theme = useTheme();
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const canViewViajes = usePermission(PERMISSIONS.VIAJES.VER);
     const canManageViajes = usePermission(PERMISSIONS.VIAJES.GESTIONAR);
+    const canReabrirViajes= usePermission(PERMISSIONS.VIAJES.REABRIR);
     const { 
         loadingMessage, 
         handleExportListExcel, 
@@ -46,8 +48,6 @@ export function ViajesPage() {
         handleExportExcel, 
         handleExportPdf 
     } = useViajeReports();
-    type ApiMutationError = AxiosError<ApiError & { message?: string }>;
-
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [filters, setFilters] = useState<ViajeFiltersType>({
@@ -83,9 +83,9 @@ export function ViajesPage() {
             showToast({ entity: 'Viaje', action: 'delete' });
         },
         onError: (error: ApiMutationError) => {
-            const message = error.response?.data?.message || error.response?.data?.detail;
+            const message = getErrorMessage(error, 'No se pudo eliminar el viaje.');
             showToast({ entity: 'Viaje', action: 'delete', isError: true, message });
-            if (message) console.error("Validation error:", message);
+            logger.error('Error eliminando viaje:', message);
         }
     });
 
@@ -98,9 +98,9 @@ export function ViajesPage() {
             showToast({ entity: 'Viaje', action: 'reopen' });
         },
         onError: (error: ApiMutationError) => {
-            const message = error.response?.data?.message || error.response?.data?.detail;
+            const message = getErrorMessage(error, 'No se pudo reabrir el viaje.');
             showToast({ entity: 'Viaje', action: 'reopen', isError: true, message });
-            if (message) console.error("Validation error:", message);
+            logger.error('Error reabriendo viaje:', message);
         }
     });
 
@@ -125,8 +125,6 @@ export function ViajesPage() {
         setViajeToReopen(item);
         setReopenDialogOpen(true);
     }, []);
-
-    const handleNoopViajeAction = useCallback(() => {}, []);
 
     const handleChangePage = useCallback((_: unknown, newPage: number) => {
         setPage(newPage);
@@ -284,8 +282,8 @@ export function ViajesPage() {
                     viajes={data?.items || []} 
                     isLoading={isLoading} 
                     canManage={canManageViajes}
-                    onViajeClick={canManageViajes ? handleView : handleNoopViajeAction}
-                    onViewViaje={canManageViajes ? handleView : undefined}
+                    onViajeClick={handleView}
+                    onViewViaje={canViewViajes ? handleView : undefined}
                     onEditViaje={canManageViajes ? handleEdit : undefined}
                     onDeleteViaje={canManageViajes ? handleDelete : undefined}
                 />
@@ -300,12 +298,13 @@ export function ViajesPage() {
                             onPageChange={handleChangePage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
                             canManage={canManageViajes}
+                            canReabrir={canReabrirViajes}
                             onEdit={canManageViajes ? handleEdit : undefined}
-                            onView={canManageViajes ? handleView : undefined}
+                            onView={canViewViajes ? handleView : undefined}
                             onDelete={canManageViajes ? handleDelete : undefined}
                             onExportExcel={canManageViajes ? handleExportExcel : undefined}
                             onExportPdf={canManageViajes ? handleExportPdf : undefined}
-                            onReopen={canManageViajes ? handleReopen : undefined}
+                            onReopen={canReabrirViajes ? handleReopen : undefined}
                         />
                     </Box>
                     <ViajesMobileList
@@ -316,12 +315,13 @@ export function ViajesPage() {
                         onPageChange={handleChangePage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
                         canManage={canManageViajes}
+                        canReabrir={canReabrirViajes}
                         onEdit={canManageViajes ? handleEdit : undefined}
-                        onView={canManageViajes ? handleView : undefined}
+                        onView={canViewViajes ? handleView : undefined}
                         onDelete={canManageViajes ? handleDelete : undefined}
                         onExportExcel={canManageViajes ? handleExportExcel : undefined}
                         onExportPdf={canManageViajes ? handleExportPdf : undefined}
-                        onReopen={canManageViajes ? handleReopen : undefined}
+                        onReopen={canReabrirViajes ? handleReopen : undefined}
                     />
                 </>
             )}

@@ -28,6 +28,8 @@ import {
     type CreateSolicitudActualizacionFormInput,
 } from '../model/schema';
 import { ImageUpload } from '@shared/components/ui/ImageUpload';
+import { getErrorMessage } from '@shared/utils/api-errors';
+import { handleBackendErrors } from '@shared/utils/form-validation';
 
 interface SolicitudActualizacionModalProps {
     open: boolean;
@@ -59,7 +61,9 @@ export function SolicitudActualizacionModal({ open, onClose, documentos, initial
             onClose();
         },
         onError: (error: unknown) => {
-            const message = error instanceof Error ? error.message : 'No se pudo enviar la solicitud.';
+            const message =
+                handleBackendErrors<CreateSolicitudActualizacionForm>(error, form.setError)
+                ?? getErrorMessage(error, 'No se pudo enviar la solicitud.');
             showToast({ message, severity: 'error' });
         },
     });

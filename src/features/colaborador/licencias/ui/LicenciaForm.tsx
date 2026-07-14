@@ -9,11 +9,11 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
-import { maestroApi } from '@shared/api/maestro.api';
+import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import type { Licencia } from '@entities/licencia/model/types';
 import { createLicenciaSchema, type CreateLicenciaSchema } from '../model/schema';
 import { useEffect } from 'react';
-import { SECCION_MAESTRO } from '@/shared/constants/maestro';
+import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import { useCreateLicencia, useUpdateLicencia } from '../../hooks/useLicenciaCrud';
 import { handleAddressKeyDown } from '@shared/utils/input-validators';
 

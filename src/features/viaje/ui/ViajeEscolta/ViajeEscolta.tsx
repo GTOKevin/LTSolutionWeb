@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeEscolta as ViajeEscoltaModel } from '@/entities/viaje/model/types';
-import { ViajeEscoltaCreateEdit, ViajeEscoltaList } from './Index';
+import { ViajeEscoltaCreateEdit, ViajeEscoltaList } from './index';
 import { ViajeSubmoduleContainer } from '../ViajeSubmoduleContainer';
 
 interface Props {

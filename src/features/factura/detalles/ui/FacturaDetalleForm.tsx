@@ -24,8 +24,8 @@ import { createFacturaDetalleSchema, type CreateFacturaDetalleSchema } from '../
 import { useCreateFacturaDetalle } from '../../hooks/useFacturaDetalleCrud';
 import { ViajeSelectorModal } from './ViajeSelectorModal';
 import type { Viaje } from '@/entities/viaje/model/types';
-import { monedaApi } from '@/shared/api/moneda.api';
-import { IGV_RATE } from '@/shared/constants/constantes';
+import { monedaApi } from '@entities/moneda/api/moneda.api';
+import { IGV_RATE } from '@entities/factura/model/constants';
 
 interface FacturaDetalleFormProps {
     open: boolean;
@@ -64,12 +64,6 @@ export function FacturaDetalleForm({ open, onClose, facturaId, monedaId, cliente
     const [isTypingTotal, setIsTypingTotal] = useState(false);
 
     useEffect(() => {
-        if (!isTypingTotal) {
-            setLocalTotal(total === 0 ? '' : total.toFixed(2));
-        }
-    }, [total, isTypingTotal]);
-
-    useEffect(() => {
         if (open) {
             reset({
                 viajeID: 0,
@@ -79,9 +73,16 @@ export function FacturaDetalleForm({ open, onClose, facturaId, monedaId, cliente
                 igv: true,
                 total: 0
             });
-            setSelectedViajeText('');
-            setLocalTotal('');
-            setIsTypingTotal(false);
+
+            const resetUiTimer = window.setTimeout(() => {
+                setSelectedViajeText('');
+                setLocalTotal('');
+                setIsTypingTotal(false);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, reset, monedaId]);
 

@@ -115,7 +115,7 @@ export function BottomNav() {
         {
             label: 'Flota',
             icon: <TruckIcon />,
-            path: '/app/flota',
+            path: '/app/flotas',
         },
         {
             label: 'Menú',
@@ -130,7 +130,7 @@ export function BottomNav() {
                 return hasPermission(PERMISSIONS.CLIENTES.VER);
             case '/app/cotizaciones':
                 return hasPermission(PERMISSIONS.COTIZACIONES.VER);
-            case '/app/flota':
+            case '/app/flotas':
                 return hasPermission(PERMISSIONS.FLOTA.VER);
             default:
                 return true;

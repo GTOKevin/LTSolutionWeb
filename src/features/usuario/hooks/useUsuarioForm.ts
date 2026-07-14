@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { rolUsuarioApi } from '@entities/rol-usuario/api/rol-usuario.api';
-import { estadoApi } from '@shared/api/estado.api';
+import { estadoApi } from '@entities/estado/api/estado.api';
 import { colaboradorApi } from '@entities/colaborador/api/colaborador.api';
 import { createUsuarioSchemaFull, editUsuarioSchemaFull, type CreateUsuarioSchema, type UsuarioFormSchema } from '../model/schema';
 import { useEffect, useState } from 'react';
@@ -68,10 +68,6 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
     // --- Effects ---
     useEffect(() => {
         if (open) {
-            setErrorMessage(null);
-            setShowPassword(false);
-            setActiveTab(0);
-            
             if (usuarioToEdit) {
                 reset({
                     nombre: usuarioToEdit.nombre,
@@ -91,6 +87,16 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
                     clave: ''
                 });
             }
+
+            const resetUiTimer = window.setTimeout(() => {
+                setErrorMessage(null);
+                setShowPassword(false);
+                setActiveTab(0);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, usuarioToEdit, reset]);
 

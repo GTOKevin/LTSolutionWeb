@@ -64,8 +64,6 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
 
     useEffect(() => {
         if (open) {
-            setErrorMessage(null);
-            setActiveTab(0);
             if (rolToEdit) {
                 reset({
                     nombre: rolToEdit.nombre,
@@ -81,6 +79,15 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                     permisosIds: []
                 });
             }
+
+            const resetUiTimer = window.setTimeout(() => {
+                setErrorMessage(null);
+                setActiveTab(0);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, rolToEdit, reset]);
 
@@ -97,14 +104,10 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                         onSuccess();
                         onClose();
                     },
-                    onError: (error: any) => {
-                        if (error?.response?.status === 409) {
-                            setErrorMessage('El nombre del rol ya se encuentra registrado.');
-                        } else {
-                            const genericError = handleBackendErrors<RolUsuarioSchema>(error, setError);
-                            if (genericError) {
-                                setErrorMessage(genericError);
-                            }
+                    onError: (error: unknown) => {
+                        const genericError = handleBackendErrors<RolUsuarioSchema>(error, setError);
+                        if (genericError) {
+                            setErrorMessage(genericError);
                         }
                     }
                 }
@@ -117,14 +120,10 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                         onSuccess();
                         onClose();
                     },
-                    onError: (error: any) => {
-                        if (error?.response?.status === 409) {
-                            setErrorMessage('El nombre del rol ya se encuentra registrado.');
-                        } else {
-                            const genericError = handleBackendErrors<RolUsuarioSchema>(error, setError);
-                            if (genericError) {
-                                setErrorMessage(genericError);
-                            }
+                    onError: (error: unknown) => {
+                        const genericError = handleBackendErrors<RolUsuarioSchema>(error, setError);
+                        if (genericError) {
+                            setErrorMessage(genericError);
                         }
                     }
                 }

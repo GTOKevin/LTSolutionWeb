@@ -2,15 +2,15 @@ import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
 import { flotaApi } from '@entities/flota/api/flota.api';
-import { estadoApi } from '@shared/api/estado.api';
-import { ESTADO_SECCIONES } from '@/shared/constants/constantes';
+import { estadoApi } from '@entities/estado/api/estado.api';
+import { ESTADO_SECCIONES } from '@entities/master-data/model/constants';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { INITIAL_FILTERS } from '../model/types';
 import type { MantenimientoFiltersState } from '../model/types';
 import { useDeleteMantenimiento } from '../../hooks/useMantenimientoCrud';
 import { useMutation } from '@tanstack/react-query';
 import { useToast } from '@/shared/components/ui/Toast';
-import {type ApiMutationError } from '@/shared/utils/api-errors';
+import { getErrorMessage, type ApiMutationError } from '@/shared/utils/api-errors';
 
 /**
  * Hook personalizado para gestionar la lógica de negocio del módulo de Mantenimientos.
@@ -76,7 +76,7 @@ export function useMantenimientos() {
             showToast({ entity: 'Mantenimiento', action: 'reopen' });
         },
         onError: (error: ApiMutationError) => {
-            const message = error.response?.data?.message || error.response?.data?.detail;
+            const message = getErrorMessage(error, 'No se pudo reabrir el mantenimiento.');
             showToast({ entity: 'Mantenimiento', action: 'reopen', isError: true, message });
         }
     });

@@ -27,9 +27,9 @@ import {
     PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import type { ViajeListItem } from '@entities/viaje/model/types';
+import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
 import type { PagedResponse } from '@/shared/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import { ESTADO_VIAJE_COD } from '@/shared/constants/constantes';
 import { useState } from 'react';
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 
@@ -41,6 +41,7 @@ interface ViajesMobileListProps {
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     canManage?: boolean;
+    canReabrir?: boolean;
     onView?: (viaje: ViajeListItem) => void;
     onEdit?: (viaje: ViajeListItem) => void;
     onDelete?: (viaje: ViajeListItem) => void;
@@ -57,6 +58,7 @@ export function ViajesMobileList({
     onPageChange,
     onRowsPerPageChange,
     canManage = false,
+    canReabrir = false,
     onView,
     onEdit,
     onDelete,
@@ -109,7 +111,7 @@ export function ViajesMobileList({
     const getEstadoConfig = (codigo?: string, nombre?: string) => {
         const label = nombre || 'Sin estado';
 
-        if (codigo === ESTADO_VIAJE_COD.Agendado) {
+        if (codigo === VIAJE_STATUS_CODE.AGENDADO) {
             return {
                 label,
                 bg: alpha(theme.palette.info.main, 0.1),
@@ -117,7 +119,7 @@ export function ViajesMobileList({
                 dotColor: theme.palette.info.main
             };
         }
-        if (codigo === ESTADO_VIAJE_COD.Transito) {
+        if (codigo === VIAJE_STATUS_CODE.TRANSITO) {
             return {
                 label,
                 bg: alpha(theme.palette.warning.main, 0.1),
@@ -125,7 +127,7 @@ export function ViajesMobileList({
                 dotColor: theme.palette.warning.main
             };
         }
-        if (codigo === ESTADO_VIAJE_COD.Completado) {
+        if (codigo === VIAJE_STATUS_CODE.COMPLETADO) {
             return {
                 label,
                 bg: alpha(theme.palette.success.main, 0.1),
@@ -133,7 +135,7 @@ export function ViajesMobileList({
                 dotColor: theme.palette.success.main
             };
         }
-        if (codigo === ESTADO_VIAJE_COD.Descargando) {
+        if (codigo === VIAJE_STATUS_CODE.DESCARGANDO) {
             return {
                 label,
                 bg: alpha(theme.palette.secondary.main, 0.1),
@@ -159,7 +161,7 @@ export function ViajesMobileList({
 
     const isEditable = canManage && Boolean(selectedViaje && !selectedViaje.cerrado);
     const showReports = canManage && Boolean(selectedViaje?.cerrado);
-    const showReopen = canManage && Boolean(selectedViaje?.cerrado);
+    const showReopen = canReabrir && Boolean(selectedViaje?.cerrado);
 
     return (
         <Box sx={{ display: { xs: 'block', md: 'none' }, pb: 12 }}>

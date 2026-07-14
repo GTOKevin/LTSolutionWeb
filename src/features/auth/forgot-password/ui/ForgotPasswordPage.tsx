@@ -18,6 +18,7 @@ import {
     Info as InfoIcon,
     ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
+import { alpha } from '@mui/material/styles';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
@@ -31,6 +32,7 @@ export function ForgotPasswordPage() {
     const { mutate, isPending } = useForgotPassword();
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const supportIllustrationUrl = 'https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=realistic%20flat%20logistics%20operations%20control%20room%2C%20transport%20fleet%20monitoring%20screens%2C%20corporate%20blue%20and%20neutral%20palette%2C%20clean%20lighting%2C%20modern%20enterprise%20website%20background%2C%20no%20text%2C%20no%20watermark&image_size=landscape_16_9';
 
     const {
         register,
@@ -44,7 +46,7 @@ export function ForgotPasswordPage() {
         setSuccessMessage(null);
         setErrorMessage(null);
         mutate(data.email, {
-            onSuccess: (response: any) => {
+            onSuccess: (response) => {
                 setSuccessMessage(response.message || 'Si el correo existe, se enviará un enlace de recuperación.');
             },
             onError: () => {
@@ -118,18 +120,15 @@ export function ForgotPasswordPage() {
                 </Stack>
 
                 <Stack direction="row" alignItems="center" spacing={2}>
-                    <Link
-                        component="button"
-                        underline="hover"
+                    <Typography
                         sx={{
                             fontSize: '0.875rem',
                             fontWeight: 500,
                             color: 'text.secondary',
-                            '&:hover': { color: 'primary.main' },
                         }}
                     >
-                        Soporte Técnico
-                    </Link>
+                        Soporte tecnico interno
+                    </Typography>
                     <Button
                         variant="contained"
                         onClick={() => navigate('/login')}
@@ -168,7 +167,7 @@ export function ForgotPasswordPage() {
                         zIndex: 0,
                         opacity: 0.05,
                         pointerEvents: 'none',
-                        backgroundImage: "url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')",
+                        backgroundImage: `url('${supportIllustrationUrl}')`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                     }}
@@ -321,7 +320,7 @@ export function ForgotPasswordPage() {
                     {/* Footer Text */}
                     <Box sx={{ mt: 4, textAlign: 'center' }}>
                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.6 }}>
-                            © 2024 HAZMAT Logistics Platform v2.4. <br />
+                            © {new Date().getFullYear()} HAZMAT Logistics Platform v2.4. <br />
                             Sistema seguro de gestión de transporte de cargas peligrosas.
                         </Typography>
                     </Box>
@@ -330,6 +329,3 @@ export function ForgotPasswordPage() {
         </Box>
     );
 }
-
-// Helper for alpha color since MUI alpha utility might not be directly imported sometimes, but I imported it.
-import { alpha } from '@mui/material/styles';

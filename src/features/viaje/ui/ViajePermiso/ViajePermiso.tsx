@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ViajePermiso as ViajePermisoType } from '@/entities/viaje/model/types';
-import { ViajePermisoCreateEdit, ViajePermisoList } from './Index';
+import { ViajePermisoCreateEdit, ViajePermisoList } from './index';
 import { ViajeSubmoduleContainer } from '../ViajeSubmoduleContainer';
 
 interface Props {

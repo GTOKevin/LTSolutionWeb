@@ -18,6 +18,24 @@ import { EscoltaTab } from './EscoltaTab/EscoltaTab';
 import { ViajeIncidente } from './IncidenteTab/ViajeIncidente';
 import { useViajeOptions } from '@features/viaje/hooks/useViajeOptions';
 import { useToast } from '@/shared/components/ui/Toast';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
+
+const createResumenGeneralData = (viaje?: Awaited<ReturnType<typeof viajeApi.getById>>): ResumenGeneralData => ({
+    fechaCarga: viaje?.fechaCarga ? dayjs(viaje.fechaCarga) : null,
+    fechaPartida: viaje?.fechaPartida ? dayjs(viaje.fechaPartida) : null,
+    fechaLlegada: viaje?.fechaLlegada ? dayjs(viaje.fechaLlegada) : null,
+    fechaDescarga: viaje?.fechaDescarga ? dayjs(viaje.fechaDescarga) : null,
+    fechaLlegadaBase: viaje?.fechaLlegadaBase ? dayjs(viaje.fechaLlegadaBase) : null,
+    kmInicio: viaje?.kmInicio ?? '',
+    kmLlegada: viaje?.kmLlegada ?? '',
+    kmLlegadaBase: viaje?.kmLlegadaBase ?? '',
+    largo: viaje?.largo ?? '',
+    ancho: viaje?.ancho ?? '',
+    alto: viaje?.alto ?? '',
+    peso: viaje?.peso ?? '',
+    requiereEscolta: !!viaje?.requiereEscolta,
+});
 
 export function ViajeEditar() {
     const { id } = useParams<{ id: string }>();
@@ -26,25 +44,12 @@ export function ViajeEditar() {
     const queryClient = useQueryClient();
     const { showToast } = useToast();
     const viajeId = parseInt(id || '0', 10);
-    const isViewOnly = searchParams.get('mode') === 'view';
+    const canManageViajes = usePermission(PERMISSIONS.VIAJES.GESTIONAR);
+    const isViewOnly = searchParams.get('mode') === 'view' || !canManageViajes;
 
     const [activeTab, setActiveTab] = useState(0);
 
-    const [formData, setFormData] = useState<ResumenGeneralData>({
-        fechaCarga: null,
-        fechaPartida: null,
-        fechaLlegada: null,
-        fechaDescarga: null,
-        fechaLlegadaBase: null,
-        kmInicio: '',
-        kmLlegada: '',
-        kmLlegadaBase: '',
-        largo: '',
-        ancho: '',
-        alto: '',
-        peso: '',
-        requiereEscolta: false,
-    });
+    const [formData, setFormData] = useState<ResumenGeneralData>(() => createResumenGeneralData());
 
     const { data: viaje, isLoading, isError } = useQuery({
         queryKey: ['viaje', viajeId],
@@ -57,21 +62,13 @@ export function ViajeEditar() {
 
     useEffect(() => {
         if (viaje) {
-            setFormData({
-                fechaCarga: viaje.fechaCarga ? dayjs(viaje.fechaCarga) : null,
-                fechaPartida: viaje.fechaPartida ? dayjs(viaje.fechaPartida) : null,
-                fechaLlegada: viaje.fechaLlegada ? dayjs(viaje.fechaLlegada) : null,
-                fechaDescarga: viaje.fechaDescarga ? dayjs(viaje.fechaDescarga) : null,
-                fechaLlegadaBase: viaje.fechaLlegadaBase ? dayjs(viaje.fechaLlegadaBase) : null,
-                kmInicio: viaje.kmInicio ?? '',
-                kmLlegada: viaje.kmLlegada ?? '',
-                kmLlegadaBase: viaje.kmLlegadaBase ?? '',
-                largo: viaje.largo ?? '',
-                ancho: viaje.ancho ?? '',
-                alto: viaje.alto ?? '',
-                peso: viaje.peso ?? '',
-                requiereEscolta: !!viaje.requiereEscolta,
-            });
+            const resetUiTimer = window.setTimeout(() => {
+                setFormData(createResumenGeneralData(viaje));
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [viaje]);
 

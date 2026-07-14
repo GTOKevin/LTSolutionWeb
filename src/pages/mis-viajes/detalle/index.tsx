@@ -32,6 +32,7 @@ import {
     type UpdateMisViajesKmsForm,
     type UpdateMisViajesKmsFormInput,
 } from '@/features/employee/viajes/model/schema';
+import { getErrorMessage } from '@/shared/utils/api-errors';
 
 const styles = {
     heroHeader: {
@@ -114,7 +115,7 @@ export function MisViajesDetallePage() {
             showToast({ message: 'Kilometraje actualizado correctamente', severity: 'success' });
         },
         onError: (error: unknown) => {
-            const msg = error instanceof Error ? error.message : 'Error al actualizar kilometraje';
+            const msg = getErrorMessage(error, 'Error al actualizar kilometraje');
             showToast({ message: msg, severity: 'error' });
         },
     });

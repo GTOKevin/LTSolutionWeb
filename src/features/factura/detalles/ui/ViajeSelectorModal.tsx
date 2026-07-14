@@ -31,7 +31,10 @@ import {
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
-import type { Viaje } from '@/entities/viaje/model/types';
+import type { Viaje, ViajeListItem } from '@/entities/viaje/model/types';
+import { useToast } from '@/shared/components/ui/Toast';
+import { getErrorMessage } from '@/shared/utils/api-errors';
+import { logger } from '@/shared/utils/logger';
 
 interface ViajeSelectorModalProps {
     open: boolean;
@@ -42,6 +45,7 @@ interface ViajeSelectorModalProps {
 
 export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: ViajeSelectorModalProps) {
     const [isSelecting, setIsSelecting] = useState(false);
+    const { showToast } = useToast();
 
     const { data, isLoading, refetch } = useQuery({
         queryKey: ['viajes', 'selector', clienteId],
@@ -73,7 +77,9 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
                 onClose();
             }
         } catch (error) {
-            console.error('Error fetching full viaje', error);
+            const message = getErrorMessage(error, 'No se pudo cargar el viaje seleccionado.');
+            logger.error('Error cargando viaje completo:', error);
+            showToast({ message, severity: 'error' });
         } finally {
             setIsSelecting(false);
         }
@@ -114,7 +120,7 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    viajesDisponibles.map((viaje: any) => (
+                                    viajesDisponibles.map((viaje: ViajeListItem) => (
                                         <TableRow 
                                             key={viaje.viajeID}
                                             hover

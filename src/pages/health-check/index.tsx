@@ -19,11 +19,19 @@ import {
     PaletteOutlined as PaletteIcon,
     Check as CheckIcon,
 } from '@mui/icons-material';
-import { useEffect, useState } from 'react';
-import { httpClient } from '../../shared/api/http';
-import { env } from '../../shared/config/env';
-import { useThemeStore } from '../../shared/store/theme.store';
-import { appThemePresets } from '@/shared/config/theme/palette';
+import { useCallback, useEffect, useState } from 'react';
+import { httpClient } from '@shared/api/http';
+import { env } from '@shared/config/env';
+import { appThemePresets } from '@shared/config/theme/palette';
+import { useThemeStore } from '@shared/store/theme.store';
+
+function getHealthCheckErrorMessage(error: unknown): string {
+    if (error && typeof error === 'object' && 'detail' in error && typeof error.detail === 'string') {
+        return error.detail;
+    }
+
+    return 'No se pudo verificar el estado del backend.';
+}
 
 export function HealthCheckPage() {
     const { themeId, setThemeId } = useThemeStore();
@@ -32,9 +40,11 @@ export function HealthCheckPage() {
     const [themeAnchorEl, setThemeAnchorEl] = useState<null | HTMLElement>(null);
     const themeMenuOpen = Boolean(themeAnchorEl);
 
-    const checkApiConnection = async () => {
-        setApiStatus('checking');
-        setApiMessage('');
+    const checkApiConnection = useCallback(async (resetStatus: boolean = true) => {
+        if (resetStatus) {
+            setApiStatus('checking');
+            setApiMessage('');
+        }
 
         try {
             await httpClient.get('/health');
@@ -42,16 +52,38 @@ export function HealthCheckPage() {
             setApiMessage('El endpoint de salud del backend responde correctamente.');
         } catch (error: unknown) {
             setApiStatus('error');
-            if (error && typeof error === 'object' && 'detail' in error) {
-                setApiMessage((error as { detail: string }).detail || 'No se pudo verificar el estado del backend.');
-            } else {
-                setApiMessage('No se pudo verificar el estado del backend.');
-            }
+            setApiMessage(getHealthCheckErrorMessage(error));
         }
-    };
+    }, []);
 
     useEffect(() => {
-        checkApiConnection();
+        let isMounted = true;
+
+        const loadInitialHealthStatus = async () => {
+            try {
+                await httpClient.get('/health');
+
+                if (!isMounted) {
+                    return;
+                }
+
+                setApiStatus('connected');
+                setApiMessage('El endpoint de salud del backend responde correctamente.');
+            } catch (error: unknown) {
+                if (!isMounted) {
+                    return;
+                }
+
+                setApiStatus('error');
+                setApiMessage(getHealthCheckErrorMessage(error));
+            }
+        };
+
+        void loadInitialHealthStatus();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
     return (
@@ -177,7 +209,7 @@ export function HealthCheckPage() {
                         <CardContent>
                             <Stack direction="row" justifyContent="space-between" alignItems="center">
                                 <Typography variant="h6">Estado de Conexión Backend</Typography>
-                                <IconButton onClick={checkApiConnection} size="small">
+                                <IconButton onClick={() => void checkApiConnection()} size="small">
                                     <RefreshIcon />
                                 </IconButton>
                             </Stack>

@@ -225,10 +225,14 @@ export class ViajeGeneralExcelGenerator {
         // Auto-width columns
         worksheet.columns.forEach(column => {
             let maxLength = 0;
-            column.eachCell && column.eachCell({ includeEmpty: true }, cell => {
-                const columnLength = cell.value ? cell.value.toString().length : 10;
-                if (columnLength > maxLength) maxLength = columnLength;
-            });
+            if (column.eachCell) {
+                column.eachCell({ includeEmpty: true }, cell => {
+                    const columnLength = cell.value ? cell.value.toString().length : 10;
+                    if (columnLength > maxLength) {
+                        maxLength = columnLength;
+                    }
+                });
+            }
             column.width = maxLength < 10 ? 10 : (maxLength > 50 ? 50 : maxLength + 2);
         });
 

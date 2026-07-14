@@ -1,5 +1,6 @@
 import { httpClient } from '@/shared/api/http';
 import type { PagedResponse } from '@/shared/model/types';
+import type { SelectItem } from '@/shared/model/types';
 import type { TipoMaestro } from '../model/types';
 
 export const tipoMaestroApi = {
@@ -7,6 +8,8 @@ export const tipoMaestroApi = {
         httpClient.get<PagedResponse<TipoMaestro>>('/TipoMaestro', { params }),
     getById: (id: number) =>
         httpClient.get<TipoMaestro>(`/TipoMaestro/${id}`),
+    getSelect: (search?: string, seccion?: string, limit: number = 20) =>
+        httpClient.get<SelectItem[]>('/TipoMaestro/select', { params: { search, seccion, limit } }),
     create: (data: Omit<TipoMaestro, 'tipoMaestroID'>) =>
         httpClient.post<number>('/TipoMaestro', data).then(res => res.data),
     update: (id: number, data: Omit<TipoMaestro, 'tipoMaestroID'>) =>
@@ -16,3 +19,5 @@ export const tipoMaestroApi = {
     getSecciones: () =>
         httpClient.get<string[]>('/TipoMaestro/secciones'),
 };
+
+export const maestroApi = tipoMaestroApi;

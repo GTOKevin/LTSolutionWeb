@@ -21,8 +21,17 @@ import {
     Description as ExcelIcon
 } from '@mui/icons-material';
 import type { Factura } from '@/entities/factura/model/types';
-import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
+import type { SelectItem } from '@/shared/model/types';
 import { facturaApi } from '@/entities/factura/api/factura.api';
+import {
+    isFacturaAnulada,
+    isFacturaEmitida,
+    isFacturaEntregada,
+    isFacturaGenerada,
+    resolveFacturaAnuladaId,
+    resolveFacturaEmitidaId,
+    resolveFacturaEntregadaId,
+} from '@/entities/factura/model/status';
 import { logger } from '@/shared/utils/logger';
 import { generateFacturaPdf, generateFacturaExcel } from '../../utils/facturaReportGenerator';
 
@@ -34,6 +43,7 @@ interface FacturaActionMenuProps {
     onPayment?: (f: Factura) => void;
     onViewPayments?: (f: Factura) => void;
     onUpdateStatus?: (f: Factura, newStatusId: number) => void;
+    statusCatalog?: SelectItem[];
 }
 
 export function FacturaActionMenu({
@@ -43,7 +53,8 @@ export function FacturaActionMenu({
     onDelete,
     onPayment,
     onViewPayments,
-    onUpdateStatus
+    onUpdateStatus,
+    statusCatalog = [],
 }: FacturaActionMenuProps) {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -76,10 +87,13 @@ export function FacturaActionMenu({
         }
     };
 
-    const isGenerado = factura.estadoID === ESTADO_FACTURA_ID.GENERADO;
-    const isEmitido = factura.estadoID === ESTADO_FACTURA_ID.EMITIDO;
-    const isAnulado = factura.estadoID === ESTADO_FACTURA_ID.ANULADO;
-    const isEntregado = factura.estadoID == ESTADO_FACTURA_ID.ENTREGADO;
+    const isGenerado = isFacturaGenerada(factura);
+    const isEmitido = isFacturaEmitida(factura);
+    const isAnulado = isFacturaAnulada(factura);
+    const isEntregado = isFacturaEntregada(factura);
+    const emitidaStatusId = resolveFacturaEmitidaId(statusCatalog);
+    const entregadaStatusId = resolveFacturaEntregadaId(statusCatalog);
+    const anuladaStatusId = resolveFacturaAnuladaId(statusCatalog);
     const canManageFactura =
         Boolean(onEdit) ||
         Boolean(onDelete) ||
@@ -146,26 +160,26 @@ export function FacturaActionMenu({
 
                 {/* Cambios de Estado */}
                 {onUpdateStatus && <Divider />}
-                {isGenerado && onUpdateStatus && (
-                    <MenuItem onClick={() => { onUpdateStatus(factura, ESTADO_FACTURA_ID.EMITIDO); handleClose(); }}>
+                {isGenerado && onUpdateStatus && emitidaStatusId ? (
+                    <MenuItem onClick={() => { onUpdateStatus(factura, emitidaStatusId); handleClose(); }}>
                         <ListItemIcon><SendIcon fontSize="small" color="primary" /></ListItemIcon>
                         <ListItemText>Emitir Factura</ListItemText>
                     </MenuItem>
-                )}
+                ) : null}
                 
-                {isEmitido && onUpdateStatus && (
-                    <MenuItem onClick={() => { onUpdateStatus(factura, ESTADO_FACTURA_ID.ENTREGADO); handleClose(); }}>
+                {isEmitido && onUpdateStatus && entregadaStatusId ? (
+                    <MenuItem onClick={() => { onUpdateStatus(factura, entregadaStatusId); handleClose(); }}>
                         <ListItemIcon><CheckCircleIcon fontSize="small" color="success" /></ListItemIcon>
                         <ListItemText>Marcar como Entregado</ListItemText>
                     </MenuItem>
-                )}
+                ) : null}
 
-                {(isGenerado || isEmitido) && onUpdateStatus && (
-                    <MenuItem onClick={() => { onUpdateStatus(factura, ESTADO_FACTURA_ID.ANULADO); handleClose(); }}>
+                {(isGenerado || isEmitido) && onUpdateStatus && anuladaStatusId ? (
+                    <MenuItem onClick={() => { onUpdateStatus(factura, anuladaStatusId); handleClose(); }}>
                         <ListItemIcon><CancelIcon fontSize="small" color="error" /></ListItemIcon>
                         <ListItemText sx={{ color: 'error.main' }}>Anular Factura</ListItemText>
                     </MenuItem>
-                )}
+                ) : null}
 
                 {/* Descarga de Reportes */}
                 {isEntregado && onUpdateStatus

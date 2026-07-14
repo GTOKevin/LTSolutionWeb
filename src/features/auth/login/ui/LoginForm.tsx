@@ -32,6 +32,7 @@ import { loginSchema, type LoginFormData } from '../model/schema';
 import { useLogin } from '../api/use-login';
 import { useThemeStore } from '@shared/store/theme.store';
 import { appThemePresets } from '@/shared/config/theme/palette';
+import { getErrorMessage } from '@/shared/utils/api-errors';
 
 export function LoginForm() {
     const theme = useTheme();
@@ -60,6 +61,9 @@ export function LoginForm() {
     });
 
     const loginMutation = useLogin();
+    const loginErrorMessage = loginMutation.isError
+        ? getErrorMessage(loginMutation.error, 'No se pudo iniciar sesión.')
+        : null;
 
     const onSubmit = (data: LoginFormData) => {
         loginMutation.mutate({ name: data.nombre, password: data.clave });
@@ -162,7 +166,7 @@ export function LoginForm() {
                 </Box>
 
                 {/* Error Feedback */}
-                {loginMutation.isError && (
+                {loginErrorMessage && (
                     <Alert 
                         severity="error" 
                         sx={{ 
@@ -170,7 +174,7 @@ export function LoginForm() {
                             borderRadius: 2,
                         }}
                     >
-                        Credenciales incorrectas. Verifique su usuario y contraseña.
+                        {loginErrorMessage}
                     </Alert>
                 )}
 

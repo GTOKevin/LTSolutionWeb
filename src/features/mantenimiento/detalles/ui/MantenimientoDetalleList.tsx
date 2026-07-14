@@ -261,7 +261,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                             renderRow={(item) => (
                                 <>
                                     <TableCell>
-                                        {(item as any).tipoProducto?.nombre || `ID: ${item.tipoProductoID}`}
+                                        {item.tipoProducto?.nombre || `ID: ${item.tipoProductoID}`}
                                     </TableCell>
                                     <TableCell sx={{ maxWidth: 200 }}>
                                         <Tooltip title={item.descripcion || ''}>
@@ -320,7 +320,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                                     renderHeader={(item) => (
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, width: '100%' }}>
                                             <Typography variant="subtitle2" fontWeight="bold">
-                                                {(item as any).tipoProducto?.nombre || `Item #${item.mantenimientoDetalleID}`}
+                                                {item.tipoProducto?.nombre || `Item #${item.mantenimientoDetalleID}`}
                                             </Typography>
                                             <Typography variant="subtitle2" color="primary" fontWeight="bold" sx={{ ml: 2 }}>
                                                 {item.moneda?.simbolo} {item.total.toFixed(2)}

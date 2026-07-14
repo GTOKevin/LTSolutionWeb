@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { TIPOS_COMBUSTIBLE, INPUT_VAL, ERROR_MESSAGES } from '@/shared/constants/constantes';
+import { INPUT_VAL, ERROR_MESSAGES } from '@/shared/constants/constantes';
+import { TIPOS_COMBUSTIBLE } from '@entities/flota/model/constants';
 
 export const createFlotaSchema = z.object({
     tipoFlota: z.coerce.number().min(1, 'Tipo de Flota es requerido'),

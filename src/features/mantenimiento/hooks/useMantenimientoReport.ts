@@ -6,30 +6,32 @@ import autoTable from 'jspdf-autotable';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
 import { formatDateLong } from '@shared/utils/date-utils';
 import type { MantenimientoParams, Mantenimiento, MantenimientoDetalle } from '@entities/mantenimiento/model/types';
+import { useToast } from '@/shared/components/ui/Toast';
+import { getErrorMessage } from '@/shared/utils/api-errors';
+import { logger } from '@/shared/utils/logger';
+
+type ExcelStyle = Partial<ExcelJS.Style>;
+type TableRow = (string | number)[];
+type JsPdfWithAutoTable = jsPDF & {
+    lastAutoTable?: {
+        finalY: number;
+    };
+};
 
 export const useMantenimientoReport = () => {
-    
+    const { showToast } = useToast();
+
     const fetchReportData = async (mantenimientoId: number) => {
-        try {
-            const data = await mantenimientoApi.getReport(mantenimientoId);
-            return data;
-        } catch (error) {
-            console.error("Error fetching report data", error);
-            throw error;
-        }
+        const data = await mantenimientoApi.getReport(mantenimientoId);
+        return data;
     };
 
     const fetchSummaryReportData = async (params: Omit<MantenimientoParams, 'page' | 'size'>) => {
-        try {
-            const data = await mantenimientoApi.getSummaryReport(params);
-            return data;
-        } catch (error) {
-            console.error("Error fetching summary report data", error);
-            throw error;
-        }
+        const data = await mantenimientoApi.getSummaryReport(params);
+        return data;
     };
 
-    const generateFileName = (mantenimiento: any, ext: string) => {
+    const generateFileName = (mantenimiento: Mantenimiento | null | undefined, ext: string) => {
         const tipo = mantenimiento?.tipoServicio?.nombre || 'General';
         const placa = mantenimiento?.flota?.placa || 'SinPlaca';
         const fecha = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -50,17 +52,17 @@ export const useMantenimientoReport = () => {
             const worksheet = workbook.addWorksheet('Reporte Mantenimiento');
 
             // --- Header Styles ---
-            const headerStyle = {
+            const headerStyle: ExcelStyle = {
                 font: { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 },
                 fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }, // Excel Green
                 alignment: { horizontal: 'center', vertical: 'middle' },
                 border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-            } as any;
+            };
 
-            const dataStyle = {
+            const dataStyle: ExcelStyle = {
                 border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
                 alignment: { vertical: 'middle' }
-            } as any;
+            };
 
             // --- Title ---
             worksheet.mergeCells('A1:J1');
@@ -180,9 +182,11 @@ export const useMantenimientoReport = () => {
             saveAs(blob, generateFileName(reportData.mantenimiento, 'xlsx'));
 
         } catch (error) {
-            console.error('Error exporting to Excel:', error);
+            const message = getErrorMessage(error, 'No se pudo exportar el reporte de mantenimiento a Excel.');
+            logger.error('Error exporting mantenimiento report to Excel:', error);
+            showToast({ message, severity: 'error' });
         }
-    }, []);
+    }, [showToast]);
 
     const generatePdf = useCallback(async (mantenimientoId: number) => {
         try {
@@ -257,7 +261,7 @@ export const useMantenimientoReport = () => {
 
             // --- Details Table ---
             const tableColumn = ["Categoría", "Producto", "Descripción", "Cant.", "Mon.", "Costo", "IGV", "Total"];
-            const tableRows: any[] = [];
+            const tableRows: TableRow[] = [];
 
             reportData.detalles.forEach(item => {
                 const row = [
@@ -265,7 +269,7 @@ export const useMantenimientoReport = () => {
                     item.tipoProducto?.nombre || '',
                     item.descripcion || '',
                     item.cantidad,
-                    item.moneda?.codigo,
+                    item.moneda?.codigo || '',
                     item.costo.toFixed(2),
                     item.montoIGV.toFixed(2),
                     item.total.toFixed(2)
@@ -292,7 +296,7 @@ export const useMantenimientoReport = () => {
                 }
             });
 
-            const finalY = (doc as any).lastAutoTable.finalY + 10;
+            const finalY = ((doc as JsPdfWithAutoTable).lastAutoTable?.finalY ?? startY) + 10;
             
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
@@ -306,9 +310,11 @@ export const useMantenimientoReport = () => {
             doc.save(generateFileName(reportData.mantenimiento, 'pdf'));
 
         } catch (error) {
-            console.error('Error exporting to PDF:', error);
+            const message = getErrorMessage(error, 'No se pudo exportar el reporte de mantenimiento a PDF.');
+            logger.error('Error exporting mantenimiento report to PDF:', error);
+            showToast({ message, severity: 'error' });
         }
-    }, []);
+    }, [showToast]);
 
     const generateSummaryExcel = useCallback(async (params: Omit<MantenimientoParams, 'page' | 'size'>) => {
         try {
@@ -319,17 +325,17 @@ export const useMantenimientoReport = () => {
             const worksheet = workbook.addWorksheet('Reporte Total Mantenimientos');
 
             // --- Header Styles ---
-            const headerStyle = {
+            const headerStyle: ExcelStyle = {
                 font: { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 },
                 fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }, // Excel Green
                 alignment: { horizontal: 'center', vertical: 'middle' },
                 border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-            } as any;
+            };
 
-            const dataStyle = {
+            const dataStyle: ExcelStyle = {
                 border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
                 alignment: { vertical: 'middle' }
-            } as any;
+            };
 
             // --- Title ---
             worksheet.mergeCells('A1:I1');
@@ -430,9 +436,11 @@ export const useMantenimientoReport = () => {
             saveAs(blob, `Reporte_Total_Mantenimientos_${fecha}.xlsx`);
 
         } catch (error) {
-            console.error('Error exporting summary to Excel:', error);
+            const message = getErrorMessage(error, 'No se pudo exportar el resumen de mantenimientos a Excel.');
+            logger.error('Error exporting maintenance summary to Excel:', error);
+            showToast({ message, severity: 'error' });
         }
-    }, []);
+    }, [showToast]);
 
     const generateSummaryPdf = useCallback(async (params: Omit<MantenimientoParams, 'page' | 'size'>) => {
         try {
@@ -446,7 +454,7 @@ export const useMantenimientoReport = () => {
             doc.setTextColor(46, 125, 50); // Green
             doc.text('REPORTE TOTAL DE MANTENIMIENTOS', 148, 15, { align: 'center' });
 
-            let startY = 25;
+            const startY = 25;
 
             // --- Data Table ---
             const currencies = Object.keys(reportData.totalsByCurrency || {});
@@ -507,7 +515,7 @@ export const useMantenimientoReport = () => {
                 columnStyles: columnStyles
             });
 
-            const finalY = (doc as any).lastAutoTable.finalY + 10;
+            const finalY = ((doc as JsPdfWithAutoTable).lastAutoTable?.finalY ?? startY) + 10;
             
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
@@ -525,9 +533,11 @@ export const useMantenimientoReport = () => {
             doc.save(`Reporte_Total_Mantenimientos_${fecha}.pdf`);
 
         } catch (error) {
-            console.error('Error exporting summary to PDF:', error);
+            const message = getErrorMessage(error, 'No se pudo exportar el resumen de mantenimientos a PDF.');
+            logger.error('Error exporting maintenance summary to PDF:', error);
+            showToast({ message, severity: 'error' });
         }
-    }, []);
+    }, [showToast]);
 
     return { generateExcel, generatePdf, generateSummaryExcel, generateSummaryPdf };
 };

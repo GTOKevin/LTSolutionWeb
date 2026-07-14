@@ -3,7 +3,7 @@ import { AccountCircleOutlined } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import type { MyProfileDto } from '@entities/profile/model/types';
 import { SelfChangePasswordModal } from '@features/auth/change-password/ui/SelfChangePasswordModal';
-import { cardSx } from './ProfileShared';
+import { cardSx } from './ProfileShared.helpers';
 import { ProfileHero } from './ProfileHero';
 import { ProfileMetrics } from './ProfileMetrics';
 import { ProfileAccountSection } from './ProfileAccountSection';
@@ -197,4 +197,3 @@ export function ProfileView({ data, isLoading, isFetching, isError, onRetry }: P
         </Box>
     );
 }
-

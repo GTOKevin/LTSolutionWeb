@@ -1,73 +1,60 @@
-# React + TypeScript + Vite
+# Logistica Transporte Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend del proyecto `Logistica_V2` construido con React, TypeScript, Vite, React Query y MUI.
 
-Currently, two official plugins are available:
+## Objetivo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Este frontend sigue una arquitectura basada en Feature-Sliced Design para mantener separadas la composicion de pantallas, la logica de negocio, los contratos de dominio y los componentes shared.
 
-## React Compiler
+## Estructura
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `src/app`: providers, theme, router y configuracion global.
+- `src/pages`: composicion de vistas y wiring de navegacion.
+- `src/widgets`: shells y piezas transversales complejas.
+- `src/features`: casos de uso y UI especifica de negocio.
+- `src/entities`: contratos, modelos y api clients del dominio.
+- `src/shared`: primitives, componentes, hooks, utils y constantes realmente reutilizables.
 
-## Expanding the ESLint configuration
+## Reglas Clave
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- mantener `pages` delgadas;
+- no dejar schemas Zod ni `defaultValues` dentro del componente UI;
+- reutilizar `SharedTable`, `MobileListShell`, `ConfirmDialog`, `DocumentPreviewDialog`, `FormDatePicker`, `FormSelect`, `ImageUpload`, `SectionHeader` y `useGenericCrud` antes de crear alternativas;
+- no hardcodear permisos ni IDs funcionales del negocio;
+- usar React Query como fuente de verdad para server state;
+- no usar `console.error` como feedback para el usuario en flujos de negocio.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Manejo de Errores
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Todo flujo que consuma backend debe pasar por:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `src/shared/utils/api-errors.ts`
+- `src/shared/utils/form-validation.ts`
+- `src/shared/utils/logger.ts`
+- `src/shared/components/ui/Toast`
+
+Patron esperado:
+
+- formularios: `handleBackendErrors()`;
+- mensajes generales: `getErrorMessage()`;
+- inspeccion de payload/status: `getApiError()` y `getErrorStatus()`;
+- logging tecnico: `logger.error()`;
+- feedback visible: `toast`, `alert` o callback reusable.
+
+## Guia del Proyecto
+
+La guia de estandarizacion viva del frontend esta en:
+
+- [docs/frontend-standards.md](./docs/frontend-standards.md)
+
+## Validacion
+
+Comandos recomendados:
+
+```bash
+npm run lint
+npx tsc -b
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Nota: `npm run build` depende de una version de Node compatible con Vite 7.

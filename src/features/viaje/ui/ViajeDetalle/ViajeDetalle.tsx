@@ -8,7 +8,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 
 // Import sub-modules
 import { ViajeCreateEdit } from '../Viaje/ViajeCreateEdit';
-import { ViajeIncidente } from '../ViajeEditar/IncidenteTab/Index';
+import { ViajeIncidente } from '../ViajeEditar/IncidenteTab';
 import { ViajeTimeline } from './ViajeTimeline';
 
 export function ViajeDetalle() {

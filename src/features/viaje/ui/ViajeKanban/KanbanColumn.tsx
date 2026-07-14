@@ -86,17 +86,21 @@ export function KanbanColumn({ id, title, viajes, draggable = true, onCardClick,
                         items={viajes.map(v => v.viajeID)} 
                         strategy={verticalListSortingStrategy}
                     >
-                        {viajes.map(viaje => (
-                            <KanbanCard 
-                                key={viaje.viajeID} 
-                                viaje={viaje} 
-                                draggable={draggable}
-                                onClick={onCardClick} 
-                                onEdit={onEditCard}
-                                onView={onViewCard}
-                                onDelete={onDeleteCard}
-                            />
-                        ))}
+                        {viajes.map((viaje) => {
+                            const isEditable = draggable && !viaje.cerrado;
+
+                            return (
+                                <KanbanCard 
+                                    key={viaje.viajeID} 
+                                    viaje={viaje} 
+                                    draggable={isEditable}
+                                    onClick={onCardClick} 
+                                    onEdit={isEditable ? onEditCard : undefined}
+                                    onView={onViewCard}
+                                    onDelete={isEditable ? onDeleteCard : undefined}
+                                />
+                            );
+                        })}
                     </SortableContext>
                 </Box>
             </Paper>

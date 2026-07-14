@@ -1,6 +1,7 @@
 import { ShieldOutlined, LockResetOutlined, VerifiedUserOutlined } from '@mui/icons-material';
 import { Box, Button, Card, CardContent, Stack, Typography, alpha, useTheme } from '@mui/material';
-import { SectionTitle, securityActionSx } from './ProfileShared';
+import { SectionTitle } from './ProfileShared';
+import { securityActionSx } from './ProfileShared.helpers';
 
 interface ProfileSecuritySectionProps {
     bloqueado: boolean;
@@ -65,4 +66,3 @@ export function ProfileSecuritySection({ bloqueado, onOpenChangePassword }: Prof
         </Card>
     );
 }
-

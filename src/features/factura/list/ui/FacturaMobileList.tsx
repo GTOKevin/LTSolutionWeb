@@ -1,10 +1,10 @@
 import { Box, Typography, Chip } from '@mui/material';
 import type { Factura } from '@/entities/factura/model/types';
-import type { PagedResponse } from '@/shared/model/types';
+import type { PagedResponse, SelectItem } from '@/shared/model/types';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { formatCurrency } from '@/shared/utils/format-utils';
-import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
+import { getFacturaStatusColor } from '@/entities/factura/model/status';
 import { FacturaActionMenu } from './FacturaActionMenu';
 
 interface FacturaMobileListProps {
@@ -20,6 +20,7 @@ interface FacturaMobileListProps {
     onPayment?: (factura: Factura) => void;
     onViewPayments?: (factura: Factura) => void;
     onUpdateStatus?: (factura: Factura, newStatusId: number) => void;
+    statusCatalog?: SelectItem[];
 }
 
 export function FacturaMobileList({
@@ -34,7 +35,8 @@ export function FacturaMobileList({
     onDelete,
     onPayment,
     onViewPayments,
-    onUpdateStatus
+    onUpdateStatus,
+    statusCatalog = [],
 }: FacturaMobileListProps) {
 
     if (isLoading) {
@@ -68,7 +70,7 @@ export function FacturaMobileList({
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Chip 
                                 label={row.estado?.nombre || 'N/A'} 
-                                color={row.estadoID === ESTADO_FACTURA_ID.GENERADO ? 'warning' : row.estadoID === ESTADO_FACTURA_ID.EMITIDO ? 'success' : 'error'}
+                                color={getFacturaStatusColor(row)}
                                 size="small" 
                             />
                             {(onView || onEdit || onDelete || onPayment || onViewPayments || onUpdateStatus) && (
@@ -80,6 +82,7 @@ export function FacturaMobileList({
                                     onPayment={onPayment}
                                     onViewPayments={onViewPayments}
                                     onUpdateStatus={onUpdateStatus}
+                                    statusCatalog={statusCatalog}
                                 />
                             )}
                         </Box>

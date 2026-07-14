@@ -2,15 +2,14 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
-import { estadoApi } from '@shared/api/estado.api';
-import { maestroApi } from '@shared/api/maestro.api';
-import { createMantenimientoSchema, type CreateMantenimientoSchema } from '../model/schema';
+import { estadoApi } from '@entities/estado/api/estado.api';
+import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
+import { createMantenimientoSchema, type CreateMantenimientoFormInput, type CreateMantenimientoSchema } from '../model/schema';
 import { useEffect, useState } from 'react';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
+import { resolveMantenimientoCompletadoId } from '@entities/mantenimiento/model/status';
+import { ESTADO_SECTIONS, TIPO_MAESTRO_SECTIONS } from '@entities/master-data/model/constants';
 import { handleBackendErrors } from '@shared/utils/form-validation';
-import { SECCION_MAESTRO } from '@/shared/constants/maestro';
-import { ESTADO_SECCIONES } from '@/shared/constants/constantes';
-
 import { useCreateMantenimiento, useUpdateMantenimiento } from './useMantenimientoCrud';
 
 interface UseMantenimientoFormProps {
@@ -40,22 +39,23 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
 
     const { data: tiposServicio } = useQuery({
         queryKey: ['tipos-servicio'],
-        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.SERVICIO),
+        queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO_SECTIONS.SERVICIO),
         enabled: open
     });
 
     const { data: estados } = useQuery({
         queryKey: ['estados-select'],
-        queryFn: () => estadoApi.getSelect(undefined, undefined, ESTADO_SECCIONES.MANTENIMIENTO),
+        queryFn: () => estadoApi.getSelect(undefined, undefined, ESTADO_SECTIONS.MANTENIMIENTO),
         enabled: open
     });
 
     const listaFlotas = flotas?.data || [];
     const listaTiposServicio = tiposServicio?.data || [];
     const listaEstados = estados?.data || [];
+    const estadoCompletadoId = resolveMantenimientoCompletadoId(listaEstados);
 
     // --- Form ---
-    const form = useForm({
+    const form = useForm<CreateMantenimientoFormInput, unknown, CreateMantenimientoSchema>({
         resolver: zodResolver(createMantenimientoSchema)
     });
 
@@ -67,9 +67,6 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
     // --- Effects ---
     useEffect(() => {
         if (open) {
-            setActiveTab(0);
-            setCreatedId(null);
-            setErrorMessage(null);
             if (mantenimientoToEdit) {
                 reset({
                     flotaID: mantenimientoToEdit.flotaID,
@@ -97,6 +94,16 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
                     estadoID: 0
                 });
             }
+
+            const resetUiTimer = window.setTimeout(() => {
+                setActiveTab(0);
+                setCreatedId(null);
+                setErrorMessage(null);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, mantenimientoToEdit, reset]);
 
@@ -111,7 +118,7 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
         }
     };
 
-    const handleError = (error: any) => {
+    const handleError = (error: unknown) => {
         const genericError = handleBackendErrors<CreateMantenimientoSchema>(error, setError);
         if (genericError) {
             setErrorMessage(genericError);
@@ -137,14 +144,14 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
             );
         } else {
             createMutation.mutate(data, {
-                onSuccess: (response: any) => handleSuccess(response?.data || response),
+                onSuccess: (response: number) => handleSuccess(response),
                 onError: handleError
             });
         }
     };
 
     const onSubmit: SubmitHandler<CreateMantenimientoSchema> = (data) => {
-        if (data.estadoID === 102) { // Completed/Finalized
+        if (estadoCompletadoId && data.estadoID === estadoCompletadoId) {
             setPendingData(data);
             setConfirmationOpen(true);
         } else {

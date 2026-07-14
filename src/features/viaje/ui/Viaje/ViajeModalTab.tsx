@@ -4,13 +4,12 @@ import type { Viaje } from '@/entities/viaje/model/types';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
 import { ViajeCreateEdit } from './ViajeCreateEdit';
-import { ViajeMercaderia } from '../ViajeMercaderia/Index';
-import { ViajeGasto } from '../ViajeGasto/Index';
-import { ViajeGuia } from '../ViajeGuia/Index';
-import { ViajeIncidente } from '../ViajeEditar/IncidenteTab/Index';
-import { ViajePermiso } from '../ViajePermiso/Index';
-import { ViajeEscolta } from '../ViajeEscolta/Index';
-import { ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
+import { ViajeMercaderia } from '../ViajeMercaderia';
+import { ViajeGasto } from '../ViajeGasto';
+import { ViajeGuia } from '../ViajeGuia';
+import { ViajeIncidente } from '../ViajeEditar/IncidenteTab';
+import { ViajePermiso } from '../ViajePermiso';
+import { ViajeEscolta } from '../ViajeEscolta';
 import { useViajeForm, TAB_INDICES } from '../../hooks/useViajeForm';
 
 interface Props {
@@ -39,7 +38,8 @@ export function ViajeModalTab({ open, onClose, viaje, isViewOnly = false }: Prop
     const { 
         flotasEscolta, colaboradores, 
         tiposMedida, tiposPeso, tiposGasto, monedas,
-        tiposGuia, tiposIncidente, mercaderias
+        tiposGuia, tiposIncidente, mercaderias,
+        viajeEstadoDescargandoId
     } = options;
 
     const { handleSubmit } = methods;
@@ -130,9 +130,9 @@ export function ViajeModalTab({ open, onClose, viaje, isViewOnly = false }: Prop
 
             <ConfirmDialog
                 open={showConfirmDialog}
-                severity={pendingData?.estadoID === ESTADO_VIAJE_ID.DESCARGANDO ? 'error' : 'info'}
-                title={pendingData?.estadoID === ESTADO_VIAJE_ID.DESCARGANDO ? 'Confirmar Cancelación' : 'Confirmar Finalización'}
-                content={pendingData?.estadoID === ESTADO_VIAJE_ID.DESCARGANDO 
+                severity={pendingData?.estadoID === viajeEstadoDescargandoId ? 'error' : 'info'}
+                title={pendingData?.estadoID === viajeEstadoDescargandoId ? 'Confirmar Cancelación' : 'Confirmar Finalización'}
+                content={pendingData?.estadoID === viajeEstadoDescargandoId 
                     ? "Una vez cancelado el viaje no podrá editarse." 
                     : "Una vez completado el registro no podrá editarse, ¿desea continuar con el registro?"}
                 onClose={() => setShowConfirmDialog(false)}

@@ -60,15 +60,30 @@ export function MantenimientoFilter({
     // --- Filters State (Manual) ---
     const [draftFilters, setDraftFilters] = useState<MantenimientoFilters>(initialFilters);
 
-    const handleFilterChange = (field: keyof MantenimientoFilters, value: any) => {
+    const handleFilterChange = (field: keyof MantenimientoFilters, value: string | number) => {
         setDraftFilters(prev => {
-            const newFilters = { ...prev, [field]: value };
+            const newFilters: MantenimientoFilters = { ...prev };
+
+            switch (field) {
+                case 'flotaID':
+                    newFilters.flotaID = Number(value);
+                    break;
+                case 'estadoID':
+                    newFilters.estadoID = Number(value);
+                    break;
+                case 'desde':
+                    newFilters.desde = String(value);
+                    break;
+                case 'hasta':
+                    newFilters.hasta = String(value);
+                    break;
+            }
             
             if (field === 'desde' && newFilters.hasta && value > newFilters.hasta) {
-                newFilters.hasta = value;
+                newFilters.hasta = String(value);
             }
             if (field === 'hasta' && newFilters.desde && value < newFilters.desde) {
-                newFilters.desde = value;
+                newFilters.desde = String(value);
             }
             
             return newFilters;
@@ -140,7 +155,7 @@ export function MantenimientoFilter({
                                 size="small"
                                 fullWidth
                                 value={draftFilters.flotaID}
-                                onChange={(e) => handleFilterChange('flotaID', e.target.value)}
+                                onChange={(e) => handleFilterChange('flotaID', Number(e.target.value))}
                             >
                                 <MenuItem value={0}>Todos</MenuItem>
                                 {flotas.map((item) => (
@@ -155,7 +170,7 @@ export function MantenimientoFilter({
                                 size="small"
                                 fullWidth
                                 value={draftFilters.estadoID}
-                                onChange={(e) => handleFilterChange('estadoID', e.target.value)}
+                                onChange={(e) => handleFilterChange('estadoID', Number(e.target.value))}
                             >
                                 <MenuItem value={0}>Todos</MenuItem>
                                 {estados.map((item) => (

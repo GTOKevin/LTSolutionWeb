@@ -1,8 +1,10 @@
 import { httpClient } from '@/shared/api/http';
 import type { Mercaderia, MercaderiaDto, CreateMercaderiaDto, MercaderiaParams } from '../model/types';
-import type { PagedResponse } from '@/shared/model/types';
+import type { PagedResponse, SelectItem } from '@/shared/model/types';
 
 export const mercaderiaApi = {
+    getSelect: (search?: string, limit: number = 20) =>
+        httpClient.get<SelectItem[]>('/Mercaderia/select', { params: { search, limit } }),
     getAll: (params: MercaderiaParams) =>
         httpClient.get<PagedResponse<Mercaderia>>('/Mercaderia', { params }),
     getById: (id: number) =>

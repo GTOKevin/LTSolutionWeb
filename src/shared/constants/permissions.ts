@@ -38,6 +38,7 @@ export const PERMISSIONS = {
     VIAJES: {
         VER: 'VIAJES_VER',
         GESTIONAR: 'VIAJES_GESTIONAR',
+        REABRIR: 'VIAJES_REABRIR',
     },
     FLOTA: {
         VER: 'FLOTA_VER',
@@ -50,6 +51,7 @@ export const PERMISSIONS = {
     MANTENIMIENTOS: {
         VER: 'MANTENIMIENTOS_VER',
         GESTIONAR: 'MANTENIMIENTOS_GESTIONAR',
+        REABRIR:'MANTENIMIENTOS_REABRIR',
     },
     SISTEMA: {
         USUARIOS: {

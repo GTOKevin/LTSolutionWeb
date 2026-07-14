@@ -17,7 +17,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { flotaApi } from '@/entities/flota/api/flota.api';
 import { useFlotaForm } from '@/features/flota/hooks/useFlotaForm';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
-import { TIPOS_COMBUSTIBLE } from '@/shared/constants/constantes';
+import { TIPOS_COMBUSTIBLE } from '@entities/flota/model/constants';
 import { FlotaDocumentosList } from '@/features/flota/documentos/ui/FlotaDocumentosList';
 
 export function FlotaVerPage() {
@@ -53,7 +53,7 @@ export function FlotaVerPage() {
     } = useFlotaForm({
         flotaToEdit: flota ?? null,
         onSuccess: () => {},
-        onClose: () => navigate('/app/flota'),
+        onClose: () => navigate('/app/flotas'),
         open: true
     });
 
@@ -403,7 +403,7 @@ export function FlotaVerPage() {
                                     }}
                                 >
                                     <Button
-                                        onClick={() => navigate('/app/flota')}
+                                        onClick={() => navigate('/app/flotas')}
                                         variant="outlined"
                                         color="inherit"
                                         disabled={isSubmitting}
@@ -419,4 +419,3 @@ export function FlotaVerPage() {
         </Box>
     );
 }
-

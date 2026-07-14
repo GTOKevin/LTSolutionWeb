@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { CreateViajeGastoDto, ViajeGasto } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
@@ -17,17 +17,17 @@ import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
 import { handleBackendErrors } from '@/shared/utils/form-validation';
-import { MONEDA_ID } from '@/shared/constants/constantes';
 
 interface Props {
     viajeId: number;
     tiposGasto: SelectItem[];
     monedas: SelectItem[]; 
+    defaultMonedaId?: number;
     gasto?: ViajeGasto | null;
     onCancel?: () => void;
 }
 
-export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCancel }: Props) {
+export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, defaultMonedaId = 0, gasto, onCancel }: Props) {
     const theme = useTheme();
     const createMutation = useCreateViajeGasto();
     const updateMutation = useUpdateViajeGasto();
@@ -35,12 +35,12 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
     const isEditing = !!gasto;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, register, handleSubmit, reset, watch, setValue, setError, formState: { errors } } = useForm<ViajeGastoFormData>({
+    const { control, register, handleSubmit, reset, setValue, setError, formState: { errors } } = useForm<ViajeGastoFormData>({
         resolver: zodResolver(viajeGastoSchema),
         defaultValues: {
             gastoID: 0,
             fechaGasto: getCurrentDateISO(),
-            monedaID: MONEDA_ID.SOLES, // Default PEN
+            monedaID: defaultMonedaId,
             monto: 0,
             comprobante: false,
             numeroComprobante: '',
@@ -50,10 +50,16 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
         }
     });
 
-    const hasComprobante = watch('comprobante');
-    const isCombustible = watch('combustible');
-    const selectedGastoID = watch('gastoID');
-    const selectedMonedaID = watch('monedaID');
+    const hasComprobante = useWatch({ control, name: 'comprobante', defaultValue: false });
+    const isCombustible = useWatch({ control, name: 'combustible', defaultValue: false });
+    const selectedGastoID = useWatch({ control, name: 'gastoID', defaultValue: 0 });
+    const selectedMonedaID = useWatch({ control, name: 'monedaID', defaultValue: defaultMonedaId });
+
+    useEffect(() => {
+        if (!gasto && defaultMonedaId && !selectedMonedaID) {
+            setValue('monedaID', defaultMonedaId);
+        }
+    }, [defaultMonedaId, gasto, selectedMonedaID, setValue]);
 
     // Determine if currency should be restricted to Soles (Combustible/Peaje)
     const selectedGasto = tiposGasto.find(t => t.id === selectedGastoID);
@@ -69,8 +75,8 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                 setValue('combustible', metadata.isFuel);
 
                 // Force Currency if needed
-                if (metadata.forcesCurrency && metadata.defaultMonedaID) {
-                    setValue('monedaID', metadata.defaultMonedaID);
+                if (metadata.forcesCurrency && defaultMonedaId) {
+                    setValue('monedaID', defaultMonedaId);
                 }
 
                 if (!metadata.isFuel) {
@@ -78,7 +84,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                 }
             }
         }
-    }, [selectedGastoID, tiposGasto, setValue]);
+    }, [defaultMonedaId, selectedGastoID, tiposGasto, setValue]);
 
     useEffect(() => {
         if (gasto) {
@@ -97,7 +103,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
             reset({
                 gastoID: 0,
                 fechaGasto: getCurrentDateISO(),
-                monedaID: MONEDA_ID.SOLES,
+                monedaID: defaultMonedaId,
                 monto: 0,
                 comprobante: false,
                 numeroComprobante: '',
@@ -106,7 +112,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
                 galones: 0
             });
         }
-    }, [gasto, reset]);
+    }, [defaultMonedaId, gasto, reset]);
 
     const onSubmit = async (data: ViajeGastoFormData) => {
         if (!viajeId) return;
@@ -131,7 +137,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, gasto, onCa
             reset({
                 gastoID: 0,
                 fechaGasto: getCurrentDateISO(),
-                monedaID: MONEDA_ID.SOLES,
+                monedaID: defaultMonedaId,
                 monto: 0,
                 comprobante: false,
                 numeroComprobante: '',

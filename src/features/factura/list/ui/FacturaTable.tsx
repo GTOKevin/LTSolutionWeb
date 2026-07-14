@@ -1,11 +1,11 @@
 import React from 'react';
 import { Typography, Box, Chip, TableCell } from '@mui/material';
 import type { Factura } from '@/entities/factura/model/types';
-import type { PagedResponse } from '@/shared/model/types';
+import type { PagedResponse, SelectItem } from '@/shared/model/types';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { formatCurrency } from '@/shared/utils/format-utils';
-import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
+import { getFacturaStatusColor } from '@/entities/factura/model/status';
 import { FacturaActionMenu } from './FacturaActionMenu';
 
 interface FacturaTableProps {
@@ -21,22 +21,7 @@ interface FacturaTableProps {
     onPayment?: (item: Factura) => void;
     onViewPayments?: (item: Factura) => void;
     onUpdateStatus?: (item: Factura, newStatusId: number) => void;
-}
-
-function statusColor(estadoId:number){
-
-    switch (estadoId) {
-        case ESTADO_FACTURA_ID.GENERADO:
-            return 'warning';
-        case ESTADO_FACTURA_ID.EMITIDO:
-            return 'info';
-        case ESTADO_FACTURA_ID.ENTREGADO:
-            return 'success';
-        case ESTADO_FACTURA_ID.ANULADO:
-            return 'error';
-        default:
-            return 'info';
-    }
+    statusCatalog?: SelectItem[];
 }
 
 export function FacturaTable({
@@ -51,7 +36,8 @@ export function FacturaTable({
     onDelete,
     onPayment,
     onViewPayments,
-    onUpdateStatus
+    onUpdateStatus,
+    statusCatalog = [],
 }: FacturaTableProps) {
     const columns: Column[] = React.useMemo(() => [
         { id: 'factura', label: 'Factura' },
@@ -111,7 +97,7 @@ export function FacturaTable({
                     <TableCell>
                         <Chip 
                             label={item.estado?.nombre || 'N/A'} 
-                            color={statusColor(item.estadoID)}
+                            color={getFacturaStatusColor(item)}
                             size="small" 
                             variant="filled"
                         />
@@ -127,6 +113,7 @@ export function FacturaTable({
                                     onPayment={onPayment}
                                     onViewPayments={onViewPayments}
                                     onUpdateStatus={onUpdateStatus}
+                                    statusCatalog={statusCatalog}
                                 />
                             )}
                         </Box>

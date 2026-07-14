@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import {
     Paper,
     Table,
@@ -12,7 +12,6 @@ import {
     type SxProps,
     type Theme
 } from '@mui/material';
-import { useVirtualizer } from '@tanstack/react-virtual';
 
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 import type { PagedResponse } from '@/shared/model/types';
@@ -60,15 +59,7 @@ export function SharedTable<T>({
     variant = 'elevated'
 }: SharedTableProps<T>) {
     const theme = useTheme();
-    const parentRef = useRef<HTMLDivElement>(null);
     const items = data?.items || [];
-
-    const rowVirtualizer = useVirtualizer({
-        count: items.length,
-        getScrollElement: () => parentRef.current,
-        estimateSize: () => rowHeight,
-        overscan: 5,
-    });
 
     return (
         <Paper sx={{ 
@@ -80,7 +71,7 @@ export function SharedTable<T>({
             boxShadow: variant === 'flat' ? 'none' : theme.shadows[1],
             ...containerSx
         }}>
-            <TableContainer ref={parentRef} sx={{ flex: 1, overflow: 'auto' }}>
+            <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
                 <Table stickyHeader>
                     <TableHead>
                         <TableRow>
@@ -117,33 +108,19 @@ export function SharedTable<T>({
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            <>
-                                {rowVirtualizer.getVirtualItems().length > 0 && rowVirtualizer.getVirtualItems()[0].start > 0 && (
-                                    <TableRow>
-                                        <TableCell style={{ height: `${rowVirtualizer.getVirtualItems()[0].start}px`, padding: 0, border: 0 }} colSpan={columns.length} />
-                                    </TableRow>
-                                )}
-                                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                                    const item = items[virtualRow.index];
-                                    return (
-                                        <TableRow 
-                                            key={keyExtractor(item)} 
-                                            hover
-                                            sx={{ 
-                                                '&:hover .actions-group': { opacity: 1 },
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            {renderRow(item)}
-                                        </TableRow>
-                                    );
-                                })}
-                                {rowVirtualizer.getVirtualItems().length > 0 && rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end < rowVirtualizer.getTotalSize() && (
-                                    <TableRow>
-                                        <TableCell style={{ height: `${rowVirtualizer.getTotalSize() - rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end}px`, padding: 0, border: 0 }} colSpan={columns.length} />
-                                    </TableRow>
-                                )}
-                            </>
+                            items.map((item) => (
+                                <TableRow
+                                    key={keyExtractor(item)}
+                                    hover
+                                    sx={{
+                                        height: rowHeight,
+                                        '&:hover .actions-group': { opacity: 1 },
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    {renderRow(item)}
+                                </TableRow>
+                            ))
                         )}
                     </TableBody>
                 </Table>

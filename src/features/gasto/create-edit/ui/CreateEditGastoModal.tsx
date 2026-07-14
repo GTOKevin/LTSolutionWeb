@@ -51,7 +51,6 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess }: 
 
     useEffect(() => {
         if (open) {
-            setErrorMessage(null);
             if (gastoToEdit) {
                 reset({
                     nombre: gastoToEdit.nombre,
@@ -63,6 +62,14 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess }: 
                     activo: true
                 });
             }
+
+            const resetUiTimer = window.setTimeout(() => {
+                setErrorMessage(null);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, gastoToEdit, reset]);
 

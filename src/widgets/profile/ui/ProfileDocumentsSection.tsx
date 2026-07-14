@@ -1,7 +1,8 @@
 import { BadgeOutlined, DescriptionOutlined, WarningAmberRounded } from '@mui/icons-material';
 import { Box, Button, Card, CardContent, Chip, Stack, Typography, alpha, useTheme } from '@mui/material';
 import type { MyProfileDocumentoDto } from '@entities/profile/model/types';
-import { SectionTitle, cardSx, formatDate, tableCellSx, tableHeaderSx } from './ProfileShared';
+import { SectionTitle } from './ProfileShared';
+import { cardSx, formatDate, tableCellSx, tableHeaderSx } from './ProfileShared.helpers';
 
 interface ProfileDocumentsSectionProps {
     documentos: MyProfileDocumentoDto[];

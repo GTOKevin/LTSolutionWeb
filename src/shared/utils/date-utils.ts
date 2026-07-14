@@ -134,7 +134,7 @@ export const combineDateTime = (date: string, time: string): string | null => {
         const combined = new Date(`${date}T${time}:00`);
         if (isNaN(combined.getTime())) return null;
         return combined.toISOString();
-    } catch (e) {
+    } catch {
         return null;
     }
 };

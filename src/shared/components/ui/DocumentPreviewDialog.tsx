@@ -1,4 +1,6 @@
 import {
+    Alert,
+    Box,
     Dialog,
     DialogContent,
     DialogActions,
@@ -12,20 +14,37 @@ import {
     Download as DownloadIcon,
     Close as CloseIcon
 } from '@mui/icons-material';
+import { useEffect, useState } from 'react';
+import { useToast } from './Toast';
+import { getErrorMessage } from '@/shared/utils/api-errors';
 
 interface DocumentPreviewDialogProps {
     open: boolean;
     onClose: () => void;
     previewUrl: string | null;
     title?: string;
+    onError?: (message: string) => void;
 }
 
-export function DocumentPreviewDialog({ open, onClose, previewUrl, title = 'Vista Previa' }: DocumentPreviewDialogProps) {
+export function DocumentPreviewDialog({ open, onClose, previewUrl, title = 'Vista Previa', onError }: DocumentPreviewDialogProps) {
     const theme = useTheme();
+    const { showToast } = useToast();
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [imageLoadFailed, setImageLoadFailed] = useState(false);
+
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        setErrorMessage(null);
+        setImageLoadFailed(false);
+    }, [open, previewUrl]);
 
     const handleDownload = async () => {
         if (!previewUrl) return;
         try {
+            setErrorMessage(null);
             const downloadUrl = new URL(previewUrl, window.location.origin);
             downloadUrl.searchParams.set('t', Date.now().toString());
 
@@ -47,8 +66,18 @@ export function DocumentPreviewDialog({ open, onClose, previewUrl, title = 'Vist
             document.body.removeChild(link);
             window.setTimeout(() => window.URL.revokeObjectURL(url), 1000);
         } catch (error) {
-            console.error('Error downloading:', error);
-            window.open(previewUrl, '_blank');
+            const message = getErrorMessage(error, 'No se pudo descargar el documento.');
+            setErrorMessage(message);
+            onError?.(message);
+            showToast({ message, severity: 'error' });
+
+            const fallbackWindow = window.open(previewUrl, '_blank', 'noopener,noreferrer');
+            if (!fallbackWindow) {
+                const popupMessage = 'No se pudo abrir el documento en una nueva pestaña.';
+                setErrorMessage(popupMessage);
+                onError?.(popupMessage);
+                showToast({ message: popupMessage, severity: 'warning' });
+            }
         }
     };
 
@@ -90,20 +119,35 @@ export function DocumentPreviewDialog({ open, onClose, previewUrl, title = 'Vist
                 p: 0, 
                 bgcolor: '#000', 
                 display: 'flex', 
+                flexDirection: 'column',
                 justifyContent: 'center', 
                 alignItems: 'center', 
                 minHeight: 400,
                 position: 'relative'
             }}>
-                {previewUrl ? (
-                    <img 
-                        src={previewUrl} 
-                        alt="Vista previa" 
-                        style={{ 
-                            maxWidth: '100%', 
-                            maxHeight: '80vh', 
-                            objectFit: 'contain' 
-                        }} 
+                {errorMessage && (
+                    <Box sx={{ width: '100%', p: 2, bgcolor: 'background.paper' }}>
+                        <Alert severity="error" onClose={() => setErrorMessage(null)}>
+                            {errorMessage}
+                        </Alert>
+                    </Box>
+                )}
+                {previewUrl && !imageLoadFailed ? (
+                    <img
+                        src={previewUrl}
+                        alt="Vista previa"
+                        onError={() => {
+                            const message = 'No se pudo cargar la vista previa del documento.';
+                            setImageLoadFailed(true);
+                            setErrorMessage(message);
+                            onError?.(message);
+                            showToast({ message, severity: 'error' });
+                        }}
+                        style={{
+                            maxWidth: '100%',
+                            maxHeight: '80vh',
+                            objectFit: 'contain'
+                        }}
                     />
                 ) : (
                     <Typography sx={{ color: 'grey.500' }}>No se pudo cargar la imagen</Typography>

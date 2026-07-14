@@ -5,8 +5,8 @@ import {
 } from '@mui/material';
 import { useUpdateViajeRuta } from '@features/viaje/hooks/useViajeRutas';
 import { useQuery } from '@tanstack/react-query';
-import { maestroApi } from '@/shared/api/maestro.api';
-import { SECCION_MAESTRO } from '@/shared/constants/maestro';
+import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
+import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import type { ViajeRutaDto, UpdateViajeRutaDto } from '@/entities/viaje/model/types';
 import dayjs from 'dayjs';
 
@@ -36,15 +36,21 @@ export function EditRutaDialog({ open, onClose, viajeId, ruta }: EditRutaDialogP
 
     useEffect(() => {
         if (open && ruta) {
-            setFormData({
-                tipoPuntoId: ruta.tipoPuntoId,
-                nombreLugar: ruta.nombreLugar || '',
-                esOpcionPrincipal: ruta.esOpcionPrincipal,
-                // Format to datetime-local expected format (YYYY-MM-DDThh:mm)
-                fechaEstimadaLlegada: ruta.fechaEstimadaLlegada 
-                    ? dayjs(ruta.fechaEstimadaLlegada).format('YYYY-MM-DDTHH:mm') 
-                    : '',
-            });
+            const resetUiTimer = window.setTimeout(() => {
+                setFormData({
+                    tipoPuntoId: ruta.tipoPuntoId,
+                    nombreLugar: ruta.nombreLugar || '',
+                    esOpcionPrincipal: ruta.esOpcionPrincipal,
+                    // Format to datetime-local expected format (YYYY-MM-DDThh:mm)
+                    fechaEstimadaLlegada: ruta.fechaEstimadaLlegada
+                        ? dayjs(ruta.fechaEstimadaLlegada).format('YYYY-MM-DDTHH:mm')
+                        : '',
+                });
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, ruta]);
 

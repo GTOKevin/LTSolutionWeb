@@ -1,11 +1,9 @@
-import { MONEDA_ID } from '@/shared/constants/constantes';
 import type { SelectItem } from '@/shared/model/types';
 
 export interface GastoMetadata {
     isFuel: boolean;
     isToll: boolean;
     forcesCurrency: boolean;
-    defaultMonedaID?: number;
 }
 
 /**
@@ -34,6 +32,5 @@ export const getGastoMetadata = (gasto?: SelectItem): GastoMetadata => {
         isFuel,
         isToll,
         forcesCurrency,
-        defaultMonedaID: forcesCurrency ? MONEDA_ID.SOLES : undefined
     };
 };

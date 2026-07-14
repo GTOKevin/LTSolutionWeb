@@ -25,7 +25,7 @@ import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
 import { buildInternalFileUrl } from '@/shared/config/env';
 
-import { ViajeGuiaMobileList } from './Index';
+import { ViajeGuiaMobileList } from './index';
 
 interface Props {
     viajeId: number;

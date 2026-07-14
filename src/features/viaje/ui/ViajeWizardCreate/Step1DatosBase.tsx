@@ -5,13 +5,13 @@ import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
 import { TextField } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
-import { ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
 import { addDaysToDateISO, addMonthsToDateISO } from '@/shared/utils/date-utils';
 
 interface Props {
     options: {
         clientes?: SelectItem[];
         estados?: SelectItem[];
+        allowedEstadoIds?: number[];
         flotaDisponibilidad?: {
             totalTractos: number;
             tractosLibres: number;
@@ -22,11 +22,11 @@ interface Props {
 
 export function Step1DatosBase({ options }: Props) {
     const { register, formState: { errors } } = useFormContext();
-    const { clientes, estados, flotaDisponibilidad } = options;
+    const { clientes, estados, allowedEstadoIds, flotaDisponibilidad } = options;
     const fechaMinima = addDaysToDateISO(7);
     const fechaMaxima = addMonthsToDateISO(2);
 
-    const allowedEstados = estados?.filter(e => e.id === ESTADO_VIAJE_ID.AGENDADO || e.id === ESTADO_VIAJE_ID.TRANSITO) || [];
+    const allowedEstados = estados?.filter((estado) => allowedEstadoIds?.includes(estado.id)) || [];
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

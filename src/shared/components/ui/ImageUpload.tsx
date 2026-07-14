@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+    Alert,
     Box,
     Button,
     CircularProgress,
@@ -18,6 +19,8 @@ import imageCompression from 'browser-image-compression';
 import { archivoApi } from '@shared/api/archivo.api';
 import { buildInternalFileUrl } from '@/shared/config/env';
 import { DocumentPreviewDialog } from './DocumentPreviewDialog';
+import { useToast } from '@/shared/components/ui/Toast';
+import { getErrorMessage } from '@/shared/utils/api-errors';
 
 interface ImageUploadProps {
     value?: string;
@@ -28,6 +31,9 @@ interface ImageUploadProps {
     helperText?: string;
     disabled?: boolean;
     viewOnly?: boolean;
+    onError?: (message: string) => void;
+    onUploadSuccess?: (url: string) => void;
+    onDeleteSuccess?: () => void;
 }
 
 export function ImageUpload({
@@ -38,11 +44,16 @@ export function ImageUpload({
     error,
     helperText,
     disabled = false,
-    viewOnly = false
+    viewOnly = false,
+    onError,
+    onUploadSuccess,
+    onDeleteSuccess
 }: ImageUploadProps) {
     const theme = useTheme();
+    const { showToast } = useToast();
     const [uploading, setUploading] = useState(false);
     const [previewOpen, setPreviewOpen] = useState(false);
+    const [operationError, setOperationError] = useState<string | null>(null);
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -50,6 +61,7 @@ export function ImageUpload({
 
         try {
             setUploading(true);
+            setOperationError(null);
 
             const options = {
                 maxSizeMB: 0.8, // Menos de 1MB
@@ -73,8 +85,12 @@ export function ImageUpload({
 
             const response = await archivoApi.upload(compressedFile, folder);
             onChange(response.url);
+            onUploadSuccess?.(response.url);
         } catch (error) {
-            console.error('Error uploading file:', error);
+            const message = getErrorMessage(error, 'No se pudo subir la imagen.');
+            setOperationError(message);
+            onError?.(message);
+            showToast({ message, severity: 'error' });
         } finally {
             setUploading(false);
             event.target.value = '';
@@ -84,12 +100,17 @@ export function ImageUpload({
     const handleDelete = async () => {
         if (!value) return;
         try {
+            setOperationError(null);
             if (value.startsWith('/uploads')) {
                 await archivoApi.delete(value);
             }
             onChange('');
+            onDeleteSuccess?.();
         } catch (error) {
-            console.error('Error deleting file:', error);
+            const message = getErrorMessage(error, 'No se pudo eliminar la imagen.');
+            setOperationError(message);
+            onError?.(message);
+            showToast({ message, severity: 'error' });
         }
     };
 
@@ -111,6 +132,12 @@ export function ImageUpload({
                     }
                 }}
             >
+                {operationError && (
+                    <Alert severity="error" onClose={() => setOperationError(null)}>
+                        {operationError}
+                    </Alert>
+                )}
+
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="caption" color={error ? 'error' : 'text.secondary'} fontWeight={600}>
                         {label}

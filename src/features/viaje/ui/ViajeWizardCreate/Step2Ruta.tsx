@@ -1,5 +1,5 @@
 import { Box, Typography, Paper, TextField, useTheme } from '@mui/material';
-import { Controller, useFormContext } from 'react-hook-form';
+import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { LocationOn, SportsScore, Map as MapIcon, Flag, South } from '@mui/icons-material';
 import { UbigeoSelect } from '@/shared/components/ui/UbigeoSelect';
 import { handleAddressKeyDown } from '@/shared/utils/input-validators';
@@ -7,16 +7,22 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import 'leaflet-routing-machine';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useUbigeoDetails } from '@/shared/hooks/useUbigeoDetails';
 import { useOrsRoute } from '@/shared/hooks/useOrsRoute';
+import type { ViajeWizardFormData } from '../../model/schema';
 
 // Fix for default markers in leaflet with Webpack/Vite
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+type LeafletIconDefaultPrototype = L.Icon.Default & {
+    _getIconUrl?: () => string;
+};
+
+const defaultIconPrototype = L.Icon.Default.prototype as LeafletIconDefaultPrototype;
+delete defaultIconPrototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl,
   iconUrl,
@@ -60,31 +66,24 @@ function MapAutoZoom({ routePath, fallbackPoints }: { routePath?: [number, numbe
 
 export function Step2Ruta() {
     const theme = useTheme();
-    const { register, control, watch, formState: { errors } } = useFormContext();
+    const { register, control, formState: { errors } } = useFormContext<ViajeWizardFormData>();
     
-    const origenID = watch('origenID');
-    const destinoID = watch('destinoID');
+    const origenID = useWatch({ control, name: 'origenID', defaultValue: 0 });
+    const destinoID = useWatch({ control, name: 'destinoID', defaultValue: 0 });
     
     // Fetch details of selected Ubigeos to get coordinates
     const { data: origenDetails } = useUbigeoDetails(origenID);
     const { data: destinoDetails } = useUbigeoDetails(destinoID);
 
-    const [origenCoords, setOrigenCoords] = useState<[number, number] | null>(null);
-    const [destinoCoords, setDestinoCoords] = useState<[number, number] | null>(null);
-    
-    useEffect(() => {
-        if (origenDetails?.latitud && origenDetails?.longitud) {
-            setOrigenCoords([origenDetails.latitud, origenDetails.longitud]); 
-        } else {
-            setOrigenCoords(null);
-        }
-        
-        if (destinoDetails?.latitud && destinoDetails?.longitud) {
-            setDestinoCoords([destinoDetails.latitud, destinoDetails.longitud]);
-        } else {
-            setDestinoCoords(null);
-        }
-    }, [origenDetails, destinoDetails]);
+    const origenCoords =
+        origenDetails?.latitud && origenDetails?.longitud
+            ? [origenDetails.latitud, origenDetails.longitud] as [number, number]
+            : null;
+
+    const destinoCoords =
+        destinoDetails?.latitud && destinoDetails?.longitud
+            ? [destinoDetails.latitud, destinoDetails.longitud] as [number, number]
+            : null;
 
     // Query to calculate route via OpenRouteService
     const { data: routeData, isLoading: isRouteLoading, isError: isRouteError } = useOrsRoute(

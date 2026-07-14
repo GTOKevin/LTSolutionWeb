@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import type { Factura } from '@/entities/factura/model/types';
+import { isFacturaGenerada } from '@/entities/factura/model/status';
 import { useDeleteFacturaPago, useFacturaPagos } from '../../hooks/useFacturaPagoCrud';
 import { FacturaPagoForm } from './FacturaPagoForm';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
-import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
 import { FacturaPagoList } from './FacturaPagoList';
 import { FacturaPagoMobileList } from './FacturaPagoMobileList';
 
@@ -56,7 +56,7 @@ export function FacturaPagos({ factura }: FacturaPagosProps) {
 
     const pagos = pagosFetch;
     const paginatedPagos = pagos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const isReadOnly = factura.estadoID === ESTADO_FACTURA_ID.GENERADO || factura.saldoPendiente <= 0;
+    const isReadOnly = isFacturaGenerada(factura) || factura.saldoPendiente <= 0;
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

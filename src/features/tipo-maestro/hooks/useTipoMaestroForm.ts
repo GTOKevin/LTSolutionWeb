@@ -44,7 +44,6 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
 
     useEffect(() => {
         if (open) {
-            setErrorMessage(null);
             if (maestroToEdit) {
                 reset({
                     nombre: maestroToEdit.nombre,
@@ -60,6 +59,14 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
                     activo: true
                 });
             }
+
+            const resetUiTimer = window.setTimeout(() => {
+                setErrorMessage(null);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(resetUiTimer);
+            };
         }
     }, [open, maestroToEdit, reset]);
 
@@ -72,7 +79,7 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
                         onSuccess();
                         onClose();
                     },
-                    onError: (error: any) => {
+                    onError: (error: unknown) => {
                         const genericError = handleBackendErrors<TipoMaestroSchema>(error, setError);
                         if (genericError) {
                             setErrorMessage(genericError);
@@ -88,7 +95,7 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
                         onSuccess();
                         onClose();
                     },
-                    onError: (error: any) => {
+                    onError: (error: unknown) => {
                         const genericError = handleBackendErrors<TipoMaestroSchema>(error, setError);
                         if (genericError) {
                             setErrorMessage(genericError);

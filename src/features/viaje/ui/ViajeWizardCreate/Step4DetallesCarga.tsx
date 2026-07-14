@@ -4,20 +4,27 @@ import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { Add, Delete, Inventory2, Straighten, Scale, LibraryAdd, WarningAmber } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeWizardFormData } from '../../model/schema';
-import { MEDIDA_ID, PESO_ID } from '@/shared/constants/maestro';
 
 interface Props {
     options: {
         mercaderias?: SelectItem[];
         tiposMedida?: SelectItem[];
         tiposPeso?: SelectItem[];
+        defaultTipoMedidaId?: number;
+        defaultTipoPesoId?: number;
     };
 }
 
 export function Step4DetallesCarga({ options }: Props) {
     const theme = useTheme();
     const { control, register, formState: { errors } } = useFormContext<ViajeWizardFormData>();
-    const { mercaderias, tiposMedida, tiposPeso } = options;
+    const {
+        mercaderias,
+        tiposMedida,
+        tiposPeso,
+        defaultTipoMedidaId = 0,
+        defaultTipoPesoId = 0,
+    } = options;
 
     const { fields, append, remove } = useFieldArray({
         control,
@@ -28,11 +35,11 @@ export function Step4DetallesCarga({ options }: Props) {
         append({
             mercaderiaID: 0,
             descripcion: '',
-            tipoMedidaID: MEDIDA_ID.Metro,
+            tipoMedidaID: defaultTipoMedidaId,
             largo: 0,
             ancho: 0,
             alto: 0,
-            tipoPesoID: PESO_ID.Kilogramo,
+            tipoPesoID: defaultTipoPesoId,
             peso: 0
         });
     };
@@ -180,7 +187,7 @@ export function Step4DetallesCarga({ options }: Props) {
                                                     label=""
                                                     registration={register(`mercaderias.${index}.tipoMedidaID`, { valueAsNumber: true })}
                                                     options={tiposMedida || []}
-                                                    defaultValue={MEDIDA_ID.Metro}
+                                                    defaultValue={defaultTipoMedidaId}
                                                     error={!!errors.mercaderias?.[index]?.tipoMedidaID}
                                                     helperText={errors.mercaderias?.[index]?.tipoMedidaID?.message as string}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' } }}
@@ -242,7 +249,7 @@ export function Step4DetallesCarga({ options }: Props) {
                                                     label=""
                                                     registration={register(`mercaderias.${index}.tipoPesoID`, { valueAsNumber: true })}
                                                     options={tiposPeso || []}
-                                                    defaultValue={PESO_ID.Kilogramo}
+                                                    defaultValue={defaultTipoPesoId}
                                                     error={!!errors.mercaderias?.[index]?.tipoPesoID}
                                                     helperText={errors.mercaderias?.[index]?.tipoPesoID?.message as string}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' } }}

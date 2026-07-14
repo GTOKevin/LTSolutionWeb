@@ -11,9 +11,9 @@ import {
 } from '@mui/material';
 import { ArrowForward, LockOpen } from '@mui/icons-material';
 import type { ViajeListItem } from '@entities/viaje/model/types';
+import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
 import type { PagedResponse } from '@/shared/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import { ESTADO_VIAJE_COD } from '@/shared/constants/constantes';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 
@@ -25,6 +25,7 @@ interface Props {
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     canManage?: boolean;
+    canReabrir?: boolean;
     onEdit?: (viaje: ViajeListItem) => void;
     onDelete?: (viaje: ViajeListItem) => void;
     onView?: (viaje: ViajeListItem) => void;
@@ -41,6 +42,7 @@ export function ViajesTable({
     onPageChange, 
     onRowsPerPageChange,
     canManage = false,
+    canReabrir = false,
     onEdit, 
     onDelete, 
     onView,
@@ -65,7 +67,7 @@ export function ViajesTable({
     const getEstadoConfig = (codigo?: string, nombre?: string) => {
         const label = nombre || 'Sin estado';
 
-        if (codigo === ESTADO_VIAJE_COD.Agendado) {
+        if (codigo === VIAJE_STATUS_CODE.AGENDADO) {
             return {
                 label,
                 bg: alpha(theme.palette.info.main, 0.1),
@@ -73,7 +75,7 @@ export function ViajesTable({
                 dotColor: theme.palette.info.main
             };
         }
-        if (codigo === ESTADO_VIAJE_COD.Transito) {
+        if (codigo === VIAJE_STATUS_CODE.TRANSITO) {
             return {
                 label,
                 bg: alpha(theme.palette.warning.main, 0.1),
@@ -81,7 +83,7 @@ export function ViajesTable({
                 dotColor: theme.palette.warning.main
             };
         }
-        if (codigo === ESTADO_VIAJE_COD.Completado) {
+        if (codigo === VIAJE_STATUS_CODE.COMPLETADO) {
             return {
                 label,
                 bg: alpha(theme.palette.success.main, 0.1),
@@ -89,7 +91,7 @@ export function ViajesTable({
                 dotColor: theme.palette.success.main
             };
         }
-        if (codigo === ESTADO_VIAJE_COD.Descargando) {
+        if (codigo === VIAJE_STATUS_CODE.DESCARGANDO) {
             return {
                 label,
                 bg: alpha(theme.palette.secondary.main, 0.1),
@@ -120,7 +122,7 @@ export function ViajesTable({
                 const estado = getEstadoConfig(viaje.estadoCodigo, viaje.estadoNombre);
                 const isEditable = canManage && !viaje.cerrado;
                 const showReports = canManage && viaje.cerrado;
-                const showReopen = canManage && viaje.cerrado;
+                const showReopen = canReabrir && viaje.cerrado;
 
                 return (
                     <>
@@ -250,7 +252,7 @@ export function ViajesTable({
                                     useMenu={true}
                                     onView={onView ? () => onView(viaje) : undefined}
                                     onEdit={isEditable && onEdit ? () => onEdit(viaje) : undefined}
-                                    onDelete={isEditable && viaje.estadoCodigo === ESTADO_VIAJE_COD.Agendado && !viaje.fechaPartida && onDelete ? () => onDelete(viaje) : undefined}
+                                    onDelete={isEditable && viaje.estadoCodigo === VIAJE_STATUS_CODE.AGENDADO && !viaje.fechaPartida && onDelete ? () => onDelete(viaje) : undefined}
                                     onExportExcel={showReports && onExportExcel ? () => onExportExcel(viaje) : undefined}
                                     onExportPdf={showReports && onExportPdf ? () => onExportPdf(viaje) : undefined}
                                     viewTooltip="Visualizar"

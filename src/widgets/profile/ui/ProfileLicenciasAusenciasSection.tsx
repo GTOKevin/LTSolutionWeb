@@ -1,7 +1,8 @@
 import { CalendarMonthOutlined } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Stack, Typography, alpha, useTheme } from '@mui/material';
 import type { MyProfileAusenciaDto, MyProfileLicenciaDto } from '@entities/profile/model/types';
-import { SectionTitle, cardSx, formatDate } from './ProfileShared';
+import { SectionTitle } from './ProfileShared';
+import { cardSx, formatDate } from './ProfileShared.helpers';
 
 interface ProfileLicenciasAusenciasSectionProps {
     licencias: MyProfileLicenciaDto[];
@@ -88,4 +89,3 @@ export function ProfileLicenciasAusenciasSection({ licencias, ausencias, total }
         </Card>
     );
 }
-

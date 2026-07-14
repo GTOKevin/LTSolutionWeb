@@ -11,7 +11,7 @@ import RvHookupIcon from '@mui/icons-material/RvHookup';
 import PersonIcon from '@mui/icons-material/Person';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
-import { ESTADO_VIAJE_COD } from '@/shared/constants/constantes';
+import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
 import { useTheme } from '@mui/material/styles';
 
 interface KanbanCardProps {
@@ -77,10 +77,10 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
                 borderRadius: 2,
                 borderLeft: 4,
                 borderColor: 
-                    viaje.estadoCodigo === ESTADO_VIAJE_COD.Agendado ? "#94a3b8" :
-                    viaje.estadoCodigo === ESTADO_VIAJE_COD.Transito ? '#2563eb' :
-                    viaje.estadoCodigo === ESTADO_VIAJE_COD.Descargando ? '#f59e0b' :
-                    viaje.estadoCodigo === ESTADO_VIAJE_COD.Completado ? '#388e3c' : 'text.secondary'
+                    viaje.estadoCodigo === VIAJE_STATUS_CODE.AGENDADO ? "#94a3b8" :
+                    viaje.estadoCodigo === VIAJE_STATUS_CODE.TRANSITO ? '#2563eb' :
+                    viaje.estadoCodigo === VIAJE_STATUS_CODE.DESCARGANDO ? '#f59e0b' :
+                    viaje.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO ? '#388e3c' : 'text.secondary'
             }}
         >
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
@@ -127,7 +127,7 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
                                         <ListItemText>Visualizar</ListItemText>
                                     </MenuItem>
                                 )}
-                                {onDelete && viaje.estadoCodigo === ESTADO_VIAJE_COD.Agendado && !viaje.fechaPartida && (
+                                {onDelete && viaje.estadoCodigo === VIAJE_STATUS_CODE.AGENDADO && !viaje.fechaPartida && (
                                     <MenuItem onClick={handleAction('delete')} sx={{ color: 'error.main' }}>
                                         <ListItemIcon>
                                             <DeleteIcon fontSize="small" color="error" />

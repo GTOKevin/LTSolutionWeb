@@ -8,12 +8,16 @@ import {
     Checkbox,
     FormControlLabel
 } from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { tipoProductoApi } from '@entities/tipo-producto/api/tipo-producto.api';
-import { monedaApi } from '@/shared/api/moneda.api';
-import { createMantenimientoDetalleSchema, type CreateMantenimientoDetalleSchema } from '../../model/schema';
+import { monedaApi } from '@entities/moneda/api/moneda.api';
+import {
+    createMantenimientoDetalleSchema,
+    type CreateMantenimientoDetalleFormInput,
+    type CreateMantenimientoDetalleSchema
+} from '../../model/schema';
 import { handleAddressKeyDown } from '@/shared/utils/input-validators';
 import { useEffect, useState } from 'react';
 
@@ -42,9 +46,8 @@ export function MantenimientoDetalleForm({
         handleSubmit,
         reset,
         setValue,
-        watch,
         formState: { errors }
-    } = useForm({
+    } = useForm<CreateMantenimientoDetalleFormInput, unknown, CreateMantenimientoDetalleSchema>({
         resolver: zodResolver(createMantenimientoDetalleSchema),
         defaultValues: defaultValues || {
             tipoProductoID: 0,
@@ -62,9 +65,9 @@ export function MantenimientoDetalleForm({
     const [selectedCategoria, setSelectedCategoria] = useState<string>('');
     
     // Watch values for calculation
-    const cantidad = watch('cantidad') as number;
-    const costo = watch('costo') as number;
-    const igv = watch('igv');
+    const cantidad = Number(useWatch({ control, name: 'cantidad', defaultValue: defaultValues?.cantidad ?? 1 }) ?? 0);
+    const costo = Number(useWatch({ control, name: 'costo', defaultValue: defaultValues?.costo ?? 0 }) ?? 0);
+    const igv = useWatch({ control, name: 'igv', defaultValue: defaultValues?.igv ?? true });
 
     useEffect(() => {
         const subTotal = (cantidad || 0) * (costo || 0);
@@ -79,9 +82,6 @@ export function MantenimientoDetalleForm({
     useEffect(() => {
         if (defaultValues) {
             reset(defaultValues);
-            if (initialCategoria) {
-                setSelectedCategoria(initialCategoria);
-            }
         } else {
             reset({
                 tipoProductoID: 0,
@@ -94,8 +94,16 @@ export function MantenimientoDetalleForm({
                 montoIGV: 0,
                 total: 0
             });
-            setSelectedCategoria('');
         }
+
+        const nextCategoria = defaultValues ? (initialCategoria ?? '') : '';
+        const resetUiTimer = window.setTimeout(() => {
+            setSelectedCategoria(nextCategoria);
+        }, 0);
+
+        return () => {
+            window.clearTimeout(resetUiTimer);
+        };
     }, [defaultValues, initialCategoria, reset]);
 
     // Queries for Selects

@@ -22,11 +22,49 @@ import {
 import { useThemeStore } from '@shared/store/theme.store';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { DRAWER_WIDTH } from '@widgets/sidebar/ui/Sidebar';
+import { SIDEBAR_MENU } from '@widgets/sidebar/model/sidebar.config';
 import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import { NotificationBell } from './NotificationBell';
 import { appThemePresets, getThemePreviewSwatches, orderedAppThemeIds } from '@/shared/config/theme/palette';
+
+function matchesPath(candidatePath: string | undefined, currentPath: string): boolean {
+    if (!candidatePath) {
+        return false;
+    }
+
+    return currentPath === candidatePath || currentPath.startsWith(`${candidatePath}/`);
+}
+
+function getSidebarGroupTitle(currentPath: string): string | null {
+    for (const item of SIDEBAR_MENU) {
+        if (matchesPath(item.path, currentPath)) {
+            return item.text;
+        }
+
+        if (item.children?.some((child) => matchesPath(child.path, currentPath))) {
+            return item.text;
+        }
+    }
+
+    return null;
+}
+
+function getSidebarItemTitle(currentPath: string): string | null {
+    for (const item of SIDEBAR_MENU) {
+        if (matchesPath(item.path, currentPath)) {
+            return item.text;
+        }
+
+        const matchedChild = item.children?.find((child) => matchesPath(child.path, currentPath));
+        if (matchedChild) {
+            return matchedChild.text;
+        }
+    }
+
+    return null;
+}
 
 export function Header() {
     const { themeId, setThemeId } = useThemeStore();
@@ -39,12 +77,16 @@ export function Header() {
     const themeOptions = orderedAppThemeIds.map((id) => appThemePresets[id]);
 
 
+    const sidebarItemTitle = getSidebarItemTitle(location.pathname);
+    const sidebarGroupTitle = getSidebarGroupTitle(location.pathname);
+
     // Map routes to titles
     const getTitle = () => {
         if (location.pathname.startsWith('/app/clientes')) return 'Gestión de Clientes';
         if (location.pathname.startsWith('/app/cotizaciones')) return 'Gestión de Cotizaciones';
         if (location.pathname.startsWith('/app/facturas')) return 'Gestión de Facturas';
-        if (location.pathname.startsWith('/app/flota')) return 'Gestión de Flota';
+        if (location.pathname.startsWith('/app/viajes')) return 'Gestión de Viajes';
+        if (location.pathname.startsWith('/app/flotas')) return 'Gestión de Flota';
         if (location.pathname.startsWith('/app/roles-usuario')) return 'Gestión de Roles';
         if (location.pathname.startsWith('/app/roles-colaborador')) return 'Gestión de Roles de Colaborador';
         if (location.pathname.startsWith('/app/tipo-producto')) return 'Tipos de Producto';
@@ -58,12 +100,17 @@ export function Header() {
         if (location.pathname.startsWith('/app/mis-licencias')) return 'Mis Licencias';
         if (location.pathname.startsWith('/app/mis-documentos')) return 'Mis Documentos';
         if (location.pathname.startsWith('/app/reportes')) return 'Reportes';
+        if (sidebarItemTitle) return sidebarItemTitle;
         return pageTitle || 'Dashboard';
     };
 
     const getSectionTitle = () => {
         if (location.pathname.startsWith('/app/mis-')) return 'Portal del Empleado';
         if (location.pathname.startsWith('/app/reportes')) return 'Reportes';
+        if (location.pathname.startsWith('/app/dashboard')) return 'Administración';
+        if (sidebarGroupTitle) {
+            return sidebarGroupTitle;
+        }
         return 'Administración';
     };
 

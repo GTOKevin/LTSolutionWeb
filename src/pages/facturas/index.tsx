@@ -15,6 +15,7 @@ import {
 import { useState } from 'react';
 import { facturaApi } from '@/entities/factura/api/factura.api';
 import { useQuery } from '@tanstack/react-query';
+import { estadoApi } from '@entities/estado/api/estado.api';
 import { FacturaTable } from '@/features/factura/list/ui/FacturaTable';
 import { FacturaMobileList } from '@/features/factura/list/ui/FacturaMobileList';
 import { FacturaPagoForm } from '@/features/factura/pagos/ui/FacturaPagoForm';
@@ -23,7 +24,12 @@ import { useDeleteFactura, useUpdateFactura } from '@/features/factura/hooks/use
 import { useMediaQuery } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import type { Factura, FacturaFilters } from '@/entities/factura/model/types';
-import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
+import {
+    resolveFacturaEmitidaId,
+    resolveFacturaEntregadaId,
+    resolveFacturaGeneradaId,
+} from '@/entities/factura/model/status';
+import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
 import { formatCurrency } from '@/shared/utils/format-utils';
 import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
@@ -45,15 +51,23 @@ export function FacturasPage() {
         queryFn: () => facturaApi.getResumen()
     });
 
+    const { data: facturaEstadosResponse } = useQuery({
+        queryKey: ['estados', 'factura-select'],
+        queryFn: () => estadoApi.getSelect('', 20, ESTADO_SECTIONS.FACTURA),
+    });
+
     const updateMutation = useUpdateFactura();
     const deleteMutation = useDeleteFactura();
 
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [pagosListModalOpen, setPagosListModalOpen] = useState(false);
     const [selectedFactura, setSelectedFactura] = useState<Factura | null>(null);
-
+    const facturaEstados = facturaEstadosResponse?.data ?? [];
+    const facturaGeneradaId = resolveFacturaGeneradaId(facturaEstados);
+    const facturaEmitidaId = resolveFacturaEmitidaId(facturaEstados);
+    const facturaEntregadaId = resolveFacturaEntregadaId(facturaEstados);
     const handleCreateClick = () => {
-        navigate('/app/facturas/nueva');
+        navigate('/app/facturas/nuevo');
     };
 
     const handleEditClick = (factura: Factura) => {
@@ -195,9 +209,9 @@ export function FacturasPage() {
                                     sx={{ bgcolor: 'background.paper', borderRadius: 2, '& fieldset': { border: 'none' } }}
                                 >
                                     <MenuItem value="todos">Todos los estados</MenuItem>
-                                    <MenuItem value={ESTADO_FACTURA_ID.GENERADO.toString()}>Registrada</MenuItem>
-                                    <MenuItem value={ESTADO_FACTURA_ID.EMITIDO.toString()}>Emitida</MenuItem>
-                                    <MenuItem value={ESTADO_FACTURA_ID.ENTREGADO.toString()}>Entregada</MenuItem>
+                                    {facturaGeneradaId ? <MenuItem value={facturaGeneradaId.toString()}>Registrada</MenuItem> : null}
+                                    {facturaEmitidaId ? <MenuItem value={facturaEmitidaId.toString()}>Emitida</MenuItem> : null}
+                                    {facturaEntregadaId ? <MenuItem value={facturaEntregadaId.toString()}>Entregada</MenuItem> : null}
                                 </Select>
                             </Box>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -251,6 +265,7 @@ export function FacturasPage() {
                             onPayment={canManageFacturas ? handlePaymentClick : undefined}
                             onViewPayments={canManageFacturas ? handleViewPaymentsClick : undefined}
                             onUpdateStatus={canManageFacturas ? handleUpdateStatus : undefined}
+                            statusCatalog={facturaEstados}
                         />
                     ) : (
                         <FacturaTable
@@ -266,6 +281,7 @@ export function FacturasPage() {
                             onPayment={canManageFacturas ? handlePaymentClick : undefined}
                             onViewPayments={canManageFacturas ? handleViewPaymentsClick : undefined}
                             onUpdateStatus={canManageFacturas ? handleUpdateStatus : undefined}
+                            statusCatalog={facturaEstados}
                         />
                     )}
                 </Box>

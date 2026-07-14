@@ -1,13 +1,13 @@
 import { createGenericCrudHooks } from '@/shared/hooks/useGenericCrud';
 
-interface CrudApi<TDto> {
-    create: (viajeId: number, data: TDto) => Promise<any>;
-    update: (id: number, data: TDto) => Promise<any>;
-    delete: (id: number) => Promise<any>;
+interface CrudApi<TDto, TCreateResult = unknown, TUpdateResult = unknown, TDeleteResult = unknown> {
+    create: (viajeId: number, data: TDto) => Promise<TCreateResult>;
+    update: (id: number, data: TDto) => Promise<TUpdateResult>;
+    delete: (id: number) => Promise<TDeleteResult>;
 }
 
-export function createViajeSubresourceHooks<TDto>(
-    api: CrudApi<TDto>,
+export function createViajeSubresourceHooks<TDto, TCreateResult = unknown, TUpdateResult = unknown, TDeleteResult = unknown>(
+    api: CrudApi<TDto, TCreateResult, TUpdateResult, TDeleteResult>,
     entityName: string,
     queryKeyFactory: (viajeId: number) => readonly unknown[]
 ) {

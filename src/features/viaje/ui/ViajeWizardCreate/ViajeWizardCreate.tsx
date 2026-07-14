@@ -42,7 +42,7 @@ import { VIAJE_QUERY_KEYS } from '@/features/viaje/model/query-keys';
 
 import { notifyMutationError, type ApiMutationError } from '@/shared/utils/api-errors';
 import { addDaysToDateISO, toInputDate } from '@/shared/utils/date-utils';
-import { MEDIDA_ID, PESO_ID } from '@/shared/constants/maestro';
+import { useEffect } from 'react';
 
 const steps = [
     { label: 'Información General', icon: <Assignment /> },
@@ -120,14 +120,24 @@ export function ViajeWizardCreate() {
             origenID: 0,
             destinoID: 0,
             fechaCarga: addDaysToDateISO(7),
-            tipoMedidaID: MEDIDA_ID.Metro,
-            tipoPesoID: PESO_ID.Kilogramo,
+            tipoMedidaID: 0,
+            tipoPesoID: 0,
             ejesTracto: 0,
             mercaderias: []
         }
     });
 
-    const { handleSubmit, trigger } = methods;
+    const { handleSubmit, trigger, getValues, setValue } = methods;
+
+    useEffect(() => {
+        if (!getValues('tipoMedidaID') && options.defaultTipoMedidaId) {
+            setValue('tipoMedidaID', options.defaultTipoMedidaId);
+        }
+
+        if (!getValues('tipoPesoID') && options.defaultTipoPesoId) {
+            setValue('tipoPesoID', options.defaultTipoPesoId);
+        }
+    }, [getValues, options.defaultTipoMedidaId, options.defaultTipoPesoId, setValue]);
 
     const handleNext = async () => {
         let fieldsToValidate: Path<ViajeWizardFormData>[] = [];
@@ -159,8 +169,6 @@ export function ViajeWizardCreate() {
         mutationFn: async (data: CreateViajeDto) => {
             const cleanData: CreateViajeDto = {
                 ...data,
-                tipoMedidaID: MEDIDA_ID.Metro,
-                tipoPesoID: PESO_ID.Kilogramo,
                 // Ensure dates are correctly formatted
                 fechaCarga: toInputDate(data.fechaCarga),
                 fechaPartida: data.fechaPartida ? toInputDate(data.fechaPartida) : undefined,
