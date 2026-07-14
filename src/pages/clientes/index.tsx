@@ -16,14 +16,14 @@ import { useQuery } from '@tanstack/react-query';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ConfirmDialog } from '../../shared/components/ui/ConfirmDialog';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import type { Cliente } from '@entities/cliente/model/types';
-import { ClientesTable } from '../../features/cliente/list/ui/ClientesTable';
-import { ClientesMobileList } from '../../features/cliente/list/ui/ClientesMobileList';
+import { ClientesTable } from '@features/cliente/list/ui/ClientesTable';
+import { ClientesMobileList } from '@features/cliente/list/ui/ClientesMobileList';
 import { useDeleteCliente } from '@features/cliente/hooks/useClienteCrud';
-import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
-import { usePermission } from '@/shared/lib/hooks/usePermission';
-import { PERMISSIONS } from '@/shared/constants/permissions';
+import { PERMISSIONS } from '@shared/constants/permissions';
+import { usePermission } from '@shared/lib/hooks/usePermission';
+import { handleSanitizeSearchInput } from '@shared/utils/input-validators';
 
 export function ClientesPage() {
     const theme = useTheme();

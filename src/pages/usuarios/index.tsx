@@ -15,7 +15,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { usuarioApi } from '@entities/usuario/api/usuario.api';
 import { rolUsuarioApi } from '@entities/rol-usuario/api/rol-usuario.api';
-import { estadoApi } from '@shared/api/estado.api';
+import { estadoApi } from '@entities/estado/api/estado.api';
 import { useState, useEffect } from 'react';
 import { CreateEditUsuarioModal } from '../../features/usuario/create-edit/ui/CreateEditUsuarioModal';
 import { ChangePasswordModal } from '../../features/usuario/change-password/ui/ChangePasswordModal';
@@ -24,7 +24,7 @@ import type { Usuario } from '@entities/usuario/model/types';
 import { UsuarioTable } from '../../features/usuario/list/ui/UsuarioTable';
 import { UsuarioMobileList } from '../../features/usuario/list/ui/UsuarioMobileList';
 import { UsuarioFilter } from '@/features/usuario/list/ui/UsuarioFilter';
-import { ESTADO_SECCIONES } from '@/shared/constants/constantes';
+import { ESTADO_SECCIONES } from '@entities/master-data/model/constants';
 import { useDeleteUsuario } from '@/features/usuario/hooks/useUsuarioCrud';
 import { StatsCard } from '@/shared/components/ui/StatsCard';
 import { usePermission } from '@/shared/lib/hooks/usePermission';

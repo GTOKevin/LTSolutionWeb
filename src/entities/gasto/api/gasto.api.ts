@@ -1,8 +1,10 @@
 import { httpClient } from '@/shared/api/http';
 import type { Gasto, GastoDto, CreateGastoDto, GastoParams } from '../model/types';
-import type { PagedResponse } from '@/shared/model/types';
+import type { PagedResponse, SelectItem } from '@/shared/model/types';
 
 export const gastoApi = {
+    getSelect: (search?: string, limit: number = 20) =>
+        httpClient.get<SelectItem[]>('/Gasto/select', { params: { search, limit } }),
     getAll: (params: GastoParams) =>
         httpClient.get<PagedResponse<Gasto>>('/Gasto', { params }),
     getById: (id: number) =>

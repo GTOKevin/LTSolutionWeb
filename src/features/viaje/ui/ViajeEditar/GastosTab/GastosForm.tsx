@@ -12,7 +12,6 @@ import { useViajeOptions } from '@features/viaje/hooks/useViajeOptions';
 import { viajeGastoSchema, type ViajeGastoFormData } from '@features/viaje/model/schema';
 import { getGastoMetadata } from '@features/viaje/model/gasto-metadata';
 import { getCurrentDateISO } from '@/shared/utils/date-utils';
-import { MONEDA_ID } from '@/shared/constants/constantes';
 import { logger } from '@/shared/utils/logger';
 
 interface GastosFormProps {
@@ -22,14 +21,14 @@ interface GastosFormProps {
 export function GastosForm({ viajeID }: GastosFormProps) {
     const theme = useTheme();
     const createMutation = useCreateViajeGasto();
-    const { tiposGasto, monedas } = useViajeOptions(true);
+    const { tiposGasto, monedas, defaultMonedaId = 0 } = useViajeOptions(true);
 
     const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajeGastoFormData>({
         resolver: zodResolver(viajeGastoSchema),
         defaultValues: {
             gastoID: 0,
             fechaGasto: getCurrentDateISO(),
-            monedaID: MONEDA_ID.SOLES,
+            monedaID: defaultMonedaId,
             monto: 0,
             comprobante: false,
             numeroComprobante: '',
@@ -42,6 +41,13 @@ export function GastosForm({ viajeID }: GastosFormProps) {
     const selectedGastoID = useWatch({ control, name: 'gastoID', defaultValue: 0 });
     const hasComprobante = useWatch({ control, name: 'comprobante', defaultValue: false });
     const isCombustible = useWatch({ control, name: 'combustible', defaultValue: false });
+    const selectedMonedaID = useWatch({ control, name: 'monedaID', defaultValue: defaultMonedaId });
+
+    useEffect(() => {
+        if (defaultMonedaId && !selectedMonedaID) {
+            setValue('monedaID', defaultMonedaId);
+        }
+    }, [defaultMonedaId, selectedMonedaID, setValue]);
 
     useEffect(() => {
         if (selectedGastoID && tiposGasto && tiposGasto.length > 0) {
@@ -49,15 +55,15 @@ export function GastosForm({ viajeID }: GastosFormProps) {
             if (gasto) {
                 const metadata = getGastoMetadata(gasto);
                 setValue('combustible', metadata.isFuel);
-                if (metadata.forcesCurrency && metadata.defaultMonedaID) {
-                    setValue('monedaID', metadata.defaultMonedaID);
+                if (metadata.forcesCurrency && defaultMonedaId) {
+                    setValue('monedaID', defaultMonedaId);
                 }
                 if (!metadata.isFuel) {
                     setValue('galones', 0);
                 }
             }
         }
-    }, [selectedGastoID, tiposGasto, setValue]);
+    }, [defaultMonedaId, selectedGastoID, tiposGasto, setValue]);
 
     const onSubmit = async (data: ViajeGastoFormData) => {
         try {
@@ -72,7 +78,7 @@ export function GastosForm({ viajeID }: GastosFormProps) {
             reset({
                 gastoID: 0,
                 fechaGasto: getCurrentDateISO(),
-                monedaID: MONEDA_ID.SOLES,
+                monedaID: defaultMonedaId,
                 monto: 0,
                 comprobante: false,
                 numeroComprobante: '',

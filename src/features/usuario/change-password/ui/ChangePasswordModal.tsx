@@ -28,6 +28,8 @@ import {
 } from '@mui/icons-material';
 import { useToast } from '@/shared/components/ui/Toast';
 import { changePasswordSchema, type ChangePasswordSchema } from '../model/schema';
+import { getApiError, getErrorStatus } from '@/shared/utils/api-errors';
+import { getPasswordStrength } from '@/features/auth/change-password/lib/get-password-strength';
 
 interface ChangePasswordModalProps {
     open: boolean;
@@ -35,27 +37,6 @@ interface ChangePasswordModalProps {
     usuarioId: number | null;
     usuarioNombre?: string;
     onSuccess: () => void;
-}
-
-type ChangePasswordApiFieldError = {
-    field?: string;
-    message: string;
-};
-
-type ChangePasswordApiErrorData = {
-    detail?: string;
-    errors?: ChangePasswordApiFieldError[];
-};
-
-type ChangePasswordApiError = {
-    response?: {
-        status?: number;
-        data?: ChangePasswordApiErrorData;
-    };
-};
-
-function isChangePasswordApiError(error: unknown): error is ChangePasswordApiError {
-    return typeof error === 'object' && error !== null && 'response' in error;
 }
 
 export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, onSuccess }: ChangePasswordModalProps) {
@@ -84,22 +65,15 @@ export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, o
 
     // Password Strength Logic
     const strength = useMemo(() => {
-        const hasLength = password.length >= 8;
-        const hasUpper = /[A-Z]/.test(password);
-        const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-        
-        let score = 0;
-        if (hasLength) score++;
-        if (hasUpper) score++;
-        if (hasSymbol) score++;
+        const baseStrength = getPasswordStrength(password);
 
         return {
-            score, // 0 to 3
-            hasLength,
-            hasUpper,
-            hasSymbol,
-            label: score === 0 ? 'Muy Débil' : score === 1 ? 'Débil' : score === 2 ? 'Media' : 'Fuerte',
-            color: score === 0 ? theme.palette.error.main : score === 1 ? theme.palette.error.main : score === 2 ? theme.palette.warning.main : theme.palette.success.main
+            ...baseStrength,
+            color: baseStrength.score <= 1
+                ? theme.palette.error.main
+                : baseStrength.score === 2
+                    ? theme.palette.warning.main
+                    : theme.palette.success.main
         };
     }, [password, theme]);
 
@@ -132,24 +106,44 @@ export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, o
             onClose();
         },
         onError: (error: unknown) => {
-            console.error(error);
-            const apiError = isChangePasswordApiError(error) ? error.response?.data : undefined;
-            const statusCode = isChangePasswordApiError(error) ? error.response?.status : undefined;
+            const apiError = getApiError(error);
+            const statusCode = getErrorStatus(error);
 
             if (statusCode === 400 && apiError?.errors && Array.isArray(apiError.errors)) {
                 let hasFieldErrors = false;
+                const modelErrors: string[] = [];
+
                 apiError.errors.forEach((err) => {
+                    if (!err.message) {
+                        return;
+                    }
+
                     if (err.field === 'NuevaClave') {
                         setError('password', {
                             type: 'server',
                             message: err.message
                         }, { shouldFocus: true });
                         hasFieldErrors = true;
+                        return;
                     }
+
+                    modelErrors.push(err.message);
                 });
+
+                if (modelErrors.length > 0) {
+                    setErrorMessage(Array.from(new Set(modelErrors)).join('\n'));
+                    return;
+                }
+
                 if (hasFieldErrors) return;
             }
-            setErrorMessage(apiError?.detail || 'Error al cambiar la contraseña');
+
+            if (typeof apiError?.errors === 'string') {
+                setErrorMessage(apiError.errors);
+                return;
+            }
+
+            setErrorMessage(apiError?.message || apiError?.detail || 'Error al cambiar la contraseña');
         }
     });
 
@@ -288,16 +282,7 @@ export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, o
                             {/* Segmented Progress */}
                             <Stack direction="row" spacing={0.5} sx={{ mb: 2, height: 6 }}>
                                 {[1, 2, 3, 4].map((step) => {
-                                    // Logic to fill bars based on score. 
-                                    // Score 0 -> 0 bars? Or 1 red bar if length > 0?
-                                    // Let's map score 0-3 to bars 1-4.
-                                    // Score 0 (weak) -> 1 bar filled (red)
-                                    // Score 1 (weak) -> 2 bars filled (orange)
-                                    // Score 2 (medium) -> 3 bars filled (yellow/green)
-                                    // Score 3 (strong) -> 4 bars filled (green)
-                                    
-                                    // Adjusting logic to match typical UX:
-                                    // If password empty -> 0 bars
+
                                     const active = password.length > 0 && (step <= strength.score + 1);
                                     let barColor = theme.palette.grey[300];
                                     if (theme.palette.mode === 'dark') barColor = theme.palette.grey[800];

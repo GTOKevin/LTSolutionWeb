@@ -28,16 +28,6 @@ import { useCreateRolUsuario, useUpdateRolUsuario } from '../../hooks/useRolUsua
 import { TabPanel } from '@/shared/components/ui/TabPanel';
 import { PermisosMatrix } from './PermisosMatrix';
 
-type ConflictApiError = {
-    response?: {
-        status?: number;
-    };
-};
-
-function isConflictApiError(error: unknown): error is ConflictApiError {
-    return typeof error === 'object' && error !== null && 'response' in error;
-}
-
 interface CreateEditRolUsuarioModalProps {
     open: boolean;
     onClose: () => void;
@@ -115,13 +105,9 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                         onClose();
                     },
                     onError: (error: unknown) => {
-                        if (isConflictApiError(error) && error.response?.status === 409) {
-                            setErrorMessage('El nombre del rol ya se encuentra registrado.');
-                        } else {
-                            const genericError = handleBackendErrors<RolUsuarioSchema>(error, setError);
-                            if (genericError) {
-                                setErrorMessage(genericError);
-                            }
+                        const genericError = handleBackendErrors<RolUsuarioSchema>(error, setError);
+                        if (genericError) {
+                            setErrorMessage(genericError);
                         }
                     }
                 }
@@ -135,13 +121,9 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                         onClose();
                     },
                     onError: (error: unknown) => {
-                        if (isConflictApiError(error) && error.response?.status === 409) {
-                            setErrorMessage('El nombre del rol ya se encuentra registrado.');
-                        } else {
-                            const genericError = handleBackendErrors<RolUsuarioSchema>(error, setError);
-                            if (genericError) {
-                                setErrorMessage(genericError);
-                            }
+                        const genericError = handleBackendErrors<RolUsuarioSchema>(error, setError);
+                        if (genericError) {
+                            setErrorMessage(genericError);
                         }
                     }
                 }

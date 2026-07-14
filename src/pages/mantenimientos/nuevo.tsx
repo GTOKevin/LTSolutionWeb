@@ -401,7 +401,7 @@ export function MantenimientoNuevoPage() {
                 <DialogTitle>Confirmar Finalización</DialogTitle>
                 <DialogContent>
                     <Typography>
-                        Una vez se ha completado el registro (Estado Finalizado), no podrá realizar modificaciones sobre
+                        Una vez se ha completado el registro, no podrá realizar modificaciones sobre
                         este registro y sus detalles.
                         <br />
                         <br />

@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import type { Flota } from '@entities/flota/model/types';
 import { FlotaDocumentosList } from '../../documentos/ui/FlotaDocumentosList';
-import { TIPOS_COMBUSTIBLE } from '@/shared/constants/constantes';
+import { TIPOS_COMBUSTIBLE } from '@entities/flota/model/constants';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
 import { useFlotaForm } from '../../hooks/useFlotaForm';
 

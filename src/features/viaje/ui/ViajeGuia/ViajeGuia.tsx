@@ -1,6 +1,6 @@
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeGuia as ViajeGuiaModel } from '@/entities/viaje/model/types';
-import { ViajeGuiaList, ViajeGuiaCreateEdit } from './Index';
+import { ViajeGuiaList, ViajeGuiaCreateEdit } from './index';
 import { useState } from 'react';
 import { ViajeSubmoduleContainer } from '../ViajeSubmoduleContainer';
 

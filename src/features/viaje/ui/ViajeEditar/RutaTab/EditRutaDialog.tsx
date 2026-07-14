@@ -5,8 +5,8 @@ import {
 } from '@mui/material';
 import { useUpdateViajeRuta } from '@features/viaje/hooks/useViajeRutas';
 import { useQuery } from '@tanstack/react-query';
-import { maestroApi } from '@/shared/api/maestro.api';
-import { SECCION_MAESTRO } from '@/shared/constants/maestro';
+import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
+import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import type { ViajeRutaDto, UpdateViajeRutaDto } from '@/entities/viaje/model/types';
 import dayjs from 'dayjs';
 

@@ -3,7 +3,12 @@ import type {
     DashboardPeriod,
     DashboardRecentTrip,
 } from '@entities/dashboard/model/types';
-import { ESTADO_VIAJE_ID } from '@shared/constants/constantes';
+import {
+    isViajeAgendado,
+    isViajeCompletado,
+    isViajeDescargando,
+    isViajeTransito,
+} from '@entities/viaje/model/status';
 
 export const DASHBOARD_PERIOD_OPTIONS: Array<{ value: DashboardPeriod; label: string; description: string }> = [
     { value: 'day', label: 'Últimos 7 días', description: 'Actividad diaria reciente' },
@@ -25,17 +30,19 @@ export function getTrendDirection(value: number) {
 }
 
 export function getTripStatusTone(trip: DashboardRecentTrip) {
-    switch (trip.estadoID) {
-        case ESTADO_VIAJE_ID.TRANSITO:
-        case ESTADO_VIAJE_ID.DESCARGANDO:
-            return 'active';
-        case ESTADO_VIAJE_ID.AGENDADO:
-            return 'scheduled';
-        case ESTADO_VIAJE_ID.COMPLETADO:
-            return 'completed';
-        default:
-            return 'default';
+    if (isViajeTransito({ estadoNombre: trip.estadoNombre }) || isViajeDescargando({ estadoNombre: trip.estadoNombre })) {
+        return 'active';
     }
+
+    if (isViajeAgendado({ estadoNombre: trip.estadoNombre })) {
+        return 'scheduled';
+    }
+
+    if (isViajeCompletado({ estadoNombre: trip.estadoNombre })) {
+        return 'completed';
+    }
+
+    return 'default';
 }
 
 export function normalizeDashboardActionUrl(url?: string) {
@@ -57,7 +64,7 @@ export function normalizeDashboardActionUrl(url?: string) {
             return id ? `/app/facturas/${id}` : '/app/facturas';
         case 'flotas':
         case 'flota':
-            return id ? `/app/flota/${id}/ver` : '/app/flota';
+            return id ? `/app/flotas/${id}/ver` : '/app/flotas';
         case 'colaboradores':
         case 'colaborador':
             return id ? `/app/colaboradores/${id}/ver` : '/app/colaboradores';

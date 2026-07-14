@@ -13,17 +13,24 @@ import {
     IconButton
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, Receipt as ReceiptIcon } from '@mui/icons-material';
-import { useForm, Controller, type Resolver, type SubmitHandler } from 'react-hook-form';
+import { useForm, Controller, type Resolver, type SubmitHandler, type SubmitErrorHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createFacturaSchema, type CreateFacturaSchema } from '../../model/schema';
 import { clienteApi } from '@/entities/cliente/api/cliente.api';
-import { monedaApi } from '@/shared/api/moneda.api';
+import { monedaApi } from '@entities/moneda/api/moneda.api';
+import { estadoApi } from '@entities/estado/api/estado.api';
+import { MONEDA_CODES, ESTADO_SECTIONS } from '@entities/master-data/model/constants';
+import { getSelectItemId } from '@entities/master-data/lib/catalog-utils';
+import { resolveFacturaGeneradaId } from '@/entities/factura/model/status';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
 import { useCreateFactura, useUpdateFactura, useFactura } from '../../hooks/useFacturaCrud';
-import { FacturaDetalles } from '../../detalles/ui/Index';
-import { ESTADO_FACTURA_ID} from '@/shared/constants/constantes';
+import { FacturaDetalles } from '../../detalles/ui';
+import { useToast } from '@/shared/components/ui/Toast';
+import { getErrorMessage } from '@/shared/utils/api-errors';
+import { handleBackendErrors } from '@/shared/utils/form-validation';
+import { logger } from '@/shared/utils/logger';
 
 interface FacturaCreateEditProps {
     id?: number;
@@ -33,23 +40,24 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
     const isEdit = !!id;
     const theme = useTheme();
     const navigate = useNavigate();
+    const { showToast } = useToast();
 
     const { data: factura, isLoading: isLoadingFactura } = useFactura(id);
     const createMutation = useCreateFactura();
     const updateMutation = useUpdateFactura();
     const isSaving = createMutation.isPending || updateMutation.isPending;
 
-    const { control, handleSubmit, reset, formState: { errors } } = useForm<CreateFacturaSchema>({
+    const { control, handleSubmit, reset, setError, setValue, getValues, formState: { errors } } = useForm<CreateFacturaSchema>({
         resolver: zodResolver(createFacturaSchema) as Resolver<CreateFacturaSchema>,
         defaultValues: {
-            clienteID: 1,
+            clienteID: 0,
             serie: '',
             numero: '',
             fechaEmision: new Date().toISOString().split('T')[0],
             fechaCompromisoPago: '',
             diasCredito: null,
-            monedaID: 1,
-            estadoID: 1
+            monedaID: 0,
+            estadoID: 0
         }
     });
 
@@ -78,6 +86,26 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
         queryFn: () => monedaApi.getSelect("", 50)
     });
 
+    const { data: facturaEstadosResponse } = useQuery({
+        queryKey: ['estados', 'factura-select'],
+        queryFn: () => estadoApi.getSelect('', 20, ESTADO_SECTIONS.FACTURA),
+    });
+
+    const monedaDefaultId = getSelectItemId(monedas?.data, [MONEDA_CODES.PEN, 'sol', 'soles']);
+    const estadoGeneradoId = resolveFacturaGeneradaId(facturaEstadosResponse?.data);
+
+    useEffect(() => {
+        if (!isEdit && monedaDefaultId && !getValues('monedaID')) {
+            setValue('monedaID', monedaDefaultId);
+        }
+    }, [getValues, isEdit, monedaDefaultId, setValue]);
+
+    useEffect(() => {
+        if (!isEdit && estadoGeneradoId && !getValues('estadoID')) {
+            setValue('estadoID', estadoGeneradoId, { shouldValidate: true });
+        }
+    }, [estadoGeneradoId, getValues, isEdit, setValue]);
+
     const handleFormSubmit: SubmitHandler<CreateFacturaSchema> = async (data) => {
         try {
             const formattedData = {
@@ -97,12 +125,36 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                 });
                 navigate('/app/facturas');
             } else {
-                const newId = await createMutation.mutateAsync({ ...formattedData, estadoID: ESTADO_FACTURA_ID.GENERADO, detalles: [], pagos: [] });
+                const newId = await createMutation.mutateAsync({
+                    ...formattedData,
+                    estadoID: estadoGeneradoId ?? formattedData.estadoID,
+                    detalles: [],
+                    pagos: [],
+                });
                 navigate(`/app/facturas/${newId}`);
             }
         } catch (error) {
-            console.error("Error al guardar la factura:", error);
+            const message =
+                handleBackendErrors<CreateFacturaSchema>(error, setError)
+                ?? getErrorMessage(error, 'No se pudo guardar la factura.');
+            logger.error('Error al guardar la factura:', error);
+            showToast({ message, severity: 'error' });
         }
+    };
+
+    const handleInvalidSubmit: SubmitErrorHandler<CreateFacturaSchema> = (formErrors) => {
+        if (!isEdit && formErrors.estadoID) {
+            showToast({
+                message: 'No se pudo resolver el estado inicial de la factura. Recargue la pagina e intente nuevamente.',
+                severity: 'error'
+            });
+            return;
+        }
+
+        showToast({
+            message: 'Complete los campos obligatorios de la factura antes de guardar.',
+            severity: 'warning'
+        });
     };
 
     if (isEdit && isLoadingFactura) {
@@ -149,7 +201,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                         type="submit" 
                         form="factura-form" 
                         variant="contained" 
-                        disabled={isSaving}
+                        disabled={isSaving || (!isEdit && !estadoGeneradoId)}
                         sx={{ 
                             borderRadius: 3, 
                             px: 4, 
@@ -172,7 +224,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                                 <Typography variant="h6" fontWeight="bold">Información Básica</Typography>
                             </Box>
                             
-                            <form id="factura-form" onSubmit={handleSubmit(handleFormSubmit)}>
+                            <form id="factura-form" onSubmit={handleSubmit(handleFormSubmit, handleInvalidSubmit)}>
                                 <Grid container spacing={3}>
                                     <Grid size={{ xs: 12}}>
                                         <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>Cliente</Typography>

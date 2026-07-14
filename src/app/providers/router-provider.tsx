@@ -5,7 +5,7 @@ import { useAuthStore } from '@shared/store/auth.store';
 import { ProtectedRoute } from '@shared/lib/guards/ProtectedRoute';
 import { PublicRoute } from '@shared/lib/guards/PublicRoute';
 import { PermissionGuard } from '@shared/lib/guards/PermissionGuard';
-import { PERMISSIONS } from '@/shared/constants/permissions';
+import { PERMISSIONS } from '@shared/constants/permissions';
 import { AppLayout } from '@widgets/layout/ui/AppLayout';
 import { env } from '@shared/config/env';
 import { getDefaultAppRoute } from '@shared/lib/permissions/default-app-route';
@@ -22,29 +22,29 @@ const FlotaNuevoPage = lazy(() => import('@pages/flotas/nuevo').then(module => (
 const FlotaEditarPage = lazy(() => import('@pages/flotas/editar').then(module => ({ default: module.FlotaEditarPage })));
 const FlotaVerPage = lazy(() => import('@pages/flotas/ver').then(module => ({ default: module.FlotaVerPage })));
 const CotizacionesPage = lazy(() => import('@pages/cotizaciones').then(module => ({ default: module.CotizacionesPage })));
-const HealthCheckPage = lazy(() => import('../../pages/health-check').then(module => ({ default: module.HealthCheckPage })));
+const HealthCheckPage = lazy(() => import('@pages/health-check').then(module => ({ default: module.HealthCheckPage })));
 const ForgotPasswordPage = lazy(() => import('@pages/forgot-password').then(module => ({ default: module.ForgotPasswordPage })));
-const ColaboradoresPage = lazy(() => import('@/pages/colaboradores').then(module => ({ default: module.ColaboradoresPage })));
-const ColaboradorNuevoPage = lazy(() => import('@/pages/colaboradores/nuevo').then(module => ({ default: module.ColaboradorNuevoPage })));
-const ColaboradorEditarPage = lazy(() => import('@/pages/colaboradores/editar').then(module => ({ default: module.ColaboradorEditarPage })));
-const ColaboradorVerPage = lazy(() => import('@/pages/colaboradores/ver').then(module => ({ default: module.ColaboradorVerPage })));
-const MantenimientosPage = lazy(() => import('@/pages/mantenimientos').then(module => ({ default: module.MantenimientosPage })));
-const MantenimientoNuevoPage = lazy(() => import('@/pages/mantenimientos/nuevo').then(module => ({ default: module.MantenimientoNuevoPage })));
-const MantenimientoEditarPage = lazy(() => import('@/pages/mantenimientos/editar').then(module => ({ default: module.MantenimientoEditarPage })));
-const MantenimientoVerPage = lazy(() => import('@/pages/mantenimientos/ver').then(module => ({ default: module.MantenimientoVerPage })));
-const UsuariosPage = lazy(() => import('@/pages/usuarios').then(module => ({ default: module.UsuariosPage })));
-const RolesPage = lazy(() => import('@/pages/roles').then(module => ({ default: module.RolesPage })));
-const RolesColaboradorPage = lazy(() => import('@/pages/roles-colaborador').then(module => ({ default: module.RolesColaboradorPage })));
-const MaestrosPage = lazy(() => import('@/pages/maestros').then(module => ({ default: module.MaestrosPage })));
+const ColaboradoresPage = lazy(() => import('@pages/colaboradores').then(module => ({ default: module.ColaboradoresPage })));
+const ColaboradorNuevoPage = lazy(() => import('@pages/colaboradores/nuevo').then(module => ({ default: module.ColaboradorNuevoPage })));
+const ColaboradorEditarPage = lazy(() => import('@pages/colaboradores/editar').then(module => ({ default: module.ColaboradorEditarPage })));
+const ColaboradorVerPage = lazy(() => import('@pages/colaboradores/ver').then(module => ({ default: module.ColaboradorVerPage })));
+const MantenimientosPage = lazy(() => import('@pages/mantenimientos').then(module => ({ default: module.MantenimientosPage })));
+const MantenimientoNuevoPage = lazy(() => import('@pages/mantenimientos/nuevo').then(module => ({ default: module.MantenimientoNuevoPage })));
+const MantenimientoEditarPage = lazy(() => import('@pages/mantenimientos/editar').then(module => ({ default: module.MantenimientoEditarPage })));
+const MantenimientoVerPage = lazy(() => import('@pages/mantenimientos/ver').then(module => ({ default: module.MantenimientoVerPage })));
+const UsuariosPage = lazy(() => import('@pages/usuarios').then(module => ({ default: module.UsuariosPage })));
+const RolesPage = lazy(() => import('@pages/roles').then(module => ({ default: module.RolesPage })));
+const RolesColaboradorPage = lazy(() => import('@pages/roles-colaborador').then(module => ({ default: module.RolesColaboradorPage })));
+const MaestrosPage = lazy(() => import('@pages/maestros').then(module => ({ default: module.MaestrosPage })));
 const ViajesPage = lazy(() => import('@pages/viajes').then(module => ({ default: module.ViajesPage })));
 const ViajeNuevoPage = lazy(() => import('@pages/viajes/nuevo').then(module => ({ default: module.ViajeNuevoPage })));
-const ViajeEditarPage = lazy(() => import('@/pages/viajes/editar').then(module => ({ default: module.ViajeEditarPage })));
-const FacturasPage = lazy(() => import('@/pages/facturas').then(module => ({ default: module.FacturasPage })));
-const FacturaNuevaPage = lazy(() => import('@/pages/facturas/nuevo').then(module => ({ default: module.FacturaNuevaPage })));
-const FacturaEditarPage = lazy(() => import('@/pages/facturas/editar').then(module => ({ default: module.FacturaEditarPage })));
-const GastoPage = lazy(() => import('@/pages/gasto').then(module => ({ default: module.GastoPage })));
-const MercaderiaPage = lazy(() => import('@/pages/mercaderia').then(module => ({ default: module.MercaderiaPage })));
-const TipoProductoPage = lazy(() => import('@/pages/tipo-producto').then(module => ({ default: module.TipoProductoPage })));
+const ViajeEditarPage = lazy(() => import('@pages/viajes/editar').then(module => ({ default: module.ViajeEditarPage })));
+const FacturasPage = lazy(() => import('@pages/facturas').then(module => ({ default: module.FacturasPage })));
+const FacturaNuevaPage = lazy(() => import('@pages/facturas/nuevo').then(module => ({ default: module.FacturaNuevaPage })));
+const FacturaEditarPage = lazy(() => import('@pages/facturas/editar').then(module => ({ default: module.FacturaEditarPage })));
+const GastoPage = lazy(() => import('@pages/gasto').then(module => ({ default: module.GastoPage })));
+const MercaderiaPage = lazy(() => import('@pages/mercaderia').then(module => ({ default: module.MercaderiaPage })));
+const TipoProductoPage = lazy(() => import('@pages/tipo-producto').then(module => ({ default: module.TipoProductoPage })));
 const MisViajesPage = lazy(() => import('@pages/mis-viajes').then(module => ({ default: module.MisViajesPage })));
 const MisViajesDetallePage = lazy(() => import('@pages/mis-viajes/detalle').then(module => ({ default: module.MisViajesDetallePage })));
 const MisPagosPage = lazy(() => import('@pages/mis-pagos').then(module => ({ default: module.MisPagosPage })));
@@ -188,7 +188,7 @@ export function RouterProvider() {
                                 <FacturasPage />
                             </PermissionGuard>
                         } />
-                        <Route path="facturas/nueva" element={
+                        <Route path="facturas/nuevo" element={
                             <PermissionGuard permission={PERMISSIONS.FACTURAS.GESTIONAR}>
                                 <FacturaNuevaPage />
                             </PermissionGuard>
@@ -198,22 +198,22 @@ export function RouterProvider() {
                                 <FacturaEditarPage />
                             </PermissionGuard>
                         } />
-                        <Route path="flota" element={
+                        <Route path="flotas" element={
                             <PermissionGuard permission={PERMISSIONS.FLOTA.VER}>
                                 <FlotasPage />
                             </PermissionGuard>
                         } />
-                        <Route path="flota/nuevo" element={
+                        <Route path="flotas/nuevo" element={
                             <PermissionGuard permission={PERMISSIONS.FLOTA.GESTIONAR}>
                                 <FlotaNuevoPage />
                             </PermissionGuard>
                         } />
-                        <Route path="flota/:id" element={
+                        <Route path="flotas/:id" element={
                             <PermissionGuard permission={PERMISSIONS.FLOTA.GESTIONAR}>
                                 <FlotaEditarPage />
                             </PermissionGuard>
                         } />
-                        <Route path="flota/:id/ver" element={
+                        <Route path="flotas/:id/ver" element={
                             <PermissionGuard permission={PERMISSIONS.FLOTA.VER}>
                                 <FlotaVerPage />
                             </PermissionGuard>

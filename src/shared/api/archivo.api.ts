@@ -1,4 +1,4 @@
-import { httpClient } from './http';
+import { httpClient } from '@shared/api/http';
 
 export interface UploadResponse {
     url: string;

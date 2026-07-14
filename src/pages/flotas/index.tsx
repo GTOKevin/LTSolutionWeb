@@ -13,12 +13,12 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import { useState, useEffect } from 'react';
-import { ConfirmDialog } from '../../shared/components/ui/ConfirmDialog';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import type { Flota } from '@entities/flota/model/types';
-import { FlotaTable } from '../../features/flota/list/ui/FlotaTable';
-import { FlotaMobileList } from '../../features/flota/list/ui/FlotaMobileList';
+import { FlotaTable } from '@features/flota/list/ui/FlotaTable';
+import { FlotaMobileList } from '@features/flota/list/ui/FlotaMobileList';
 import { useDeleteFlota } from '@features/flota/hooks/useFlotaCrud';
-import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
+import { handleSanitizeSearchInput } from '@shared/utils/input-validators';
 import { useNavigate } from 'react-router-dom';
 
 export function FlotasPage() {
@@ -67,15 +67,15 @@ export function FlotasPage() {
     };
 
     const handleCreate = () => {
-        navigate('/app/flota/nuevo');
+        navigate('/app/flotas/nuevo');
     };
 
     const handleEdit = (flota: Flota) => {
-        navigate(`/app/flota/${flota.flotaID}`);
+        navigate(`/app/flotas/${flota.flotaID}`);
     };
 
     const handleView = (flota: Flota) => {
-        navigate(`/app/flota/${flota.flotaID}/ver`);
+        navigate(`/app/flotas/${flota.flotaID}/ver`);
     };
 
     const handleDeleteClick = (flota: Flota) => {

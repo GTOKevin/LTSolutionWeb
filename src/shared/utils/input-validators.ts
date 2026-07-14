@@ -82,7 +82,7 @@ export const handleNumbersOnlyKeyDown = (e: React.KeyboardEvent<HTMLDivElement>)
 export const handleAlphaNumericHyphenNoSpacesKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key.length > 1 || e.ctrlKey || e.metaKey || e.altKey) return;
     
-    if (!/^[a-zA-Z0-9\-]$/.test(e.key)) {
+    if (!/^[a-zA-Z0-9-]$/.test(e.key)) {
         e.preventDefault();
     }
 };

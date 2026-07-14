@@ -1,12 +1,12 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
-import { maestroApi } from '@shared/api/maestro.api';
+import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { createFlotaSchema, type CreateFlotaSchema } from '../model/schema';
 import { useEffect, useState } from 'react';
 import type { Flota } from '@entities/flota/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
-import { SECCION_MAESTRO } from '@/shared/constants/maestro';
+import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import { useCreateFlota, useUpdateFlota } from './useFlotaCrud';
 
 interface UseFlotaFormProps {

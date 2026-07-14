@@ -15,7 +15,7 @@ import { useViajeMercaderias, useDeleteViajeMercaderia } from '@/features/viaje/
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
 
-import { ViajeMercaderiaMobileList } from './Index';
+import { ViajeMercaderiaMobileList } from './index';
 
 interface Props {
     viajeId: number;

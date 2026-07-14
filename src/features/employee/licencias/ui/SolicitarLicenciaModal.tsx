@@ -18,14 +18,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@shared/components/ui/Toast';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
 import type { CreateMiLicenciaRequestDto } from '@entities/employee/model/types';
-import { maestroApi } from '@shared/api/maestro.api';
-import { SECCION_MAESTRO } from '@shared/constants/maestro';
+import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
+import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import {
     createLicenciaSolicitudSchema,
     getCreateLicenciaSolicitudDefaultValues,
     type CreateLicenciaSolicitudForm,
     type CreateLicenciaSolicitudFormInput,
 } from '../model/schema';
+import { getErrorMessage } from '@shared/utils/api-errors';
+import { handleBackendErrors } from '@shared/utils/form-validation';
 
 interface SolicitarLicenciaModalProps {
     open: boolean;
@@ -60,7 +62,9 @@ export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModal
             onClose();
         },
         onError: (error: unknown) => {
-            const message = error instanceof Error ? error.message : 'No se pudo registrar la licencia.';
+            const message =
+                handleBackendErrors<CreateLicenciaSolicitudForm>(error, form.setError)
+                ?? getErrorMessage(error, 'No se pudo registrar la licencia.');
             showToast({ message, severity: 'error' });
         },
     });

@@ -1,5 +1,5 @@
-import { httpClient } from './http';
-import type { SelectItem } from '@/shared/model/types';
+import { httpClient } from '@shared/api/http';
+import type { SelectItem } from '@shared/model/types';
 
 export interface UbigeoAncestors {
     departamentoId: string;

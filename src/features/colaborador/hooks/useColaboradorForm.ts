@@ -1,14 +1,14 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
-import { maestroApi } from '@shared/api/maestro.api';
+import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { rolColaboradorApi } from '@entities/rol-colaborador/api/rol-colaborador.api';
-import { monedaApi } from '@/shared/api/moneda.api';
+import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { createColaboradorSchema, type CreateColaboradorSchema } from '../model/schema';
 import { useEffect, useState } from 'react';
 import type { Colaborador } from '@entities/colaborador/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
-import { SECCION_MAESTRO } from '@/shared/constants/maestro';
+import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import { useCreateColaborador, useUpdateColaborador } from './useColaboradorCrud';
 
 interface UseColaboradorFormProps {

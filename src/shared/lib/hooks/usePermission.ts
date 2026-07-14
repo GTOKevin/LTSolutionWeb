@@ -11,9 +11,6 @@ export function usePermission(requiredPermission?: string | string[]): boolean {
     if (!requiredPermission) return true;
     if (!user || !user.permissions) return false;
 
-    // Admin role bypass (optional, but good for safety net)
-    if (user.role === 'Administrador') return true;
-
     if (Array.isArray(requiredPermission)) {
         // If array, check if user has AT LEAST ONE of the permissions (OR logic)
         // Change to .every() if you need AND logic

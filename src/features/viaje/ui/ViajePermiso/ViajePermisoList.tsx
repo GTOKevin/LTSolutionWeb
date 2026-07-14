@@ -22,7 +22,7 @@ import { useViajePermisos, useDeleteViajePermiso } from '@/features/viaje/hooks/
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { buildInternalFileUrl } from '@/shared/config/env';
-import { ViajePermisoMobileList } from './Index';
+import { ViajePermisoMobileList } from './index';
 
 interface Props {
     viajeId: number;

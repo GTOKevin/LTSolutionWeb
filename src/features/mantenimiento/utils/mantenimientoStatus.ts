@@ -1,14 +1,15 @@
-import { ESTADO_MANTENIMIENTO_ID } from '@/shared/constants/constantes';
+import { getMantenimientoEstadoColorCandidates } from '@entities/mantenimiento/model/status';
+import { matchesEstado } from '@entities/master-data/lib/catalog-utils';
 import type { Estado } from '@/shared/model/estado.types';
 
 export const getMantenimientoStatusColor = (estado?: Estado | null): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
     if (!estado) return 'default';
-    
-    const id = estado.estadoID;
-    
-    if (ESTADO_MANTENIMIENTO_ID.AGENDADO == id) return 'default';
-    if (ESTADO_MANTENIMIENTO_ID.TALLER == id) return 'warning';
-    if (ESTADO_MANTENIMIENTO_ID.COMPLETADO == id) return 'success';
+
+    const candidates = getMantenimientoEstadoColorCandidates();
+
+    if (matchesEstado(estado, candidates.AGENDADO)) return 'default';
+    if (matchesEstado(estado, candidates.TALLER)) return 'warning';
+    if (matchesEstado(estado, candidates.COMPLETADO)) return 'success';
 
     return 'default';
 };

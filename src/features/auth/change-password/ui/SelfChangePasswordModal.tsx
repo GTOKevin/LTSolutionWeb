@@ -29,23 +29,13 @@ import {
     selfChangePasswordSchema,
     type SelfChangePasswordSchema,
 } from '../model/self-change-password.schema';
+import { getApiError, getErrorStatus } from '@/shared/utils/api-errors';
 
 interface SelfChangePasswordModalProps {
     open: boolean;
     onClose: () => void;
     usuarioNombre?: string;
     onSuccess: () => void;
-}
-
-interface ChangePasswordFieldError {
-    field?: string;
-    message?: string;
-}
-
-interface ChangePasswordErrorResponse {
-    detail?: string;
-    message?: string;
-    errors?: string | ChangePasswordFieldError[];
 }
 
 export function SelfChangePasswordModal({ open, onClose, usuarioNombre, onSuccess }: SelfChangePasswordModalProps) {
@@ -122,27 +112,42 @@ export function SelfChangePasswordModal({ open, onClose, usuarioNombre, onSucces
             onClose();
         },
         onError: (error: unknown) => {
-            if (!isAxiosError<ChangePasswordErrorResponse>(error)) {
+            if (!isAxiosError(error)) {
                 setErrorMessage('No se pudo actualizar la contraseña.');
                 return;
             }
 
-            const apiError = error.response?.data;
+            const apiError = getApiError(error);
+            const statusCode = getErrorStatus(error);
 
-            if (error.response?.status === 400 && Array.isArray(apiError?.errors)) {
+            if (statusCode === 400 && Array.isArray(apiError?.errors)) {
                 let hasFieldErrors = false;
+                const modelErrors: string[] = [];
 
                 apiError.errors.forEach((err) => {
+                    if (!err.message) {
+                        return;
+                    }
+
                     if (err.field === 'Dto.CurrentPassword') {
                         setError('currentPassword', { type: 'server', message: err.message }, { shouldFocus: true });
                         hasFieldErrors = true;
+                        return;
                     }
 
                     if (err.field === 'Dto.NewPassword') {
                         setError('newPassword', { type: 'server', message: err.message }, { shouldFocus: !hasFieldErrors });
                         hasFieldErrors = true;
+                        return;
                     }
+
+                    modelErrors.push(err.message);
                 });
+
+                if (modelErrors.length > 0) {
+                    setErrorMessage(Array.from(new Set(modelErrors)).join('\n'));
+                    return;
+                }
 
                 if (hasFieldErrors) {
                     return;

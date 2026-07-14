@@ -1,7 +1,6 @@
 import { Box, Typography, Paper, Divider, Stack } from '@mui/material';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { InfoOutlined } from '@mui/icons-material';
-import { ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeWizardFormData } from '../../model/schema';
 
@@ -10,6 +9,9 @@ interface SidebarProps {
     totalSteps: number;
     options: {
         clientes?: SelectItem[];
+        estados?: SelectItem[];
+        viajeEstadoAgendadoId?: number;
+        viajeEstadoTransitoId?: number;
     };
 }
 
@@ -24,6 +26,9 @@ export function WizardSidebar({ activeStep, totalSteps, options }: SidebarProps)
 
     const clienteSeleccionado = options.clientes?.find(c => c.id === clienteID);
     const nombreCliente = clienteSeleccionado ? clienteSeleccionado.text : null;
+    const estadoSeleccionado = options.estados?.find((estado) => estado.id === estadoID);
+    const isAgendado = estadoID === options.viajeEstadoAgendadoId;
+    const isTransito = estadoID === options.viajeEstadoTransitoId;
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -79,8 +84,8 @@ export function WizardSidebar({ activeStep, totalSteps, options }: SidebarProps)
                             <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.5 }}>
                                 Estado
                             </Typography>
-                            <Typography variant="body2" fontWeight={600} color={estadoID === ESTADO_VIAJE_ID.AGENDADO ? 'error.info' : 'text.primary'}>
-                                {estadoID === ESTADO_VIAJE_ID.AGENDADO ? 'Agendado' : (estadoID === ESTADO_VIAJE_ID.TRANSITO ? 'En Transito' : '--')}      
+                            <Typography variant="body2" fontWeight={600} color={isAgendado ? 'error.info' : 'text.primary'}>
+                                {estadoSeleccionado?.text || (isAgendado ? 'Agendado' : (isTransito ? 'En Transito' : '--'))}
                             </Typography>
                         </Box>
                     </Stack>

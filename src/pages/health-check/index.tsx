@@ -20,10 +20,10 @@ import {
     Check as CheckIcon,
 } from '@mui/icons-material';
 import { useCallback, useEffect, useState } from 'react';
-import { httpClient } from '../../shared/api/http';
-import { env } from '../../shared/config/env';
-import { useThemeStore } from '../../shared/store/theme.store';
-import { appThemePresets } from '@/shared/config/theme/palette';
+import { httpClient } from '@shared/api/http';
+import { env } from '@shared/config/env';
+import { appThemePresets } from '@shared/config/theme/palette';
+import { useThemeStore } from '@shared/store/theme.store';
 
 function getHealthCheckErrorMessage(error: unknown): string {
     if (error && typeof error === 'object' && 'detail' in error && typeof error.detail === 'string') {

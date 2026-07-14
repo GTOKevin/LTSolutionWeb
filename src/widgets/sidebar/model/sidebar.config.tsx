@@ -109,7 +109,7 @@ export const SIDEBAR_MENU: MenuItem[] = [
             },
             { 
                 text: 'Flota', 
-                path: '/app/flota', 
+                path: '/app/flotas', 
                 icon: <LocalShippingIcon />,
                 permission: PERMISSIONS.FLOTA.VER
             },

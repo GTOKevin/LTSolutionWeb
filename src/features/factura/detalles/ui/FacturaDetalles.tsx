@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import { Add as AddIcon, ListAlt as ListAltIcon } from '@mui/icons-material';
 import type { Factura } from '@/entities/factura/model/types';
+import { isFacturaEmitida, isFacturaEntregada } from '@/entities/factura/model/status';
 import { useDeleteFacturaDetalle, useFacturaDetalles } from '../../hooks/useFacturaDetalleCrud';
 import { FacturaDetalleForm } from './FacturaDetalleForm';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
-import { ESTADO_FACTURA_ID } from '@/shared/constants/constantes';
 import { FacturaDetalleList } from './FacturaDetalleList';
 import { FacturaDetalleMobileList } from './FacturaDetalleMobileList';
 
@@ -55,7 +55,7 @@ export function FacturaDetalles({ factura }: FacturaDetallesProps) {
 
     const detalles = detallesFetch;
     const paginatedDetalles = detalles.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const isReadOnly = factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO || factura.estadoID === ESTADO_FACTURA_ID.EMITIDO;
+    const isReadOnly = isFacturaEntregada(factura) || isFacturaEmitida(factura);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
@@ -69,7 +69,7 @@ export function FacturaDetalles({ factura }: FacturaDetallesProps) {
                     variant="contained"
                     startIcon={<AddIcon />}
                     onClick={() => setIsFormOpen(true)}
-                    disabled={factura.estadoID === ESTADO_FACTURA_ID.ENTREGADO || factura.estadoID === ESTADO_FACTURA_ID.EMITIDO}
+                    disabled={isReadOnly}
                     sx={{ borderRadius: 2 }}
                 >
                     Agregar Detalle

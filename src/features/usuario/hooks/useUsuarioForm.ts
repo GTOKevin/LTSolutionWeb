@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { rolUsuarioApi } from '@entities/rol-usuario/api/rol-usuario.api';
-import { estadoApi } from '@shared/api/estado.api';
+import { estadoApi } from '@entities/estado/api/estado.api';
 import { colaboradorApi } from '@entities/colaborador/api/colaborador.api';
 import { createUsuarioSchemaFull, editUsuarioSchemaFull, type CreateUsuarioSchema, type UsuarioFormSchema } from '../model/schema';
 import { useEffect, useState } from 'react';

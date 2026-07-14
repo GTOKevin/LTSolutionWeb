@@ -18,9 +18,9 @@ import { usePermission } from '@shared/lib/hooks/usePermission';
 import { useToast } from '@shared/components/ui/Toast/useToast';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
 import type { MiPagoDto, MiPagoFilters } from '@entities/employee/model/types';
-import { maestroApi } from '@shared/api/maestro.api';
-import { monedaApi } from '@shared/api/moneda.api';
-import { SECCION_MAESTRO } from '@shared/constants/maestro';
+import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
+import { monedaApi } from '@entities/moneda/api/moneda.api';
+import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import {
     formatDateOnly,
@@ -32,6 +32,7 @@ import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 import { portalTableContainerFlatSx, portalTableHeaderFlatSx } from '@shared/components/ui/employee-portal-shell.styles';
 import { MisPagosKPIs } from '@/features/employee/pagos/ui/MisPagosKPIs';
 import { MisPagosFilters } from '@/features/employee/pagos/ui/MisPagosFilters';
+import { getErrorMessage } from '@/shared/utils/api-errors';
 
 const columns: Column[] = [
     { id: 'tipo', label: 'TIPO' },
@@ -121,7 +122,7 @@ export function MisPagosPage() {
             setSelectedPago(null);
         },
         onError: (error: unknown) => {
-            const message = error instanceof Error ? error.message : 'No se pudo confirmar el pago.';
+            const message = getErrorMessage(error, 'No se pudo confirmar el pago.');
             showToast({ message, severity: 'error' });
         },
     });

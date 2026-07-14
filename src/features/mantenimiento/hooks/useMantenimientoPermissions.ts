@@ -1,17 +1,15 @@
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
-import { ESTADO_MANTENIMIENTO_ID } from '@/shared/constants/constantes';
+import { isMantenimientoCompletado } from '@entities/mantenimiento/model/status';
 import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function useMantenimientoPermissions() {
     const canManageMantenimientos = usePermission(PERMISSIONS.MANTENIMIENTOS.GESTIONAR);
+    const canReopenMantenimientos = usePermission(PERMISSIONS.MANTENIMIENTOS.REABRIR);
 
     const isCompleted = (item: Mantenimiento | null | undefined): boolean => {
         if (!item) return false;
-        if (item.estadoID) {
-            return item.estadoID === ESTADO_MANTENIMIENTO_ID.COMPLETADO;
-        }
-        return false;
+        return isMantenimientoCompletado(item);
     };
 
     const isClosed = (item: Mantenimiento | null | undefined): boolean => {
@@ -21,7 +19,7 @@ export function useMantenimientoPermissions() {
 
     const canReopen = (item: Mantenimiento | null | undefined): boolean => {
         if (!isClosed(item)) return false;
-        return canManageMantenimientos;
+        return canReopenMantenimientos;
     };
 
     const canEdit = (item: Mantenimiento | null | undefined): boolean => {

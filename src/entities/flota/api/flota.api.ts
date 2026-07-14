@@ -16,7 +16,16 @@ export const flotaApi = {
     getAll: (params: FlotaParams) => 
         httpClient.get<PagedResponse<Flota>>('/Flota', { params }),
 
-    getSelect: (params: FlotaParamsSelect) => httpClient.get<SelectItem[]>(`/Flota/select`,{params}),
+    getSelect: (params?: FlotaParamsSelect | string, limit: number = 20) =>
+        httpClient.get<SelectItem[]>('/Flota/select', {
+            params: typeof params === 'string'
+                ? { search: params, limit }
+                : params,
+        }),
+    getSelectTipo: (tipo?: string, limit: number = 20) =>
+        httpClient.get<SelectItem[]>('/Flota/tipo-select', { params: { tipo, limit } }),
+    getDisponibilidad: () =>
+        httpClient.get<{ totalTractos: number; tractosLibres: number; porcentajeActiva: number }>('/Flota/disponibilidad'),
 
     getDocumentos: (params: FlotaDocumentoParams) =>
         httpClient.get<PagedResponse<FlotaDocumento>>('/Flota/documentos', { params }),

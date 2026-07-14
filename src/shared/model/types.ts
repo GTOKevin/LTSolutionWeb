@@ -1,19 +1,26 @@
-export interface ApiResponse<T>{
-    data: T;
-    message?: string;
-    success: boolean;
-    errors?: ApiError;
-}
 export interface ValidationError {
     field: string;
     message: string;
 }
 
 export interface ApiError {
-    title: string;
-    status: number;
+    data?: unknown;
+    errors?: ValidationError[] | string | unknown;
+    success?: boolean;
+    title?: string;
+    status?: number;
+    message?: string;
     detail?: string;
-    errors?: ValidationError[];
+    errorType?: string;
+}
+
+export interface ApiResponse<T> {
+    data: T;
+    message?: string;
+    success: boolean;
+    detail?: string;
+    errorType?: string;
+    errors?: ApiError['errors'];
 }
 
 export interface PagedResponse<T> {

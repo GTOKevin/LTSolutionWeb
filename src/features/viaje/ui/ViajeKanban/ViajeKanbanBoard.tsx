@@ -12,13 +12,23 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Box, CircularProgress, Alert } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { KanbanColumn } from './KanbanColumn';
 import { KanbanCard } from './KanbanCard';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
-import { ESTADO_VIAJE_COD, ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
+import {
+    resolveViajeAgendadoId,
+    resolveViajeCompletadoId,
+    resolveViajeDescargandoId,
+    resolveViajeTransitoId,
+    VIAJE_STATUS_CODE,
+} from '@entities/viaje/model/status';
 import { alpha } from '@mui/material/styles';
 import { useToast } from '@/shared/components/ui/Toast';
 import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
+import { estadoApi } from '@entities/estado/api/estado.api';
+import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
 
 
 interface KanbanBoardProps {
@@ -31,6 +41,13 @@ interface KanbanBoardProps {
     onDeleteViaje?: (viaje: ViajeListItem) => void;
 }
 
+interface PendingStatusChange {
+    viajeId: number;
+    targetColumnId: string;
+    targetColumnTitle: string;
+    targetEstadoId: number;
+}
+
 export function ViajeKanbanBoard({
     viajes,
     isLoading,
@@ -41,10 +58,15 @@ export function ViajeKanbanBoard({
     onDeleteViaje
 }: KanbanBoardProps) {
     const { showToast } = useToast();
+    const { data: viajeEstadosResponse } = useQuery({
+        queryKey: ['estados', 'viaje-kanban'],
+        queryFn: () => estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE),
+    });
 
     // Local state for optimistic updates during drag
     const [localViajes, setLocalViajes] = useState<ViajeListItem[]>([]);
     const [activeId, setActiveId] = useState<number | null>(null);
+    const [pendingStatusChange, setPendingStatusChange] = useState<PendingStatusChange | null>(null);
 
     useEffect(() => {
         setLocalViajes(viajes);
@@ -65,11 +87,12 @@ export function ViajeKanbanBoard({
         })
     );
 
+    const viajeEstados = viajeEstadosResponse?.data;
     const columns = [
-        { id: ESTADO_VIAJE_COD.Agendado, title: 'Programado', color: "#94a3b8", bgColor: alpha("#94a3b8", 0.05), estadoId: ESTADO_VIAJE_ID.AGENDADO },
-        { id: ESTADO_VIAJE_COD.Transito, title: 'En Ruta', color: '#2563eb', bgColor: alpha('#2563eb', 0.05), estadoId: ESTADO_VIAJE_ID.TRANSITO },
-        { id: ESTADO_VIAJE_COD.Descargando, title: 'En Descarga', color: '#f59e0b', bgColor: alpha('#f59e0b', 0.05), estadoId: ESTADO_VIAJE_ID.DESCARGANDO },
-        { id: ESTADO_VIAJE_COD.Completado, title: 'Completado', color: '#388e3c', bgColor: alpha('#388e3c', 0.05), estadoId: ESTADO_VIAJE_ID.COMPLETADO },
+        { id: VIAJE_STATUS_CODE.AGENDADO, title: 'Programado', color: "#94a3b8", bgColor: alpha("#94a3b8", 0.05), estadoId: resolveViajeAgendadoId(viajeEstados) },
+        { id: VIAJE_STATUS_CODE.TRANSITO, title: 'En Ruta', color: '#2563eb', bgColor: alpha('#2563eb', 0.05), estadoId: resolveViajeTransitoId(viajeEstados) },
+        { id: VIAJE_STATUS_CODE.DESCARGANDO, title: 'En Descarga', color: '#f59e0b', bgColor: alpha('#f59e0b', 0.05), estadoId: resolveViajeDescargandoId(viajeEstados) },
+        { id: VIAJE_STATUS_CODE.COMPLETADO, title: 'Completado', color: '#388e3c', bgColor: alpha('#388e3c', 0.05), estadoId: resolveViajeCompletadoId(viajeEstados) },
     ];
 
     if (isLoading) {
@@ -92,6 +115,23 @@ export function ViajeKanbanBoard({
         return localViajes.filter(v => v.estadoCodigo === estadoCodigo);
     };
 
+    const applyStatusChange = (change: PendingStatusChange) => {
+        setLocalViajes((prev) =>
+            prev.map((viaje) =>
+                viaje.viajeID === change.viajeId
+                    ? {
+                        ...viaje,
+                        estadoCodigo: change.targetColumnId,
+                        estadoNombre: change.targetColumnTitle,
+                        estadoID: change.targetEstadoId,
+                    }
+                    : viaje
+            )
+        );
+
+        updateEstadoMutation.mutate({ id: change.viajeId, estadoId: change.targetEstadoId });
+    };
+
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;
         setActiveId(active.id as number);
@@ -110,6 +150,11 @@ export function ViajeKanbanBoard({
         const activeViaje = localViajes.find(v => v.viajeID === activeViajeId);
         if (!activeViaje) return;
 
+        if (activeViaje.cerrado) {
+            showToast({ message: 'Un viaje cerrado no permite modificaciones.', severity: 'warning' });
+            return;
+        }
+
         // Determine target column
         let targetColumnId = '';
         const isOverColumn = columns.some(c => c.id === overId);
@@ -119,7 +164,7 @@ export function ViajeKanbanBoard({
         } else {
             const overViaje = localViajes.find(v => v.viajeID === overId);
             if (overViaje) {
-                targetColumnId = overViaje.estadoCodigo || ESTADO_VIAJE_COD.Agendado;
+                targetColumnId = overViaje.estadoCodigo || VIAJE_STATUS_CODE.AGENDADO;
             }
         }
 
@@ -129,24 +174,29 @@ export function ViajeKanbanBoard({
 
         if (targetColumnId && activeViaje.estadoCodigo !== targetColumnId) {
             // Regla: No se puede cambiar a Agendado si ya no está en Agendado
-            if (targetColumnId === ESTADO_VIAJE_COD.Agendado && activeViaje.estadoCodigo !== ESTADO_VIAJE_COD.Agendado) {
+            if (targetColumnId === VIAJE_STATUS_CODE.AGENDADO && activeViaje.estadoCodigo !== VIAJE_STATUS_CODE.AGENDADO) {
                 showToast({ message: 'Un viaje que ya inició no puede regresar a estado Programado', severity: 'warning' });
                 return;
             }
 
             const targetColumnDef = columns.find(c => c.id === targetColumnId);
-            if (!targetColumnDef) return;
+            if (!targetColumnDef?.estadoId) {
+                showToast({ message: 'No se pudo resolver el catálogo de estados del viaje.', severity: 'warning' });
+                return;
+            }
+            const nextStatusChange: PendingStatusChange = {
+                viajeId: activeViajeId,
+                targetColumnId,
+                targetColumnTitle: targetColumnDef.title,
+                targetEstadoId: targetColumnDef.estadoId,
+            };
 
-            // Optimistic update
-            setLocalViajes(prev => 
-                prev.map(v => 
-                    v.viajeID === activeViajeId 
-                        ? { ...v, estadoCodigo: targetColumnId, estadoNombre: targetColumnDef.title, estadoID: targetColumnDef.estadoId } 
-                        : v
-                )
-            );
+            if (targetColumnId === VIAJE_STATUS_CODE.COMPLETADO) {
+                setPendingStatusChange(nextStatusChange);
+                return;
+            }
 
-            updateEstadoMutation.mutate({ id: activeViajeId, estadoId: targetColumnDef.estadoId });
+            applyStatusChange(nextStatusChange);
         }
     };
 
@@ -171,19 +221,35 @@ export function ViajeKanbanBoard({
                             viajes={getColumnViajes(col.id)}
                             draggable={canManage}
                             onCardClick={onViajeClick}
-                            onEditCard={canManage ? onEditViaje : undefined}
+                            onEditCard={onEditViaje}
                             onViewCard={onViewViaje}
-                            onDeleteCard={canManage ? onDeleteViaje : undefined}
+                            onDeleteCard={onDeleteViaje}
                         />
                     ))}
                 </Box>
 
                 <DragOverlay>
                     {activeViaje ? (
-                        <KanbanCard viaje={activeViaje} onClick={() => {}} draggable={canManage} />
+                        <KanbanCard viaje={activeViaje} onClick={() => {}} draggable={canManage && !activeViaje.cerrado} />
                     ) : null}
                 </DragOverlay>
             </DndContext>
+
+            <ConfirmDialog
+                open={Boolean(pendingStatusChange)}
+                title="Confirmar viaje completado"
+                content="Una vez el viaje se encuentre completado no podra realizar modificaciones al viaje."
+                confirmText="Completar viaje"
+                cancelText="Cancelar"
+                severity="info"
+                isLoading={updateEstadoMutation.isPending}
+                onClose={() => setPendingStatusChange(null)}
+                onConfirm={() => {
+                    if (!pendingStatusChange) return;
+                    applyStatusChange(pendingStatusChange);
+                    setPendingStatusChange(null);
+                }}
+            />
         </Box>
     );
 }

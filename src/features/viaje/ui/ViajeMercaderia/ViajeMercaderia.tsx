@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeMercaderia as ViajeMercaderiaType } from '@/entities/viaje/model/types';
-import { ViajeMercaderiaCreateEdit,ViajeMercaderiaList } from './Index';
+import { ViajeMercaderiaCreateEdit, ViajeMercaderiaList } from './index';
 import { ViajeSubmoduleContainer } from '../ViajeSubmoduleContainer';
 
 interface Props {

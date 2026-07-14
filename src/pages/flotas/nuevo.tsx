@@ -13,10 +13,10 @@ import {
     useTheme
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useFlotaForm } from '@/features/flota/hooks/useFlotaForm';
-import { TabPanel } from '@/shared/components/ui/TabPanel';
-import { TIPOS_COMBUSTIBLE } from '@/shared/constants/constantes';
-import { FlotaDocumentosList } from '@/features/flota/documentos/ui/FlotaDocumentosList';
+import { useFlotaForm } from '@features/flota/hooks/useFlotaForm';
+import { FlotaDocumentosList } from '@features/flota/documentos/ui/FlotaDocumentosList';
+import { TabPanel } from '@shared/components/ui/TabPanel';
+import { TIPOS_COMBUSTIBLE } from '@entities/flota/model/constants';
 
 export function FlotaNuevoPage() {
     const theme = useTheme();
@@ -44,7 +44,7 @@ export function FlotaNuevoPage() {
     } = useFlotaForm({
         flotaToEdit: null,
         onSuccess: () => {},
-        onClose: () => navigate('/app/flota'),
+        onClose: () => navigate('/app/flotas'),
         open: true
     });
 
@@ -381,7 +381,7 @@ export function FlotaNuevoPage() {
                             }}
                         >
                             <Button
-                                onClick={() => navigate('/app/flota')}
+                                onClick={() => navigate('/app/flotas')}
                                 variant="outlined"
                                 color="inherit"
                                 disabled={isSubmitting}

@@ -6,7 +6,6 @@ import { useToast } from '@/shared/components/ui/Toast';
 import { viajeSchema } from '../model/schema';
 import { useViajeOptions } from './useViajeOptions';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
-import { ESTADO_VIAJE_ID } from '@/shared/constants/constantes';
 import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
 import type { CreateViajeDto, Viaje } from '@/entities/viaje/model/types';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
@@ -53,7 +52,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
     const { showToast } = useToast();
     
     const options = useViajeOptions(open);
-    const { tractos, carretas } = options;
+    const { tractos, carretas, viajeEstadoCompletadoId, viajeEstadoDescargandoId } = options;
 
     const currentViajeId = viaje?.viajeID || createdViajeId || 0;
     const resetUiState = useCallback(() => {
@@ -204,7 +203,12 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
     }, [open, viaje, reset, queryClient, resetUiState]);
 
     const onSubmit = (data: CreateViajeDto) => {
-        if (data.estadoID === ESTADO_VIAJE_ID.COMPLETADO || data.estadoID === ESTADO_VIAJE_ID.DESCARGANDO) {
+        const requiresConfirmation = Boolean(
+            (viajeEstadoCompletadoId && data.estadoID === viajeEstadoCompletadoId)
+            || (viajeEstadoDescargandoId && data.estadoID === viajeEstadoDescargandoId)
+        );
+
+        if (requiresConfirmation) {
             setPendingData(data);
             setShowConfirmDialog(true);
         } else {

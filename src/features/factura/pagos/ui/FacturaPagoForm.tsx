@@ -21,12 +21,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { createFacturaPagoSchema, type CreateFacturaPagoSchema } from '../../model/schema';
 import { useCreateFacturaPago } from '../../hooks/useFacturaPagoCrud';
-import { maestroApi } from '@/shared/api/maestro.api';
+import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
-import { monedaApi } from '@/shared/api/moneda.api';
-import { estadoApi } from '@/shared/api/estado.api';
-import { SECCION_MAESTRO } from '@/shared/constants/maestro';
-import { ESTADO_SECCIONES } from '@/shared/constants/constantes';
+import { monedaApi } from '@entities/moneda/api/moneda.api';
+import { estadoApi } from '@entities/estado/api/estado.api';
+import { ESTADO_SECCIONES, SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import type { Factura } from '@/entities/factura/model/types';
 
 interface FacturaPagoFormProps {

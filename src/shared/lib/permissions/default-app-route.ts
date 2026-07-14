@@ -39,7 +39,7 @@ export function getDefaultAppRoute(user: User | null): string {
         { route: '/app/clientes', permission: PERMISSIONS.CLIENTES.VER },
         { route: '/app/viajes', permission: PERMISSIONS.VIAJES.VER },
         { route: '/app/gasto', permission: PERMISSIONS.CATALOGOS.GASTO.VER },
-        { route: '/app/flota', permission: PERMISSIONS.FLOTA.VER },
+        { route: '/app/flotas', permission: PERMISSIONS.FLOTA.VER },
         { route: '/app/colaboradores', permission: PERMISSIONS.COLABORADORES.VER },
     ];
 
