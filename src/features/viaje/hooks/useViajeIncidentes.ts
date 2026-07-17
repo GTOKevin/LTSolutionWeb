@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { viajeIncidenteApi } from '@/entities/viaje/api/viaje-incidente.api';
 import type { CreateViajeIncidenteDto, PagedViajeIncidentes } from '@/entities/viaje/model/types';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
-import { createViajeSubresourceHooks } from './useViajeSubresourceCrud';
+import { createViajeSubresourceHooks } from '../subresources/hooks/createViajeSubresourceHooks';
 
 const EMPTY_PAGED_INCIDENTES: PagedViajeIncidentes = {
     items: [],

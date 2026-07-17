@@ -1,6 +1,7 @@
 import { createGenericCrudHooks } from '@/shared/hooks/useGenericCrud';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import type { CreateFlotaDto } from '@entities/flota/model/types';
+import { FLOTA_QUERY_KEYS } from '@features/flota/model/query-keys';
 
 const genericApi = {
     create: (data: CreateFlotaDto) => flotaApi.create(data),
@@ -15,5 +16,14 @@ export const {
 } = createGenericCrudHooks(
     genericApi,
     'Flota',
-    () => [['flotas']]
+    (args) => {
+        const detailKey =
+            typeof args === 'number'
+                ? FLOTA_QUERY_KEYS.detail(args)
+                : typeof args === 'object' && args && 'id' in args
+                    ? FLOTA_QUERY_KEYS.detail(Number(args.id))
+                    : null;
+
+        return detailKey ? [FLOTA_QUERY_KEYS.all, detailKey] : [FLOTA_QUERY_KEYS.all];
+    }
 );

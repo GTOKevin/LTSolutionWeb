@@ -25,8 +25,8 @@ interface ColaboradorMobileListProps {
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onView: (colaborador: Colaborador) => void;
-    onEdit: (colaborador: Colaborador) => void;
-    onDelete: (colaborador: Colaborador) => void;
+    onEdit?: (colaborador: Colaborador) => void;
+    onDelete?: (colaborador: Colaborador) => void;
 }
 
 export function ColaboradorMobileList({

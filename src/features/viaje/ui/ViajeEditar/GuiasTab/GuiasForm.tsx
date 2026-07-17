@@ -3,7 +3,7 @@ import { Save as SaveIcon } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateViajeGuia } from '@features/viaje/hooks/useViajeGuias';
-import { useViajeOptions } from '@features/viaje/hooks/useViajeOptions';
+import { useViajeGuiaOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { viajeGuiaSchema, type ViajeGuiaFormData } from '@features/viaje/model/schema';
 import { ImageUpload } from '@/shared/components/ui/ImageUpload';
 import { logger } from '@/shared/utils/logger';
@@ -15,7 +15,7 @@ interface GuiasFormProps {
 export function GuiasForm({ viajeID }: GuiasFormProps) {
     const theme = useTheme();
     const createMutation = useCreateViajeGuia();
-    const { tiposGuia } = useViajeOptions(true);
+    const { tiposGuia } = useViajeGuiaOptions(true);
 
     const { control, handleSubmit, reset, formState: { errors } } = useForm<ViajeGuiaFormData>({
         resolver: zodResolver(viajeGuiaSchema),

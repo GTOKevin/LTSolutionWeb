@@ -15,104 +15,34 @@ import {
 import {
     Search as SearchIcon,
     ChevronRight as ChevronRightIcon,
-    Add as AddIcon,
     PaletteOutlined as PaletteIcon,
     Check as CheckIcon
 } from '@mui/icons-material';
 import { useThemeStore } from '@shared/store/theme.store';
-import { useLayoutStore } from '@shared/store/layout.store';
 import { DRAWER_WIDTH } from '@widgets/sidebar/ui/Sidebar';
-import { SIDEBAR_MENU } from '@widgets/sidebar/model/sidebar.config';
-import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import { NotificationBell } from './NotificationBell';
 import { appThemePresets, getThemePreviewSwatches, orderedAppThemeIds } from '@/shared/config/theme/palette';
 
-function matchesPath(candidatePath: string | undefined, currentPath: string): boolean {
-    if (!candidatePath) {
-        return false;
-    }
-
-    return currentPath === candidatePath || currentPath.startsWith(`${candidatePath}/`);
+interface HeaderAction {
+    icon: React.ReactNode;
+    onClick: () => void;
 }
 
-function getSidebarGroupTitle(currentPath: string): string | null {
-    for (const item of SIDEBAR_MENU) {
-        if (matchesPath(item.path, currentPath)) {
-            return item.text;
-        }
-
-        if (item.children?.some((child) => matchesPath(child.path, currentPath))) {
-            return item.text;
-        }
-    }
-
-    return null;
+interface HeaderProps {
+    title: string;
+    sectionTitle: string;
+    mobileAction?: HeaderAction;
 }
 
-function getSidebarItemTitle(currentPath: string): string | null {
-    for (const item of SIDEBAR_MENU) {
-        if (matchesPath(item.path, currentPath)) {
-            return item.text;
-        }
-
-        const matchedChild = item.children?.find((child) => matchesPath(child.path, currentPath));
-        if (matchedChild) {
-            return matchedChild.text;
-        }
-    }
-
-    return null;
-}
-
-export function Header() {
+export function Header({ title, sectionTitle, mobileAction }: HeaderProps) {
     const { themeId, setThemeId } = useThemeStore();
-    const pageTitle = useLayoutStore((state) => state.pageTitle);
     const theme = useTheme();
-    const location = useLocation();
     const [searchQuery, setSearchQuery] = useState('');
     const [themeAnchorEl, setThemeAnchorEl] = useState<null | HTMLElement>(null);
     const themeMenuOpen = Boolean(themeAnchorEl);
     const themeOptions = orderedAppThemeIds.map((id) => appThemePresets[id]);
-
-
-    const sidebarItemTitle = getSidebarItemTitle(location.pathname);
-    const sidebarGroupTitle = getSidebarGroupTitle(location.pathname);
-
-    // Map routes to titles
-    const getTitle = () => {
-        if (location.pathname.startsWith('/app/clientes')) return 'Gestión de Clientes';
-        if (location.pathname.startsWith('/app/cotizaciones')) return 'Gestión de Cotizaciones';
-        if (location.pathname.startsWith('/app/facturas')) return 'Gestión de Facturas';
-        if (location.pathname.startsWith('/app/viajes')) return 'Gestión de Viajes';
-        if (location.pathname.startsWith('/app/flotas')) return 'Gestión de Flota';
-        if (location.pathname.startsWith('/app/roles-usuario')) return 'Gestión de Roles';
-        if (location.pathname.startsWith('/app/roles-colaborador')) return 'Gestión de Roles de Colaborador';
-        if (location.pathname.startsWith('/app/tipo-producto')) return 'Tipos de Producto';
-        if (location.pathname.startsWith('/app/mercaderia')) return 'Catálogo de Mercaderías';
-        if (location.pathname.startsWith('/app/colaboradores')) return 'Gestión de Colaboradores';
-        if (location.pathname.startsWith('/app/gasto')) return 'Catálogo de Gastos';
-        if (location.pathname.startsWith('/app/usuarios')) return 'Gestión de Usuarios';
-        if (location.pathname.startsWith('/app/maestros')) return 'Gestión de Maestros';
-        if (location.pathname.startsWith('/app/mis-viajes')) return 'Mis Viajes';
-        if (location.pathname.startsWith('/app/mis-pagos')) return 'Mis Pagos';
-        if (location.pathname.startsWith('/app/mis-licencias')) return 'Mis Licencias';
-        if (location.pathname.startsWith('/app/mis-documentos')) return 'Mis Documentos';
-        if (location.pathname.startsWith('/app/reportes')) return 'Reportes';
-        if (sidebarItemTitle) return sidebarItemTitle;
-        return pageTitle || 'Dashboard';
-    };
-
-    const getSectionTitle = () => {
-        if (location.pathname.startsWith('/app/mis-')) return 'Portal del Empleado';
-        if (location.pathname.startsWith('/app/reportes')) return 'Reportes';
-        if (location.pathname.startsWith('/app/dashboard')) return 'Administración';
-        if (sidebarGroupTitle) {
-            return sidebarGroupTitle;
-        }
-        return 'Administración';
-    };
 
     return (
         <AppBar
@@ -130,7 +60,7 @@ export function Header() {
                 {/* Mobile Title */}
                 <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', justifyContent: 'center' }}>
                     <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '1.125rem' }}>
-                        {getTitle()}
+                        {title}
                     </Typography>
                 </Box>
 
@@ -149,11 +79,11 @@ export function Header() {
                         color="text.secondary"
                         sx={{ cursor: 'pointer', '&:hover': { color: theme.palette.primary.main } }}
                     >
-                        {getSectionTitle()}
+                        {sectionTitle}
                     </Typography>
                     <ChevronRightIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                     <Typography variant="body2" fontWeight={500}>
-                        {getTitle()}
+                        {title}
                     </Typography>
                 </Box>
 
@@ -162,7 +92,7 @@ export function Header() {
                 {/* Right Actions */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
                     {/* Mobile Add Button */}
-                    {location.pathname === '/app/clientes' && (
+                    {mobileAction ? (
                         <IconButton 
                             sx={{ 
                                 display: { xs: 'flex', md: 'none' }, 
@@ -170,14 +100,11 @@ export function Header() {
                                 color: theme.palette.primary.main,
                                 '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.2) }
                             }}
-                            // Trigger event for adding client. 
-                            // Since we can't easily pass props to page, we'll rely on the page listening 
-                            // or use a custom event. For now, we'll dispatch a custom event.
-                            onClick={() => window.dispatchEvent(new CustomEvent('open-create-client-modal'))}
+                            onClick={mobileAction.onClick}
                         >
-                            <AddIcon />
+                            {mobileAction.icon}
                         </IconButton>
-                    )}
+                    ) : null}
 
                     {/* Search Bar (Hidden on Mobile) */}
                     <Box

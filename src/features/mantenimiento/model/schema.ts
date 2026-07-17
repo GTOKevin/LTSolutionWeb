@@ -21,37 +21,6 @@ export const createMantenimientoSchema = z.object({
     kmIngreso: z.coerce.number().min(0, 'Kilometraje inválido'),
     kmSalida: z.coerce.number().optional().nullable(),
     estadoID: z.coerce.number().min(1, 'Estado es requerido')
-}).superRefine((data, ctx) => {
-    if (data.estadoID === 102) { // Completado/Finalizado
-        if (!data.fechaSalida) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Fecha de Salida es requerida para finalizar",
-                path: ["fechaSalida"]
-            });
-        }
-        if (!data.kmSalida || data.kmSalida <= 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Km Salida es requerido para finalizar",
-                path: ["kmSalida"]
-            });
-        }
-        if (!data.diagnosticoMecanico) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Diagnóstico es requerido para finalizar",
-                path: ["diagnosticoMecanico"]
-            });
-        }
-        if (!data.solucion) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Solución es requerida para finalizar",
-                path: ["solucion"]
-            });
-        }
-    }
 });
 
 export type CreateMantenimientoSchema = z.infer<typeof createMantenimientoSchema>;

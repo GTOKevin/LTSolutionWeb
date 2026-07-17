@@ -14,7 +14,7 @@ import {
     ImageNotSupported as ImageNotSupportedIcon
 } from '@mui/icons-material';
 import { useViajeGuias, useDeleteViajeGuia } from '@features/viaje/hooks/useViajeGuias';
-import { useViajeOptions } from '@features/viaje/hooks/useViajeOptions';
+import { useViajeGuiaOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { buildInternalFileUrl } from '@/shared/config/env';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
 import { logger } from '@/shared/utils/logger';
@@ -30,7 +30,7 @@ export function GuiasList({ viajeID, isViewOnly }: GuiasListProps) {
 
     const { data: guiasData, isLoading: isLoadingGuias } = useViajeGuias(viajeID, 1, 100);
     const deleteMutation = useDeleteViajeGuia();
-    const { tiposGuia } = useViajeOptions(true);
+    const { tiposGuia } = useViajeGuiaOptions(true);
 
     const guias = guiasData?.items ?? [];
 

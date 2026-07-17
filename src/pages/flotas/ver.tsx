@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { flotaApi } from '@/entities/flota/api/flota.api';
 import { useFlotaForm } from '@/features/flota/hooks/useFlotaForm';
+import { FLOTA_QUERY_KEYS } from '@/features/flota/model/query-keys';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
 import { TIPOS_COMBUSTIBLE } from '@entities/flota/model/constants';
 import { FlotaDocumentosList } from '@/features/flota/documentos/ui/FlotaDocumentosList';
@@ -27,8 +28,8 @@ export function FlotaVerPage() {
 
     const flotaId = Number(params.id);
 
-    const { data: flota, isLoading } = useQuery({
-        queryKey: ['flota', flotaId],
+    const { data: flota, isLoading, isError, refetch } = useQuery({
+        queryKey: FLOTA_QUERY_KEYS.detail(flotaId),
         queryFn: () => flotaApi.getById(flotaId).then((r) => r.data),
         enabled: Number.isFinite(flotaId) && flotaId > 0
     });
@@ -60,6 +61,7 @@ export function FlotaVerPage() {
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
         setActiveTab(newValue);
     };
+    const loadErrorMessage = isError ? 'No se pudo cargar el vehículo solicitado. Reintente la consulta o vuelva al listado.' : null;
 
     return (
         <Box
@@ -112,15 +114,25 @@ export function FlotaVerPage() {
                             </Box>
                         )}
 
-                        {!isLoading && activeTab === 0 && errorMessage && (
+                        {!isLoading && (loadErrorMessage || (activeTab === 0 && errorMessage)) ? (
                             <Box sx={{ p: 3, pb: 0 }}>
-                                <Alert severity="error" onClose={() => setErrorMessage(null)}>
-                                    {errorMessage}
+                                <Alert
+                                    severity="error"
+                                    onClose={() => setErrorMessage(null)}
+                                    action={
+                                        loadErrorMessage ? (
+                                            <Button color="inherit" size="small" onClick={() => refetch()}>
+                                                Reintentar
+                                            </Button>
+                                        ) : undefined
+                                    }
+                                >
+                                    {loadErrorMessage ?? errorMessage}
                                 </Alert>
                             </Box>
-                        )}
+                        ) : null}
 
-                        {!isLoading && (
+                        {!isLoading && !loadErrorMessage && (
                             <>
                                 <TabPanel value={activeTab} index={0} name="flota">
                                     <form id="flota-form" onSubmit={handleSubmit(onSubmit)}>

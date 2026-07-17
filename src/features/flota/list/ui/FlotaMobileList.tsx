@@ -23,8 +23,8 @@ interface FlotaMobileListProps {
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onView: (flota: Flota) => void;
-    onEdit: (flota: Flota) => void;
-    onDelete: (flota: Flota) => void;
+    onEdit?: (flota: Flota) => void;
+    onDelete?: (flota: Flota) => void;
 }
 
 export function FlotaMobileList({

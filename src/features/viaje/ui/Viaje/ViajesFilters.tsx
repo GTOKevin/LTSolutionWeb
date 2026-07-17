@@ -17,7 +17,7 @@ import {
 } from '@mui/icons-material';
 import { useState } from 'react';
 import type { ViajeFilters } from '@entities/viaje/model/types';
-import { useViajeOptions } from '@features/viaje/hooks/useViajeOptions';
+import { useViajeListFilterOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
 
 interface Props {
@@ -27,7 +27,7 @@ interface Props {
 export function ViajesFilters({ onSearch }: Props) {
     const theme = useTheme();
     const [showFilters, setShowFilters] = useState(true);
-    const { clientes, tractos, carretas, colaboradores, estados } = useViajeOptions();
+    const { clientes, tractos, carretas, colaboradores, estados } = useViajeListFilterOptions();
 
     const [filters, setFilters] = useState<ViajeFilters>({
         page: 1,

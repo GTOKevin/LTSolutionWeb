@@ -14,8 +14,8 @@ interface FlotaTableProps {
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onView: (flota: Flota) => void;
-    onEdit: (flota: Flota) => void;
-    onDelete: (flota: Flota) => void;
+    onEdit?: (flota: Flota) => void;
+    onDelete?: (flota: Flota) => void;
 }
 
 export function FlotaTable({
@@ -71,8 +71,8 @@ export function FlotaTable({
                     <TableCell align="right">
                         <TableActions 
                             onView={() => onView(flota)}
-                            onEdit={() => onEdit(flota)}
-                            onDelete={() => onDelete(flota)}
+                            onEdit={onEdit ? () => onEdit(flota) : undefined}
+                            onDelete={onDelete ? () => onDelete(flota) : undefined}
                         />
                     </TableCell>
                 </>

@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
-import { useViajeOptions } from '../../hooks/useViajeOptions';
+import { useViajeOptions, useViajeIncidenteOptions } from '@features/viaje/options';
 import { FormProvider, useForm } from 'react-hook-form';
 
 // Import sub-modules
@@ -25,6 +25,7 @@ export function ViajeDetalle() {
     });
 
     const options = useViajeOptions(true);
+    const { tiposIncidente } = useViajeIncidenteOptions(true);
 
     const methods = useForm({
         defaultValues: viaje || {}
@@ -93,7 +94,7 @@ export function ViajeDetalle() {
                                         <Divider sx={{ mb: 2 }} />
                                         <ViajeIncidente
                                             viewOnly={isViewOnly}
-                                            tiposIncidente={options.tiposIncidente || []}
+                                            tiposIncidente={tiposIncidente || []}
                                             viajeId={viajeId}
                                         />
                                     </CardContent>

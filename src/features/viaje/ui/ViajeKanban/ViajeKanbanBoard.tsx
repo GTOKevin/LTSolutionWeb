@@ -29,6 +29,7 @@ import { useToast } from '@/shared/components/ui/Toast';
 import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
+import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
 
 
 interface KanbanBoardProps {
@@ -59,7 +60,7 @@ export function ViajeKanbanBoard({
 }: KanbanBoardProps) {
     const { showToast } = useToast();
     const { data: viajeEstadosResponse } = useQuery({
-        queryKey: ['estados', 'viaje-kanban'],
+        queryKey: VIAJE_QUERY_KEYS.options.estados(),
         queryFn: () => estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE),
     });
 

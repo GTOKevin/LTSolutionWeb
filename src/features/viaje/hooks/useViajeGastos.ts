@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { viajeGastoApi } from '@/entities/viaje/api/viaje-gasto.api';
 import type { CreateViajeGastoDto, PagedViajeGastos } from '@/entities/viaje/model/types';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
-import { createViajeSubresourceHooks } from './useViajeSubresourceCrud';
+import { createViajeSubresourceHooks } from '../subresources/hooks/createViajeSubresourceHooks';
 
 const EMPTY_PAGED_GASTOS: PagedViajeGastos = {
     items: [],

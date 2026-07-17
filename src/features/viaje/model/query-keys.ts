@@ -3,6 +3,7 @@ import type { ViajeFilters as ViajeFiltersType } from '@/entities/viaje/model/ty
 export const VIAJE_QUERY_KEYS = {
     lists: () => ['viajes'] as const,
     list: (filters: ViajeFiltersType) => ['viajes', filters] as const,
+    listPage: (page: number, size: number, filters: ViajeFiltersType) => ['viajes', page, size, filters] as const,
     detail: (id: number) => ['viaje', id] as const,
     
     // Sub-modules
@@ -28,5 +29,6 @@ export const VIAJE_QUERY_KEYS = {
         tiposGuia: () => ['maestro-select-guia'] as const,
         monedas: () => ['maestro-select-pago'] as const,
         estados: () => ['maestro-select-estado'] as const,
+        flotaDisponibilidad: () => ['flota', 'disponibilidad'] as const,
     }
 } as const;

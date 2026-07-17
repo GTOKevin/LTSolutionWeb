@@ -11,6 +11,7 @@ import { resolveMantenimientoCompletadoId } from '@entities/mantenimiento/model/
 import { ESTADO_SECTIONS, TIPO_MAESTRO_SECTIONS } from '@entities/master-data/model/constants';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { useCreateMantenimiento, useUpdateMantenimiento } from './useMantenimientoCrud';
+import { useCrudFormPageState } from '@shared/hooks/useCrudFormPageState';
 
 interface UseMantenimientoFormProps {
     mantenimientoToEdit?: Mantenimiento | null;
@@ -20,15 +21,26 @@ interface UseMantenimientoFormProps {
 }
 
 export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, open }: UseMantenimientoFormProps) {
-    const [activeTab, setActiveTab] = useState(0);
-    const [createdId, setCreatedId] = useState<number | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [confirmationOpen, setConfirmationOpen] = useState(false);
     const [pendingData, setPendingData] = useState<CreateMantenimientoSchema | null>(null);
-
-    const isEdit = !!mantenimientoToEdit;
-    const effectiveId = mantenimientoToEdit?.mantenimientoID || createdId;
-    const canEditDetails = !!effectiveId;
+    const {
+        activeTab,
+        setActiveTab,
+        createdId,
+        errorMessage,
+        setErrorMessage,
+        effectiveId,
+        canEditDetails,
+        isEdit,
+        resetUiState,
+        handleMutationSuccess,
+    } = useCrudFormPageState({
+        entityId: mantenimientoToEdit?.mantenimientoID,
+        onSuccess,
+        onClose,
+        detailsTabIndex: 1,
+        keepOpenAfterCreate: false,
+    });
 
     // --- Queries ---
     const { data: flotas } = useQuery({
@@ -95,28 +107,18 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
                 });
             }
 
-            const resetUiTimer = window.setTimeout(() => {
-                setActiveTab(0);
-                setCreatedId(null);
-                setErrorMessage(null);
+            const resetConfirmationTimer = window.setTimeout(() => {
+                setPendingData(null);
+                setConfirmationOpen(false);
             }, 0);
+            const cleanupUiState = resetUiState();
 
             return () => {
-                window.clearTimeout(resetUiTimer);
+                window.clearTimeout(resetConfirmationTimer);
+                cleanupUiState();
             };
         }
-    }, [open, mantenimientoToEdit, reset]);
-
-    const handleSuccess = (id: number) => {
-        onSuccess(id);
-
-        if (!isEdit && !createdId) {
-            setCreatedId(id);
-            onClose();
-        } else {
-            onClose();
-        }
-    };
+    }, [open, mantenimientoToEdit, reset, resetUiState]);
 
     const handleError = (error: unknown) => {
         const genericError = handleBackendErrors<CreateMantenimientoSchema>(error, setError);
@@ -130,7 +132,7 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
             updateMutation.mutate(
                 { id: mantenimientoToEdit.mantenimientoID, data },
                 {
-                    onSuccess: () => handleSuccess(mantenimientoToEdit.mantenimientoID),
+                    onSuccess: () => handleMutationSuccess(mantenimientoToEdit.mantenimientoID),
                     onError: handleError
                 }
             );
@@ -138,19 +140,65 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
             updateMutation.mutate(
                 { id: createdId, data },
                 {
-                    onSuccess: () => handleSuccess(createdId),
+                    onSuccess: () => handleMutationSuccess(createdId),
                     onError: handleError
                 }
             );
         } else {
             createMutation.mutate(data, {
-                onSuccess: (response: number) => handleSuccess(response),
+                onSuccess: (response: number) => handleMutationSuccess(response),
                 onError: handleError
             });
         }
     };
 
+    const validateCompletedState = (data: CreateMantenimientoSchema) => {
+        if (!estadoCompletadoId || data.estadoID !== estadoCompletadoId) {
+            return true;
+        }
+
+        let isValid = true;
+
+        if (!data.fechaSalida) {
+            setError('fechaSalida', {
+                type: 'manual',
+                message: 'Fecha de Salida es requerida para finalizar'
+            });
+            isValid = false;
+        }
+
+        if (!data.kmSalida || data.kmSalida <= 0) {
+            setError('kmSalida', {
+                type: 'manual',
+                message: 'Km Salida es requerido para finalizar'
+            });
+            isValid = false;
+        }
+
+        if (!data.diagnosticoMecanico) {
+            setError('diagnosticoMecanico', {
+                type: 'manual',
+                message: 'Diagnóstico es requerido para finalizar'
+            });
+            isValid = false;
+        }
+
+        if (!data.solucion) {
+            setError('solucion', {
+                type: 'manual',
+                message: 'Solución es requerida para finalizar'
+            });
+            isValid = false;
+        }
+
+        return isValid;
+    };
+
     const onSubmit: SubmitHandler<CreateMantenimientoSchema> = (data) => {
+        if (!validateCompletedState(data)) {
+            return;
+        }
+
         if (estadoCompletadoId && data.estadoID === estadoCompletadoId) {
             setPendingData(data);
             setConfirmationOpen(true);

@@ -7,7 +7,6 @@ import {
     FormControlLabel,
     Grid,
     MenuItem,
-    Snackbar,
     Switch,
     Tab,
     Tabs,
@@ -21,6 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { colaboradorApi } from '@/entities/colaborador/api/colaborador.api';
 import { useColaboradorForm } from '@/features/colaborador/hooks/useColaboradorForm';
+import { COLABORADOR_QUERY_KEYS } from '@/features/colaborador/model/query-keys';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
 import { LicenciaList } from '@/features/colaborador/licencias/ui/LicenciaList';
 import { ColaboradorDocumentoList } from '@/features/colaborador/documentos/ui/ColaboradorDocumentoList';
@@ -34,8 +34,8 @@ export function ColaboradorVerPage() {
 
     const colaboradorId = Number(params.id);
 
-    const { data: colaborador, isLoading } = useQuery({
-        queryKey: ['colaborador', colaboradorId],
+    const { data: colaborador, isLoading, isError, refetch } = useQuery({
+        queryKey: COLABORADOR_QUERY_KEYS.detail(colaboradorId),
         queryFn: () => colaboradorApi.getById(colaboradorId).then((r) => r.data),
         enabled: Number.isFinite(colaboradorId) && colaboradorId > 0
     });
@@ -52,8 +52,6 @@ export function ColaboradorVerPage() {
         setActiveTab,
         errorMessage,
         setErrorMessage,
-        openSnackbar,
-        setOpenSnackbar,
         effectiveId,
         canEditDetails,
         roles,
@@ -69,6 +67,7 @@ export function ColaboradorVerPage() {
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
         setActiveTab(newValue);
     };
+    const loadErrorMessage = isError ? 'No se pudo cargar el colaborador solicitado. Reintente la consulta o vuelva al listado.' : null;
 
     return (
         <>
@@ -139,15 +138,25 @@ export function ColaboradorVerPage() {
                                 </Box>
                             )}
 
-                            {!isLoading && activeTab === 0 && errorMessage && (
+                            {!isLoading && (loadErrorMessage || (activeTab === 0 && errorMessage)) ? (
                                 <Box sx={{ p: 3, pb: 0 }}>
-                                    <Alert severity="error" onClose={() => setErrorMessage(null)}>
-                                        {errorMessage}
+                                    <Alert
+                                        severity="error"
+                                        onClose={() => setErrorMessage(null)}
+                                        action={
+                                            loadErrorMessage ? (
+                                                <Button color="inherit" size="small" onClick={() => refetch()}>
+                                                    Reintentar
+                                                </Button>
+                                            ) : undefined
+                                        }
+                                    >
+                                        {loadErrorMessage ?? errorMessage}
                                     </Alert>
                                 </Box>
-                            )}
+                            ) : null}
 
-                            {!isLoading && (
+                            {!isLoading && !loadErrorMessage && (
                                 <>
                                     <TabPanel value={activeTab} index={0} name="colaborador">
                                         <form id="colab-form" onSubmit={handleSubmit(onSubmit)}>
@@ -459,16 +468,6 @@ export function ColaboradorVerPage() {
                 </Box>
             </Box>
 
-            <Snackbar
-                open={openSnackbar}
-                autoHideDuration={6000}
-                onClose={() => setOpenSnackbar(false)}
-                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-            >
-                <Alert onClose={() => setOpenSnackbar(false)} severity="error" sx={{ width: '100%' }}>
-                    {errorMessage}
-                </Alert>
-            </Snackbar>
         </>
     );
 }

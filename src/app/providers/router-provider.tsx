@@ -1,14 +1,15 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, type ReactNode } from 'react';
 import { CircularProgress, Box } from '@mui/material';
 import { useAuthStore } from '@shared/store/auth.store';
 import { ProtectedRoute } from '@shared/lib/guards/ProtectedRoute';
 import { PublicRoute } from '@shared/lib/guards/PublicRoute';
 import { PermissionGuard } from '@shared/lib/guards/PermissionGuard';
 import { PERMISSIONS } from '@shared/constants/permissions';
-import { AppLayout } from '@widgets/layout/ui/AppLayout';
+import { AppShell } from '@app/layout/ui/AppShell';
 import { env } from '@shared/config/env';
-import { getDefaultAppRoute } from '@shared/lib/permissions/default-app-route';
+import { getDefaultAppRoute } from '@app/router/lib/default-app-route';
+import { APP_PATHS, APP_ROUTE_SEGMENTS } from '@app/router/model/navigation';
 
 // Lazy loaded pages
 const LoginPage = lazy(() => import('@pages/login').then(module => ({ default: module.LoginPage })));
@@ -62,7 +63,7 @@ function LoadingFallback() {
 function RootRedirect() {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
     const user = useAuthStore((state) => state.user);
-    return <Navigate to={isAuthenticated ? getDefaultAppRoute(user) : '/login'} replace />;
+    return <Navigate to={isAuthenticated ? getDefaultAppRoute(user) : APP_PATHS.login} replace />;
 }
 
 function AppIndexRedirect() {
@@ -70,15 +71,61 @@ function AppIndexRedirect() {
     return <Navigate to={getDefaultAppRoute(user)} replace />;
 }
 
+interface GuardedAppRoute {
+    path: string;
+    permission: string | string[];
+    element: ReactNode;
+}
+
+const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
+    { path: APP_ROUTE_SEGMENTS.dashboard, permission: PERMISSIONS.DASHBOARD.VER, element: <DashboardPage /> },
+    { path: APP_ROUTE_SEGMENTS.misPagos, permission: [PERMISSIONS.EMPLOYEE.PAGOS.VER, PERMISSIONS.EMPLOYEE.PAGOS.CONFIRMAR], element: <MisPagosPage /> },
+    { path: APP_ROUTE_SEGMENTS.misLicencias, permission: [PERMISSIONS.EMPLOYEE.LICENCIAS.VER, PERMISSIONS.EMPLOYEE.LICENCIAS.SOLICITAR], element: <MisLicenciasPage /> },
+    {
+        path: APP_ROUTE_SEGMENTS.misDocumentos,
+        permission: [PERMISSIONS.EMPLOYEE.DOCUMENTOS.VER, PERMISSIONS.EMPLOYEE.DOCUMENTOS.SOLICITAR_ACTUALIZACION],
+        element: <MisDocumentosPage />,
+    },
+    { path: APP_ROUTE_SEGMENTS.clientes, permission: PERMISSIONS.CLIENTES.VER, element: <ClientesPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.clientes}/nuevo`, permission: PERMISSIONS.CLIENTES.GESTIONAR, element: <ClienteNuevoPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.clientes}/:id`, permission: PERMISSIONS.CLIENTES.GESTIONAR, element: <ClienteEditarPage /> },
+    { path: APP_ROUTE_SEGMENTS.viajes, permission: PERMISSIONS.VIAJES.VER, element: <ViajesPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.viajes}/nuevo`, permission: PERMISSIONS.VIAJES.GESTIONAR, element: <ViajeNuevoPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.viajes}/:id`, permission: [PERMISSIONS.VIAJES.VER, PERMISSIONS.VIAJES.GESTIONAR], element: <ViajeEditarPage /> },
+    { path: APP_ROUTE_SEGMENTS.facturas, permission: PERMISSIONS.FACTURAS.VER, element: <FacturasPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.facturas}/nuevo`, permission: PERMISSIONS.FACTURAS.GESTIONAR, element: <FacturaNuevaPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.facturas}/:id`, permission: PERMISSIONS.FACTURAS.GESTIONAR, element: <FacturaEditarPage /> },
+    { path: APP_ROUTE_SEGMENTS.flotas, permission: PERMISSIONS.FLOTA.VER, element: <FlotasPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.flotas}/nuevo`, permission: PERMISSIONS.FLOTA.GESTIONAR, element: <FlotaNuevoPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.flotas}/:id`, permission: PERMISSIONS.FLOTA.GESTIONAR, element: <FlotaEditarPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.flotas}/:id/ver`, permission: PERMISSIONS.FLOTA.VER, element: <FlotaVerPage /> },
+    { path: APP_ROUTE_SEGMENTS.cotizaciones, permission: PERMISSIONS.COTIZACIONES.VER, element: <CotizacionesPage /> },
+    { path: APP_ROUTE_SEGMENTS.colaboradores, permission: PERMISSIONS.COLABORADORES.VER, element: <ColaboradoresPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.colaboradores}/nuevo`, permission: PERMISSIONS.COLABORADORES.GESTIONAR, element: <ColaboradorNuevoPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.colaboradores}/:id`, permission: PERMISSIONS.COLABORADORES.GESTIONAR, element: <ColaboradorEditarPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.colaboradores}/:id/ver`, permission: PERMISSIONS.COLABORADORES.VER, element: <ColaboradorVerPage /> },
+    { path: APP_ROUTE_SEGMENTS.mantenimientos, permission: PERMISSIONS.MANTENIMIENTOS.VER, element: <MantenimientosPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.mantenimientos}/nuevo`, permission: PERMISSIONS.MANTENIMIENTOS.GESTIONAR, element: <MantenimientoNuevoPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.mantenimientos}/:id`, permission: PERMISSIONS.MANTENIMIENTOS.GESTIONAR, element: <MantenimientoEditarPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.mantenimientos}/:id/ver`, permission: PERMISSIONS.MANTENIMIENTOS.VER, element: <MantenimientoVerPage /> },
+    { path: APP_ROUTE_SEGMENTS.usuarios, permission: PERMISSIONS.SISTEMA.USUARIOS.VER, element: <UsuariosPage /> },
+    { path: APP_ROUTE_SEGMENTS.rolesUsuario, permission: PERMISSIONS.SISTEMA.ROLES.VER, element: <RolesPage /> },
+    { path: APP_ROUTE_SEGMENTS.rolesColaborador, permission: PERMISSIONS.SISTEMA.ROLES.VER, element: <RolesColaboradorPage /> },
+    { path: APP_ROUTE_SEGMENTS.maestros, permission: PERMISSIONS.SISTEMA.MAESTROS.VER, element: <MaestrosPage /> },
+    { path: APP_ROUTE_SEGMENTS.gasto, permission: PERMISSIONS.CATALOGOS.GASTO.VER, element: <GastoPage /> },
+    { path: APP_ROUTE_SEGMENTS.mercaderia, permission: PERMISSIONS.CATALOGOS.MERCADERIA.VER, element: <MercaderiaPage /> },
+    { path: APP_ROUTE_SEGMENTS.tipoProducto, permission: PERMISSIONS.CATALOGOS.TIPO_PRODUCTO.VER, element: <TipoProductoPage /> },
+];
+
 export function RouterProvider() {
     return (
         <BrowserRouter>
             <Suspense fallback={<LoadingFallback />}>
                 <Routes>
-                    <Route path="/" element={<RootRedirect />} />
+                    <Route path={APP_PATHS.root} element={<RootRedirect />} />
 
                     <Route
-                        path="/login"
+                        path={APP_PATHS.login}
                         element={
                             <PublicRoute>
                                 <LoginPage />
@@ -87,7 +134,7 @@ export function RouterProvider() {
                     />
 
                     <Route
-                        path="/forgot-password"
+                        path={APP_PATHS.forgotPassword}
                         element={
                             <PublicRoute>
                                 <ForgotPasswordPage />
@@ -99,20 +146,15 @@ export function RouterProvider() {
 
                     {/* Protected routes with layout */}
                     <Route
-                        path="/app"
+                        path={APP_PATHS.appRoot}
                         element={
                             <ProtectedRoute>
-                                <AppLayout />
+                                <AppShell />
                             </ProtectedRoute>
                         }
                     >
                         <Route index element={<AppIndexRedirect />} />
-                        <Route path="dashboard" element={
-                            <PermissionGuard permission={PERMISSIONS.DASHBOARD.VER}>
-                                <DashboardPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="mis-viajes">
+                        <Route path={APP_ROUTE_SEGMENTS.misViajes}>
                             <Route index element={
                                 <PermissionGuard
                                     permission={[PERMISSIONS.EMPLOYEE.VIAJES.VER, PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR]}
@@ -128,176 +170,14 @@ export function RouterProvider() {
                                 </PermissionGuard>
                             } />
                         </Route>
-                        <Route path="mis-pagos" element={
-                            <PermissionGuard
-                                permission={[PERMISSIONS.EMPLOYEE.PAGOS.VER, PERMISSIONS.EMPLOYEE.PAGOS.CONFIRMAR]}
-                            >
-                                <MisPagosPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="mis-licencias" element={
-                            <PermissionGuard
-                                permission={[PERMISSIONS.EMPLOYEE.LICENCIAS.VER, PERMISSIONS.EMPLOYEE.LICENCIAS.SOLICITAR]}
-                            >
-                                <MisLicenciasPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="mis-documentos" element={
-                            <PermissionGuard
-                                permission={[
-                                    PERMISSIONS.EMPLOYEE.DOCUMENTOS.VER,
-                                    PERMISSIONS.EMPLOYEE.DOCUMENTOS.SOLICITAR_ACTUALIZACION
-                                ]}
-                            >
-                                <MisDocumentosPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="perfil" element={<PerfilPage />} />
-                        <Route path="clientes" element={
-                            <PermissionGuard permission={PERMISSIONS.CLIENTES.VER}>
-                                <ClientesPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="clientes/nuevo" element={
-                            <PermissionGuard permission={PERMISSIONS.CLIENTES.GESTIONAR}>
-                                <ClienteNuevoPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="clientes/:id" element={
-                            <PermissionGuard permission={PERMISSIONS.CLIENTES.GESTIONAR}>
-                                <ClienteEditarPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="viajes" element={
-                            <PermissionGuard permission={PERMISSIONS.VIAJES.VER}>
-                                <ViajesPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="viajes/nuevo" element={
-                            <PermissionGuard permission={PERMISSIONS.VIAJES.GESTIONAR}>
-                                <ViajeNuevoPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="viajes/:id" element={
-                            <PermissionGuard permission={[PERMISSIONS.VIAJES.VER, PERMISSIONS.VIAJES.GESTIONAR]}>
-                                <ViajeEditarPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="facturas" element={
-                            <PermissionGuard permission={PERMISSIONS.FACTURAS.VER}>
-                                <FacturasPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="facturas/nuevo" element={
-                            <PermissionGuard permission={PERMISSIONS.FACTURAS.GESTIONAR}>
-                                <FacturaNuevaPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="facturas/:id" element={
-                            <PermissionGuard permission={PERMISSIONS.FACTURAS.GESTIONAR}>
-                                <FacturaEditarPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="flotas" element={
-                            <PermissionGuard permission={PERMISSIONS.FLOTA.VER}>
-                                <FlotasPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="flotas/nuevo" element={
-                            <PermissionGuard permission={PERMISSIONS.FLOTA.GESTIONAR}>
-                                <FlotaNuevoPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="flotas/:id" element={
-                            <PermissionGuard permission={PERMISSIONS.FLOTA.GESTIONAR}>
-                                <FlotaEditarPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="flotas/:id/ver" element={
-                            <PermissionGuard permission={PERMISSIONS.FLOTA.VER}>
-                                <FlotaVerPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="cotizaciones" element={
-                            <PermissionGuard permission={PERMISSIONS.COTIZACIONES.VER}>
-                                <CotizacionesPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="colaboradores" element={
-                            <PermissionGuard permission={PERMISSIONS.COLABORADORES.VER}>
-                                <ColaboradoresPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="colaboradores/nuevo" element={
-                            <PermissionGuard permission={PERMISSIONS.COLABORADORES.GESTIONAR}>
-                                <ColaboradorNuevoPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="colaboradores/:id" element={
-                            <PermissionGuard permission={PERMISSIONS.COLABORADORES.GESTIONAR}>
-                                <ColaboradorEditarPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="colaboradores/:id/ver" element={
-                            <PermissionGuard permission={PERMISSIONS.COLABORADORES.VER}>
-                                <ColaboradorVerPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="mantenimientos" element={
-                            <PermissionGuard permission={PERMISSIONS.MANTENIMIENTOS.VER}>
-                                <MantenimientosPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="mantenimientos/nuevo" element={
-                            <PermissionGuard permission={PERMISSIONS.MANTENIMIENTOS.GESTIONAR}>
-                                <MantenimientoNuevoPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="mantenimientos/:id" element={
-                            <PermissionGuard permission={PERMISSIONS.MANTENIMIENTOS.GESTIONAR}>
-                                <MantenimientoEditarPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="mantenimientos/:id/ver" element={
-                            <PermissionGuard permission={PERMISSIONS.MANTENIMIENTOS.VER}>
-                                <MantenimientoVerPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="usuarios" element={
-                            <PermissionGuard permission={PERMISSIONS.SISTEMA.USUARIOS.VER}>
-                                <UsuariosPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="roles-usuario" element={
-                            <PermissionGuard permission={PERMISSIONS.SISTEMA.ROLES.VER}>
-                                <RolesPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="roles-colaborador" element={
-                            <PermissionGuard permission={PERMISSIONS.SISTEMA.ROLES.VER}>
-                                <RolesColaboradorPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="maestros" element={
-                            <PermissionGuard permission={PERMISSIONS.SISTEMA.MAESTROS.VER}>
-                                <MaestrosPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="gasto" element={
-                            <PermissionGuard permission={PERMISSIONS.CATALOGOS.GASTO.VER}>
-                                <GastoPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="mercaderia" element={
-                            <PermissionGuard permission={PERMISSIONS.CATALOGOS.MERCADERIA.VER}>
-                                <MercaderiaPage />
-                            </PermissionGuard>
-                        } />
-                        <Route path="tipo-producto" element={
-                            <PermissionGuard permission={PERMISSIONS.CATALOGOS.TIPO_PRODUCTO.VER}>
-                                <TipoProductoPage />
-                            </PermissionGuard>
-                        } />
+                        <Route path={APP_ROUTE_SEGMENTS.profile} element={<PerfilPage />} />
+                        {GUARDED_APP_ROUTES.map((route) => (
+                            <Route
+                                key={route.path}
+                                path={route.path}
+                                element={<PermissionGuard permission={route.permission}>{route.element}</PermissionGuard>}
+                            />
+                        ))}
                     </Route>
 
                     {/* Catch all */}

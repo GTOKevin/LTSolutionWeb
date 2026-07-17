@@ -4,7 +4,7 @@ import {
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { useViajeGastos, useDeleteViajeGasto } from '@features/viaje/hooks/useViajeGastos';
-import { useViajeOptions } from '@features/viaje/hooks/useViajeOptions';
+import { useViajeGastoOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { logger } from '@/shared/utils/logger';
 
@@ -20,7 +20,7 @@ export function GastosList({ viajeID, isViewOnly }: GastosListProps) {
 
     const { data: gastosData, isLoading: isLoadingGastos } = useViajeGastos(viajeID, page + 1, rowsPerPage);
     const deleteMutation = useDeleteViajeGasto();
-    const { tiposGasto, monedas } = useViajeOptions(true);
+    const { tiposGasto, monedas } = useViajeGastoOptions(true);
 
     const gastos = gastosData?.items ?? [];
     const totalsByCurrency = gastosData?.totalsByCurrency ?? [];

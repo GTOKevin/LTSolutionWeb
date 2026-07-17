@@ -1,4 +1,5 @@
 import {
+    Alert,
     Box,
     Typography,
     Button,
@@ -18,12 +19,16 @@ import { ColaboradorTable } from '@features/colaborador/list/ui/ColaboradorTable
 import { ColaboradorMobileList } from '@features/colaborador/list/ui/ColaboradorMobileList';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { useDeleteColaborador } from '@features/colaborador/hooks/useColaboradorCrud';
+import { COLABORADOR_QUERY_KEYS } from '@features/colaborador/model/query-keys';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import { useNavigate } from 'react-router-dom';
+import { usePermission } from '@shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@shared/constants/permissions';
 
 export function ColaboradoresPage() {
     const theme = useTheme();
     const navigate = useNavigate();
+    const canManageColaboradores = usePermission(PERMISSIONS.COLABORADORES.GESTIONAR);
     
     // State
     const [page, setPage] = useState(0);
@@ -35,8 +40,8 @@ export function ColaboradoresPage() {
     const [colaboradorToDelete, setColaboradorToDelete] = useState<Colaborador | null>(null);
 
     // Queries
-    const { data, isLoading } = useQuery({
-        queryKey: ['colaboradores', page, rowsPerPage, searchTerm],
+    const { data, isLoading, isError, refetch } = useQuery({
+        queryKey: COLABORADOR_QUERY_KEYS.list(page, rowsPerPage, searchTerm),
         queryFn: () => colaboradorApi.getAll({
             page: page + 1,
             size: rowsPerPage,
@@ -111,20 +116,22 @@ export function ColaboradoresPage() {
                             Administra conductores y personal administrativo
                         </Typography>
                     </Box>
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={handleCreate}
-                        sx={{ 
-                            boxShadow: 2, 
-                            fontWeight: 'bold', 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2
-                        }}
-                    >
-                        Nuevo Colaborador
-                    </Button>
+                    {canManageColaboradores ? (
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={handleCreate}
+                            sx={{ 
+                                boxShadow: 2, 
+                                fontWeight: 'bold', 
+                                px: 3, 
+                                py: 1.2,
+                                borderRadius: 2
+                            }}
+                        >
+                            Nuevo Colaborador
+                        </Button>
+                    ) : null}
                 </Box>
 
                 {/* Toolbar Section */}
@@ -157,6 +164,19 @@ export function ColaboradoresPage() {
                     </Box>
                 </Box>
 
+                {isError ? (
+                    <Alert
+                        severity="error"
+                        action={
+                            <Button color="inherit" size="small" onClick={() => refetch()}>
+                                Reintentar
+                            </Button>
+                        }
+                    >
+                        No se pudo cargar la lista de colaboradores. Verifique la conexión con el backend e intente nuevamente.
+                    </Alert>
+                ) : null}
+
                 {/* Main Content */}
                 <ColaboradorTable
                     data={data?.data}
@@ -165,8 +185,8 @@ export function ColaboradoresPage() {
                     rowsPerPage={rowsPerPage}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
+                    onEdit={canManageColaboradores ? handleEdit : undefined}
+                    onDelete={canManageColaboradores ? handleDeleteClick : undefined}
                     onView={handleView}
                 />
 
@@ -177,8 +197,8 @@ export function ColaboradoresPage() {
                     rowsPerPage={rowsPerPage}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
+                    onEdit={canManageColaboradores ? handleEdit : undefined}
+                    onDelete={canManageColaboradores ? handleDeleteClick : undefined}
                     onView={handleView}
                 />
             </Box>
