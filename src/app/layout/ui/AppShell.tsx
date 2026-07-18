@@ -45,7 +45,7 @@ export function AppShell() {
     const headerMobileAction = location.pathname === APP_PATHS.clientes && canCreateClientes
         ? {
             icon: <AddIcon />,
-            onClick: () => window.dispatchEvent(new CustomEvent('open-create-client-modal')),
+            onClick: () => navigate(`${APP_PATHS.clientes}/nuevo`),
         }
         : undefined;
 

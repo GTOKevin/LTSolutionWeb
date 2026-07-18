@@ -1,8 +1,9 @@
 import { Box } from '@mui/material';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { LoadingModal } from '@shared/components/ui/LoadingModal';
-import { ViajesMobileList, ViajesTable } from '@features/viaje/ui/Viaje';
-import { ViajeKanbanBoard } from '@features/viaje/ui/ViajeKanban/ViajeKanbanBoard';
+import { ViajesMobileList } from './ViajesMobileList';
+import { ViajesTable } from './ViajesTable';
+import { ViajeKanbanBoard } from './ViajeKanbanBoard';
 import type { useViajesPageController } from '../hooks/useViajesPageController';
 
 interface ViajesPageContentProps {

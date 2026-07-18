@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import type { ResumenGeneralData } from '../../ui/ViajeEditar/ResumenGeneralTab';
+import type { ResumenGeneralData } from '../ui/tabs';
 
 interface GetViajeEditTabsOptions {
     requiereEscolta: boolean;
