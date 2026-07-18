@@ -1,5 +1,4 @@
-import { ViajesFilters } from '@features/viaje/ui/Viaje';
-import { useViajesPageController, ViajesPageContent } from '@features/viaje/list';
+import { useViajesPageController, ViajesFilters, ViajesPageContent } from '@features/viaje/list';
 import { ViajesOverviewShell } from '@widgets/viaje-workspace/ui/ViajesOverviewShell';
 
 export function ViajesPage() {
