@@ -20,6 +20,8 @@ import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employe
 import type { CreateMiLicenciaRequestDto } from '@entities/employee/model/types';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
+import { usePermission } from '@shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@shared/constants/permissions';
 import {
     createLicenciaSolicitudSchema,
     getCreateLicenciaSolicitudDefaultValues,
@@ -37,6 +39,7 @@ interface SolicitarLicenciaModalProps {
 export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModalProps) {
     const queryClient = useQueryClient();
     const { showToast } = useToast();
+    const canSolicitarLicencia = usePermission(PERMISSIONS.EMPLOYEE.LICENCIAS.SOLICITAR);
 
     const form = useForm<CreateLicenciaSolicitudFormInput, unknown, CreateLicenciaSolicitudForm>({
         resolver: zodResolver(createLicenciaSolicitudSchema),
@@ -44,10 +47,10 @@ export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModal
     });
 
     useEffect(() => {
-        if (open) {
+        if (open && canSolicitarLicencia) {
             form.reset(getCreateLicenciaSolicitudDefaultValues());
         }
-    }, [open, form]);
+    }, [canSolicitarLicencia, open, form]);
 
     const { data: tiposLicencia } = useQuery({
         queryKey: ['employee-portal', 'tipos-licencia'],
@@ -69,10 +72,16 @@ export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModal
         },
     });
 
+    const handleClose = () => {
+        if (!createMutation.isPending) {
+            onClose();
+        }
+    };
+
     return (
         <Dialog
-            open={open}
-            onClose={onClose}
+            open={open && canSolicitarLicencia}
+            onClose={handleClose}
             fullWidth
             maxWidth="sm"
             PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}
@@ -176,12 +185,12 @@ export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModal
                 </Stack>
             </DialogContent>
             <DialogActions sx={{ px: 4, py: 3, bgcolor: 'action.hover', borderTop: '1px solid', borderColor: 'divider', gap: 2 }}>
-                <Button onClick={onClose} sx={{ fontWeight: 'bold', color: 'text.primary', '&:hover': { bgcolor: 'action.selected' } }}>
+                <Button onClick={handleClose} sx={{ fontWeight: 'bold', color: 'text.primary', '&:hover': { bgcolor: 'action.selected' } }}>
                     Cancelar
                 </Button>
                 <Button
                     variant="contained"
-                    disabled={createMutation.isPending}
+                    disabled={createMutation.isPending || !canSolicitarLicencia}
                     onClick={form.handleSubmit((values) => {
                         createMutation.mutate({
                             tipoLicenciaID: values.tipoLicenciaID,

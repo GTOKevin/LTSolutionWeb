@@ -9,7 +9,7 @@ import L from 'leaflet';
 import 'leaflet-routing-machine';
 import { useEffect } from 'react';
 import { useUbigeoDetails } from '@/shared/hooks/useUbigeoDetails';
-import { useOrsRoute } from '@/shared/hooks/useOrsRoute';
+import { useOrsRoute } from '@features/viaje/hooks/useOrsRoute';
 import type { ViajeWizardFormData } from '../../model/schema';
 
 // Fix for default markers in leaflet with Webpack/Vite

@@ -19,8 +19,8 @@ export function useMisDocumentosPageController() {
     const canRequestDocumentUpdate = usePermission(PERMISSIONS.EMPLOYEE.DOCUMENTOS.SOLICITAR_ACTUALIZACION);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [tipoDocumentoID, setTipoDocumentoID] = useState<number | ''>('');
     const [activo, setActivo] = useState<string>('');
-    const [searchTerm, setSearchTerm] = useState('');
     const [filters, setFilters] = useState<Omit<MiDocumentoFilters, 'page' | 'size'>>({});
     const [dialogOpen, setDialogOpen] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -56,19 +56,6 @@ export function useMisDocumentosPageController() {
             tipoDocumentoNombre: item.tipoDocumentoNombre || tipoDocumentoNameById.get(item.tipoDocumentoId) || '',
         }));
     }, [documentos?.items, tiposDocumento]);
-
-    const visibleDocumentos = useMemo(() => {
-        const normalizedSearch = searchTerm.trim().toLowerCase();
-
-        if (!normalizedSearch) {
-            return documentosEnriquecidos;
-        }
-
-        return documentosEnriquecidos.filter((item) =>
-            item.tipoDocumentoNombre.toLowerCase().includes(normalizedSearch) ||
-            (item.numeroDocumento ?? '').toLowerCase().includes(normalizedSearch),
-        );
-    }, [documentosEnriquecidos, searchTerm]);
 
     const requestFilters = useMemo<MiDocumentoSolicitudesFilters>(() => ({
         page: 1,
@@ -111,10 +98,22 @@ export function useMisDocumentosPageController() {
         setPage(0);
     };
 
-    const handleSearch = () => {
+    const handleSearch = (nextFilters?: { activo?: string; tipoDocumentoID?: number | '' }) => {
+        const resolvedActivo = nextFilters?.activo ?? activo;
+        const resolvedTipoDocumentoID = nextFilters?.tipoDocumentoID ?? tipoDocumentoID;
+
+        if (nextFilters?.activo !== undefined) {
+            setActivo(nextFilters.activo);
+        }
+
+        if (nextFilters?.tipoDocumentoID !== undefined) {
+            setTipoDocumentoID(nextFilters.tipoDocumentoID);
+        }
+
         setPage(0);
         setFilters({
-            activo: activo === '' ? undefined : activo === 'true',
+            activo: resolvedActivo === '' ? undefined : resolvedActivo === 'true',
+            tipoDocumentoID: resolvedTipoDocumentoID === '' ? undefined : Number(resolvedTipoDocumentoID),
         });
     };
 
@@ -172,14 +171,14 @@ export function useMisDocumentosPageController() {
         previewTitle,
         previewUrl,
         rowsPerPage,
-        searchTerm,
         selectedDocumentoId,
         setActivo,
         setDialogOpen,
         setPreviewUrl,
-        setSearchTerm,
         setSelectedDocumentoId,
+        setTipoDocumentoID,
         solicitudes,
-        visibleDocumentos,
+        tipoDocumentoID,
+        tiposDocumento,
     };
 }

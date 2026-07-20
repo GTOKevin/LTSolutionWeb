@@ -79,11 +79,11 @@ interface GuardedAppRoute {
 
 const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: APP_ROUTE_SEGMENTS.dashboard, permission: PERMISSIONS.DASHBOARD.VER, element: <DashboardPage /> },
-    { path: APP_ROUTE_SEGMENTS.misPagos, permission: [PERMISSIONS.EMPLOYEE.PAGOS.VER, PERMISSIONS.EMPLOYEE.PAGOS.CONFIRMAR], element: <MisPagosPage /> },
-    { path: APP_ROUTE_SEGMENTS.misLicencias, permission: [PERMISSIONS.EMPLOYEE.LICENCIAS.VER, PERMISSIONS.EMPLOYEE.LICENCIAS.SOLICITAR], element: <MisLicenciasPage /> },
+    { path: APP_ROUTE_SEGMENTS.misPagos, permission: PERMISSIONS.EMPLOYEE.PAGOS.VER, element: <MisPagosPage /> },
+    { path: APP_ROUTE_SEGMENTS.misLicencias, permission: PERMISSIONS.EMPLOYEE.LICENCIAS.VER, element: <MisLicenciasPage /> },
     {
         path: APP_ROUTE_SEGMENTS.misDocumentos,
-        permission: [PERMISSIONS.EMPLOYEE.DOCUMENTOS.VER, PERMISSIONS.EMPLOYEE.DOCUMENTOS.SOLICITAR_ACTUALIZACION],
+        permission: PERMISSIONS.EMPLOYEE.DOCUMENTOS.VER,
         element: <MisDocumentosPage />,
     },
     { path: APP_ROUTE_SEGMENTS.clientes, permission: PERMISSIONS.CLIENTES.VER, element: <ClientesPage /> },
@@ -157,14 +157,14 @@ export function RouterProvider() {
                         <Route path={APP_ROUTE_SEGMENTS.misViajes}>
                             <Route index element={
                                 <PermissionGuard
-                                    permission={[PERMISSIONS.EMPLOYEE.VIAJES.VER, PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR]}
+                                    permission={PERMISSIONS.EMPLOYEE.VIAJES.VER}
                                 >
                                     <MisViajesPage />
                                 </PermissionGuard>
                             } />
                             <Route path=":id" element={
                                 <PermissionGuard
-                                    permission={[PERMISSIONS.EMPLOYEE.VIAJES.VER, PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR]}
+                                    permission={PERMISSIONS.EMPLOYEE.VIAJES.VER}
                                 >
                                     <MisViajesDetallePage />
                                 </PermissionGuard>
