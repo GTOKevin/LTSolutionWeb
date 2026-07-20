@@ -13,6 +13,7 @@ import { MobileListShell } from '@shared/components/ui/MobileListShell';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@/entities/employee/api/employee-portal.api';
 import type { MiViajeFilters, MiViajeListItemDto } from '@entities/employee/model/types';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO, formatDateOnly } from '@shared/utils/date-utils';
+import { ROWS_PER_PAGE_OPTIONS } from '@shared/constants/constantes';
 import { MisViajesKPIs } from '@/features/employee/viajes/ui/MisViajesKPIs';
 import { MisViajesFilters } from '@/features/employee/viajes/ui/MisViajesFilters';
 import { MisViajesGrid } from '@/features/employee/viajes/ui/MisViajesGrid';
@@ -26,7 +27,7 @@ export function MisViajesPage() {
     const navigate = useNavigate();
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(6);
+    const [rowsPerPage, setRowsPerPage] = useState(ROWS_PER_PAGE_OPTIONS[0]);
     const [search, setSearch] = useState('');
     const [desde, setDesde] = useState(getFirstDayOfCurrentMonthISO());
     const [hasta, setHasta] = useState(getLastDayOfCurrentMonthISO());
@@ -162,7 +163,7 @@ export function MisViajesPage() {
             )}
 
             {(totals.total ?? 0) > 0 && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, px: 2 }}>
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'space-between', alignItems: 'center', mt: 2, px: 2 }}>
                     <Typography variant="body2" color="text.secondary">
                         Mostrando {(data?.items ?? []).length} de {totals.total} registros encontrados
                     </Typography>

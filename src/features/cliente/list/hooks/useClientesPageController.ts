@@ -10,6 +10,7 @@ import { useDeleteCliente } from '@features/cliente/hooks/useClienteCrud';
 
 export function useClientesPageController() {
     const navigate = useNavigate();
+    const canViewClientes = usePermission(PERMISSIONS.CLIENTES.VER);
     const canManageClientes = usePermission(PERMISSIONS.CLIENTES.GESTIONAR);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -55,7 +56,7 @@ export function useClientesPageController() {
     };
 
     const handleView = (cliente: Cliente) => {
-        navigate(`/app/clientes/${cliente.clienteID}`);
+        navigate(`/app/clientes/${cliente.clienteID}/ver`);
     };
 
     const handleDeleteClick = (cliente: Cliente) => {
@@ -91,6 +92,7 @@ export function useClientesPageController() {
 
     return {
         canManageClientes,
+        canViewClientes,
         clienteToDelete,
         data: data?.data,
         deleteConfirmOpen,
