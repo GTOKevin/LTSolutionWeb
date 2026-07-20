@@ -7,6 +7,8 @@ import {
     TableCell,
     TextField,
     Typography,
+    useMediaQuery,
+    useTheme,
 } from '@mui/material';
 import {
     CheckCircleOutline,
@@ -19,13 +21,16 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
-import type { MiLicenciaDto, MiLicenciaFilters } from '@entities/employee/model/types';
+import type { MiLicenciaDto, MiLicenciaEstadoRevision, MiLicenciaFilters } from '@entities/employee/model/types';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import { formatDateOnly, getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
 import { SolicitarLicenciaModal } from '@features/employee/licencias/ui/SolicitarLicenciaModal';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 import { portalTableContainerFlatSx, portalTableHeaderFlatSx } from '@shared/components/ui/employee-portal-shell.styles';
+import { usePermission } from '@shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@shared/constants/permissions';
+import { MisLicenciasMobileList } from '@features/employee/licencias/ui/MisLicenciasMobileList';
 
 const columns: Column[] = [
     { id: 'tipo', label: 'TIPO' },
@@ -36,17 +41,25 @@ const columns: Column[] = [
 ];
 
 function getStatusColor(item: MiLicenciaDto): 'success' | 'warning' | 'error' {
-    if (item.aceptado === true) return 'success';
-    if (item.aceptado === false) return 'error';
-    return 'warning';
+    switch (item.estadoRevision) {
+        case 'aprobada':
+            return 'success';
+        case 'rechazada':
+            return 'error';
+        default:
+            return 'warning';
+    }
 }
 
 export function MisLicenciasPage() {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
+    const canSolicitarLicencia = usePermission(PERMISSIONS.EMPLOYEE.LICENCIAS.SOLICITAR);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [tipoLicenciaID, setTipoLicenciaID] = useState<number | ''>('');
-    const [estadoRevision, setEstadoRevision] = useState<string>('');
+    const [estadoRevision, setEstadoRevision] = useState<MiLicenciaEstadoRevision | ''>('');
     const [desde, setDesde] = useState(getFirstDayOfCurrentMonthISO(-1));
     const [hasta, setHasta] = useState(getLastDayOfCurrentMonthISO());
     const [filters, setFilters] = useState<Omit<MiLicenciaFilters, 'page' | 'size'>>({
@@ -94,7 +107,7 @@ export function MisLicenciasPage() {
         setPage(0);
         setFilters({
             tipoLicenciaID: tipoLicenciaID === '' ? undefined : Number(tipoLicenciaID),
-            aceptado: estadoRevision === '' ? undefined : estadoRevision === 'aprobada',
+            estadoRevision: estadoRevision === '' ? undefined : estadoRevision,
             desde: desde || undefined,
             hasta: hasta || undefined,
         });
@@ -124,14 +137,16 @@ export function MisLicenciasPage() {
                         Consulta el estado de tus permisos laborales, solicita nuevas ausencias y gestiona tus días disponibles con total transparencia.
                     </Typography>
                 </Box>
-                <Button 
-                    variant="contained" 
-                    onClick={() => setDialogOpen(true)}
-                    startIcon={<CheckCircleOutline sx={{ transform: 'rotate(45deg)' }} />}
-                    sx={{ borderRadius: 3, px: 4, py: 1.5, fontWeight: 700, boxShadow: 'none', '&:hover': { boxShadow: 'none' } }}
-                >
-                    Solicitar Licencia
-                </Button>
+                {canSolicitarLicencia ? (
+                    <Button
+                        variant="contained"
+                        onClick={() => setDialogOpen(true)}
+                        startIcon={<CheckCircleOutline sx={{ transform: 'rotate(45deg)' }} />}
+                        sx={{ borderRadius: 3, px: 4, py: 1.5, fontWeight: 700, boxShadow: 'none', '&:hover': { boxShadow: 'none' } }}
+                    >
+                        Solicitar Licencia
+                    </Button>
+                ) : null}
             </Box>
 
             {/* KPI Grid */}
@@ -203,7 +218,7 @@ export function MisLicenciasPage() {
                         select
                         fullWidth
                         value={estadoRevision}
-                        onChange={(event) => setEstadoRevision(event.target.value)}
+                        onChange={(event) => setEstadoRevision(event.target.value as MiLicenciaEstadoRevision | '')}
                         sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'background.paper', borderRadius: 2, '& fieldset': { border: 'none' } } }}
                     >
                         <MenuItem value="">Todos los estados</MenuItem>
@@ -245,61 +260,72 @@ export function MisLicenciasPage() {
 
             {/* Data Table */}
             <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-                <SharedTable
-                    data={data}
-                    isLoading={isLoading}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    columns={columns}
-                    keyExtractor={(item) => item.colaboradorLicenciaId}
-                    emptyMessage="No se encontraron licencias con los filtros seleccionados."
-                    containerSx={portalTableContainerFlatSx}
-                    headerSx={portalTableHeaderFlatSx}
-                    variant="flat"
-                    renderRow={(item) => {
-                        const statusColor = getStatusColor(item);
-                        const isApproved = item.aceptado === true;
-                        const isPending = item.aceptado == null;
+                {isMobile ? (
+                    <MisLicenciasMobileList
+                        data={data}
+                        isLoading={isLoading}
+                        page={page}
+                        rowsPerPage={rowsPerPage}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                ) : (
+                    <SharedTable
+                        data={data}
+                        isLoading={isLoading}
+                        page={page}
+                        rowsPerPage={rowsPerPage}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        columns={columns}
+                        keyExtractor={(item) => item.colaboradorLicenciaId}
+                        emptyMessage="No se encontraron licencias con los filtros seleccionados."
+                        containerSx={portalTableContainerFlatSx}
+                        headerSx={portalTableHeaderFlatSx}
+                        variant="flat"
+                        renderRow={(item) => {
+                            const statusColor = getStatusColor(item);
+                            const isApproved = item.estadoRevision === 'aprobada';
+                            const isPending = item.estadoRevision === 'pendiente';
 
-                        return (
-                            <>
-                                <TableCell sx={{ py: 3, px: 4 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: `${statusColor}.main` }} />
-                                        <Typography variant="body2" fontWeight={600}>{item.tipoLicenciaNombre}</Typography>
-                                    </Box>
-                                </TableCell>
-                                <TableCell align="center" sx={{ py: 3, px: 3 }}>
-                                    <Typography variant="body2" fontWeight={500}>{formatDateOnly(item.fechaInicial)}</Typography>
-                                    {item.fechaFinal && (
-                                        <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', fontSize: '11px' }}>
-                                            AL {formatDateOnly(item.fechaFinal)}
+                            return (
+                                <>
+                                    <TableCell sx={{ py: 3, px: 4 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: `${statusColor}.main` }} />
+                                            <Typography variant="body2" fontWeight={600}>{item.tipoLicenciaNombre}</Typography>
+                                        </Box>
+                                    </TableCell>
+                                    <TableCell align="center" sx={{ py: 3, px: 3 }}>
+                                        <Typography variant="body2" fontWeight={500}>{formatDateOnly(item.fechaInicial)}</Typography>
+                                        {item.fechaFinal && (
+                                            <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', fontSize: '11px' }}>
+                                                AL {formatDateOnly(item.fechaFinal)}
+                                            </Typography>
+                                        )}
+                                    </TableCell>
+                                    <TableCell sx={{ py: 3, px: 3 }}>
+                                        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {item.descripcion || 'Sin descripción'}
                                         </Typography>
-                                    )}
-                                </TableCell>
-                                <TableCell sx={{ py: 3, px: 3 }}>
-                                    <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {item.descripcion || 'Sin descripción'}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell sx={{ py: 3, px: 3 }}>
-                                    <Box sx={{ display: 'inline-flex', px: 1.5, py: 0.5, borderRadius: 99, bgcolor: `${statusColor}.50`, color: `${statusColor}.dark`, border: '1px solid', borderColor: `${statusColor}.200` }}>
-                                        <Typography variant="caption" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '11px' }}>
-                                            {isPending ? 'Pendiente' : isApproved ? 'Aprobada' : 'Rechazada'}
+                                    </TableCell>
+                                    <TableCell sx={{ py: 3, px: 3 }}>
+                                        <Box sx={{ display: 'inline-flex', px: 1.5, py: 0.5, borderRadius: 99, bgcolor: `${statusColor}.50`, color: `${statusColor}.dark`, border: '1px solid', borderColor: `${statusColor}.200` }}>
+                                            <Typography variant="caption" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '11px' }}>
+                                                {isPending ? 'Pendiente' : isApproved ? 'Aprobada' : 'Rechazada'}
+                                            </Typography>
+                                        </Box>
+                                    </TableCell>
+                                    <TableCell align="right" sx={{ py: 3, px: 4 }}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {item.fechaAceptacion ? formatDateOnly(item.fechaAceptacion) : '—'}
                                         </Typography>
-                                    </Box>
-                                </TableCell>
-                                <TableCell align="right" sx={{ py: 3, px: 4 }}>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {item.fechaAceptacion ? formatDateOnly(item.fechaAceptacion) : '—'}
-                                    </Typography>
-                                </TableCell>
-                            </>
-                        );
-                    }}
-                />
+                                    </TableCell>
+                                </>
+                            );
+                        }}
+                    />
+                )}
             </Box>
 
             {/* Info Alert */}

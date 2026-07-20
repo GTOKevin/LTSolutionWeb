@@ -40,9 +40,11 @@ export interface MiLicenciaDto {
     estadoRevision: string;
 }
 
+export type MiLicenciaEstadoRevision = 'pendiente' | 'aprobada' | 'rechazada';
+
 export interface MiLicenciaFilters {
     tipoLicenciaID?: number;
-    aceptado?: boolean;
+    estadoRevision?: MiLicenciaEstadoRevision;
     desde?: string;
     hasta?: string;
     page: number;
