@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { viajePermisoApi } from '@/entities/viaje/api/viaje-permiso.api';
 import type { CreateViajePermisoDto, PagedViajePermisos } from '@/entities/viaje/model/types';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
-import { createViajeSubresourceHooks } from './useViajeSubresourceCrud';
+import { createViajeSubresourceHooks } from '../subresources/hooks/createViajeSubresourceHooks';
 
 const EMPTY_PAGED_PERMISOS: PagedViajePermisos = {
     items: [],

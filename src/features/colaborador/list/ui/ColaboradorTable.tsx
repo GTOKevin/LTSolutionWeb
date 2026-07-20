@@ -15,8 +15,8 @@ interface ColaboradorTableProps {
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onView: (colaborador: Colaborador) => void;
-    onEdit: (colaborador: Colaborador) => void;
-    onDelete: (colaborador: Colaborador) => void;
+    onEdit?: (colaborador: Colaborador) => void;
+    onDelete?: (colaborador: Colaborador) => void;
 }
 
 export function ColaboradorTable({
@@ -100,8 +100,8 @@ export function ColaboradorTable({
                     <TableCell align="right">
                         <TableActions 
                             onView={() => onView(row)}
-                            onEdit={() => onEdit(row)}
-                            onDelete={() => onDelete(row)}
+                            onEdit={onEdit ? () => onEdit(row) : undefined}
+                            onDelete={onDelete ? () => onDelete(row) : undefined}
                         />
                     </TableCell>
                 </>

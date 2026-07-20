@@ -3,11 +3,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { createFlotaSchema, type CreateFlotaSchema } from '../model/schema';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import type { Flota } from '@entities/flota/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import { useCreateFlota, useUpdateFlota } from './useFlotaCrud';
+import { useCrudFormPageState } from '@shared/hooks/useCrudFormPageState';
 
 interface UseFlotaFormProps {
     flotaToEdit?: Flota | null;
@@ -17,13 +18,24 @@ interface UseFlotaFormProps {
 }
 
 export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlotaFormProps) {
-    const [createdFlotaId, setCreatedFlotaId] = useState<number | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState(0);
-
-    const isEdit = !!flotaToEdit;
-    const effectiveFlotaId = flotaToEdit?.flotaID || createdFlotaId;
-    const canEditDocs = !!effectiveFlotaId;
+    const {
+        activeTab,
+        setActiveTab,
+        createdId,
+        errorMessage,
+        setErrorMessage,
+        effectiveId,
+        canEditDetails,
+        isEdit,
+        resetUiState,
+        handleMutationSuccess,
+    } = useCrudFormPageState({
+        entityId: flotaToEdit?.flotaID,
+        onSuccess,
+        onClose,
+        detailsTabIndex: 1,
+        keepOpenAfterCreate: true,
+    });
 
     const createMutation = useCreateFlota();
     const updateMutation = useUpdateFlota();
@@ -122,17 +134,9 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
                 });
             }
 
-            const resetUiTimer = window.setTimeout(() => {
-                setActiveTab(0);
-                setCreatedFlotaId(null);
-                setErrorMessage(null);
-            }, 0);
-
-            return () => {
-                window.clearTimeout(resetUiTimer);
-            };
+            return resetUiState();
         }
-    }, [open, flotaToEdit, reset]);
+    }, [open, flotaToEdit, reset, resetUiState]);
 
     // --- Mutations ---
     const handleError = (error: unknown) => {
@@ -142,30 +146,20 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
         }
     };
 
-    const handleSuccess = (id: number) => {
-        onSuccess(id);
-        if (!isEdit && !createdFlotaId) {
-            setCreatedFlotaId(id);
-            setActiveTab(1); 
-        } else {
-            onClose();
-        }
-    };
-
     const onSubmit = (data: CreateFlotaSchema) => {
         if (isEdit && flotaToEdit) {
             updateMutation.mutate(
                 { id: flotaToEdit.flotaID, data },
                 {
-                    onSuccess: () => handleSuccess(flotaToEdit.flotaID),
+                    onSuccess: () => handleMutationSuccess(flotaToEdit.flotaID),
                     onError: handleError
                 }
             );
-        } else if (createdFlotaId) {
+        } else if (createdId) {
             updateMutation.mutate(
-                { id: createdFlotaId, data },
+                { id: createdId, data },
                 {
-                    onSuccess: () => handleSuccess(createdFlotaId),
+                    onSuccess: () => handleMutationSuccess(createdId),
                     onError: handleError
                 }
             );
@@ -173,7 +167,7 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
             createMutation.mutate(
                 data,
                 {
-                    onSuccess: (response) => handleSuccess(response),
+                    onSuccess: (response) => handleMutationSuccess(response),
                     onError: handleError
                 }
             );
@@ -187,10 +181,10 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
         setActiveTab,
         errorMessage,
         setErrorMessage,
-        effectiveFlotaId,
-        canEditDocs,
+        effectiveFlotaId: effectiveId,
+        canEditDocs: canEditDetails,
         isEdit,
-        createdFlotaId,
+        createdFlotaId: createdId,
         isSubmitting: createMutation.isPending || updateMutation.isPending,
         
         // Catalogs

@@ -2,12 +2,14 @@ import { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from '@shared/store/auth.store';
 import { authApi } from '@entities/auth/api/auth.api';
 import { Box, CircularProgress } from '@mui/material';
+import { configureAuthHttpClient } from '@app/session/lib/configure-auth-http-client';
 
 interface AuthProviderProps {
     children: React.ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+    configureAuthHttpClient();
     const { isAuthenticated, user, hasHydrated, setAuth, logout } = useAuthStore();
     const [isInitialized, setIsInitialized] = useState(false);
     const initialized = useRef(false);

@@ -4,7 +4,7 @@ import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { viajeEscoltaSchema, type ViajeEscoltaFormData } from '@/features/viaje/model/schema';
 import { useCreateViajeEscolta } from '@/features/viaje/hooks/useViajeEscoltas';
-import { useViajeOptions } from '@/features/viaje/hooks/useViajeOptions';
+import { useViajeEscoltaOptions } from '@/features/viaje/options/hooks/useViajeScopedOptions';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 
 interface EscoltasFormProps {
@@ -14,7 +14,7 @@ interface EscoltasFormProps {
 export function EscoltasForm({ viajeId }: EscoltasFormProps) {
     const theme = useTheme();
     const createMutation = useCreateViajeEscolta();
-    const { flotasEscolta, colaboradores } = useViajeOptions(true);
+    const { flotasEscolta, colaboradores } = useViajeEscoltaOptions(true);
 
     const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajeEscoltaFormData>({
         resolver: zodResolver(viajeEscoltaSchema),

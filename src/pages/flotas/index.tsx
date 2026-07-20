@@ -1,4 +1,5 @@
 import {
+    Alert,
     Box,
     Typography,
     Button,
@@ -18,12 +19,16 @@ import type { Flota } from '@entities/flota/model/types';
 import { FlotaTable } from '@features/flota/list/ui/FlotaTable';
 import { FlotaMobileList } from '@features/flota/list/ui/FlotaMobileList';
 import { useDeleteFlota } from '@features/flota/hooks/useFlotaCrud';
+import { FLOTA_QUERY_KEYS } from '@features/flota/model/query-keys';
 import { handleSanitizeSearchInput } from '@shared/utils/input-validators';
 import { useNavigate } from 'react-router-dom';
+import { usePermission } from '@shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@shared/constants/permissions';
 
 export function FlotasPage() {
     const theme = useTheme();
     const navigate = useNavigate();
+    const canManageFlotas = usePermission(PERMISSIONS.FLOTA.GESTIONAR);
     
     // State
     const [page, setPage] = useState(0);
@@ -44,8 +49,8 @@ export function FlotasPage() {
     }, [searchTerm]);
 
     // Queries
-    const { data, isLoading } = useQuery({
-        queryKey: ['flotas', page, rowsPerPage, debouncedSearch],
+    const { data, isLoading, isError, refetch } = useQuery({
+        queryKey: FLOTA_QUERY_KEYS.list(page, rowsPerPage, debouncedSearch),
         queryFn: () => flotaApi.getAll({
             page: page + 1,
             size: rowsPerPage,
@@ -121,20 +126,22 @@ export function FlotasPage() {
                             Administre sus vehículos y documentación
                         </Typography>
                     </Box>
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={handleCreate}
-                        sx={{ 
-                            boxShadow: 2, 
-                            fontWeight: 'bold', 
-                            px: 3, 
-                            py: 1.2,
-                            borderRadius: 2
-                        }}
-                    >
-                        Nuevo Vehículo
-                    </Button>
+                    {canManageFlotas ? (
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={handleCreate}
+                            sx={{ 
+                                boxShadow: 2, 
+                                fontWeight: 'bold', 
+                                px: 3, 
+                                py: 1.2,
+                                borderRadius: 2
+                            }}
+                        >
+                            Nuevo Vehículo
+                        </Button>
+                    ) : null}
                 </Box>
 
                 {/* Toolbar Section */}
@@ -167,6 +174,19 @@ export function FlotasPage() {
                     </Box>
                 </Box>
 
+                {isError ? (
+                    <Alert
+                        severity="error"
+                        action={
+                            <Button color="inherit" size="small" onClick={() => refetch()}>
+                                Reintentar
+                            </Button>
+                        }
+                    >
+                        No se pudo cargar la lista de vehículos. Verifique la conexión con el backend e intente nuevamente.
+                    </Alert>
+                ) : null}
+
                 {/* Main Content */}
                 <FlotaTable
                     data={data?.data}
@@ -175,8 +195,8 @@ export function FlotasPage() {
                     rowsPerPage={rowsPerPage}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
+                    onEdit={canManageFlotas ? handleEdit : undefined}
+                    onDelete={canManageFlotas ? handleDeleteClick : undefined}
                     onView={handleView}
                 />
 
@@ -187,8 +207,8 @@ export function FlotasPage() {
                     rowsPerPage={rowsPerPage}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
+                    onEdit={canManageFlotas ? handleEdit : undefined}
+                    onDelete={canManageFlotas ? handleDeleteClick : undefined}
                     onView={handleView}
                 />
             </Box>

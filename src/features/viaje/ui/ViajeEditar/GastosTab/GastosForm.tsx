@@ -8,7 +8,7 @@ import { Add as AddIcon } from '@mui/icons-material';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateViajeGasto } from '@features/viaje/hooks/useViajeGastos';
-import { useViajeOptions } from '@features/viaje/hooks/useViajeOptions';
+import { useViajeGastoOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { viajeGastoSchema, type ViajeGastoFormData } from '@features/viaje/model/schema';
 import { getGastoMetadata } from '@features/viaje/model/gasto-metadata';
 import { getCurrentDateISO } from '@/shared/utils/date-utils';
@@ -21,7 +21,7 @@ interface GastosFormProps {
 export function GastosForm({ viajeID }: GastosFormProps) {
     const theme = useTheme();
     const createMutation = useCreateViajeGasto();
-    const { tiposGasto, monedas, defaultMonedaId = 0 } = useViajeOptions(true);
+    const { tiposGasto, monedas, defaultMonedaId = 0 } = useViajeGastoOptions(true);
 
     const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajeGastoFormData>({
         resolver: zodResolver(viajeGastoSchema),

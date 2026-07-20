@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { viajeMercaderiaApi } from '@/entities/viaje/api/viaje-mercaderia.api';
 import type { CreateViajeMercaderiaDto, PagedViajeMercaderias } from '@/entities/viaje/model/types';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
-import { createViajeSubresourceHooks } from './useViajeSubresourceCrud';
+import { createViajeSubresourceHooks } from '../subresources/hooks/createViajeSubresourceHooks';
 
 const EMPTY_PAGED_MERCADERIAS: PagedViajeMercaderias = {
     items: [],

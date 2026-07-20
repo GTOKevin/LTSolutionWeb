@@ -30,14 +30,25 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { useAuthStore } from '@shared/store/auth.store';
 import { useState, useMemo, useEffect, useRef, type MouseEvent } from 'react';
-import { hasPermission as hasUserPermission } from '@shared/lib/permissions/default-app-route';
-import { SIDEBAR_MENU, type MenuItem } from '../model/sidebar.config';
+import { hasPermission as hasUserPermission } from '@shared/lib/permissions/hasPermission';
 import { SelfChangePasswordModal } from '@features/auth/change-password/ui/SelfChangePasswordModal';
 
 export const DRAWER_WIDTH = 280;
 
+export interface SidebarMenuItem {
+    text: string;
+    path?: string;
+    icon: React.ReactNode;
+    children?: SidebarMenuItem[];
+    permission?: string | string[];
+    section?: string;
+}
 
-export function Sidebar() {
+interface SidebarProps {
+    menu: SidebarMenuItem[];
+}
+
+export function Sidebar({ menu }: SidebarProps) {
     const navigate = useNavigate();
     const location = useLocation();
     const { sidebarOpen, setSidebarOpen } = useLayoutStore();
@@ -65,7 +76,7 @@ export function Sidebar() {
 
     // Filter menu items based on permissions
     const filteredMenu = useMemo(() => {
-        return SIDEBAR_MENU.reduce<MenuItem[]>((acc, item) => {
+        return menu.reduce<SidebarMenuItem[]>((acc, item) => {
             // Check if parent has permission
             if (!hasUserPermission(user, item.permission)) return acc;
 
@@ -91,7 +102,7 @@ export function Sidebar() {
             }
             return acc;
         }, []);
-    }, [user]);
+    }, [menu, user]);
 
     const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>(() => {
         const initialOpen: Record<string, boolean> = {};
@@ -171,7 +182,7 @@ export function Sidebar() {
         return location.pathname.startsWith(`${path}/`);
     };
 
-    const renderMenuItem = (item: MenuItem) => (
+    const renderMenuItem = (item: SidebarMenuItem) => (
         <Box key={item.text}>
             {item.section && (
                 <Box sx={{ px: 3, py: 2 }}>
@@ -264,7 +275,7 @@ export function Sidebar() {
             {item.children && (
                 <Collapse in={openSubmenus[item.text]} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
-                        {item.children.map((child) => (
+                        {item.children.map((child: SidebarMenuItem) => (
                             <ListItemButton 
                                 key={child.text}
                                 onClick={() => child.path && handleNavigation(child.path, child.text)}

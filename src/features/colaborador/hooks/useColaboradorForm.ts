@@ -10,6 +10,7 @@ import type { Colaborador } from '@entities/colaborador/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import { useCreateColaborador, useUpdateColaborador } from './useColaboradorCrud';
+import { useCrudFormPageState } from '@shared/hooks/useCrudFormPageState';
 
 interface UseColaboradorFormProps {
     colaboradorToEdit?: Colaborador | null;
@@ -19,14 +20,25 @@ interface UseColaboradorFormProps {
 }
 
 export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open }: UseColaboradorFormProps) {
-    const [createdId, setCreatedId] = useState<number | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [openSnackbar, setOpenSnackbar] = useState(false);
-    const [activeTab, setActiveTab] = useState(0);
-
-    const isEdit = !!colaboradorToEdit;
-    const effectiveId = colaboradorToEdit?.colaboradorID || createdId;
-    const canEditDetails = !!effectiveId;
+    const {
+        activeTab,
+        setActiveTab,
+        createdId,
+        errorMessage,
+        setErrorMessage,
+        effectiveId,
+        canEditDetails,
+        isEdit,
+        resetUiState,
+        handleMutationSuccess,
+    } = useCrudFormPageState({
+        entityId: colaboradorToEdit?.colaboradorID,
+        onSuccess,
+        onClose,
+        detailsTabIndex: 2,
+        keepOpenAfterCreate: true,
+    });
 
     const createMutation = useCreateColaborador();
     const updateMutation = useUpdateColaborador();
@@ -109,17 +121,17 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
                 });
             }
 
-            const resetUiTimer = window.setTimeout(() => {
-                setActiveTab(0);
-                setCreatedId(null);
-                setErrorMessage(null);
+            const resetSnackbarTimer = window.setTimeout(() => {
+                setOpenSnackbar(false);
             }, 0);
+            const cleanupUiState = resetUiState();
 
             return () => {
-                window.clearTimeout(resetUiTimer);
+                window.clearTimeout(resetSnackbarTimer);
+                cleanupUiState();
             };
         }
-    }, [open, colaboradorToEdit, reset]);
+    }, [open, colaboradorToEdit, reset, resetUiState]);
 
     // --- Mutations ---
     const handleError = (error: unknown) => {
@@ -130,22 +142,12 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
         }
     };
 
-    const handleSuccess = (id: number) => {
-        onSuccess(id);
-        if (!isEdit && !createdId) {
-            setCreatedId(id);
-            setActiveTab(2);
-        } else {
-            onClose();
-        }
-    };
-
     const onSubmit = (data: CreateColaboradorSchema) => {
         if (isEdit && colaboradorToEdit) {
             updateMutation.mutate(
                 { id: colaboradorToEdit.colaboradorID, data },
                 {
-                    onSuccess: () => handleSuccess(colaboradorToEdit.colaboradorID),
+                    onSuccess: () => handleMutationSuccess(colaboradorToEdit.colaboradorID),
                     onError: handleError
                 }
             );
@@ -153,7 +155,7 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
             updateMutation.mutate(
                 { id: createdId, data },
                 {
-                    onSuccess: () => handleSuccess(createdId),
+                    onSuccess: () => handleMutationSuccess(createdId),
                     onError: handleError
                 }
             );
@@ -161,7 +163,7 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
             createMutation.mutate(
                 data,
                 {
-                    onSuccess: (result) => handleSuccess(result),
+                    onSuccess: (result) => handleMutationSuccess(result),
                     onError: handleError
                 }
             );

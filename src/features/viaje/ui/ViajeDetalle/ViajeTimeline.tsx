@@ -39,7 +39,7 @@ export function ViajeTimeline({ viaje }: ViajeTimelineProps) {
         if (isViajeAgendado(viaje)) return 0;
         if (isViajeTransito(viaje)) return 1;
         if (isViajeDescargando(viaje)) return 2;
-        if (isViajeCompletado(viaje)) return 4;
+        if (isViajeCompletado(viaje)) return 3;
         return 0;
     };
 
