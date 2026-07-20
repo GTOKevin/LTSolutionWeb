@@ -18,6 +18,7 @@ const PerfilPage = lazy(() => import('@pages/perfil').then(module => ({ default:
 const ClientesPage = lazy(() => import('@pages/clientes').then(module => ({ default: module.ClientesPage })));
 const ClienteNuevoPage = lazy(() => import('@pages/clientes/nuevo').then(module => ({ default: module.ClienteNuevoPage })));
 const ClienteEditarPage = lazy(() => import('@pages/clientes/editar').then(module => ({ default: module.ClienteEditarPage })));
+const ClienteVerPage = lazy(() => import('@pages/clientes/ver').then(module => ({ default: module.ClienteVerPage })));
 const FlotasPage = lazy(() => import('@pages/flotas').then(module => ({ default: module.FlotasPage })));
 const FlotaNuevoPage = lazy(() => import('@pages/flotas/nuevo').then(module => ({ default: module.FlotaNuevoPage })));
 const FlotaEditarPage = lazy(() => import('@pages/flotas/editar').then(module => ({ default: module.FlotaEditarPage })));
@@ -89,6 +90,7 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: APP_ROUTE_SEGMENTS.clientes, permission: PERMISSIONS.CLIENTES.VER, element: <ClientesPage /> },
     { path: `${APP_ROUTE_SEGMENTS.clientes}/nuevo`, permission: PERMISSIONS.CLIENTES.GESTIONAR, element: <ClienteNuevoPage /> },
     { path: `${APP_ROUTE_SEGMENTS.clientes}/:id`, permission: PERMISSIONS.CLIENTES.GESTIONAR, element: <ClienteEditarPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.clientes}/:id/ver`, permission: PERMISSIONS.CLIENTES.VER, element: <ClienteVerPage /> },
     { path: APP_ROUTE_SEGMENTS.viajes, permission: PERMISSIONS.VIAJES.VER, element: <ViajesPage /> },
     { path: `${APP_ROUTE_SEGMENTS.viajes}/nuevo`, permission: PERMISSIONS.VIAJES.GESTIONAR, element: <ViajeNuevoPage /> },
     { path: `${APP_ROUTE_SEGMENTS.viajes}/:id`, permission: [PERMISSIONS.VIAJES.VER, PERMISSIONS.VIAJES.GESTIONAR], element: <ViajeEditarPage /> },

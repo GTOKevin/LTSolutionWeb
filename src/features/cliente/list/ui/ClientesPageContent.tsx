@@ -132,7 +132,7 @@ export function ClientesPageContent({ controller }: ClientesPageContentProps) {
                     rowsPerPage={controller.rowsPerPage}
                     onPageChange={controller.handleChangePage}
                     onRowsPerPageChange={controller.handleChangeRowsPerPage}
-                    onView={controller.canManageClientes ? controller.handleView : undefined}
+                    onView={controller.canViewClientes ? controller.handleView : undefined}
                     onEdit={controller.canManageClientes ? controller.handleEdit : undefined}
                     onDelete={controller.canManageClientes ? controller.handleDeleteClick : undefined}
                 />
@@ -144,7 +144,7 @@ export function ClientesPageContent({ controller }: ClientesPageContentProps) {
                     rowsPerPage={controller.rowsPerPage}
                     onPageChange={controller.handleChangePage}
                     onRowsPerPageChange={controller.handleChangeRowsPerPage}
-                    onView={controller.canManageClientes ? controller.handleView : undefined}
+                    onView={controller.canViewClientes ? controller.handleView : undefined}
                     onEdit={controller.canManageClientes ? controller.handleEdit : undefined}
                     onDelete={controller.canManageClientes ? controller.handleDeleteClick : undefined}
                 />
