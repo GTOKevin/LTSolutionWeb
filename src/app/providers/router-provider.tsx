@@ -23,7 +23,6 @@ const FlotasPage = lazy(() => import('@pages/flotas').then(module => ({ default:
 const FlotaNuevoPage = lazy(() => import('@pages/flotas/nuevo').then(module => ({ default: module.FlotaNuevoPage })));
 const FlotaEditarPage = lazy(() => import('@pages/flotas/editar').then(module => ({ default: module.FlotaEditarPage })));
 const FlotaVerPage = lazy(() => import('@pages/flotas/ver').then(module => ({ default: module.FlotaVerPage })));
-const CotizacionesPage = lazy(() => import('@pages/cotizaciones').then(module => ({ default: module.CotizacionesPage })));
 const HealthCheckPage = lazy(() => import('@pages/health-check').then(module => ({ default: module.HealthCheckPage })));
 const ForgotPasswordPage = lazy(() => import('@pages/forgot-password').then(module => ({ default: module.ForgotPasswordPage })));
 const ColaboradoresPage = lazy(() => import('@pages/colaboradores').then(module => ({ default: module.ColaboradoresPage })));
@@ -41,6 +40,7 @@ const MaestrosPage = lazy(() => import('@pages/maestros').then(module => ({ defa
 const ViajesPage = lazy(() => import('@pages/viajes').then(module => ({ default: module.ViajesPage })));
 const ViajeNuevoPage = lazy(() => import('@pages/viajes/nuevo').then(module => ({ default: module.ViajeNuevoPage })));
 const ViajeEditarPage = lazy(() => import('@pages/viajes/editar').then(module => ({ default: module.ViajeEditarPage })));
+const ViajeVerPage = lazy(() => import('@pages/viajes/ver').then(module => ({ default: module.ViajeVerPage })));
 const FacturasPage = lazy(() => import('@pages/facturas').then(module => ({ default: module.FacturasPage })));
 const FacturaNuevaPage = lazy(() => import('@pages/facturas/nuevo').then(module => ({ default: module.FacturaNuevaPage })));
 const FacturaEditarPage = lazy(() => import('@pages/facturas/editar').then(module => ({ default: module.FacturaEditarPage })));
@@ -93,7 +93,8 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: `${APP_ROUTE_SEGMENTS.clientes}/:id/ver`, permission: PERMISSIONS.CLIENTES.VER, element: <ClienteVerPage /> },
     { path: APP_ROUTE_SEGMENTS.viajes, permission: PERMISSIONS.VIAJES.VER, element: <ViajesPage /> },
     { path: `${APP_ROUTE_SEGMENTS.viajes}/nuevo`, permission: PERMISSIONS.VIAJES.GESTIONAR, element: <ViajeNuevoPage /> },
-    { path: `${APP_ROUTE_SEGMENTS.viajes}/:id`, permission: [PERMISSIONS.VIAJES.VER, PERMISSIONS.VIAJES.GESTIONAR], element: <ViajeEditarPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.viajes}/:id`, permission: PERMISSIONS.VIAJES.GESTIONAR, element: <ViajeEditarPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.viajes}/:id/ver`, permission: PERMISSIONS.VIAJES.VER, element: <ViajeVerPage /> },
     { path: APP_ROUTE_SEGMENTS.facturas, permission: PERMISSIONS.FACTURAS.VER, element: <FacturasPage /> },
     { path: `${APP_ROUTE_SEGMENTS.facturas}/nuevo`, permission: PERMISSIONS.FACTURAS.GESTIONAR, element: <FacturaNuevaPage /> },
     { path: `${APP_ROUTE_SEGMENTS.facturas}/:id`, permission: PERMISSIONS.FACTURAS.GESTIONAR, element: <FacturaEditarPage /> },
@@ -101,7 +102,6 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: `${APP_ROUTE_SEGMENTS.flotas}/nuevo`, permission: PERMISSIONS.FLOTA.GESTIONAR, element: <FlotaNuevoPage /> },
     { path: `${APP_ROUTE_SEGMENTS.flotas}/:id`, permission: PERMISSIONS.FLOTA.GESTIONAR, element: <FlotaEditarPage /> },
     { path: `${APP_ROUTE_SEGMENTS.flotas}/:id/ver`, permission: PERMISSIONS.FLOTA.VER, element: <FlotaVerPage /> },
-    { path: APP_ROUTE_SEGMENTS.cotizaciones, permission: PERMISSIONS.COTIZACIONES.VER, element: <CotizacionesPage /> },
     { path: APP_ROUTE_SEGMENTS.colaboradores, permission: PERMISSIONS.COLABORADORES.VER, element: <ColaboradoresPage /> },
     { path: `${APP_ROUTE_SEGMENTS.colaboradores}/nuevo`, permission: PERMISSIONS.COLABORADORES.GESTIONAR, element: <ColaboradorNuevoPage /> },
     { path: `${APP_ROUTE_SEGMENTS.colaboradores}/:id`, permission: PERMISSIONS.COLABORADORES.GESTIONAR, element: <ColaboradorEditarPage /> },

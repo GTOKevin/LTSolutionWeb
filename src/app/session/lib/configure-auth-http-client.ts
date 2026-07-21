@@ -92,9 +92,9 @@ export function configureAuthHttpClient() {
             const { token, setAuth, setSessionExpired } = useAuthStore.getState();
 
             try {
-                const response = await authApi.refreshToken({ token: token || '', refreshToken: '' });
+                const response = await authApi.refreshToken({ token: token || '' });
 
-                setAuth(response.token, response.refreshToken);
+                setAuth(response.token);
                 processQueue(null, response.token);
                 originalRequest.headers.Authorization = `Bearer ${response.token}`;
 

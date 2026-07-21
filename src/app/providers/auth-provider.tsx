@@ -30,8 +30,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
             if (user) {
                 try {
-                    const res = await authApi.refreshToken({ token: '', refreshToken: '' });
-                    setAuth(res.token, res.refreshToken);
+                    const res = await authApi.refreshToken({ token: '' });
+                    setAuth(res.token);
                 } catch {
                     logout();
                 }

@@ -18,7 +18,7 @@ export function useLogin() {
         mutationFn: ({ name, password }) =>
             authApi.login(name, password),
         onSuccess: (data) => {
-            setAuth(data.token, data.refreshToken);
+            setAuth(data.token);
             navigate('/app');
         }
     });

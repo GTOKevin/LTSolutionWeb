@@ -176,12 +176,6 @@ export const APP_SIDEBAR_MENU: AppNavigationItem[] = [
                 permission: PERMISSIONS.CLIENTES.VER,
             },
             {
-                text: 'Cotizaciones',
-                path: APP_PATHS.cotizaciones,
-                icon: <LocalOfferIcon />,
-                permission: PERMISSIONS.COTIZACIONES.VER,
-            },
-            {
                 text: 'Facturas',
                 path: APP_PATHS.facturas,
                 icon: <ReceiptIcon />,
@@ -290,7 +284,6 @@ export const APP_ROUTE_META: AppRouteMeta[] = [
     { pathPrefix: APP_PATHS.misLicencias, title: 'Mis Licencias', sectionTitle: 'Portal del Empleado', bottomNavContext: 'portal' },
     { pathPrefix: APP_PATHS.misDocumentos, title: 'Mis Documentos', sectionTitle: 'Portal del Empleado', bottomNavContext: 'portal' },
     { pathPrefix: APP_PATHS.clientes, title: 'Gestión de Clientes', sectionTitle: 'Gestión Comercial', bottomNavContext: 'admin' },
-    { pathPrefix: APP_PATHS.cotizaciones, title: 'Gestión de Cotizaciones', sectionTitle: 'Gestión Comercial', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.facturas, title: 'Gestión de Facturas', sectionTitle: 'Gestión Comercial', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.viajes, title: 'Gestión de Viajes', sectionTitle: 'Operaciones', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.flotas, title: 'Gestión de Flota', sectionTitle: 'Operaciones', bottomNavContext: 'admin' },
@@ -318,13 +311,6 @@ export const APP_BOTTOM_NAV_ITEMS: AppBottomNavItem[] = [
         icon: <GroupsIcon />,
         path: APP_PATHS.clientes,
         permission: PERMISSIONS.CLIENTES.VER,
-        context: 'admin',
-    },
-    {
-        label: 'Pedidos',
-        icon: <DescriptionIcon />,
-        path: APP_PATHS.cotizaciones,
-        permission: PERMISSIONS.COTIZACIONES.VER,
         context: 'admin',
     },
     {

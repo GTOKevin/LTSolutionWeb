@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
+import { isMantenimientoCompletado } from '@entities/mantenimiento/model/status';
 import type { Mantenimiento, MantenimientoDetalle } from '@entities/mantenimiento/model/types';
 import type { CreateMantenimientoDetalleSchema } from '../../model/schema';
 import { useState, useRef } from 'react';
@@ -53,7 +54,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
     const [editingItem, setEditingItem] = useState<CreateMantenimientoDetalleSchema | undefined>(undefined);
     const [editingCategoria, setEditingCategoria] = useState<string>('');
 
-    const isCompleted = mantenimientoInfo?.estado?.nombre?.toUpperCase() === 'FINALIZADO' || mantenimientoInfo?.estado?.nombre?.toUpperCase() === 'COMPLETADO';
+    const isCompleted = isMantenimientoCompletado(mantenimientoInfo);
     const isClosed = mantenimientoInfo?.cerrado;
     const showActions = !viewOnly && !(isCompleted && isClosed);
 
