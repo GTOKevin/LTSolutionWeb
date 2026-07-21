@@ -12,6 +12,7 @@ import type { SelectItem } from '@/shared/model/types';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
 import { SectionHeader } from '@/shared/components/ui/SectionHeader';
+import { resolveMantenimientoCompletadoId } from '@entities/mantenimiento/model/status';
 import { MantenimientoDetalleList } from '../../detalles/ui/MantenimientoDetalleList';
 import type { CreateMantenimientoFormInput, CreateMantenimientoSchema } from '../../model/schema';
 
@@ -48,6 +49,7 @@ export function MantenimientoCrudPageContent({
         handleSubmit,
         formState: { errors },
     } = form;
+    const completadoEstadoId = resolveMantenimientoCompletadoId(listaEstados);
 
     return (
         <>
@@ -191,7 +193,8 @@ export function MantenimientoCrudPageContent({
                                         {listaEstados
                                             .filter((item) => {
                                                 if (viewOnly || isEdit || createdId) return true;
-                                                return item.text.toUpperCase() !== 'COMPLETADO';
+                                                if (!completadoEstadoId) return true;
+                                                return item.id !== completadoEstadoId;
                                             })
                                             .map((item) => (
                                                 <MenuItem key={item.id} value={item.id}>

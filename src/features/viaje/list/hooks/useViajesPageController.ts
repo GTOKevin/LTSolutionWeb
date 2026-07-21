@@ -86,7 +86,7 @@ export function useViajesPageController() {
     }, [navigate]);
 
     const handleView = useCallback((item: ViajeListItem) => {
-        navigate(`/app/viajes/${item.viajeID}?mode=view`);
+        navigate(`/app/viajes/${item.viajeID}/ver`);
     }, [navigate]);
 
     const handleEdit = useCallback((item: ViajeListItem) => {

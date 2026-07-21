@@ -5,13 +5,12 @@ import type { User } from '@entities/auth/model/types';
 
 interface AuthState {
     token: string | null;
-    refreshToken: string | null;
     user: User | null;
     isAuthenticated: boolean;
     isSessionExpired: boolean;
     hasHydrated: boolean;
 
-    setAuth: (token: string, refreshToken: string) => void;
+    setAuth: (token: string) => void;
     setSessionExpired: (value: boolean) => void;
     setHasHydrated: (value: boolean) => void;
     logout: () => void;
@@ -22,17 +21,15 @@ export const useAuthStore = create<AuthState>()(
     persist(
         (set, get) => ({
             token: null,
-            refreshToken: null,
             user: null,
             isAuthenticated: false,
             isSessionExpired: false,
             hasHydrated: false,
 
-            setAuth: (token: string, refreshToken: string) => {
+            setAuth: (token: string) => {
                 const user = getUserFromToken(token);
                 set({
                     token,
-                    refreshToken,
                     user: user || null,
                     isAuthenticated: true,
                     isSessionExpired: false
@@ -50,7 +47,6 @@ export const useAuthStore = create<AuthState>()(
             logout: () => {
                 set({
                     token: null,
-                    refreshToken: null,
                     user: null,
                     isAuthenticated: false,
                     isSessionExpired: false
