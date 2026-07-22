@@ -58,10 +58,10 @@ export function normalizeDashboardActionUrl(url?: string) {
     switch (resource.toLowerCase()) {
         case 'viajes':
         case 'viaje':
-            return id ? `/app/viajes/${id}` : '/app/viajes';
+            return id ? `/app/viajes/${id}/ver` : '/app/viajes';
         case 'facturas':
         case 'factura':
-            return id ? `/app/facturas/${id}` : '/app/facturas';
+            return id ? `/app/facturas/${id}/ver` : '/app/facturas';
         case 'flotas':
         case 'flota':
             return id ? `/app/flotas/${id}/ver` : '/app/flotas';
@@ -73,7 +73,7 @@ export function normalizeDashboardActionUrl(url?: string) {
             return id ? `/app/mantenimientos/${id}/ver` : '/app/mantenimientos';
         case 'clientes':
         case 'cliente':
-            return id ? `/app/clientes/${id}` : '/app/clientes';
+            return id ? `/app/clientes/${id}/ver` : '/app/clientes';
         case 'usuarios':
         case 'usuario':
             return '/app/usuarios';

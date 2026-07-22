@@ -12,6 +12,7 @@ interface Props {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onView?: (gasto: Gasto) => void;
     onEdit?: (gasto: Gasto) => void;
     onDelete?: (gasto: Gasto) => void;
 }
@@ -23,6 +24,7 @@ export function GastoMobileList({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
+    onView,
     onEdit,
     onDelete
 }: Props) {
@@ -38,6 +40,7 @@ export function GastoMobileList({
             rowsPerPage={rowsPerPage}
             onPageChange={onPageChange}
             onRowsPerPageChange={onRowsPerPageChange}
+            onView={onView}
             onEdit={onEdit}
             onDelete={onDelete}
             emptyMessage="No se encontraron gastos"

@@ -187,11 +187,11 @@ export function FacturasPageContent({ controller }: FacturasPageContentProps) {
                             rowsPerPage={controller.filters.size}
                             onPageChange={(_, page) => controller.setFilters((prev) => ({ ...prev, page }))}
                             onRowsPerPageChange={(event) => controller.setFilters((prev) => ({ ...prev, size: parseInt(event.target.value, 10), page: 1 }))}
-                            onView={controller.canManageFacturas ? controller.handleViewClick : undefined}
+                            onView={controller.canViewFacturas ? controller.handleViewClick : undefined}
                             onEdit={controller.canManageFacturas ? controller.handleEditClick : undefined}
                             onDelete={controller.canManageFacturas ? controller.handleDeleteClick : undefined}
                             onPayment={controller.canManageFacturas ? controller.handlePaymentClick : undefined}
-                            onViewPayments={controller.canManageFacturas ? controller.handleViewPaymentsClick : undefined}
+                            onViewPayments={controller.canViewFacturas ? controller.handleViewPaymentsClick : undefined}
                             onUpdateStatus={controller.canManageFacturas ? controller.handleUpdateStatus : undefined}
                             statusCatalog={controller.facturaEstados}
                         />
@@ -203,11 +203,11 @@ export function FacturasPageContent({ controller }: FacturasPageContentProps) {
                             rowsPerPage={controller.filters.size}
                             onPageChange={(_, page) => controller.setFilters((prev) => ({ ...prev, page }))}
                             onRowsPerPageChange={(event) => controller.setFilters((prev) => ({ ...prev, size: parseInt(event.target.value, 10), page: 1 }))}
-                            onView={controller.canManageFacturas ? controller.handleViewClick : undefined}
+                            onView={controller.canViewFacturas ? controller.handleViewClick : undefined}
                             onEdit={controller.canManageFacturas ? controller.handleEditClick : undefined}
                             onDelete={controller.canManageFacturas ? controller.handleDeleteClick : undefined}
                             onPayment={controller.canManageFacturas ? controller.handlePaymentClick : undefined}
-                            onViewPayments={controller.canManageFacturas ? controller.handleViewPaymentsClick : undefined}
+                            onViewPayments={controller.canViewFacturas ? controller.handleViewPaymentsClick : undefined}
                             onUpdateStatus={controller.canManageFacturas ? controller.handleUpdateStatus : undefined}
                             statusCatalog={controller.facturaEstados}
                         />

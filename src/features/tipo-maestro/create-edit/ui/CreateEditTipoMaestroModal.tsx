@@ -23,13 +23,15 @@ interface CreateEditTipoMaestroModalProps {
     onClose: () => void;
     maestroToEdit: TipoMaestro | null;
     onSuccess: (id?: number) => void;
+    viewOnly?: boolean;
 }
 
 export function CreateEditTipoMaestroModal({
     open,
     onClose,
     maestroToEdit,
-    onSuccess
+    onSuccess,
+    viewOnly = false,
 }: CreateEditTipoMaestroModalProps) {
     
     const {
@@ -65,7 +67,7 @@ export function CreateEditTipoMaestroModal({
                 pb: 1
             }}>
                 <Typography variant="h6" fontWeight="bold">
-                    {isEdit ? 'Editar Maestro' : 'Nuevo Maestro'}
+                    {viewOnly ? 'Detalle de Maestro' : isEdit ? 'Editar Maestro' : 'Nuevo Maestro'}
                 </Typography>
                 <IconButton onClick={onClose} size="small">
                     <CloseIcon />
@@ -101,6 +103,7 @@ export function CreateEditTipoMaestroModal({
                                         onInputChange={(_, newInputValue) => {
                                             onChange(newInputValue);
                                         }}
+                                        disabled={viewOnly}
                                         renderInput={(params) => (
                                             <TextField 
                                                 {...params} 
@@ -127,6 +130,7 @@ export function CreateEditTipoMaestroModal({
                                         fullWidth
                                         error={!!errors.nombre}
                                         helperText={errors.nombre?.message}
+                                        disabled={viewOnly}
                                     />
                                 )}
                             />
@@ -144,6 +148,7 @@ export function CreateEditTipoMaestroModal({
                                         placeholder="Código opcional"
                                         error={!!errors.codigo}
                                         helperText={errors.codigo?.message}
+                                        disabled={viewOnly}
                                     />
                                 )}
                             />
@@ -160,6 +165,7 @@ export function CreateEditTipoMaestroModal({
                                                 checked={field.value}
                                                 onChange={(e) => field.onChange(e.target.checked)}
                                                 color="primary"
+                                                disabled={viewOnly}
                                             />
                                         )}
                                     />
@@ -172,15 +178,17 @@ export function CreateEditTipoMaestroModal({
 
                 <DialogActions sx={{ p: 2 }}>
                     <Button onClick={onClose} color="inherit">
-                        Cancelar
+                        {viewOnly ? 'Cerrar' : 'Cancelar'}
                     </Button>
-                    <Button 
-                        type="submit" 
-                        variant="contained"
-                        disabled={isSubmitting}
-                    >
-                        {isSubmitting ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Guardar')}
-                    </Button>
+                    {!viewOnly ? (
+                        <Button 
+                            type="submit" 
+                            variant="contained"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Guardar')}
+                        </Button>
+                    ) : null}
                 </DialogActions>
             </form>
         </Dialog>

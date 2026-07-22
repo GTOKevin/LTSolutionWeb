@@ -73,7 +73,7 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                         </Box>
                         <Box>
                             <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Documentos Vigentes</Typography>
-                            <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.activos}</Typography>
+                            <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.vigentes}</Typography>
                         </Box>
                     </Box>
                 </Grid>
@@ -94,8 +94,8 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             <PendingActionsOutlined />
                         </Box>
                         <Box>
-                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Solicitudes Pendientes</Typography>
-                            <Typography variant="h5" fontWeight={800} color="text.primary">{controller.pendingRequests}</Typography>
+                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Pendientes Visibles</Typography>
+                            <Typography variant="h5" fontWeight={800} color="text.primary">{controller.pendingRequestsVisible}</Typography>
                         </Box>
                     </Box>
                 </Grid>
@@ -231,10 +231,10 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                     <SharedTable
                         data={controller.solicitudes}
                         isLoading={controller.isLoadingSolicitudes}
-                        page={0}
-                        rowsPerPage={10}
-                        onPageChange={() => undefined}
-                        onRowsPerPageChange={() => undefined}
+                        page={controller.requestPage}
+                        rowsPerPage={controller.requestRowsPerPage}
+                        onPageChange={controller.handleRequestPageChange}
+                        onRowsPerPageChange={controller.handleRequestRowsPerPageChange}
                         columns={requestColumns}
                         keyExtractor={(item) => item.solicitudId}
                         emptyMessage="Aún no tienes solicitudes de actualización."
@@ -271,6 +271,10 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                     data={controller.solicitudes}
                     isLoading={controller.isLoadingSolicitudes}
                     documentNameById={controller.documentNameById}
+                    page={controller.requestPage}
+                    rowsPerPage={controller.requestRowsPerPage}
+                    onPageChange={controller.handleRequestPageChange}
+                    onRowsPerPageChange={controller.handleRequestRowsPerPageChange}
                 />
             </Box>
 

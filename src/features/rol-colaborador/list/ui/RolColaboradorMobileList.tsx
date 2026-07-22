@@ -12,6 +12,7 @@ interface RolColaboradorMobileListProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onView?: (rol: RolColaborador) => void;
     onEdit?: (rol: RolColaborador) => void;
 }
 
@@ -22,6 +23,7 @@ export function RolColaboradorMobileList({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
+    onView,
     onEdit
 }: RolColaboradorMobileListProps) {
     const theme = useTheme();
@@ -41,6 +43,7 @@ export function RolColaboradorMobileList({
                 onRowsPerPageChange={onRowsPerPageChange}
                 emptyMessage="No se encontraron roles"
                 keyExtractor={(item) => item.rolColaboradorID}
+                onView={onView}
                 onEdit={onEdit}
                 renderHeader={(rol) => (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>

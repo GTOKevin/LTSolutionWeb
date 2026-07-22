@@ -29,9 +29,10 @@ interface Props {
     onClose: () => void;
     tipoProductoToEdit?: TipoProducto | null;
     onSuccess: () => void;
+    viewOnly?: boolean;
 }
 
-export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit, onSuccess }: Props) {
+export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit, onSuccess, viewOnly = false }: Props) {
     const isEdit = !!tipoProductoToEdit;
     const createMutation = useCreateTipoProducto();
     const updateMutation = useUpdateTipoProducto();
@@ -123,7 +124,7 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle sx={{ pb: 1 }}>
-                {isEdit ? 'Editar Tipo de Producto' : 'Nuevo Tipo de Producto'}
+                {viewOnly ? 'Detalle de Tipo de Producto' : isEdit ? 'Editar Tipo de Producto' : 'Nuevo Tipo de Producto'}
             </DialogTitle>
             
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -144,6 +145,7 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
                                 error={!!errors.nombre}
                                 helperText={errors.nombre?.message}
                                 size="small"
+                                disabled={viewOnly}
                             />
                         </Grid>
 
@@ -160,6 +162,7 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
                                         error={!!errors.tipo}
                                         helperText={errors.tipo?.message}
                                         size="small"
+                                        disabled={viewOnly}
                                     >
                                         <MenuItem value="PROD">Producto</MenuItem>
                                         <MenuItem value="SERV">Servicio</MenuItem>
@@ -185,6 +188,7 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
                                             setInputValue(newInputValue);
                                             field.onChange(newInputValue);
                                         }}
+                                        disabled={viewOnly}
                                         renderInput={(params) => (
                                             <TextField
                                                 {...params}
@@ -211,6 +215,7 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
                                                     checked={field.value}
                                                     onChange={(e) => field.onChange(e.target.checked)}
                                                     color="primary"
+                                                    disabled={viewOnly}
                                                 />
                                             }
                                             label={
@@ -228,15 +233,17 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
                 
                 <DialogActions sx={{ px: 3, py: 2 }}>
                     <Button onClick={onClose} disabled={isSubmitting || updateMutation.isPending || createMutation.isPending}>
-                        Cancelar
+                        {viewOnly ? 'Cerrar' : 'Cancelar'}
                     </Button>
-                    <Button 
-                        type="submit" 
-                        variant="contained" 
-                        disabled={isSubmitting || updateMutation.isPending || createMutation.isPending}
-                    >
-                        {isEdit ? 'Actualizar' : 'Crear'}
-                    </Button>
+                    {!viewOnly ? (
+                        <Button 
+                            type="submit" 
+                            variant="contained" 
+                            disabled={isSubmitting || updateMutation.isPending || createMutation.isPending}
+                        >
+                            {isEdit ? 'Actualizar' : 'Crear'}
+                        </Button>
+                    ) : null}
                 </DialogActions>
             </form>
         </Dialog>

@@ -14,6 +14,7 @@ interface TipoMaestroTableProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onView?: (maestro: TipoMaestro) => void;
     onEdit?: (maestro: TipoMaestro) => void;
 }
 
@@ -24,6 +25,7 @@ export function TipoMaestroTable({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
+    onView,
     onEdit
 }: TipoMaestroTableProps) {
     const theme = useTheme();
@@ -83,7 +85,9 @@ export function TipoMaestroTable({
                     <TableCell align="right" width={120}>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                             <TableActions 
+                                onView={onView ? () => onView(item) : undefined}
                                 onEdit={onEdit ? () => onEdit(item) : undefined}
+                                viewTooltip="Ver Maestro"
                                 editTooltip="Editar Maestro"
                             />
                         </Box>

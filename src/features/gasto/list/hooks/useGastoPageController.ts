@@ -9,6 +9,7 @@ import { PERMISSIONS } from '@shared/constants/permissions';
 import { useLayoutStore } from '@shared/store/layout.store';
 
 export function useGastoPageController() {
+    const canViewGasto = usePermission(PERMISSIONS.CATALOGOS.GASTO.VER);
     const canManageGasto = usePermission(PERMISSIONS.CATALOGOS.GASTO.GESTIONAR);
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const [searchTerm, setSearchTerm] = useState('');
@@ -17,6 +18,8 @@ export function useGastoPageController() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [modalOpen, setModalOpen] = useState(false);
     const [gastoToEdit, setGastoToEdit] = useState<Gasto | null>(null);
+    const [selectedGastoId, setSelectedGastoId] = useState<number | null>(null);
+    const [viewOnlyMode, setViewOnlyMode] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [gastoToDelete, setGastoToDelete] = useState<Gasto | null>(null);
 
@@ -45,13 +48,30 @@ export function useGastoPageController() {
             }),
     });
 
+    const { data: gastoDetail } = useQuery({
+        queryKey: ['gasto-detail', selectedGastoId],
+        queryFn: () => gastoApi.getById(selectedGastoId as number).then((response) => response.data),
+        enabled: modalOpen && viewOnlyMode && selectedGastoId !== null,
+    });
+
     const handleCreate = () => {
         setGastoToEdit(null);
+        setSelectedGastoId(null);
+        setViewOnlyMode(false);
         setModalOpen(true);
     };
 
     const handleEdit = (gasto: Gasto) => {
         setGastoToEdit(gasto);
+        setSelectedGastoId(null);
+        setViewOnlyMode(false);
+        setModalOpen(true);
+    };
+
+    const handleView = (gasto: Gasto) => {
+        setGastoToEdit(gasto);
+        setSelectedGastoId(gasto.gastoID);
+        setViewOnlyMode(true);
         setModalOpen(true);
     };
 
@@ -77,6 +97,8 @@ export function useGastoPageController() {
     const handleCloseModal = () => {
         setModalOpen(false);
         setGastoToEdit(null);
+        setSelectedGastoId(null);
+        setViewOnlyMode(false);
     };
 
     const handleCloseDeleteDialog = () => {
@@ -102,12 +124,13 @@ export function useGastoPageController() {
     };
 
     return {
+        canViewGasto,
         canManageGasto,
         data: data?.data,
         deleteDialogOpen,
         deleteMutation,
         gastoToDelete,
-        gastoToEdit,
+        gastoToEdit: viewOnlyMode ? gastoDetail ?? gastoToEdit : gastoToEdit,
         handleChangePage,
         handleChangeRowsPerPage,
         handleCloseDeleteDialog,
@@ -116,6 +139,7 @@ export function useGastoPageController() {
         handleCreate,
         handleDeleteClick,
         handleEdit,
+        handleView,
         handleSearchChange,
         handleSuccess,
         isLoading,
@@ -123,5 +147,6 @@ export function useGastoPageController() {
         page,
         rowsPerPage,
         searchTerm,
+        viewOnlyMode,
     };
 }

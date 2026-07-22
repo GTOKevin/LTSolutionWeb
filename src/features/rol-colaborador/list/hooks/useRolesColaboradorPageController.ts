@@ -8,6 +8,7 @@ import { PERMISSIONS } from '@shared/constants/permissions';
 import { useLayoutStore } from '@shared/store/layout.store';
 
 export function useRolesColaboradorPageController() {
+    const canViewRoles = usePermission(PERMISSIONS.SISTEMA.ROLES.VER);
     const canManageRoles = usePermission(PERMISSIONS.SISTEMA.ROLES.GESTIONAR);
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const [searchTerm, setSearchTerm] = useState('');
@@ -16,6 +17,8 @@ export function useRolesColaboradorPageController() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [modalOpen, setModalOpen] = useState(false);
     const [rolToEdit, setRolToEdit] = useState<RolColaborador | null>(null);
+    const [selectedRolId, setSelectedRolId] = useState<number | null>(null);
+    const [viewOnlyMode, setViewOnlyMode] = useState(false);
 
     useEffect(() => {
         setPageTitle('Roles de Colaborador');
@@ -40,19 +43,38 @@ export function useRolesColaboradorPageController() {
             }),
     });
 
+    const { data: rolDetail } = useQuery({
+        queryKey: ['rol-colaborador-detail', selectedRolId],
+        queryFn: () => rolColaboradorApi.getById(selectedRolId as number).then((response) => response.data),
+        enabled: modalOpen && viewOnlyMode && selectedRolId !== null,
+    });
+
     const handleCreate = () => {
         setRolToEdit(null);
+        setSelectedRolId(null);
+        setViewOnlyMode(false);
         setModalOpen(true);
     };
 
     const handleEdit = (rol: RolColaborador) => {
         setRolToEdit(rol);
+        setSelectedRolId(null);
+        setViewOnlyMode(false);
+        setModalOpen(true);
+    };
+
+    const handleView = (rol: RolColaborador) => {
+        setRolToEdit(rol);
+        setSelectedRolId(rol.rolColaboradorID);
+        setViewOnlyMode(true);
         setModalOpen(true);
     };
 
     const handleCloseModal = () => {
         setModalOpen(false);
         setRolToEdit(null);
+        setSelectedRolId(null);
+        setViewOnlyMode(false);
     };
 
     const handleSuccess = () => {
@@ -73,6 +95,7 @@ export function useRolesColaboradorPageController() {
     };
 
     return {
+        canViewRoles,
         canManageRoles,
         data: data?.data,
         handleChangePage,
@@ -80,13 +103,15 @@ export function useRolesColaboradorPageController() {
         handleCloseModal,
         handleCreate,
         handleEdit,
+        handleView,
         handleSearchChange,
         handleSuccess,
         isLoading,
         modalOpen,
         page,
-        rolToEdit,
+        rolToEdit: viewOnlyMode ? rolDetail ?? rolToEdit : rolToEdit,
         rowsPerPage,
         searchTerm,
+        viewOnlyMode,
     };
 }

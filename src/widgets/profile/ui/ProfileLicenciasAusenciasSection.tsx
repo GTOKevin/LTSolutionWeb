@@ -26,8 +26,8 @@ export function ProfileLicenciasAusenciasSection({ licencias, ausencias, total }
             id: `aus-${item.colaboradorPermisoId}`,
             title: item.tipoPermisoNombre,
             subtitle: item.descripcion ?? `${formatDate(item.fechaInicial)} - ${formatDate(item.fechaFinal)}`,
-            status: item.activo ? 'pendiente' : 'cerrada',
-            accent: item.activo ? '#f59e0b' : '#d1d5db',
+            status: item.activo ? 'activa' : 'inactiva',
+            accent: item.activo ? '#005da8' : '#d1d5db',
         })),
     ].slice(0, 4);
 
@@ -41,7 +41,7 @@ export function ProfileLicenciasAusenciasSection({ licencias, ausencias, total }
                         sx={{ mb: 0 }}
                     />
                     <Typography sx={{ fontSize: 12, fontWeight: 800, color: 'primary.main', letterSpacing: '0.12em' }}>
-                        {total > 0 ? 'VER HISTORIAL' : 'SIN REGISTROS'}
+                        {total > 0 ? `${total} REGISTROS` : 'SIN REGISTROS'}
                     </Typography>
                 </Stack>
 

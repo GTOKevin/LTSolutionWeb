@@ -13,6 +13,7 @@ interface RolColaboradorTableProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onView?: (rol: RolColaborador) => void;
     onEdit?: (rol: RolColaborador) => void;
 }
 
@@ -23,6 +24,7 @@ export function RolColaboradorTable({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
+    onView,
     onEdit
 }: RolColaboradorTableProps) {
     const columns: Column[] = React.useMemo(() => [
@@ -73,7 +75,9 @@ export function RolColaboradorTable({
                     <TableCell align="right" width={120}>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                             <TableActions 
+                                onView={onView ? () => onView(item) : undefined}
                                 onEdit={onEdit ? () => onEdit(item) : undefined}
+                                viewTooltip="Ver Rol"
                                 editTooltip="Editar Rol"
                             />
                         </Box>

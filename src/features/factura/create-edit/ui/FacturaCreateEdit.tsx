@@ -34,9 +34,10 @@ import { logger } from '@/shared/utils/logger';
 
 interface FacturaCreateEditProps {
     id?: number;
+    viewOnly?: boolean;
 }
 
-export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
+export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditProps) {
     const isEdit = !!id;
     const theme = useTheme();
     const navigate = useNavigate();
@@ -186,31 +187,33 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                     </IconButton>
                     <Box>
                         <Typography variant="h5" fontWeight="bold" color="text.primary">
-                            {isEdit ? `Factura ${factura?.serie}-${factura?.numero}` : 'Nueva Factura'}
+                            {viewOnly ? `Detalle de Factura ${factura?.serie}-${factura?.numero}` : isEdit ? `Factura ${factura?.serie}-${factura?.numero}` : 'Nueva Factura'}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                            Registro de comprobante electrónico
+                            {viewOnly ? 'Consulta de comprobante electrónico' : 'Registro de comprobante electrónico'}
                         </Typography>
                     </Box>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     <Button onClick={() => navigate('/app/facturas')} color="inherit">
-                        Cancelar
+                        {viewOnly ? 'Cerrar' : 'Cancelar'}
                     </Button>
-                    <Button 
-                        type="submit" 
-                        form="factura-form" 
-                        variant="contained" 
-                        disabled={isSaving || (!isEdit && !estadoGeneradoId)}
-                        sx={{ 
-                            borderRadius: 3, 
-                            px: 4, 
-                            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                            boxShadow: theme.shadows[4]
-                        }}
-                    >
-                        {isSaving ? 'Guardando...' : 'Guardar Factura'}
-                    </Button>
+                    {!viewOnly ? (
+                        <Button 
+                            type="submit" 
+                            form="factura-form" 
+                            variant="contained" 
+                            disabled={isSaving || (!isEdit && !estadoGeneradoId)}
+                            sx={{ 
+                                borderRadius: 3, 
+                                px: 4, 
+                                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                                boxShadow: theme.shadows[4]
+                            }}
+                        >
+                            {isSaving ? 'Guardando...' : 'Guardar Factura'}
+                        </Button>
+                    ) : null}
                 </Box>
             </Box>
 
@@ -230,7 +233,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                                         <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>Cliente</Typography>
                                         <Controller
                                             name="clienteID"
-                                            disabled={isEdit}
+                                            disabled={isEdit || viewOnly}
                                             control={control}
                                             render={({ field }) => (
                                                 <TextField
@@ -239,6 +242,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                                                     fullWidth
                                                     error={!!errors.clienteID}
                                                     helperText={errors.clienteID?.message}
+                                                    disabled={viewOnly}
                                                     sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                                 >
                                                     <MenuItem value={0} disabled>Seleccione un cliente</MenuItem>
@@ -256,7 +260,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                                         <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>Serie</Typography>
                                         <Controller
                                             name="serie"
-                                            disabled={isEdit}
+                                            disabled={isEdit || viewOnly}
                                             control={control}
                                             render={({ field }) => (
                                                 <TextField
@@ -267,6 +271,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                                                     helperText={errors.serie?.message}
                                                     inputProps={{ style: { textTransform: 'uppercase' } }}
                                                     onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                                                    disabled={viewOnly}
                                                     sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                                 />
                                             )}
@@ -304,7 +309,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                                                     fullWidth
                                                     error={!!errors.monedaID}
                                                     helperText={errors.monedaID?.message}
-                                                    disabled={isEdit} 
+                                                    disabled={isEdit || viewOnly}
                                                     sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                                 >
                                                     <MenuItem value={0} disabled>Seleccione moneda</MenuItem>
@@ -327,7 +332,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                                                 <FormDatePicker
                                                     label=""
                                                     size="medium"
-                                                    disabled={isEdit}
+                                                    disabled={isEdit || viewOnly}
                                                     value={field.value}
                                                     onChange={(value) => field.onChange(value)}
                                                     error={!!errors.fechaEmision}
@@ -343,7 +348,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                                         <Controller
                                             name="diasCredito"
                                             control={control}
-                                            disabled={isEdit}
+                                            disabled={isEdit || viewOnly}
                                             render={({ field, fieldState: { error } }) => (
                                                 <TextField
                                                     {...field}
@@ -353,6 +358,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                                                     helperText={error?.message}
                                                     inputProps={{ min: 0 }}
                                                     onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                                                    disabled={viewOnly}
                                                     sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                                 />
                                             )}
@@ -368,6 +374,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                                                 <FormDatePicker
                                                     label=""
                                                     size="medium"
+                                                    disabled={viewOnly}
                                                     value={field.value}
                                                     onChange={field.onChange}
                                                     error={!!errors.fechaCompromisoPago}
@@ -385,7 +392,7 @@ export function FacturaCreateEdit({ id }: FacturaCreateEditProps) {
                         {/* Detalles */}
                         {isEdit && factura && (
                             <Box>
-                                <FacturaDetalles factura={factura} />
+                                <FacturaDetalles factura={factura} forceReadOnly={viewOnly} />
                             </Box>
                         )}
                     </Box>

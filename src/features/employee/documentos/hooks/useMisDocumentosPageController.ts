@@ -19,6 +19,8 @@ export function useMisDocumentosPageController() {
     const canRequestDocumentUpdate = usePermission(PERMISSIONS.EMPLOYEE.DOCUMENTOS.SOLICITAR_ACTUALIZACION);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [requestPage, setRequestPage] = useState(0);
+    const [requestRowsPerPage, setRequestRowsPerPage] = useState(10);
     const [tipoDocumentoID, setTipoDocumentoID] = useState<number | ''>('');
     const [activo, setActivo] = useState<string>('');
     const [filters, setFilters] = useState<Omit<MiDocumentoFilters, 'page' | 'size'>>({});
@@ -58,9 +60,9 @@ export function useMisDocumentosPageController() {
     }, [documentos?.items, tiposDocumento]);
 
     const requestFilters = useMemo<MiDocumentoSolicitudesFilters>(() => ({
-        page: 1,
-        size: 10,
-    }), []);
+        page: requestPage + 1,
+        size: requestRowsPerPage,
+    }), [requestPage, requestRowsPerPage]);
 
     const { data: solicitudes, isLoading: isLoadingSolicitudes } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.solicitudes(requestFilters),
@@ -68,7 +70,7 @@ export function useMisDocumentosPageController() {
         placeholderData: (previousData) => previousData,
     });
 
-    const pendingRequests = useMemo(
+    const pendingRequestsVisible = useMemo(
         () => (solicitudes?.items ?? []).filter((item) => item.aprobada == null).length,
         [solicitudes],
     );
@@ -84,7 +86,7 @@ export function useMisDocumentosPageController() {
 
         return {
             total: documentos?.total ?? 0,
-            activos: items.filter((item) => item.activo).length,
+            vigentes: items.filter((item) => item.vigenciaEstado === 'vigente').length,
             nearExpiry,
         };
     }, [documentos]);
@@ -96,6 +98,15 @@ export function useMisDocumentosPageController() {
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
         setRowsPerPage(Number(event.target.value));
         setPage(0);
+    };
+
+    const handleRequestPageChange = (_: unknown, nextPage: number) => {
+        setRequestPage(nextPage);
+    };
+
+    const handleRequestRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setRequestRowsPerPage(Number(event.target.value));
+        setRequestPage(0);
     };
 
     const handleSearch = (nextFilters?: { activo?: string; tipoDocumentoID?: number | '' }) => {
@@ -163,13 +174,17 @@ export function useMisDocumentosPageController() {
         handleChangeRowsPerPage,
         handleDownloadDocument,
         handleOpenDocument,
+        handleRequestPageChange,
+        handleRequestRowsPerPageChange,
         handleSearch,
         isLoadingDocumentos,
         isLoadingSolicitudes,
         page,
-        pendingRequests,
+        pendingRequestsVisible,
         previewTitle,
         previewUrl,
+        requestPage,
+        requestRowsPerPage,
         rowsPerPage,
         selectedDocumentoId,
         setActivo,

@@ -26,9 +26,10 @@ interface Props {
     onClose: () => void;
     mercaderiaToEdit?: Mercaderia | null;
     onSuccess: () => void;
+    viewOnly?: boolean;
 }
 
-export function CreateEditMercaderiaModal({ open, onClose, mercaderiaToEdit, onSuccess }: Props) {
+export function CreateEditMercaderiaModal({ open, onClose, mercaderiaToEdit, onSuccess, viewOnly = false }: Props) {
     const isEdit = !!mercaderiaToEdit;
     const createMutation = useCreateMercaderia();
     const updateMutation = useUpdateMercaderia();
@@ -97,7 +98,7 @@ export function CreateEditMercaderiaModal({ open, onClose, mercaderiaToEdit, onS
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle sx={{ pb: 1 }}>
-                {isEdit ? 'Editar Mercadería' : 'Nueva Mercadería'}
+                {viewOnly ? 'Detalle de Mercadería' : isEdit ? 'Editar Mercadería' : 'Nueva Mercadería'}
             </DialogTitle>
             
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -118,6 +119,7 @@ export function CreateEditMercaderiaModal({ open, onClose, mercaderiaToEdit, onS
                                 error={!!errors.nombre}
                                 helperText={errors.nombre?.message}
                                 size="small"
+                                disabled={viewOnly}
                             />
                         </Grid>
 
@@ -133,6 +135,7 @@ export function CreateEditMercaderiaModal({ open, onClose, mercaderiaToEdit, onS
                                                     checked={field.value}
                                                     onChange={(e) => field.onChange(e.target.checked)}
                                                     color="primary"
+                                                    disabled={viewOnly}
                                                 />
                                             }
                                             label={
@@ -150,15 +153,17 @@ export function CreateEditMercaderiaModal({ open, onClose, mercaderiaToEdit, onS
                 
                 <DialogActions sx={{ px: 3, py: 2 }}>
                     <Button onClick={onClose} disabled={isSubmitting || updateMutation.isPending || createMutation.isPending}>
-                        Cancelar
+                        {viewOnly ? 'Cerrar' : 'Cancelar'}
                     </Button>
-                    <Button 
-                        type="submit" 
-                        variant="contained" 
-                        disabled={isSubmitting || updateMutation.isPending || createMutation.isPending}
-                    >
-                        {isEdit ? 'Actualizar' : 'Crear'}
-                    </Button>
+                    {!viewOnly ? (
+                        <Button 
+                            type="submit" 
+                            variant="contained" 
+                            disabled={isSubmitting || updateMutation.isPending || createMutation.isPending}
+                        >
+                            {isEdit ? 'Actualizar' : 'Crear'}
+                        </Button>
+                    ) : null}
                 </DialogActions>
             </form>
         </Dialog>

@@ -30,8 +30,6 @@ import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
 import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
-
-
 interface KanbanBoardProps {
     viajes: ViajeListItem[];
     isLoading: boolean;
@@ -59,9 +57,9 @@ export function ViajeKanbanBoard({
     onDeleteViaje
 }: KanbanBoardProps) {
     const { showToast } = useToast();
-    const { data: viajeEstadosResponse } = useQuery({
+    const { data: viajeEstados = [] } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.estados(),
-        queryFn: () => estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE),
+        queryFn: async () => (await estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE)).data ?? [],
     });
 
     // Local state for optimistic updates during drag
@@ -88,12 +86,22 @@ export function ViajeKanbanBoard({
         })
     );
 
-    const viajeEstados = viajeEstadosResponse?.data;
+    // El backend ya entrega estadoID por cada ViajeListItem, así que el mapa de
+    // columnas puede resolverse desde los propios datos cargados y no depende
+    // de que el maestro de estados llegue completo o con el código en `extra`.
+    const firstViajePerCode: Record<string, number | undefined> = {};
+    for (const viaje of viajes) {
+        if (!viaje.estadoCodigo || firstViajePerCode[viaje.estadoCodigo] !== undefined) {
+            continue;
+        }
+        firstViajePerCode[viaje.estadoCodigo] = viaje.estadoID;
+    }
+
     const columns = [
-        { id: VIAJE_STATUS_CODE.AGENDADO, title: 'Programado', color: "#94a3b8", bgColor: alpha("#94a3b8", 0.05), estadoId: resolveViajeAgendadoId(viajeEstados) },
-        { id: VIAJE_STATUS_CODE.TRANSITO, title: 'En Ruta', color: '#2563eb', bgColor: alpha('#2563eb', 0.05), estadoId: resolveViajeTransitoId(viajeEstados) },
-        { id: VIAJE_STATUS_CODE.DESCARGANDO, title: 'En Descarga', color: '#f59e0b', bgColor: alpha('#f59e0b', 0.05), estadoId: resolveViajeDescargandoId(viajeEstados) },
-        { id: VIAJE_STATUS_CODE.COMPLETADO, title: 'Completado', color: '#388e3c', bgColor: alpha('#388e3c', 0.05), estadoId: resolveViajeCompletadoId(viajeEstados) },
+        { id: VIAJE_STATUS_CODE.AGENDADO, title: 'Programado', color: "#94a3b8", bgColor: alpha("#94a3b8", 0.05), estadoId: firstViajePerCode[VIAJE_STATUS_CODE.AGENDADO] ?? resolveViajeAgendadoId(viajeEstados) },
+        { id: VIAJE_STATUS_CODE.TRANSITO, title: 'En Ruta', color: '#2563eb', bgColor: alpha('#2563eb', 0.05), estadoId: firstViajePerCode[VIAJE_STATUS_CODE.TRANSITO] ?? resolveViajeTransitoId(viajeEstados) },
+        { id: VIAJE_STATUS_CODE.DESCARGANDO, title: 'En Descarga', color: '#f59e0b', bgColor: alpha('#f59e0b', 0.05), estadoId: firstViajePerCode[VIAJE_STATUS_CODE.DESCARGANDO] ?? resolveViajeDescargandoId(viajeEstados) },
+        { id: VIAJE_STATUS_CODE.COMPLETADO, title: 'Completado', color: '#388e3c', bgColor: alpha('#388e3c', 0.05), estadoId: firstViajePerCode[VIAJE_STATUS_CODE.COMPLETADO] ?? resolveViajeCompletadoId(viajeEstados) },
     ];
 
     if (isLoading) {

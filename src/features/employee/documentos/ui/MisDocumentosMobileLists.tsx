@@ -29,6 +29,10 @@ interface MisDocumentoSolicitudesMobileListProps {
     data?: PagedResponse<DocumentoActualizacionSolicitudDto>;
     isLoading: boolean;
     documentNameById: Map<number, string>;
+    page: number;
+    rowsPerPage: number;
+    onPageChange: (event: unknown, newPage: number) => void;
+    onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function MisDocumentosMobileList({
@@ -134,6 +138,10 @@ export function MisDocumentoSolicitudesMobileList({
     data,
     isLoading,
     documentNameById,
+    page,
+    rowsPerPage,
+    onPageChange,
+    onRowsPerPageChange,
 }: MisDocumentoSolicitudesMobileListProps) {
     if (isLoading) {
         return <Box sx={{ display: { xs: 'block', md: 'none' }, p: 4, textAlign: 'center' }}>Cargando solicitudes...</Box>;
@@ -142,11 +150,11 @@ export function MisDocumentoSolicitudesMobileList({
     return (
         <MobileListShell
             items={data?.items ?? []}
-            total={data?.items.length ?? 0}
-            page={0}
-            rowsPerPage={data?.items.length || 10}
-            onPageChange={() => undefined}
-            onRowsPerPageChange={() => undefined}
+            total={data?.total ?? 0}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={onPageChange}
+            onRowsPerPageChange={onRowsPerPageChange}
             emptyMessage="Aún no tienes solicitudes de actualización."
             keyExtractor={(item) => item.solicitudId}
             renderHeader={(item) => (

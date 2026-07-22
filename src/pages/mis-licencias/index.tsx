@@ -89,17 +89,13 @@ export function MisLicenciasPage() {
         placeholderData: (previousData) => previousData,
     });
 
-    const pendingCount = useMemo(
-        () => (data?.items ?? []).filter((item) => item.aceptado == null).length,
-        [data]
-    );
-
     const licenciaStats = useMemo(() => {
         const items = data?.items ?? [];
         return {
             total: data?.total ?? 0,
-            approved: items.filter((item) => item.aceptado === true).length,
-            rejected: items.filter((item) => item.aceptado === false).length,
+            visibleCount: items.length,
+            pendingVisible: items.filter((item) => item.aceptado == null).length,
+            approvedVisible: items.filter((item) => item.aceptado === true).length,
         };
     }, [data]);
 
@@ -161,35 +157,45 @@ export function MisLicenciasPage() {
                         </Box>
                         <Box sx={{ mt: 3 }}>
                             <Typography variant="h3" fontWeight={800} color="text.primary">{licenciaStats.total.toString().padStart(2, '0')}</Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>Registradas este año</Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                Registros consultados con los filtros actuales
+                            </Typography>
                         </Box>
                     </Box>
                 </Grid>
                 <Grid size={{ xs: 12, md: 4 }}>
                     <Box sx={{ bgcolor: 'background.paper', p: 4, borderRadius: 3, border: '1px solid', borderColor: 'divider', borderLeft: '4px solid', borderLeftColor: 'warning.main' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <Typography variant="overline" fontWeight={800} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>Pendientes de revisión</Typography>
+                            <Typography variant="overline" fontWeight={800} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>
+                                Pendientes visibles
+                            </Typography>
                             <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: 'warning.50', color: 'warning.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <PendingActionsOutlined />
                             </Box>
                         </Box>
                         <Box sx={{ mt: 3 }}>
-                            <Typography variant="h3" fontWeight={800} color="text.primary">{pendingCount.toString().padStart(2, '0')}</Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>Esperando aprobación</Typography>
+                            <Typography variant="h3" fontWeight={800} color="text.primary">{licenciaStats.pendingVisible.toString().padStart(2, '0')}</Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                Pendientes en la pagina actual ({licenciaStats.visibleCount} visibles)
+                            </Typography>
                         </Box>
                     </Box>
                 </Grid>
                 <Grid size={{ xs: 12, md: 4 }}>
                     <Box sx={{ bgcolor: 'background.paper', p: 4, borderRadius: 3, border: '1px solid', borderColor: 'divider', borderLeft: '4px solid', borderLeftColor: 'success.main' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <Typography variant="overline" fontWeight={800} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>Licencias aprobadas</Typography>
+                            <Typography variant="overline" fontWeight={800} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>
+                                Aprobadas visibles
+                            </Typography>
                             <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: 'success.50', color: 'success.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <EventAvailableOutlined />
                             </Box>
                         </Box>
                         <Box sx={{ mt: 3 }}>
-                            <Typography variant="h3" fontWeight={800} color="text.primary">{licenciaStats.approved.toString().padStart(2, '0')}</Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>Solicitudes aprobadas en el periodo consultado</Typography>
+                            <Typography variant="h3" fontWeight={800} color="text.primary">{licenciaStats.approvedVisible.toString().padStart(2, '0')}</Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                Aprobadas en la pagina actual
+                            </Typography>
                         </Box>
                     </Box>
                 </Grid>

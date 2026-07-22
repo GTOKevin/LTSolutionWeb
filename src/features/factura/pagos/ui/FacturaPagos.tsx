@@ -13,9 +13,10 @@ import { FacturaPagoMobileList } from './FacturaPagoMobileList';
 
 interface FacturaPagosProps {
     factura: Factura;
+    viewOnly?: boolean;
 }
 
-export function FacturaPagos({ factura }: FacturaPagosProps) {
+export function FacturaPagos({ factura, viewOnly = false }: FacturaPagosProps) {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [pagoToDelete, setPagoToDelete] = useState<number | null>(null);
@@ -56,7 +57,7 @@ export function FacturaPagos({ factura }: FacturaPagosProps) {
 
     const pagos = pagosFetch;
     const paginatedPagos = pagos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const isReadOnly = isFacturaGenerada(factura) || factura.saldoPendiente <= 0;
+    const isReadOnly = viewOnly || isFacturaGenerada(factura) || factura.saldoPendiente <= 0;
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

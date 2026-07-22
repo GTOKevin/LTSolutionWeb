@@ -26,9 +26,10 @@ interface Props {
     onClose: () => void;
     gastoToEdit?: Gasto | null;
     onSuccess: () => void;
+    viewOnly?: boolean;
 }
 
-export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess }: Props) {
+export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess, viewOnly = false }: Props) {
     const isEdit = !!gastoToEdit;
     const createMutation = useCreateGasto();
     const updateMutation = useUpdateGasto();
@@ -103,7 +104,7 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess }: 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle sx={{ pb: 1 }}>
-                {isEdit ? 'Editar Gasto' : 'Nuevo Gasto'}
+                {viewOnly ? 'Detalle de Gasto' : isEdit ? 'Editar Gasto' : 'Nuevo Gasto'}
             </DialogTitle>
             
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -124,6 +125,7 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess }: 
                                 error={!!errors.nombre}
                                 helperText={errors.nombre?.message}
                                 size="small"
+                                disabled={viewOnly}
                             />
                         </Grid>
 
@@ -139,6 +141,7 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess }: 
                                                     checked={field.value}
                                                     onChange={(e) => field.onChange(e.target.checked)}
                                                     color="primary"
+                                                    disabled={viewOnly}
                                                 />
                                             }
                                             label={
@@ -156,15 +159,17 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess }: 
                 
                 <DialogActions sx={{ px: 3, py: 2 }}>
                     <Button onClick={onClose} disabled={isSubmitting || updateMutation.isPending || createMutation.isPending}>
-                        Cancelar
+                        {viewOnly ? 'Cerrar' : 'Cancelar'}
                     </Button>
-                    <Button 
-                        type="submit" 
-                        variant="contained" 
-                        disabled={isSubmitting || updateMutation.isPending || createMutation.isPending}
-                    >
-                        {isEdit ? 'Actualizar' : 'Crear'}
-                    </Button>
+                    {!viewOnly ? (
+                        <Button 
+                            type="submit" 
+                            variant="contained" 
+                            disabled={isSubmitting || updateMutation.isPending || createMutation.isPending}
+                        >
+                            {isEdit ? 'Actualizar' : 'Crear'}
+                        </Button>
+                    ) : null}
                 </DialogActions>
             </form>
         </Dialog>

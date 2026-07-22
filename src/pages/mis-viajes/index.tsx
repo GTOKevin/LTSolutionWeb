@@ -57,6 +57,7 @@ export function MisViajesPage() {
         const items = data?.items ?? [];
         return {
             total: data?.total ?? 0,
+            totalVisible: items.length,
             cerrados: items.filter((item) => item.cerrado).length,
             pendientes: items.filter((item) => !item.cerrado).length,
         };
@@ -84,7 +85,7 @@ export function MisViajesPage() {
                     </Typography>
                 </Box>
                 <MisViajesKPIs 
-                    total={totals.total}
+                    total={totals.totalVisible}
                     pendientes={totals.pendientes}
                     cerrados={totals.cerrados}
                 />

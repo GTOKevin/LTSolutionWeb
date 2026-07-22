@@ -9,6 +9,7 @@ import { PERMISSIONS } from '@shared/constants/permissions';
 import { useLayoutStore } from '@shared/store/layout.store';
 
 export function useMercaderiaPageController() {
+    const canViewMercaderia = usePermission(PERMISSIONS.CATALOGOS.MERCADERIA.VER);
     const canManageMercaderia = usePermission(PERMISSIONS.CATALOGOS.MERCADERIA.GESTIONAR);
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const [searchTerm, setSearchTerm] = useState('');
@@ -17,6 +18,8 @@ export function useMercaderiaPageController() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [modalOpen, setModalOpen] = useState(false);
     const [mercaderiaToEdit, setMercaderiaToEdit] = useState<Mercaderia | null>(null);
+    const [selectedMercaderiaId, setSelectedMercaderiaId] = useState<number | null>(null);
+    const [viewOnlyMode, setViewOnlyMode] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [mercaderiaToDelete, setMercaderiaToDelete] = useState<Mercaderia | null>(null);
 
@@ -45,13 +48,30 @@ export function useMercaderiaPageController() {
             }),
     });
 
+    const { data: mercaderiaDetail } = useQuery({
+        queryKey: ['mercaderia-detail', selectedMercaderiaId],
+        queryFn: () => mercaderiaApi.getById(selectedMercaderiaId as number).then((response) => response.data),
+        enabled: modalOpen && viewOnlyMode && selectedMercaderiaId !== null,
+    });
+
     const handleCreate = () => {
         setMercaderiaToEdit(null);
+        setSelectedMercaderiaId(null);
+        setViewOnlyMode(false);
         setModalOpen(true);
     };
 
     const handleEdit = (mercaderia: Mercaderia) => {
         setMercaderiaToEdit(mercaderia);
+        setSelectedMercaderiaId(null);
+        setViewOnlyMode(false);
+        setModalOpen(true);
+    };
+
+    const handleView = (mercaderia: Mercaderia) => {
+        setMercaderiaToEdit(mercaderia);
+        setSelectedMercaderiaId(mercaderia.mercaderiaID);
+        setViewOnlyMode(true);
         setModalOpen(true);
     };
 
@@ -77,6 +97,8 @@ export function useMercaderiaPageController() {
     const handleCloseModal = () => {
         setModalOpen(false);
         setMercaderiaToEdit(null);
+        setSelectedMercaderiaId(null);
+        setViewOnlyMode(false);
     };
 
     const handleCloseDeleteDialog = () => {
@@ -102,6 +124,7 @@ export function useMercaderiaPageController() {
     };
 
     return {
+        canViewMercaderia,
         canManageMercaderia,
         data: data?.data,
         deleteDialogOpen,
@@ -114,14 +137,25 @@ export function useMercaderiaPageController() {
         handleCreate,
         handleDeleteClick,
         handleEdit,
+        handleView,
         handleSearchChange,
         handleSuccess,
         isLoading,
         mercaderiaToDelete,
-        mercaderiaToEdit,
+        mercaderiaToEdit: viewOnlyMode
+            ? mercaderiaDetail
+                ? {
+                    ...mercaderiaToEdit,
+                    ...mercaderiaDetail,
+                    fechaRegistro: mercaderiaToEdit?.fechaRegistro ?? '',
+                    usuarioRegistro: mercaderiaToEdit?.usuarioRegistro ?? 0,
+                }
+                : mercaderiaToEdit
+            : mercaderiaToEdit,
         modalOpen,
         page,
         rowsPerPage,
         searchTerm,
+        viewOnlyMode,
     };
 }

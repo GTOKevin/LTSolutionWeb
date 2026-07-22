@@ -144,6 +144,7 @@ export function MaestrosPageContent({ controller }: MaestrosPageContentProps) {
                             rowsPerPage={controller.rowsPerPage}
                             onPageChange={controller.handleChangePage}
                             onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                            onView={controller.canViewMaestros ? controller.handleView : undefined}
                             onEdit={controller.canManageMaestros ? controller.handleEdit : undefined}
                         />
                     </Box>
@@ -156,6 +157,7 @@ export function MaestrosPageContent({ controller }: MaestrosPageContentProps) {
                             rowsPerPage={controller.rowsPerPage}
                             onPageChange={controller.handleChangePage}
                             onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                            onView={controller.canViewMaestros ? controller.handleView : undefined}
                             onEdit={controller.canManageMaestros ? controller.handleEdit : undefined}
                         />
                     </Box>
@@ -166,6 +168,7 @@ export function MaestrosPageContent({ controller }: MaestrosPageContentProps) {
                     onClose={controller.handleCloseModal}
                     maestroToEdit={controller.maestroToEdit}
                     onSuccess={controller.handleSuccess}
+                    viewOnly={controller.viewOnlyMode}
                 />
             </Box>
         </Box>

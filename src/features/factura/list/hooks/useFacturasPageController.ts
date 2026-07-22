@@ -16,6 +16,7 @@ import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function useFacturasPageController() {
     const navigate = useNavigate();
+    const canViewFacturas = usePermission(PERMISSIONS.FACTURAS.VER);
     const canManageFacturas = usePermission(PERMISSIONS.FACTURAS.GESTIONAR);
     const [filters, setFilters] = useState<FacturaFilters>({ page: 1, size: 10, search: '' });
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -53,7 +54,7 @@ export function useFacturasPageController() {
     };
 
     const handleViewClick = (factura: Factura) => {
-        navigate(`/app/facturas/${factura.facturaID}`);
+        navigate(`/app/facturas/${factura.facturaID}/ver`);
     };
 
     const handleDeleteClick = async (factura: Factura) => {
@@ -83,6 +84,7 @@ export function useFacturasPageController() {
     };
 
     return {
+        canViewFacturas,
         canManageFacturas,
         data,
         deleteMutation,

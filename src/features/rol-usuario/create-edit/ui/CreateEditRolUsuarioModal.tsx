@@ -33,9 +33,10 @@ interface CreateEditRolUsuarioModalProps {
     onClose: () => void;
     rolToEdit?: RolUsuario | null;
     onSuccess: (id?: number) => void;
+    viewOnly?: boolean;
 }
 
-export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess }: CreateEditRolUsuarioModalProps) {
+export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess, viewOnly = false }: CreateEditRolUsuarioModalProps) {
     const theme = useTheme();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState(0);
@@ -154,7 +155,7 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Box>
                         <Typography variant="h6" fontWeight="bold">
-                            {isEdit ? 'Editar Rol' : 'Crear Rol'}
+                            {viewOnly ? 'Detalle de Rol' : isEdit ? 'Editar Rol' : 'Crear Rol'}
                         </Typography>
                     </Box>
                     <IconButton onClick={onClose} size="small">
@@ -194,7 +195,7 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                                         onKeyDown={handleLettersOnlyKeyDown}
                                         error={!!errors.nombre}
                                         helperText={errors.nombre?.message}
-                                        disabled={isEdit}
+                                        disabled={isEdit || viewOnly}
                                         InputProps={{
                                             sx: { borderRadius: 2 }
                                         }}
@@ -212,6 +213,7 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                                         {...register('descripcion')}
                                         error={!!errors.descripcion}
                                         helperText={errors.descripcion?.message}
+                                        disabled={viewOnly}
                                         InputProps={{
                                             sx: { borderRadius: 2 }
                                         }}
@@ -227,6 +229,7 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                                                     <Switch
                                                         checked={field.value}
                                                         onChange={(e) => field.onChange(e.target.checked)}
+                                                        disabled={viewOnly}
                                                     />
                                                 }
                                                 label={field.value ? "Activo" : "Inactivo"}
@@ -248,6 +251,7 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                                         rolId={rolToEdit?.rolUsuarioID}
                                         selectedIds={field.value || []}
                                         onChange={field.onChange}
+                                        disabled={viewOnly}
                                     />
                                 )}
                             />
@@ -261,22 +265,24 @@ export function CreateEditRolUsuarioModal({ open, onClose, rolToEdit, onSuccess 
                     variant="outlined"
                     sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
                 >
-                    Cancelar
+                    {viewOnly ? 'Cerrar' : 'Cancelar'}
                 </Button>
-                <Button 
-                    type="submit"
-                    form="rol-form"
-                    variant="contained"
-                    disabled={isSubmitting}
-                    sx={{ 
-                        borderRadius: 2, 
-                        textTransform: 'none', 
-                        fontWeight: 600,
-                        px: 4
-                    }}
-                >
-                    {isSubmitting ? 'Guardando...' : 'Guardar'}
-                </Button>
+                {!viewOnly ? (
+                    <Button 
+                        type="submit"
+                        form="rol-form"
+                        variant="contained"
+                        disabled={isSubmitting}
+                        sx={{ 
+                            borderRadius: 2, 
+                            textTransform: 'none', 
+                            fontWeight: 600,
+                            px: 4
+                        }}
+                    >
+                        {isSubmitting ? 'Guardando...' : 'Guardar'}
+                    </Button>
+                ) : null}
             </DialogActions>
         </Dialog>
     );

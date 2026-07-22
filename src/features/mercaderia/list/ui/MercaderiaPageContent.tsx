@@ -115,6 +115,7 @@ export function MercaderiaPageContent({ controller }: MercaderiaPageContentProps
                             rowsPerPage={controller.rowsPerPage}
                             onPageChange={controller.handleChangePage}
                             onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                            onView={controller.canViewMercaderia ? controller.handleView : undefined}
                             onEdit={controller.canManageMercaderia ? controller.handleEdit : undefined}
                             onDelete={controller.canManageMercaderia ? controller.handleDeleteClick : undefined}
                         />
@@ -128,33 +129,33 @@ export function MercaderiaPageContent({ controller }: MercaderiaPageContentProps
                             rowsPerPage={controller.rowsPerPage}
                             onPageChange={controller.handleChangePage}
                             onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                            onView={controller.canViewMercaderia ? controller.handleView : undefined}
                             onEdit={controller.canManageMercaderia ? controller.handleEdit : undefined}
                             onDelete={controller.canManageMercaderia ? controller.handleDeleteClick : undefined}
                         />
                     </Box>
                 </Box>
 
-                {controller.canManageMercaderia ? (
-                    <>
-                        <CreateEditMercaderiaModal
-                            open={controller.modalOpen}
-                            onClose={controller.handleCloseModal}
-                            mercaderiaToEdit={controller.mercaderiaToEdit}
-                            onSuccess={controller.handleSuccess}
-                        />
+                <CreateEditMercaderiaModal
+                    open={controller.modalOpen}
+                    onClose={controller.handleCloseModal}
+                    mercaderiaToEdit={controller.mercaderiaToEdit}
+                    onSuccess={controller.handleSuccess}
+                    viewOnly={controller.viewOnlyMode}
+                />
 
-                        <ConfirmDialog
-                            open={controller.deleteDialogOpen}
-                            title="Eliminar Mercadería"
-                            content={`¿Estás seguro que deseas eliminar "${controller.mercaderiaToDelete?.nombre}"? Esta acción no se puede deshacer.`}
-                            onConfirm={controller.handleConfirmDelete}
-                            onClose={controller.handleCloseDeleteDialog}
-                            confirmText="Eliminar"
-                            cancelText="Cancelar"
-                            severity="error"
-                            isLoading={controller.deleteMutation.isPending}
-                        />
-                    </>
+                {controller.canManageMercaderia ? (
+                    <ConfirmDialog
+                        open={controller.deleteDialogOpen}
+                        title="Eliminar Mercadería"
+                        content={`¿Estás seguro que deseas eliminar "${controller.mercaderiaToDelete?.nombre}"? Esta acción no se puede deshacer.`}
+                        onConfirm={controller.handleConfirmDelete}
+                        onClose={controller.handleCloseDeleteDialog}
+                        confirmText="Eliminar"
+                        cancelText="Cancelar"
+                        severity="error"
+                        isLoading={controller.deleteMutation.isPending}
+                    />
                 ) : null}
             </Box>
         </Box>

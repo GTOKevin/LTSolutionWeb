@@ -134,11 +134,22 @@ export function MisPagosPage() {
 
     const paymentStats = useMemo(() => {
         const items = data?.items ?? [];
+        const currencyTotalsMap = new Map<string, number>();
+
+        items.forEach((item) => {
+            const currency = item.monedaSimbolo || item.monedaCodigo;
+            currencyTotalsMap.set(currency, (currencyTotalsMap.get(currency) ?? 0) + item.monto);
+        });
+
         return {
             total: data?.total ?? 0,
+            visibleCount: items.length,
             pendingCount: items.filter((item) => item.confirmadoPago == null).length,
             confirmedCount: items.filter((item) => item.confirmadoPago === true).length,
-            visibleAmount: items.reduce((sum, item) => sum + item.monto, 0),
+            currencyTotals: Array.from(currencyTotalsMap.entries()).map(([currency, amount]) => ({
+                currency,
+                amount,
+            })),
         };
     }, [data]);
 

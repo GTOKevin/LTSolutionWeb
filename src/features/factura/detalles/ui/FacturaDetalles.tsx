@@ -12,9 +12,10 @@ import { FacturaDetalleMobileList } from './FacturaDetalleMobileList';
 
 interface FacturaDetallesProps {
     factura: Factura;
+    forceReadOnly?: boolean;
 }
 
-export function FacturaDetalles({ factura }: FacturaDetallesProps) {
+export function FacturaDetalles({ factura, forceReadOnly = false }: FacturaDetallesProps) {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [detalleToDelete, setDetalleToDelete] = useState<number | null>(null);
@@ -55,7 +56,7 @@ export function FacturaDetalles({ factura }: FacturaDetallesProps) {
 
     const detalles = detallesFetch;
     const paginatedDetalles = detalles.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const isReadOnly = isFacturaEntregada(factura) || isFacturaEmitida(factura);
+    const isReadOnly = forceReadOnly || isFacturaEntregada(factura) || isFacturaEmitida(factura);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>

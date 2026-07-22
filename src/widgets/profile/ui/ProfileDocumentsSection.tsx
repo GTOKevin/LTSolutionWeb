@@ -49,7 +49,7 @@ export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDo
                             size="small"
                             color="error"
                             icon={<WarningAmberRounded />}
-                            label={`${criticalCount} documento(s) próximo(s) a vencer`}
+                            label={`${criticalCount} documento(s) vencido(s)`}
                             sx={{ fontWeight: 700 }}
                         />
                     ) : (

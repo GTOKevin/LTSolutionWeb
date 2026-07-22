@@ -9,6 +9,7 @@ import { PERMISSIONS } from '@shared/constants/permissions';
 import { useLayoutStore } from '@shared/store/layout.store';
 
 export function useTipoProductoPageController() {
+    const canViewTipoProducto = usePermission(PERMISSIONS.CATALOGOS.TIPO_PRODUCTO.VER);
     const canManageTipoProducto = usePermission(PERMISSIONS.CATALOGOS.TIPO_PRODUCTO.GESTIONAR);
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const [searchTerm, setSearchTerm] = useState('');
@@ -18,6 +19,8 @@ export function useTipoProductoPageController() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [modalOpen, setModalOpen] = useState(false);
     const [tipoToEdit, setTipoToEdit] = useState<TipoProducto | null>(null);
+    const [selectedTipoId, setSelectedTipoId] = useState<number | null>(null);
+    const [viewOnlyMode, setViewOnlyMode] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [tipoToDelete, setTipoToDelete] = useState<TipoProducto | null>(null);
 
@@ -52,13 +55,30 @@ export function useTipoProductoPageController() {
         queryFn: tipoProductoApi.getSelectCategoria,
     });
 
+    const { data: tipoDetail } = useQuery({
+        queryKey: ['tipo-producto-detail', selectedTipoId],
+        queryFn: () => tipoProductoApi.getById(selectedTipoId as number).then((response) => response.data),
+        enabled: modalOpen && viewOnlyMode && selectedTipoId !== null,
+    });
+
     const handleCreate = () => {
         setTipoToEdit(null);
+        setSelectedTipoId(null);
+        setViewOnlyMode(false);
         setModalOpen(true);
     };
 
     const handleEdit = (tipo: TipoProducto) => {
         setTipoToEdit(tipo);
+        setSelectedTipoId(null);
+        setViewOnlyMode(false);
+        setModalOpen(true);
+    };
+
+    const handleView = (tipo: TipoProducto) => {
+        setTipoToEdit(tipo);
+        setSelectedTipoId(tipo.tipoProductoID);
+        setViewOnlyMode(true);
         setModalOpen(true);
     };
 
@@ -84,6 +104,8 @@ export function useTipoProductoPageController() {
     const handleCloseModal = () => {
         setModalOpen(false);
         setTipoToEdit(null);
+        setSelectedTipoId(null);
+        setViewOnlyMode(false);
     };
 
     const handleCloseDeleteDialog = () => {
@@ -114,6 +136,7 @@ export function useTipoProductoPageController() {
     };
 
     return {
+        canViewTipoProducto,
         canManageTipoProducto,
         categorias: categorias?.data?.map((categoria) => categoria.text) ?? [],
         data: data?.data,
@@ -128,6 +151,7 @@ export function useTipoProductoPageController() {
         handleCreate,
         handleDeleteClick,
         handleEdit,
+        handleView,
         handleSearchChange,
         handleSuccess,
         isLoading,
@@ -137,6 +161,7 @@ export function useTipoProductoPageController() {
         searchTerm,
         selectedCategoria,
         tipoToDelete,
-        tipoToEdit,
+        tipoToEdit: viewOnlyMode ? tipoDetail ?? tipoToEdit : tipoToEdit,
+        viewOnlyMode,
     };
 }
