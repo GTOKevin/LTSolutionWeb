@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { 
     Dialog, DialogTitle, DialogContent, DialogActions, 
-    Button, TextField, Box, MenuItem, FormControlLabel, Switch, CircularProgress
+    Button, TextField, Box, FormControlLabel, Switch, CircularProgress, Typography
 } from '@mui/material';
 import { useCreateViajeRuta, useViajeRutas } from '@features/viaje/hooks/useViajeRutas';
 import { useQuery } from '@tanstack/react-query';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
+import { FormSelect } from '@shared/components/ui/FormSelect';
 import type { CreateViajeRutaDto } from '@/entities/viaje/model/types';
 import dayjs from 'dayjs';
 
@@ -22,9 +23,9 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
     const { data: rutas } = useViajeRutas(viajeId);
     
     // Obtener los tipos de punto desde el backend
-    const { data: tiposPunto, isLoading: isLoadingTipos } = useQuery({
+    const { data: tiposPunto, isLoading: isLoadingTipos, isError: hasTiposPuntoError } = useQuery({
         queryKey: ['maestro', SECCION_MAESTRO.PUNTO_RUTA],
-        queryFn: () => maestroApi.getSelect('', SECCION_MAESTRO.PUNTO_RUTA, 20),
+        queryFn: () => maestroApi.getSelect('', SECCION_MAESTRO.PUNTO_RUTA, 50),
         enabled: open,
     });
     
@@ -34,6 +35,7 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
         esOpcionPrincipal: true,
         fechaEstimadaLlegada: '',
     });
+    const [tipoPuntoError, setTipoPuntoError] = useState('');
 
     useEffect(() => {
         if (open) {
@@ -44,6 +46,7 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
                     esOpcionPrincipal: true,
                     fechaEstimadaLlegada: '',
                 });
+                setTipoPuntoError('');
             }, 0);
 
             return () => {
@@ -52,10 +55,20 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
         }
     }, [open, initialData]);
 
+    const handleTipoPuntoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const tipoPuntoId = Number(event.target.value);
+        setFormData((current) => ({ ...current, tipoPuntoId }));
+
+        if (tipoPuntoId > 0) {
+            setTipoPuntoError('');
+        }
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         if (formData.tipoPuntoId <= 0) {
+            setTipoPuntoError('Seleccione un tipo de parada para guardar la nueva etapa.');
             return;
         }
         
@@ -90,28 +103,20 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
                 <DialogTitle fontWeight="bold">Agregar Parada</DialogTitle>
                 <DialogContent dividers>
                     <Box display="flex" flexDirection="column" gap={3} pt={1}>
-                        <TextField
-                            select
+                        <FormSelect
                             label="Tipo de Parada"
-                            value={formData.tipoPuntoId || ''}
-                            onChange={e => setFormData({ ...formData, tipoPuntoId: Number(e.target.value) })}
-                            fullWidth
+                            options={tiposPunto ?? []}
+                            value={formData.tipoPuntoId}
+                            onChange={handleTipoPuntoChange}
                             required
                             disabled={isLoadingTipos}
-                        >
-                            {isLoadingTipos ? (
-                                <MenuItem disabled value="">Cargando...</MenuItem>
-                            ) : (
-                                <>
-                                    <MenuItem disabled value="">
-                                        Seleccione un tipo
-                                    </MenuItem>
-                                    {tiposPunto?.map(t => (
-                                        <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
-                                    ))}
-                                </>
-                            )}
-                        </TextField>
+                            error={Boolean(tipoPuntoError) || hasTiposPuntoError}
+                            helperText={hasTiposPuntoError
+                                ? 'No se pudieron cargar los tipos de parada.'
+                                : isLoadingTipos
+                                    ? 'Cargando tipos de parada...'
+                                    : tipoPuntoError}
+                        />
 
                         <TextField
                             label="Nombre del Lugar"
@@ -143,10 +148,12 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
                         
                         {initialData && (
                             <Box bgcolor="grey.100" p={2} borderRadius={1}>
-                                <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Coordenadas capturadas:</div>
-                                <div style={{ fontSize: '0.875rem', fontFamily: 'monospace' }}>
+                                <Typography variant="caption" color="text.secondary">
+                                    Coordenadas capturadas:
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                                     {initialData.lat.toFixed(6)}, {initialData.lng.toFixed(6)}
-                                </div>
+                                </Typography>
                             </Box>
                         )}
                     </Box>

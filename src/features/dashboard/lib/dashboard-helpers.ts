@@ -43,6 +43,26 @@ const DASHBOARD_NOTIFICATION_TONE_CANDIDATES = {
     warning: ['warning', 'advertencia', 'mantenimiento'],
 } as const;
 
+function normalizeDashboardSearchText(value?: string | null) {
+    return value
+        ?.normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase() ?? '';
+}
+
+function notificationMatchesModuleText(notification: DashboardNotification, candidates: readonly string[]) {
+    const searchableText = normalizeDashboardSearchText(
+        [notification.urlAccion, notification.titulo, notification.mensaje].filter(Boolean).join(' '),
+    );
+
+    if (!searchableText) {
+        return false;
+    }
+
+    return candidates.some((candidate) => searchableText.includes(normalizeDashboardSearchText(candidate)));
+}
+
 export function formatTrendPercentage(value: number) {
     const rounded = Math.abs(value).toFixed(1);
     if (value > 0) return `+${rounded}% vs mes ant.`;
@@ -114,49 +134,49 @@ export function resolveDashboardNotificationModule(notification: DashboardNotifi
 
     if (
         normalizedUrl?.startsWith(APP_PATHS.facturas) ||
-        matchesCatalogCandidate(notification.tipoNotificacion, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.facturas)
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.facturas)
     ) {
         return 'facturas';
     }
 
     if (
         normalizedUrl?.startsWith(APP_PATHS.viajes) ||
-        matchesCatalogCandidate(notification.tipoNotificacion, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.viajes)
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.viajes)
     ) {
         return 'viajes';
     }
 
     if (
         normalizedUrl?.startsWith(APP_PATHS.flotas) ||
-        matchesCatalogCandidate(notification.tipoNotificacion, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.flota)
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.flota)
     ) {
         return 'flota';
     }
 
     if (
         normalizedUrl?.startsWith(APP_PATHS.colaboradores) ||
-        matchesCatalogCandidate(notification.tipoNotificacion, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.colaboradores)
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.colaboradores)
     ) {
         return 'colaboradores';
     }
 
     if (
         normalizedUrl?.startsWith(APP_PATHS.mantenimientos) ||
-        matchesCatalogCandidate(notification.tipoNotificacion, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.mantenimientos)
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.mantenimientos)
     ) {
         return 'mantenimientos';
     }
 
     if (
         normalizedUrl?.startsWith(APP_PATHS.clientes) ||
-        matchesCatalogCandidate(notification.tipoNotificacion, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.clientes)
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.clientes)
     ) {
         return 'clientes';
     }
 
     if (
         normalizedUrl?.startsWith(APP_PATHS.usuarios) ||
-        matchesCatalogCandidate(notification.tipoNotificacion, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.usuarios)
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.usuarios)
     ) {
         return 'usuarios';
     }
