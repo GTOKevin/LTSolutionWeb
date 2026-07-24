@@ -168,7 +168,7 @@ export function useMantenimientos() {
         
         // Catalogs
         listaFlotas: flotas?.data || [],
-        listaEstados: estados?.data || [],
+        listaEstados: estados || [],
 
         // Setters
         setOpenDeleteDialog,

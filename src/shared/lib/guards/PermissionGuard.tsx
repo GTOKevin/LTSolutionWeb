@@ -1,14 +1,16 @@
 import { usePermission } from '../hooks/usePermission';
 import { Box, Typography, Button } from '@mui/material';
+import type { PermissionCheckMode } from '../permissions/hasPermission';
 
 interface PermissionGuardProps {
     permission: string | string[];
     children: React.ReactNode;
     fallback?: React.ReactNode;
+    mode?: PermissionCheckMode;
 }
 
-export function PermissionGuard({ permission, children, fallback }: PermissionGuardProps) {
-    const hasPermission = usePermission(permission);
+export function PermissionGuard({ permission, children, fallback, mode = 'any' }: PermissionGuardProps) {
+    const hasPermission = usePermission(permission, mode);
 
     if (!hasPermission) {
         if (fallback) return <>{fallback}</>;

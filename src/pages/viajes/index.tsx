@@ -1,5 +1,4 @@
-import { useViajesPageController, ViajesFilters, ViajesPageContent } from '@features/viaje/list';
-import { ViajesOverviewShell } from '@widgets/viaje-workspace/ui/ViajesOverviewShell';
+import { useViajesPageController, ViajesFilters, ViajesPageContent, ViajesOverviewShell } from '@features/viaje/list';
 
 export function ViajesPage() {
     const controller = useViajesPageController();
@@ -16,7 +15,7 @@ export function ViajesPage() {
             filters={<ViajesFilters onSearch={controller.setFilters} />}
             viewMode={controller.viewMode}
             onViewModeChange={controller.setViewMode}
-            canExport={controller.canManageViajes}
+            canExport={controller.canViewViajes}
             onExportListPdf={() => controller.handleExportListPdf(controller.filters)}
             onExportListExcel={() => controller.handleExportListExcel(controller.filters)}
         >

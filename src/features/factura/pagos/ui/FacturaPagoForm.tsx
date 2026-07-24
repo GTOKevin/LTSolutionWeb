@@ -177,7 +177,7 @@ export function FacturaPagoForm({ open, onClose, factura, facturaId, monedaId, m
                                         sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                     >
                                         <MenuItem value={0} disabled>Seleccione método</MenuItem>
-                                        {tiposPago?.data?.map((tipo) => (
+                                        {tiposPago?.map((tipo) => (
                                             <MenuItem key={tipo.id} value={tipo.id}>
                                                 {tipo.text}
                                             </MenuItem>
@@ -224,7 +224,7 @@ export function FacturaPagoForm({ open, onClose, factura, facturaId, monedaId, m
                                         sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                     >
                                         <MenuItem value={0} disabled>Seleccione Moneda</MenuItem>
-                                        {monedas?.data?.map((m) => (
+                                        {monedas?.map((m) => (
                                             <MenuItem key={m.id} value={m.id}>
                                                 {m.text}
                                             </MenuItem>
@@ -287,7 +287,7 @@ export function FacturaPagoForm({ open, onClose, factura, facturaId, monedaId, m
                                         sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                     >
                                         <MenuItem value={0} disabled>Seleccione estado</MenuItem>
-                                        {estadosPago?.data?.map((estado) => (
+                                        {estadosPago?.map((estado) => (
                                             <MenuItem key={estado.id} value={estado.id}>
                                                 {estado.text}
                                             </MenuItem>

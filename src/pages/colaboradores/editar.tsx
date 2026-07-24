@@ -92,8 +92,8 @@ export function ColaboradorEditarPage() {
                     onSubmit={onSubmit}
                     effectiveId={effectiveId}
                     roles={roles?.data ?? []}
-                    generos={generos?.data ?? []}
-                    monedas={monedas?.data ?? []}
+                    generos={generos}
+                    monedas={monedas}
                     isEdit={isEdit}
                 />
             ) : (

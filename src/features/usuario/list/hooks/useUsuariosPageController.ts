@@ -146,7 +146,7 @@ export function useUsuariosPageController() {
         deleteMutation,
         draftRoleFilter,
         draftStatusFilter,
-        estados,
+        estados: estados ?? [],
         handleApplyFilters,
         handleChangePage,
         handleChangePassword,

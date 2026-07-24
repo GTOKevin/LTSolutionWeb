@@ -3,6 +3,7 @@ import type {
     DashboardPeriod,
     DashboardRecentTrip,
 } from '@entities/dashboard/model/types';
+import { APP_PATHS, buildAppViewPath } from '@app/router/model/navigation';
 import {
     isViajeAgendado,
     isViajeCompletado,
@@ -11,10 +12,20 @@ import {
 } from '@entities/viaje/model/status';
 
 export const DASHBOARD_PERIOD_OPTIONS: Array<{ value: DashboardPeriod; label: string; description: string }> = [
-    { value: 'day', label: 'Últimos 7 días', description: 'Actividad diaria reciente' },
-    { value: 'week', label: 'Últimas 8 semanas', description: 'Actividad operativa semanal' },
-    { value: 'month', label: 'Últimos 6 meses', description: 'Comportamiento mensual' },
+    { value: 'day', label: 'Vista diaria', description: 'Resumen operativo diario' },
+    { value: 'week', label: 'Vista semanal', description: 'Resumen operativo semanal' },
+    { value: 'month', label: 'Vista mensual', description: 'Resumen operativo mensual' },
 ];
+
+export type DashboardNotificationModule =
+    | 'viajes'
+    | 'facturas'
+    | 'flota'
+    | 'colaboradores'
+    | 'mantenimientos'
+    | 'clientes'
+    | 'usuarios'
+    | 'desconocido';
 
 export function formatTrendPercentage(value: number) {
     const rounded = Math.abs(value).toFixed(1);
@@ -47,7 +58,7 @@ export function getTripStatusTone(trip: DashboardRecentTrip) {
 
 export function normalizeDashboardActionUrl(url?: string) {
     if (!url) return null;
-    if (url.startsWith('/app/')) return url;
+    if (url.startsWith(APP_PATHS.appRoot)) return url;
 
     const cleaned = url.startsWith('/') ? url : `/${url}`;
     const segments = cleaned.split('/').filter(Boolean);
@@ -58,28 +69,68 @@ export function normalizeDashboardActionUrl(url?: string) {
     switch (resource.toLowerCase()) {
         case 'viajes':
         case 'viaje':
-            return id ? `/app/viajes/${id}/ver` : '/app/viajes';
+            return id ? buildAppViewPath(APP_PATHS.viajes, id) : APP_PATHS.viajes;
         case 'facturas':
         case 'factura':
-            return id ? `/app/facturas/${id}/ver` : '/app/facturas';
+            return id ? buildAppViewPath(APP_PATHS.facturas, id) : APP_PATHS.facturas;
         case 'flotas':
         case 'flota':
-            return id ? `/app/flotas/${id}/ver` : '/app/flotas';
+            return id ? buildAppViewPath(APP_PATHS.flotas, id) : APP_PATHS.flotas;
         case 'colaboradores':
         case 'colaborador':
-            return id ? `/app/colaboradores/${id}/ver` : '/app/colaboradores';
+            return id ? buildAppViewPath(APP_PATHS.colaboradores, id) : APP_PATHS.colaboradores;
         case 'mantenimientos':
         case 'mantenimiento':
-            return id ? `/app/mantenimientos/${id}/ver` : '/app/mantenimientos';
+            return id ? buildAppViewPath(APP_PATHS.mantenimientos, id) : APP_PATHS.mantenimientos;
         case 'clientes':
         case 'cliente':
-            return id ? `/app/clientes/${id}/ver` : '/app/clientes';
+            return id ? buildAppViewPath(APP_PATHS.clientes, id) : APP_PATHS.clientes;
         case 'usuarios':
         case 'usuario':
-            return '/app/usuarios';
+            return APP_PATHS.usuarios;
         default:
             return null;
     }
+}
+
+export function resolveDashboardNotificationModule(notification: DashboardNotification): DashboardNotificationModule {
+    const normalizedUrl = normalizeDashboardActionUrl(notification.urlAccion);
+    const searchableText = `${notification.titulo} ${notification.mensaje} ${notification.tipoNotificacion}`.toLowerCase();
+
+    if (normalizedUrl?.startsWith(APP_PATHS.facturas) || searchableText.includes('factura')) {
+        return 'facturas';
+    }
+
+    if (normalizedUrl?.startsWith(APP_PATHS.viajes) || searchableText.includes('viaje')) {
+        return 'viajes';
+    }
+
+    if (normalizedUrl?.startsWith(APP_PATHS.flotas) || searchableText.includes('flota') || searchableText.includes('vehicul')) {
+        return 'flota';
+    }
+
+    if (
+        normalizedUrl?.startsWith(APP_PATHS.colaboradores) ||
+        searchableText.includes('documento') ||
+        searchableText.includes('licencia') ||
+        searchableText.includes('colaborador')
+    ) {
+        return 'colaboradores';
+    }
+
+    if (normalizedUrl?.startsWith(APP_PATHS.mantenimientos) || searchableText.includes('mantenimiento')) {
+        return 'mantenimientos';
+    }
+
+    if (normalizedUrl?.startsWith(APP_PATHS.clientes) || searchableText.includes('cliente')) {
+        return 'clientes';
+    }
+
+    if (normalizedUrl?.startsWith(APP_PATHS.usuarios) || searchableText.includes('usuario')) {
+        return 'usuarios';
+    }
+
+    return 'desconocido';
 }
 
 export function getNotificationTone(notification: DashboardNotification) {

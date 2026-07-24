@@ -59,7 +59,7 @@ export function ViajeKanbanBoard({
     const { showToast } = useToast();
     const { data: viajeEstados = [] } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.estados(),
-        queryFn: async () => (await estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE)).data ?? [],
+        queryFn: async () => (await estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE)) ?? [],
     });
 
     // Local state for optimistic updates during drag

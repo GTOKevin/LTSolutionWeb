@@ -1,21 +1,13 @@
 import { useAuthStore } from '@shared/store/auth.store';
+import { hasPermission, type PermissionCheckMode } from '@shared/lib/permissions/hasPermission';
 
 /**
  * Hook to check if current user has specific permissions
  * @param requiredPermission Single permission code or array of codes
+ * @param mode Use `all` when every permission is required
  * @returns boolean true if user has required permission(s)
  */
-export function usePermission(requiredPermission?: string | string[]): boolean {
+export function usePermission(requiredPermission?: string | string[], mode: PermissionCheckMode = 'any'): boolean {
     const user = useAuthStore((state) => state.user);
-
-    if (!requiredPermission) return true;
-    if (!user || !user.permissions) return false;
-
-    if (Array.isArray(requiredPermission)) {
-        // If array, check if user has AT LEAST ONE of the permissions (OR logic)
-        // Change to .every() if you need AND logic
-        return requiredPermission.some(p => user.permissions.includes(p));
-    }
-
-    return user.permissions.includes(requiredPermission);
+    return hasPermission(user, requiredPermission, mode);
 }

@@ -126,7 +126,7 @@ export function ColaboradorDocumentoForm({ open, onClose, colaboradorId, documen
                                             helperText={errors.tipoDocumentoID?.message}
                                         >
                                             <MenuItem value={0} disabled>Seleccione</MenuItem>
-                                            {tiposDocumento?.data?.map((t) => (
+                                            {tiposDocumento?.map((t) => (
                                                 <MenuItem key={t.id} value={t.id}>
                                                     {t.text}
                                                 </MenuItem>

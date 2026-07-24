@@ -1,4 +1,4 @@
-import { ShieldOutlined, LockResetOutlined, VerifiedUserOutlined } from '@mui/icons-material';
+import { ShieldOutlined, LockResetOutlined } from '@mui/icons-material';
 import { Box, Button, Card, CardContent, Stack, Typography, alpha, useTheme } from '@mui/material';
 import { SectionTitle } from './ProfileShared';
 import { securityActionSx } from './ProfileShared.helpers';
@@ -38,14 +38,6 @@ export function ProfileSecuritySection({ bloqueado, onOpenChangePassword }: Prof
                     >
                         Cambiar Contraseña
                     </Button>
-                    <Button
-                        fullWidth
-                        disabled
-                        sx={securityActionSx}
-                        endIcon={<VerifiedUserOutlined sx={{ fontSize: 18 }} />}
-                    >
-                        MFA próximamente
-                    </Button>
                     <Box
                         sx={{
                             mt: 1,
@@ -58,7 +50,7 @@ export function ProfileSecuritySection({ bloqueado, onOpenChangePassword }: Prof
                         <Typography sx={{ fontSize: 12, lineHeight: 1.55, color: alpha('#fff', 0.88) }}>
                             {bloqueado
                                 ? 'La cuenta presenta restricción temporal de acceso. Contacta al administrador si no reconoces este estado.'
-                                : 'Tu cuenta utiliza un flujo de cambio de contraseña seguro y autenticado para proteger la información operativa.'}
+                                : 'Tu cuenta utiliza un flujo de cambio de contraseña seguro y autenticado para proteger la información operativa. Las mejoras de autenticación adicional solo se mostrarán cuando estén disponibles para uso real.'}
                         </Typography>
                     </Box>
                 </Stack>

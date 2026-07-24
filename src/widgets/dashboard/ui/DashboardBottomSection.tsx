@@ -8,7 +8,13 @@ import { useNavigate } from 'react-router-dom';
 import type { DashboardOverview } from '@entities/dashboard/model/types';
 import { formatCurrency } from '@shared/utils/format-utils';
 import { formatDateShort, formatDateTime } from '@shared/utils/date-utils';
-import { getNotificationTone, getTripStatusTone, normalizeDashboardActionUrl } from '@features/dashboard/lib/dashboard-helpers';
+import {
+    getNotificationTone,
+    getTripStatusTone,
+    normalizeDashboardActionUrl,
+    resolveDashboardNotificationModule,
+} from '@features/dashboard/lib/dashboard-helpers';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { dashboardCardSx, notificationIconSx, tableHeaderCellSx, tripStatusChipSx } from '../lib/dashboard-styles';
 import { TrendBadge } from './DashboardShared';
 
@@ -17,6 +23,11 @@ interface DashboardBottomSectionProps {
     canViewViajes: boolean;
     canViewFacturas: boolean;
     canViewSecurityAlerts: boolean;
+    canViewFlota: boolean;
+    canViewColaboradores: boolean;
+    canViewMantenimientos: boolean;
+    canViewClientes: boolean;
+    canViewUsuarios: boolean;
 }
 
 export function DashboardBottomSection({
@@ -24,9 +35,36 @@ export function DashboardBottomSection({
     canViewViajes,
     canViewFacturas,
     canViewSecurityAlerts,
+    canViewFlota,
+    canViewColaboradores,
+    canViewMantenimientos,
+    canViewClientes,
+    canViewUsuarios,
 }: DashboardBottomSectionProps) {
     const theme = useTheme();
     const navigate = useNavigate();
+    const visibleSecurityNotifications = data.notificacionesSeguridad.filter((notification) => {
+        const module = resolveDashboardNotificationModule(notification);
+
+        switch (module) {
+            case 'facturas':
+                return canViewFacturas;
+            case 'viajes':
+                return canViewViajes;
+            case 'flota':
+                return canViewFlota;
+            case 'colaboradores':
+                return canViewColaboradores;
+            case 'mantenimientos':
+                return canViewMantenimientos;
+            case 'clientes':
+                return canViewClientes;
+            case 'usuarios':
+                return canViewUsuarios;
+            default:
+                return false;
+        }
+    });
 
     const rightColumnCards = [canViewSecurityAlerts, canViewFacturas].filter(Boolean).length;
 
@@ -53,7 +91,7 @@ export function DashboardBottomSection({
                                     Últimos {data.viajesRecientes.length} registros cargados.
                                 </Typography>
                             </Box>
-                            <Button size="small" onClick={() => navigate('/app/viajes')}>
+                            <Button size="small" onClick={() => navigate(APP_PATHS.viajes)}>
                                 Ver todos
                             </Button>
                         </Box>
@@ -132,7 +170,7 @@ export function DashboardBottomSection({
                                 </Box>
 
                                 <Stack spacing={1.25}>
-                                    {data.notificacionesSeguridad.length > 0 ? data.notificacionesSeguridad.map(notification => {
+                                    {visibleSecurityNotifications.length > 0 ? visibleSecurityNotifications.map(notification => {
                                         const tone = getNotificationTone(notification);
                                         const actionUrl = normalizeDashboardActionUrl(notification.urlAccion);
 
@@ -178,7 +216,7 @@ export function DashboardBottomSection({
                                         );
                                     }) : (
                                         <Alert severity="success" sx={{ borderRadius: 3 }}>
-                                            No hay alertas críticas registradas en este momento.
+                                            No hay alertas visibles registradas para los módulos permitidos.
                                         </Alert>
                                     )}
                                 </Stack>

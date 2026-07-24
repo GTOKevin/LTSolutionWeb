@@ -1,6 +1,12 @@
 import type { User } from '@entities/auth/model/types';
 
-export function hasPermission(user: User | null, requiredPermission?: string | string[]): boolean {
+export type PermissionCheckMode = 'any' | 'all';
+
+export function hasPermission(
+    user: User | null,
+    requiredPermission?: string | string[],
+    mode: PermissionCheckMode = 'any',
+): boolean {
     if (!requiredPermission) {
         return true;
     }
@@ -10,7 +16,9 @@ export function hasPermission(user: User | null, requiredPermission?: string | s
     }
 
     if (Array.isArray(requiredPermission)) {
-        return requiredPermission.some((permission) => user.permissions.includes(permission));
+        return mode === 'all'
+            ? requiredPermission.every((permission) => user.permissions.includes(permission))
+            : requiredPermission.some((permission) => user.permissions.includes(permission));
     }
 
     return user.permissions.includes(requiredPermission);

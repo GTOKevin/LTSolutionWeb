@@ -337,7 +337,7 @@ export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: Colabor
                         onChange={(e) => setTipoPagoID(e.target.value as number | '')}
                     >
                         <MenuItem value="">Todos</MenuItem>
-                        {tiposPago?.data?.map((t) => (
+                        {tiposPago?.map((t) => (
                             <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
                         ))}
                     </TextField>

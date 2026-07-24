@@ -118,7 +118,7 @@ export function LicenciaForm({ open, onClose, colaboradorId, licenciaToEdit }: L
                                             helperText={errors.tipoLicenciaID?.message}
                                         >
                                             <MenuItem value={0} disabled>Seleccione</MenuItem>
-                                            {tiposLicencia?.data?.map((t) => (
+                                            {tiposLicencia?.map((t) => (
                                                 <MenuItem key={t.id} value={t.id}>
                                                     {t.text}
                                                 </MenuItem>

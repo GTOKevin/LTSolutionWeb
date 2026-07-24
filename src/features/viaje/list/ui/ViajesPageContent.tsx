@@ -66,8 +66,8 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
                             onEdit={canManageViajes ? handleEdit : undefined}
                             onView={canViewViajes ? handleView : undefined}
                             onDelete={canManageViajes ? handleDelete : undefined}
-                            onExportExcel={canManageViajes ? handleExportExcel : undefined}
-                            onExportPdf={canManageViajes ? handleExportPdf : undefined}
+                            onExportExcel={canViewViajes ? handleExportExcel : undefined}
+                            onExportPdf={canViewViajes ? handleExportPdf : undefined}
                             onReopen={canReabrirViajes ? handleReopen : undefined}
                         />
                     </Box>
@@ -84,8 +84,8 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
                         onEdit={canManageViajes ? handleEdit : undefined}
                         onView={canViewViajes ? handleView : undefined}
                         onDelete={canManageViajes ? handleDelete : undefined}
-                        onExportExcel={canManageViajes ? handleExportExcel : undefined}
-                        onExportPdf={canManageViajes ? handleExportPdf : undefined}
+                        onExportExcel={canViewViajes ? handleExportExcel : undefined}
+                        onExportPdf={canViewViajes ? handleExportPdf : undefined}
                         onReopen={canReabrirViajes ? handleReopen : undefined}
                     />
                 </>

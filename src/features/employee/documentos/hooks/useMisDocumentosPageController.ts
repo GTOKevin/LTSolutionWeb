@@ -48,17 +48,10 @@ export function useMisDocumentosPageController() {
 
     const { data: tiposDocumento } = useQuery({
         queryKey: ['tipos-documento-colaborador'],
-        queryFn: async () => (await tipoDocumentoApi.getSelect(undefined, 'COLABORADOR')).data,
+        queryFn: () => tipoDocumentoApi.getSelect(undefined, 'COLABORADOR'),
     });
 
-    const documentosEnriquecidos = useMemo(() => {
-        const tipoDocumentoNameById = new Map((tiposDocumento ?? []).map((item) => [item.id, item.text]));
-
-        return (documentos?.items ?? []).map((item) => ({
-            ...item,
-            tipoDocumentoNombre: item.tipoDocumentoNombre || tipoDocumentoNameById.get(item.tipoDocumentoId) || '',
-        }));
-    }, [documentos?.items, tiposDocumento]);
+    const documentosEnriquecidos = useMemo(() => documentos?.items ?? [], [documentos?.items]);
 
     const requestFilters = useMemo<MiDocumentoSolicitudesFilters>(() => ({
         page: requestPage + 1,

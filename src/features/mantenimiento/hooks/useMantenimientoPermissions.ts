@@ -4,6 +4,7 @@ import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
 
 export function useMantenimientoPermissions() {
+    const canViewMantenimientos = usePermission(PERMISSIONS.MANTENIMIENTOS.VER);
     const canManageMantenimientos = usePermission(PERMISSIONS.MANTENIMIENTOS.GESTIONAR);
     const canReopenMantenimientos = usePermission(PERMISSIONS.MANTENIMIENTOS.REABRIR);
 
@@ -31,10 +32,12 @@ export function useMantenimientoPermissions() {
     };
 
     const canExport = (item: Mantenimiento | null | undefined): boolean => {
-        return canManageMantenimientos && isClosed(item);
+        return canViewMantenimientos && isClosed(item);
     };
 
     return {
+        canViewMantenimientos,
+        canManageMantenimientos,
         isCompleted,
         isClosed,
         canReopen,

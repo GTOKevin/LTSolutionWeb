@@ -18,6 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createFacturaSchema, type CreateFacturaSchema } from '../../model/schema';
+import { APP_PATHS, buildAppDetailPath } from '@app/router/model/navigation';
 import { clienteApi } from '@/entities/cliente/api/cliente.api';
 import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { estadoApi } from '@entities/estado/api/estado.api';
@@ -92,8 +93,8 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
         queryFn: () => estadoApi.getSelect('', 20, ESTADO_SECTIONS.FACTURA),
     });
 
-    const monedaDefaultId = getSelectItemId(monedas?.data, [MONEDA_CODES.PEN, 'sol', 'soles']);
-    const estadoGeneradoId = resolveFacturaGeneradaId(facturaEstadosResponse?.data);
+    const monedaDefaultId = getSelectItemId(monedas, [MONEDA_CODES.PEN, 'sol', 'soles']);
+    const estadoGeneradoId = resolveFacturaGeneradaId(facturaEstadosResponse);
 
     useEffect(() => {
         if (!isEdit && monedaDefaultId && !getValues('monedaID')) {
@@ -124,7 +125,7 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
                         activo: true
                     }
                 });
-                navigate('/app/facturas');
+                navigate(APP_PATHS.facturas);
             } else {
                 const newId = await createMutation.mutateAsync({
                     ...formattedData,
@@ -132,7 +133,7 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
                     detalles: [],
                     pagos: [],
                 });
-                navigate(`/app/facturas/${newId}`);
+                navigate(buildAppDetailPath(APP_PATHS.facturas, newId));
             }
         } catch (error) {
             const message =
@@ -182,7 +183,7 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
                 borderBottom: `1px solid ${theme.palette.divider}`
             }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <IconButton onClick={() => navigate('/app/facturas')} size="small">
+                    <IconButton onClick={() => navigate(APP_PATHS.facturas)} size="small">
                         <ArrowBackIcon />
                     </IconButton>
                     <Box>
@@ -195,7 +196,7 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
                     </Box>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button onClick={() => navigate('/app/facturas')} color="inherit">
+                    <Button onClick={() => navigate(APP_PATHS.facturas)} color="inherit">
                         {viewOnly ? 'Cerrar' : 'Cancelar'}
                     </Button>
                     {!viewOnly ? (
@@ -282,7 +283,7 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
                                         <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>Número</Typography>
                                         <Controller
                                             name="numero"
-                                            disabled={isEdit}
+                                            disabled={isEdit || viewOnly}
                                             control={control}
                                             render={({ field }) => (
                                                 <TextField
@@ -291,6 +292,7 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
                                                     placeholder="00000001"
                                                     error={!!errors.numero}
                                                     helperText={errors.numero?.message}
+                                                    disabled={isEdit || viewOnly}
                                                     sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                                 />
                                             )}
@@ -313,7 +315,7 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
                                                     sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                                 >
                                                     <MenuItem value={0} disabled>Seleccione moneda</MenuItem>
-                                                    {monedas?.data?.map((moneda) => (
+                                                    {monedas?.map((moneda) => (
                                                         <MenuItem key={moneda.id} value={moneda.id}>
                                                             {moneda.text}
                                                         </MenuItem>

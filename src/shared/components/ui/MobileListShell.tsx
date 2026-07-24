@@ -144,7 +144,9 @@ export function MobileListShell<T>({
             <Stack spacing={2} sx={{ mb: 2 }}>
                 {items.map((item) => {
                     const customStyle = getCardStyle ? getCardStyle(item, theme) : {};
-                    const hasActions = !viewOnly && (onEdit || onDelete || onPreview || onView || onExportExcel || onExportPdf);
+                    const hasReadActions = onPreview || onView || onExportExcel || onExportPdf || onReopen || onPayment;
+                    const hasWriteActions = !viewOnly && (onEdit || onDelete);
+                    const hasActions = Boolean(hasReadActions || hasWriteActions);
                     
                     return (
                         <Card 

@@ -8,6 +8,7 @@ import type { CreateViajeDto } from '@/entities/viaje/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
 import { notifyMutationError, type ApiMutationError } from '@/shared/utils/api-errors';
 import { addDaysToDateISO, toInputDate } from '@/shared/utils/date-utils';
+import { APP_PATHS, buildAppDetailPath } from '@app/router/model/navigation';
 import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
 import { viajeWizardSchema, type ViajeWizardFormData } from '../../model/schema';
 import { getViajeWizardStepFields, VIAJE_WIZARD_STEPS } from '../model/wizard-config';
@@ -76,11 +77,11 @@ export function useViajeWizardController() {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.lists() });
 
             if (typeof newViajeId === 'number' && newViajeId > 0) {
-                navigate(`/app/viajes/${newViajeId}`);
+                navigate(buildAppDetailPath(APP_PATHS.viajes, newViajeId));
                 return;
             }
 
-            navigate('/app/viajes');
+            navigate(APP_PATHS.viajes);
         },
         onError: (error: ApiMutationError) => {
             notifyMutationError(showToast, 'Viaje', 'create', error);
