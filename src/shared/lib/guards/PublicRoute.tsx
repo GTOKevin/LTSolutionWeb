@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { useAuthStore } from '@shared/store/auth.store';
 
 interface PublicRouteProps {
@@ -9,7 +10,7 @@ export function PublicRoute({ children }: PublicRouteProps) {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
     if (isAuthenticated) {
-        return <Navigate to="/app" replace />;
+        return <Navigate to={APP_PATHS.appRoot} replace />;
     }
 
     return <>{children}</>;

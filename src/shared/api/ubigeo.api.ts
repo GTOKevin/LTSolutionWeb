@@ -7,16 +7,42 @@ export interface UbigeoAncestors {
     distritoId: string;
 }
 
+export interface UbigeoDetail {
+    ubigeoID: number;
+    departamento: string;
+    provincia: string;
+    distrito: string;
+    latitud: number | null;
+    longitud: number | null;
+}
+
 export const ubigeoApi = {
-    getDepartamentos: () => httpClient.get<SelectItem[]>('/Ubigeo/departamentos/select'),
-    getProvincias: (departamentoId: string) => httpClient.get<SelectItem[]>('/Ubigeo/provincias/select', { params: { departamentoInei: departamentoId } }),
-    getDistritos: (provinciaId: string) => httpClient.get<SelectItem[]>('/Ubigeo/distritos/select', { params: { provinciaInei: provinciaId } }),
-    // For simple select if backend supports flat search
-    getSelect: (search?: string) => httpClient.get<SelectItem[]>('/Ubigeo/select', { params: { search } }),
-    
-    // Get full Ubigeo details
-    getById: (ubigeoId: number) => httpClient.get(`/Ubigeo/${ubigeoId}`),
-    
-    // New method to get ancestors
-    getAncestors: (ubigeoId: number) => httpClient.get<UbigeoAncestors>(`/Ubigeo/${ubigeoId}/ancestors`)
+    getDepartamentos: async () => {
+        const { data } = await httpClient.get<SelectItem[]>('/Ubigeo/departamentos/select');
+        return data;
+    },
+    getProvincias: async (departamentoId: string) => {
+        const { data } = await httpClient.get<SelectItem[]>('/Ubigeo/provincias/select', {
+            params: { departamentoInei: departamentoId },
+        });
+        return data;
+    },
+    getDistritos: async (provinciaId: string) => {
+        const { data } = await httpClient.get<SelectItem[]>('/Ubigeo/distritos/select', {
+            params: { provinciaInei: provinciaId },
+        });
+        return data;
+    },
+    getSelect: async (search?: string) => {
+        const { data } = await httpClient.get<SelectItem[]>('/Ubigeo/select', { params: { search } });
+        return data;
+    },
+    getById: async (ubigeoId: number) => {
+        const { data } = await httpClient.get<UbigeoDetail>(`/Ubigeo/${ubigeoId}`);
+        return data;
+    },
+    getAncestors: async (ubigeoId: number) => {
+        const { data } = await httpClient.get<UbigeoAncestors>(`/Ubigeo/${ubigeoId}/ancestors`);
+        return data;
+    },
 };

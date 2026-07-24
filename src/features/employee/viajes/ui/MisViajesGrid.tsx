@@ -6,6 +6,11 @@ import {
     Circle as CircleIcon,
 } from '@mui/icons-material';
 import type { MiViajeListItemDto } from '@entities/employee/model/types';
+import {
+    isViajeCompletado,
+    isViajeDescargando,
+    isViajeTransito,
+} from '@entities/viaje/model/status';
 
 interface MisViajesGridProps {
     items: MiViajeListItemDto[];
@@ -14,14 +19,14 @@ interface MisViajesGridProps {
 
 export function MisViajesGrid({ items, onNavigate }: MisViajesGridProps) {
     const buildStatusColor = (item: MiViajeListItemDto) => {
-        if (item.cerrado) return 'success.main';
-        if (item.estadoNombre?.toLowerCase().includes('ruta')) return 'warning.main';
+        if (item.cerrado || isViajeCompletado(item)) return 'success.main';
+        if (isViajeTransito(item) || isViajeDescargando(item)) return 'warning.main';
         return 'primary.main';
     };
 
     const buildStatusBg = (item: MiViajeListItemDto) => {
-        if (item.cerrado) return 'success.50';
-        if (item.estadoNombre?.toLowerCase().includes('ruta')) return 'warning.50';
+        if (item.cerrado || isViajeCompletado(item)) return 'success.50';
+        if (isViajeTransito(item) || isViajeDescargando(item)) return 'warning.50';
         return 'primary.50';
     };
 

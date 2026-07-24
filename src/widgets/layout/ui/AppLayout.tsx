@@ -1,6 +1,6 @@
 import { Box, Toolbar, useTheme } from '@mui/material';
-import { Header } from '@widgets/header/ui/Header';
-import { Sidebar, DRAWER_WIDTH } from '@widgets/sidebar/ui/Sidebar';
+import { Header } from '@widgets/header';
+import { Sidebar, DRAWER_WIDTH } from '@widgets/sidebar';
 import { BottomNav, type BottomNavItem } from './BottomNav';
 import type { AppNavigationItem } from '@app/router/model/navigation';
 

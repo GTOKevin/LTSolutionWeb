@@ -41,10 +41,10 @@ export function UbigeoSelect({ label, value, onChange, error, helperText, disabl
             const selectedOption = options.find(o => o.id === value);
             if (!selectedOption) {
                 ubigeoApi.getById(value).then(res => {
-                    if (res.data) {
+                    if (res) {
                         const newOption: SelectItem = {
-                            id: res.data.ubigeoID,
-                            text: formatUbigeoName(`${res.data.departamento}, ${res.data.provincia}, ${res.data.distrito}`)
+                            id: res.ubigeoID,
+                            text: formatUbigeoName(`${res.departamento}, ${res.provincia}, ${res.distrito}`)
                         };
                         setOptions(prev => [...prev, newOption]);
                     }
@@ -60,7 +60,7 @@ export function UbigeoSelect({ label, value, onChange, error, helperText, disabl
             if (debouncedSearchTerm.length < 3) return [];
             // Send search term in uppercase to match typical LATAM DB structures
             const response = await ubigeoApi.getSelect(debouncedSearchTerm.toUpperCase());
-            const newOptions = (response.data || []).map(opt => ({
+            const newOptions = (response || []).map(opt => ({
                 ...opt,
                 text: formatUbigeoName(opt.text)
             }));

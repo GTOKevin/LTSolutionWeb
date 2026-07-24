@@ -36,13 +36,14 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
     });
 
     useEffect(() => {
-        if (open && initialData) {
+        if (open) {
             const resetUiTimer = window.setTimeout(() => {
-                setFormData(prev => ({
-                    ...prev,
-                    nombreLugar: initialData.nombreLugar || '',
+                setFormData({
+                    tipoPuntoId: 0,
+                    nombreLugar: initialData?.nombreLugar || '',
                     esOpcionPrincipal: true,
-                }));
+                    fechaEstimadaLlegada: '',
+                });
             }, 0);
 
             return () => {
@@ -51,23 +52,12 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
         }
     }, [open, initialData]);
 
-    // Establecer un valor por defecto cuando cargan los tipos
-    useEffect(() => {
-        if (tiposPunto && tiposPunto.length > 0 && formData.tipoPuntoId === 0) {
-            // Buscamos un valor razonable como 'Almuerzo' (1104) o el primero de la lista
-            const defaultValue = tiposPunto.find(t => t.text.includes('Almuerzo')) || tiposPunto[0];
-            const resetUiTimer = window.setTimeout(() => {
-                setFormData(prev => ({ ...prev, tipoPuntoId: defaultValue.id }));
-            }, 0);
-
-            return () => {
-                window.clearTimeout(resetUiTimer);
-            };
-        }
-    }, [tiposPunto, formData.tipoPuntoId]);
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (formData.tipoPuntoId <= 0) {
+            return;
+        }
         
         // Determinar etapaOrden: si es principal, lo ponemos al final (o podríamos tener un selector)
         // Para simplificar, si es principal, max(orden)+1. Si es alternativa, necesita pertenecer a una etapa (pero simplificaremos haciendolo max+1 y luego se puede reordenar)
@@ -112,9 +102,14 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
                             {isLoadingTipos ? (
                                 <MenuItem disabled value="">Cargando...</MenuItem>
                             ) : (
-                                tiposPunto?.map(t => (
-                                    <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
-                                ))
+                                <>
+                                    <MenuItem disabled value="">
+                                        Seleccione un tipo
+                                    </MenuItem>
+                                    {tiposPunto?.map(t => (
+                                        <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
+                                    ))}
+                                </>
                             )}
                         </TextField>
 

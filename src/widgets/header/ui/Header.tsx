@@ -19,7 +19,7 @@ import {
     Check as CheckIcon
 } from '@mui/icons-material';
 import { useThemeStore } from '@shared/store/theme.store';
-import { DRAWER_WIDTH } from '@widgets/sidebar/ui/Sidebar';
+import { DRAWER_WIDTH } from '@widgets/sidebar';
 import { useState } from 'react';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import { NotificationBell } from './NotificationBell';

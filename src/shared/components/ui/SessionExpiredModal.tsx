@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { Warning as WarningIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { useAuthStore } from '@shared/store/auth.store';
 
 function SessionExpiredDialog({ onLogout }: { onLogout: () => void }) {
@@ -88,7 +89,7 @@ export function SessionExpiredModal() {
 
     const handleLogout = useCallback(() => {
         logout();
-        navigate('/login', { replace: true });
+        navigate(APP_PATHS.login, { replace: true });
     }, [logout, navigate]);
 
     if (!isSessionExpired) return null;

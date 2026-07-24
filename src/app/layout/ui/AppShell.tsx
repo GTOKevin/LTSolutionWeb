@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Add as AddIcon } from '@mui/icons-material';
-import { AppLayout } from '@widgets/layout/ui/AppLayout';
+import { AppLayout } from '@widgets/layout';
 import { useSignalR } from '@shared/hooks/useSignalR';
 import { SessionExpiredModal } from '@shared/components/ui/SessionExpiredModal';
 import { useAuthStore } from '@shared/store/auth.store';
@@ -11,6 +11,7 @@ import {
     APP_BOTTOM_NAV_ITEMS,
     APP_PATHS,
     APP_SIDEBAR_MENU,
+    buildAppCreatePath,
     resolveAppRouteMeta,
 } from '@app/router/model/navigation';
 
@@ -45,7 +46,7 @@ export function AppShell() {
     const headerMobileAction = location.pathname === APP_PATHS.clientes && canCreateClientes
         ? {
             icon: <AddIcon />,
-            onClick: () => navigate(`${APP_PATHS.clientes}/nuevo`),
+            onClick: () => navigate(buildAppCreatePath(APP_PATHS.clientes)),
         }
         : undefined;
 
