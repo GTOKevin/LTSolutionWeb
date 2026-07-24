@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { useAuthStore } from '@shared/store/auth.store';
 import { useEffect } from 'react';
 
@@ -14,7 +15,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     }, [checkAuth]);
 
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to={APP_PATHS.login} replace />;
     }
 
     return <>{children}</>;

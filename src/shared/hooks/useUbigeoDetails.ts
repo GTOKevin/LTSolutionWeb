@@ -6,8 +6,7 @@ export function useUbigeoDetails(ubigeoId?: number) {
         queryKey: ['ubigeo-details', ubigeoId],
         queryFn: async () => {
             if (!ubigeoId) return null;
-            const res = await ubigeoApi.getById(ubigeoId);
-            return res.data;
+            return ubigeoApi.getById(ubigeoId);
         },
         enabled: !!ubigeoId,
         staleTime: 1000 * 60 * 60, // 1 hour (ubigeo data rarely changes)

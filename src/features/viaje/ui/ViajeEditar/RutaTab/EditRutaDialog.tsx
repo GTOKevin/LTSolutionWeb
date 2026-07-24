@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { 
     Dialog, DialogTitle, DialogContent, DialogActions, 
-    Button, TextField, Box, MenuItem, FormControlLabel, Switch, CircularProgress
+    Button, TextField, Box, FormControlLabel, Switch, CircularProgress
 } from '@mui/material';
 import { useUpdateViajeRuta } from '@features/viaje/hooks/useViajeRutas';
 import { useQuery } from '@tanstack/react-query';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
+import { FormSelect } from '@shared/components/ui/FormSelect';
 import type { ViajeRutaDto, UpdateViajeRutaDto } from '@/entities/viaje/model/types';
 import dayjs from 'dayjs';
 
@@ -82,23 +83,15 @@ export function EditRutaDialog({ open, onClose, viajeId, ruta }: EditRutaDialogP
                 <DialogTitle fontWeight="bold">Editar Parada</DialogTitle>
                 <DialogContent dividers>
                     <Box display="flex" flexDirection="column" gap={3} pt={1}>
-                        <TextField
-                            select
+                        <FormSelect
                             label="Tipo de Parada"
-                            value={formData.tipoPuntoId || ''}
+                            options={tiposPunto ?? []}
+                            value={formData.tipoPuntoId}
                             onChange={e => setFormData({ ...formData, tipoPuntoId: Number(e.target.value) })}
-                            fullWidth
                             required
                             disabled={isLoadingTipos}
-                        >
-                            {isLoadingTipos ? (
-                                <MenuItem disabled value="">Cargando...</MenuItem>
-                            ) : (
-                                tiposPunto?.map(t => (
-                                    <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
-                                ))
-                            )}
-                        </TextField>
+                            helperText={isLoadingTipos ? 'Cargando tipos de parada...' : undefined}
+                        />
 
                         <TextField
                             label="Nombre del Lugar"

@@ -4,6 +4,7 @@ import type {
     DashboardRecentTrip,
 } from '@entities/dashboard/model/types';
 import { APP_PATHS, buildAppViewPath } from '@app/router/model/navigation';
+import { matchesCatalogCandidate } from '@entities/master-data/lib/catalog-utils';
 import {
     isViajeAgendado,
     isViajeCompletado,
@@ -26,6 +27,41 @@ export type DashboardNotificationModule =
     | 'clientes'
     | 'usuarios'
     | 'desconocido';
+
+const DASHBOARD_NOTIFICATION_MODULE_CANDIDATES = {
+    facturas: ['factura', 'facturas'],
+    viajes: ['viaje', 'viajes'],
+    flota: ['flota', 'flotas', 'vehiculo', 'vehiculos'],
+    colaboradores: ['colaborador', 'colaboradores', 'documento', 'documentos', 'licencia', 'licencias'],
+    mantenimientos: ['mantenimiento', 'mantenimientos'],
+    clientes: ['cliente', 'clientes'],
+    usuarios: ['usuario', 'usuarios'],
+} as const;
+
+const DASHBOARD_NOTIFICATION_TONE_CANDIDATES = {
+    critical: ['error', 'critico', 'critica', 'critical'],
+    warning: ['warning', 'advertencia', 'mantenimiento'],
+} as const;
+
+function normalizeDashboardSearchText(value?: string | null) {
+    return value
+        ?.normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase() ?? '';
+}
+
+function notificationMatchesModuleText(notification: DashboardNotification, candidates: readonly string[]) {
+    const searchableText = normalizeDashboardSearchText(
+        [notification.urlAccion, notification.titulo, notification.mensaje].filter(Boolean).join(' '),
+    );
+
+    if (!searchableText) {
+        return false;
+    }
+
+    return candidates.some((candidate) => searchableText.includes(normalizeDashboardSearchText(candidate)));
+}
 
 export function formatTrendPercentage(value: number) {
     const rounded = Math.abs(value).toFixed(1);
@@ -95,38 +131,53 @@ export function normalizeDashboardActionUrl(url?: string) {
 
 export function resolveDashboardNotificationModule(notification: DashboardNotification): DashboardNotificationModule {
     const normalizedUrl = normalizeDashboardActionUrl(notification.urlAccion);
-    const searchableText = `${notification.titulo} ${notification.mensaje} ${notification.tipoNotificacion}`.toLowerCase();
 
-    if (normalizedUrl?.startsWith(APP_PATHS.facturas) || searchableText.includes('factura')) {
+    if (
+        normalizedUrl?.startsWith(APP_PATHS.facturas) ||
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.facturas)
+    ) {
         return 'facturas';
     }
 
-    if (normalizedUrl?.startsWith(APP_PATHS.viajes) || searchableText.includes('viaje')) {
+    if (
+        normalizedUrl?.startsWith(APP_PATHS.viajes) ||
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.viajes)
+    ) {
         return 'viajes';
     }
 
-    if (normalizedUrl?.startsWith(APP_PATHS.flotas) || searchableText.includes('flota') || searchableText.includes('vehicul')) {
+    if (
+        normalizedUrl?.startsWith(APP_PATHS.flotas) ||
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.flota)
+    ) {
         return 'flota';
     }
 
     if (
         normalizedUrl?.startsWith(APP_PATHS.colaboradores) ||
-        searchableText.includes('documento') ||
-        searchableText.includes('licencia') ||
-        searchableText.includes('colaborador')
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.colaboradores)
     ) {
         return 'colaboradores';
     }
 
-    if (normalizedUrl?.startsWith(APP_PATHS.mantenimientos) || searchableText.includes('mantenimiento')) {
+    if (
+        normalizedUrl?.startsWith(APP_PATHS.mantenimientos) ||
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.mantenimientos)
+    ) {
         return 'mantenimientos';
     }
 
-    if (normalizedUrl?.startsWith(APP_PATHS.clientes) || searchableText.includes('cliente')) {
+    if (
+        normalizedUrl?.startsWith(APP_PATHS.clientes) ||
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.clientes)
+    ) {
         return 'clientes';
     }
 
-    if (normalizedUrl?.startsWith(APP_PATHS.usuarios) || searchableText.includes('usuario')) {
+    if (
+        normalizedUrl?.startsWith(APP_PATHS.usuarios) ||
+        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.usuarios)
+    ) {
         return 'usuarios';
     }
 
@@ -134,14 +185,11 @@ export function resolveDashboardNotificationModule(notification: DashboardNotifi
 }
 
 export function getNotificationTone(notification: DashboardNotification) {
-    const lowerType = notification.tipoNotificacion.toLowerCase();
-    const lowerTitle = notification.titulo.toLowerCase();
-
-    if (lowerType.includes('error') || lowerTitle.includes('vencid') || lowerTitle.includes('alerta')) {
+    if (matchesCatalogCandidate(notification.tipoNotificacion, DASHBOARD_NOTIFICATION_TONE_CANDIDATES.critical)) {
         return 'critical';
     }
 
-    if (lowerType.includes('warning') || lowerTitle.includes('mantenimiento')) {
+    if (matchesCatalogCandidate(notification.tipoNotificacion, DASHBOARD_NOTIFICATION_TONE_CANDIDATES.warning)) {
         return 'warning';
     }
 
