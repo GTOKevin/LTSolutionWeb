@@ -7,6 +7,7 @@ import {
 import { MobileListShell } from '@shared/components/ui/MobileListShell';
 import { formatDateOnly, formatDateTime } from '@shared/utils/date-utils';
 import type { PagedResponse } from '@shared/model/types';
+import { getDocumentVigenciaMeta } from '@shared/utils/document-vigencia';
 import type {
     DocumentoActualizacionSolicitudDto,
     MiDocumentoDto,
@@ -28,7 +29,10 @@ interface MisDocumentosMobileListProps {
 interface MisDocumentoSolicitudesMobileListProps {
     data?: PagedResponse<DocumentoActualizacionSolicitudDto>;
     isLoading: boolean;
-    documentNameById: Map<number, string>;
+    page: number;
+    rowsPerPage: number;
+    onPageChange: (event: unknown, newPage: number) => void;
+    onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function MisDocumentosMobileList({
@@ -57,34 +61,38 @@ export function MisDocumentosMobileList({
             onRowsPerPageChange={onRowsPerPageChange}
             emptyMessage="No se encontraron documentos con los filtros seleccionados."
             keyExtractor={(item) => item.colaboradorDocumentoId}
-            renderHeader={(item) => (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
-                    <Box>
-                        <Typography variant="subtitle1" fontWeight={700}>
-                            {item.tipoDocumentoNombre}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                            {item.numeroDocumento || 'Sin número'}
-                        </Typography>
+            renderHeader={(item) => {
+                const vigencia = getDocumentVigenciaMeta(item.vigenciaEstado);
+
+                return (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+                        <Box>
+                            <Typography variant="subtitle1" fontWeight={700}>
+                                {item.tipoDocumentoNombre}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                                {item.numeroDocumento || 'Sin número'}
+                            </Typography>
+                        </Box>
+                        <Box
+                            sx={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                px: 1.25,
+                                py: 0.5,
+                                borderRadius: 99,
+                                bgcolor: vigencia.bgColor,
+                                color: vigencia.textColor,
+                                height: 'fit-content',
+                            }}
+                        >
+                            <Typography variant="caption" fontWeight={700}>
+                                {vigencia.label}
+                            </Typography>
+                        </Box>
                     </Box>
-                    <Box
-                        sx={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            px: 1.25,
-                            py: 0.5,
-                            borderRadius: 99,
-                            bgcolor: item.activo ? 'success.50' : 'error.50',
-                            color: item.activo ? 'success.dark' : 'error.dark',
-                            height: 'fit-content',
-                        }}
-                    >
-                        <Typography variant="caption" fontWeight={700}>
-                            {item.activo ? 'Activo' : 'Inactivo'}
-                        </Typography>
-                    </Box>
-                </Box>
-            )}
+                );
+            }}
             renderBody={(item) => (
                 <Stack spacing={1.25}>
                     <Typography variant="body2" color="text.secondary">
@@ -133,7 +141,10 @@ export function MisDocumentosMobileList({
 export function MisDocumentoSolicitudesMobileList({
     data,
     isLoading,
-    documentNameById,
+    page,
+    rowsPerPage,
+    onPageChange,
+    onRowsPerPageChange,
 }: MisDocumentoSolicitudesMobileListProps) {
     if (isLoading) {
         return <Box sx={{ display: { xs: 'block', md: 'none' }, p: 4, textAlign: 'center' }}>Cargando solicitudes...</Box>;
@@ -142,17 +153,17 @@ export function MisDocumentoSolicitudesMobileList({
     return (
         <MobileListShell
             items={data?.items ?? []}
-            total={data?.items.length ?? 0}
-            page={0}
-            rowsPerPage={data?.items.length || 10}
-            onPageChange={() => undefined}
-            onRowsPerPageChange={() => undefined}
+            total={data?.total ?? 0}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={onPageChange}
+            onRowsPerPageChange={onRowsPerPageChange}
             emptyMessage="Aún no tienes solicitudes de actualización."
             keyExtractor={(item) => item.solicitudId}
             renderHeader={(item) => (
                 <Box>
                     <Typography variant="subtitle1" fontWeight={700}>
-                        {documentNameById.get(item.colaboradorDocumentoId) || `Documento #${item.colaboradorDocumentoId}`}
+                        {item.tipoDocumentoNombre}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                         {formatDateTime(item.fechaRegistro)}

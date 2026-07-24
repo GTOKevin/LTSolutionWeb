@@ -112,6 +112,7 @@ export function RolesColaboradorPageContent({ controller }: RolesColaboradorPage
                             rowsPerPage={controller.rowsPerPage}
                             onPageChange={controller.handleChangePage}
                             onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                            onView={controller.canViewRoles ? controller.handleView : undefined}
                             onEdit={controller.canManageRoles ? controller.handleEdit : undefined}
                         />
                     </Box>
@@ -124,6 +125,7 @@ export function RolesColaboradorPageContent({ controller }: RolesColaboradorPage
                             rowsPerPage={controller.rowsPerPage}
                             onPageChange={controller.handleChangePage}
                             onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                            onView={controller.canViewRoles ? controller.handleView : undefined}
                             onEdit={controller.canManageRoles ? controller.handleEdit : undefined}
                         />
                     </Box>
@@ -134,6 +136,7 @@ export function RolesColaboradorPageContent({ controller }: RolesColaboradorPage
                     onClose={controller.handleCloseModal}
                     rolToEdit={controller.rolToEdit}
                     onSuccess={controller.handleSuccess}
+                    viewOnly={controller.viewOnlyMode}
                 />
             </Box>
         </Box>

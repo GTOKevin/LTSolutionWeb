@@ -12,6 +12,7 @@ import type {
 import { isPreviewableImageUrl } from '@shared/utils/file-utils';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { tipoDocumentoApi } from '@/entities/tipo-documento/api/tipo-documento.api';
+import { isDocumentNearExpiry, isDocumentVigente } from '@shared/utils/document-vigencia';
 
 export function useMisDocumentosPageController() {
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
@@ -19,6 +20,8 @@ export function useMisDocumentosPageController() {
     const canRequestDocumentUpdate = usePermission(PERMISSIONS.EMPLOYEE.DOCUMENTOS.SOLICITAR_ACTUALIZACION);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [requestPage, setRequestPage] = useState(0);
+    const [requestRowsPerPage, setRequestRowsPerPage] = useState(10);
     const [tipoDocumentoID, setTipoDocumentoID] = useState<number | ''>('');
     const [activo, setActivo] = useState<string>('');
     const [filters, setFilters] = useState<Omit<MiDocumentoFilters, 'page' | 'size'>>({});
@@ -58,9 +61,9 @@ export function useMisDocumentosPageController() {
     }, [documentos?.items, tiposDocumento]);
 
     const requestFilters = useMemo<MiDocumentoSolicitudesFilters>(() => ({
-        page: 1,
-        size: 10,
-    }), []);
+        page: requestPage + 1,
+        size: requestRowsPerPage,
+    }), [requestPage, requestRowsPerPage]);
 
     const { data: solicitudes, isLoading: isLoadingSolicitudes } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.solicitudes(requestFilters),
@@ -68,23 +71,18 @@ export function useMisDocumentosPageController() {
         placeholderData: (previousData) => previousData,
     });
 
-    const pendingRequests = useMemo(
+    const pendingRequestsVisible = useMemo(
         () => (solicitudes?.items ?? []).filter((item) => item.aprobada == null).length,
         [solicitudes],
     );
 
     const documentStats = useMemo(() => {
         const items = documentos?.items ?? [];
-        const today = new Date();
-        const nearExpiry = items.filter((item) => {
-            const expiryDate = new Date(item.fechaVencimiento);
-            const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-            return item.activo && diffDays >= 0 && diffDays <= 30;
-        }).length;
+        const nearExpiry = items.filter((item) => isDocumentNearExpiry(item.vigenciaEstado)).length;
 
         return {
             total: documentos?.total ?? 0,
-            activos: items.filter((item) => item.activo).length,
+            vigentes: items.filter((item) => isDocumentVigente(item.vigenciaEstado)).length,
             nearExpiry,
         };
     }, [documentos]);
@@ -96,6 +94,15 @@ export function useMisDocumentosPageController() {
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
         setRowsPerPage(Number(event.target.value));
         setPage(0);
+    };
+
+    const handleRequestPageChange = (_: unknown, nextPage: number) => {
+        setRequestPage(nextPage);
+    };
+
+    const handleRequestRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setRequestRowsPerPage(Number(event.target.value));
+        setRequestPage(0);
     };
 
     const handleSearch = (nextFilters?: { activo?: string; tipoDocumentoID?: number | '' }) => {
@@ -143,19 +150,10 @@ export function useMisDocumentosPageController() {
         window.open(item.rutaArchivo, '_blank', 'noopener,noreferrer');
     };
 
-    const documentNameById = useMemo(() => {
-        const map = new Map<number, string>();
-        documentosEnriquecidos.forEach((item) => {
-            map.set(item.colaboradorDocumentoId, item.tipoDocumentoNombre);
-        });
-        return map;
-    }, [documentosEnriquecidos]);
-
     return {
         activo,
         canRequestDocumentUpdate,
         dialogOpen,
-        documentNameById,
         documentStats,
         documentos,
         documentosEnriquecidos,
@@ -163,13 +161,17 @@ export function useMisDocumentosPageController() {
         handleChangeRowsPerPage,
         handleDownloadDocument,
         handleOpenDocument,
+        handleRequestPageChange,
+        handleRequestRowsPerPageChange,
         handleSearch,
         isLoadingDocumentos,
         isLoadingSolicitudes,
         page,
-        pendingRequests,
+        pendingRequestsVisible,
         previewTitle,
         previewUrl,
+        requestPage,
+        requestRowsPerPage,
         rowsPerPage,
         selectedDocumentoId,
         setActivo,

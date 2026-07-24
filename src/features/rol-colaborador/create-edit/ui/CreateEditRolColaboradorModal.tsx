@@ -25,9 +25,10 @@ interface CreateEditRolColaboradorModalProps {
     onClose: () => void;
     rolToEdit?: RolColaborador | null;
     onSuccess: (id?: number) => void;
+    viewOnly?: boolean;
 }
 
-export function CreateEditRolColaboradorModal({ open, onClose, rolToEdit, onSuccess }: CreateEditRolColaboradorModalProps) {
+export function CreateEditRolColaboradorModal({ open, onClose, rolToEdit, onSuccess, viewOnly = false }: CreateEditRolColaboradorModalProps) {
     const theme = useTheme();
     
     const {
@@ -67,7 +68,7 @@ export function CreateEditRolColaboradorModal({ open, onClose, rolToEdit, onSucc
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box>
                         <Typography variant="h6" fontWeight="bold">
-                            {isEdit ? 'Editar Rol de Colaborador' : 'Crear Rol de Colaborador'}
+                            {viewOnly ? 'Detalle de Rol de Colaborador' : isEdit ? 'Editar Rol de Colaborador' : 'Crear Rol de Colaborador'}
                         </Typography>
                     </Box>
                     <IconButton onClick={onClose} size="small">
@@ -99,7 +100,7 @@ export function CreateEditRolColaboradorModal({ open, onClose, rolToEdit, onSucc
                                 onKeyDown={handleLettersOnlyKeyDown}
                                 error={!!errors.nombre}
                                 helperText={errors.nombre?.message}
-                                disabled={isEdit}
+                                disabled={isEdit || viewOnly}
                                 InputProps={{
                                     sx: { borderRadius: 2 }
                                 }}
@@ -117,6 +118,7 @@ export function CreateEditRolColaboradorModal({ open, onClose, rolToEdit, onSucc
                                 {...register('descripcion')}
                                 error={!!errors.descripcion}
                                 helperText={errors.descripcion?.message}
+                                disabled={viewOnly}
                                 InputProps={{
                                     sx: { borderRadius: 2 }
                                 }}
@@ -132,6 +134,7 @@ export function CreateEditRolColaboradorModal({ open, onClose, rolToEdit, onSucc
                                             <Switch
                                                 checked={field.value}
                                                 onChange={(e) => field.onChange(e.target.checked)}
+                                                disabled={viewOnly}
                                             />
                                         }
                                         label={field.value ? "Activo" : "Inactivo"}
@@ -145,17 +148,19 @@ export function CreateEditRolColaboradorModal({ open, onClose, rolToEdit, onSucc
             
             <DialogActions sx={{ p: 3, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
                 <Button onClick={onClose} color="inherit" sx={{ borderRadius: 2 }}>
-                    Cancelar
+                    {viewOnly ? 'Cerrar' : 'Cancelar'}
                 </Button>
-                <Button 
-                    type="submit" 
-                    form="rol-colaborador-form"
-                    variant="contained" 
-                    disabled={isSubmitting}
-                    sx={{ borderRadius: 2, px: 4 }}
-                >
-                    {isEdit ? 'Guardar Cambios' : 'Crear Rol'}
-                </Button>
+                {!viewOnly ? (
+                    <Button 
+                        type="submit" 
+                        form="rol-colaborador-form"
+                        variant="contained" 
+                        disabled={isSubmitting}
+                        sx={{ borderRadius: 2, px: 4 }}
+                    >
+                        {isEdit ? 'Guardar Cambios' : 'Crear Rol'}
+                    </Button>
+                ) : null}
             </DialogActions>
         </Dialog>
     );

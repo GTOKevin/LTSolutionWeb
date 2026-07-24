@@ -12,6 +12,7 @@ interface Props {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onView?: (tipoProducto: TipoProducto) => void;
     onEdit?: (tipoProducto: TipoProducto) => void;
     onDelete?: (tipoProducto: TipoProducto) => void;
 }
@@ -23,6 +24,7 @@ export function TipoProductoTable({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
+    onView,
     onEdit,
     onDelete
 }: Props) {
@@ -68,8 +70,10 @@ export function TipoProductoTable({
                     </TableCell>
                     <TableCell align="center">
                         <TableActions
+                            onView={onView ? () => onView(row) : undefined}
                             onEdit={onEdit ? () => onEdit(row) : undefined}
                             onDelete={onDelete ? () => onDelete(row) : undefined}
+                            viewTooltip="Ver"
                             editTooltip="Editar"
                             deleteTooltip="Eliminar"
                         />

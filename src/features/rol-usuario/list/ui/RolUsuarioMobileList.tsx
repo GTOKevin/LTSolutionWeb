@@ -12,6 +12,7 @@ interface RolUsuarioMobileListProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onView?: (rol: RolUsuario) => void;
     onEdit?: (rol: RolUsuario) => void;
 }
 
@@ -22,6 +23,7 @@ export function RolUsuarioMobileList({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
+    onView,
     onEdit
 }: RolUsuarioMobileListProps) {
     const theme = useTheme();
@@ -41,6 +43,7 @@ export function RolUsuarioMobileList({
                 onRowsPerPageChange={onRowsPerPageChange}
                 emptyMessage="No se encontraron roles"
                 keyExtractor={(item) => item.rolUsuarioID}
+                onView={onView}
                 onEdit={onEdit}
                 renderHeader={(rol) => (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>

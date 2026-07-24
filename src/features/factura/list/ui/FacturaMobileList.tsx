@@ -20,6 +20,7 @@ interface FacturaMobileListProps {
     onPayment?: (factura: Factura) => void;
     onViewPayments?: (factura: Factura) => void;
     onUpdateStatus?: (factura: Factura, newStatusId: number) => void;
+    canDownloadReports?: boolean;
     statusCatalog?: SelectItem[];
 }
 
@@ -36,6 +37,7 @@ export function FacturaMobileList({
     onPayment,
     onViewPayments,
     onUpdateStatus,
+    canDownloadReports = false,
     statusCatalog = [],
 }: FacturaMobileListProps) {
 
@@ -73,7 +75,7 @@ export function FacturaMobileList({
                                 color={getFacturaStatusColor(row)}
                                 size="small" 
                             />
-                            {(onView || onEdit || onDelete || onPayment || onViewPayments || onUpdateStatus) && (
+                            {(onView || onEdit || onDelete || onPayment || onViewPayments || onUpdateStatus || canDownloadReports) && (
                                 <FacturaActionMenu
                                     factura={row}
                                     onView={onView}
@@ -82,6 +84,7 @@ export function FacturaMobileList({
                                     onPayment={onPayment}
                                     onViewPayments={onViewPayments}
                                     onUpdateStatus={onUpdateStatus}
+                                    canDownloadReports={canDownloadReports}
                                     statusCatalog={statusCatalog}
                                 />
                             )}

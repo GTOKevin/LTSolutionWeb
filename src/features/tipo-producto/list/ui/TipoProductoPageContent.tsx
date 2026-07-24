@@ -145,6 +145,7 @@ export function TipoProductoPageContent({ controller }: TipoProductoPageContentP
                             rowsPerPage={controller.rowsPerPage}
                             onPageChange={controller.handleChangePage}
                             onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                            onView={controller.canViewTipoProducto ? controller.handleView : undefined}
                             onEdit={controller.canManageTipoProducto ? controller.handleEdit : undefined}
                             onDelete={controller.canManageTipoProducto ? controller.handleDeleteClick : undefined}
                         />
@@ -158,33 +159,33 @@ export function TipoProductoPageContent({ controller }: TipoProductoPageContentP
                             rowsPerPage={controller.rowsPerPage}
                             onPageChange={controller.handleChangePage}
                             onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                            onView={controller.canViewTipoProducto ? controller.handleView : undefined}
                             onEdit={controller.canManageTipoProducto ? controller.handleEdit : undefined}
                             onDelete={controller.canManageTipoProducto ? controller.handleDeleteClick : undefined}
                         />
                     </Box>
                 </Box>
 
-                {controller.canManageTipoProducto ? (
-                    <>
-                        <CreateEditTipoProductoModal
-                            open={controller.modalOpen}
-                            onClose={controller.handleCloseModal}
-                            tipoProductoToEdit={controller.tipoToEdit}
-                            onSuccess={controller.handleSuccess}
-                        />
+                <CreateEditTipoProductoModal
+                    open={controller.modalOpen}
+                    onClose={controller.handleCloseModal}
+                    tipoProductoToEdit={controller.tipoToEdit}
+                    onSuccess={controller.handleSuccess}
+                    viewOnly={controller.viewOnlyMode}
+                />
 
-                        <ConfirmDialog
-                            open={controller.deleteDialogOpen}
-                            title="Eliminar Tipo de Producto"
-                            content={`¿Estás seguro que deseas eliminar "${controller.tipoToDelete?.nombre}"? Esta acción no se puede deshacer.`}
-                            onConfirm={controller.handleConfirmDelete}
-                            onClose={controller.handleCloseDeleteDialog}
-                            confirmText="Eliminar"
-                            cancelText="Cancelar"
-                            severity="error"
-                            isLoading={controller.deleteMutation.isPending}
-                        />
-                    </>
+                {controller.canManageTipoProducto ? (
+                    <ConfirmDialog
+                        open={controller.deleteDialogOpen}
+                        title="Eliminar Tipo de Producto"
+                        content={`¿Estás seguro que deseas eliminar "${controller.tipoToDelete?.nombre}"? Esta acción no se puede deshacer.`}
+                        onConfirm={controller.handleConfirmDelete}
+                        onClose={controller.handleCloseDeleteDialog}
+                        confirmText="Eliminar"
+                        cancelText="Cancelar"
+                        severity="error"
+                        isLoading={controller.deleteMutation.isPending}
+                    />
                 ) : null}
             </Box>
         </Box>

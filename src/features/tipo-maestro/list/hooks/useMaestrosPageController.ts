@@ -8,6 +8,7 @@ import { PERMISSIONS } from '@shared/constants/permissions';
 import { useLayoutStore } from '@shared/store/layout.store';
 
 export function useMaestrosPageController() {
+    const canViewMaestros = usePermission(PERMISSIONS.SISTEMA.MAESTROS.VER);
     const canManageMaestros = usePermission(PERMISSIONS.SISTEMA.MAESTROS.GESTIONAR);
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const [searchTerm, setSearchTerm] = useState('');
@@ -17,6 +18,8 @@ export function useMaestrosPageController() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [modalOpen, setModalOpen] = useState(false);
     const [maestroToEdit, setMaestroToEdit] = useState<TipoMaestro | null>(null);
+    const [selectedMaestroId, setSelectedMaestroId] = useState<number | null>(null);
+    const [viewOnlyMode, setViewOnlyMode] = useState(false);
 
     useEffect(() => {
         setPageTitle('Maestros');
@@ -47,19 +50,38 @@ export function useMaestrosPageController() {
         queryFn: tipoMaestroApi.getSecciones,
     });
 
+    const { data: maestroDetail } = useQuery({
+        queryKey: ['tipo-maestro-detail', selectedMaestroId],
+        queryFn: () => tipoMaestroApi.getById(selectedMaestroId as number).then((response) => response.data),
+        enabled: modalOpen && viewOnlyMode && selectedMaestroId !== null,
+    });
+
     const handleCreate = () => {
         setMaestroToEdit(null);
+        setSelectedMaestroId(null);
+        setViewOnlyMode(false);
         setModalOpen(true);
     };
 
     const handleEdit = (maestro: TipoMaestro) => {
         setMaestroToEdit(maestro);
+        setSelectedMaestroId(null);
+        setViewOnlyMode(false);
+        setModalOpen(true);
+    };
+
+    const handleView = (maestro: TipoMaestro) => {
+        setMaestroToEdit(maestro);
+        setSelectedMaestroId(maestro.tipoMaestroID);
+        setViewOnlyMode(true);
         setModalOpen(true);
     };
 
     const handleCloseModal = () => {
         setModalOpen(false);
         setMaestroToEdit(null);
+        setSelectedMaestroId(null);
+        setViewOnlyMode(false);
     };
 
     const handleSuccess = () => {
@@ -85,6 +107,7 @@ export function useMaestrosPageController() {
     };
 
     return {
+        canViewMaestros,
         canManageMaestros,
         data: data?.data,
         handleChangePage,
@@ -93,15 +116,17 @@ export function useMaestrosPageController() {
         handleCloseModal,
         handleCreate,
         handleEdit,
+        handleView,
         handleSearchChange,
         handleSuccess,
         isLoading,
-        maestroToEdit,
+        maestroToEdit: viewOnlyMode ? maestroDetail ?? maestroToEdit : maestroToEdit,
         modalOpen,
         page,
         rowsPerPage,
         searchTerm,
         selectedSeccion,
         secciones: secciones?.data ?? [],
+        viewOnlyMode,
     };
 }

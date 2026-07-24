@@ -12,6 +12,7 @@ interface TipoMaestroMobileListProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onView?: (maestro: TipoMaestro) => void;
     onEdit?: (maestro: TipoMaestro) => void;
 }
 
@@ -22,6 +23,7 @@ export function TipoMaestroMobileList({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
+    onView,
     onEdit
 }: TipoMaestroMobileListProps) {
     const theme = useTheme();
@@ -41,6 +43,7 @@ export function TipoMaestroMobileList({
                 onRowsPerPageChange={onRowsPerPageChange}
                 emptyMessage="No se encontraron registros"
                 keyExtractor={(item) => item.tipoMaestroID}
+                onView={onView}
                 onEdit={onEdit}
                 renderHeader={(item) => (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>

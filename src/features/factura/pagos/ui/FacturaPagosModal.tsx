@@ -48,7 +48,7 @@ export function FacturaPagosModal({ open, onClose, factura }: FacturaPagosModalP
             </DialogTitle>
             
             <DialogContent sx={{ p: 3 }}>
-                <FacturaPagos factura={factura} />
+                <FacturaPagos factura={factura} viewOnly />
             </DialogContent>
         </Dialog>
     );

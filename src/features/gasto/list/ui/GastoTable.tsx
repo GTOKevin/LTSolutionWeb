@@ -13,6 +13,7 @@ interface Props {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onView?: (gasto: Gasto) => void;
     onEdit?: (gasto: Gasto) => void;
     onDelete?: (gasto: Gasto) => void;
 }
@@ -24,6 +25,7 @@ export function GastoTable({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
+    onView,
     onEdit,
     onDelete
 }: Props) {
@@ -59,8 +61,10 @@ export function GastoTable({
                     </TableCell>
                     <TableCell align="center">
                         <TableActions
+                            onView={onView ? () => onView(row) : undefined}
                             onEdit={onEdit ? () => onEdit(row) : undefined}
                             onDelete={onDelete ? () => onDelete(row) : undefined}
+                            viewTooltip="Ver"
                             editTooltip="Editar"
                             deleteTooltip="Eliminar"
                         />

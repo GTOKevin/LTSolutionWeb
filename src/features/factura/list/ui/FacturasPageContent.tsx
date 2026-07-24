@@ -27,6 +27,12 @@ interface FacturasPageContentProps {
 export function FacturasPageContent({ controller }: FacturasPageContentProps) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const totalFacturado = controller.resumen?.totalFacturado ?? 0;
+    const saldoPendienteTotal = controller.resumen?.saldoPendienteTotal ?? 0;
+    const montoRecaudado = Math.max(totalFacturado - saldoPendienteTotal, 0);
+    const recaudacionPorcentaje = totalFacturado > 0
+        ? Math.min((montoRecaudado / totalFacturado) * 100, 100)
+        : 0;
 
     return (
         <Box
@@ -102,10 +108,10 @@ export function FacturasPageContent({ controller }: FacturasPageContentProps) {
                         </Box>
                         <Box sx={{ mt: 4 }}>
                             <Box sx={{ height: 6, width: '100%', bgcolor: 'action.hover', borderRadius: 3, overflow: 'hidden' }}>
-                                <Box sx={{ height: '100%', bgcolor: 'primary.main', width: '65%' }} />
+                                <Box sx={{ height: '100%', bgcolor: 'primary.main', width: `${recaudacionPorcentaje}%` }} />
                             </Box>
                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                                65% de la facturación mensual ha sido recaudada.
+                                {`${recaudacionPorcentaje.toFixed(1)}% del monto facturado consolidado ha sido recaudado.`}
                             </Typography>
                         </Box>
                     </Box>
@@ -187,12 +193,13 @@ export function FacturasPageContent({ controller }: FacturasPageContentProps) {
                             rowsPerPage={controller.filters.size}
                             onPageChange={(_, page) => controller.setFilters((prev) => ({ ...prev, page }))}
                             onRowsPerPageChange={(event) => controller.setFilters((prev) => ({ ...prev, size: parseInt(event.target.value, 10), page: 1 }))}
-                            onView={controller.canManageFacturas ? controller.handleViewClick : undefined}
+                            onView={controller.canViewFacturas ? controller.handleViewClick : undefined}
                             onEdit={controller.canManageFacturas ? controller.handleEditClick : undefined}
                             onDelete={controller.canManageFacturas ? controller.handleDeleteClick : undefined}
                             onPayment={controller.canManageFacturas ? controller.handlePaymentClick : undefined}
-                            onViewPayments={controller.canManageFacturas ? controller.handleViewPaymentsClick : undefined}
+                            onViewPayments={controller.canViewFacturas ? controller.handleViewPaymentsClick : undefined}
                             onUpdateStatus={controller.canManageFacturas ? controller.handleUpdateStatus : undefined}
+                            canDownloadReports={controller.canViewFacturas}
                             statusCatalog={controller.facturaEstados}
                         />
                     ) : (
@@ -203,12 +210,13 @@ export function FacturasPageContent({ controller }: FacturasPageContentProps) {
                             rowsPerPage={controller.filters.size}
                             onPageChange={(_, page) => controller.setFilters((prev) => ({ ...prev, page }))}
                             onRowsPerPageChange={(event) => controller.setFilters((prev) => ({ ...prev, size: parseInt(event.target.value, 10), page: 1 }))}
-                            onView={controller.canManageFacturas ? controller.handleViewClick : undefined}
+                            onView={controller.canViewFacturas ? controller.handleViewClick : undefined}
                             onEdit={controller.canManageFacturas ? controller.handleEditClick : undefined}
                             onDelete={controller.canManageFacturas ? controller.handleDeleteClick : undefined}
                             onPayment={controller.canManageFacturas ? controller.handlePaymentClick : undefined}
-                            onViewPayments={controller.canManageFacturas ? controller.handleViewPaymentsClick : undefined}
+                            onViewPayments={controller.canViewFacturas ? controller.handleViewPaymentsClick : undefined}
                             onUpdateStatus={controller.canManageFacturas ? controller.handleUpdateStatus : undefined}
+                            canDownloadReports={controller.canViewFacturas}
                             statusCatalog={controller.facturaEstados}
                         />
                     )}

@@ -115,6 +115,7 @@ export function GastoPageContent({ controller }: GastoPageContentProps) {
                             rowsPerPage={controller.rowsPerPage}
                             onPageChange={controller.handleChangePage}
                             onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                            onView={controller.canViewGasto ? controller.handleView : undefined}
                             onEdit={controller.canManageGasto ? controller.handleEdit : undefined}
                             onDelete={controller.canManageGasto ? controller.handleDeleteClick : undefined}
                         />
@@ -128,33 +129,33 @@ export function GastoPageContent({ controller }: GastoPageContentProps) {
                             rowsPerPage={controller.rowsPerPage}
                             onPageChange={controller.handleChangePage}
                             onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                            onView={controller.canViewGasto ? controller.handleView : undefined}
                             onEdit={controller.canManageGasto ? controller.handleEdit : undefined}
                             onDelete={controller.canManageGasto ? controller.handleDeleteClick : undefined}
                         />
                     </Box>
                 </Box>
 
-                {controller.canManageGasto ? (
-                    <>
-                        <CreateEditGastoModal
-                            open={controller.modalOpen}
-                            onClose={controller.handleCloseModal}
-                            gastoToEdit={controller.gastoToEdit}
-                            onSuccess={controller.handleSuccess}
-                        />
+                <CreateEditGastoModal
+                    open={controller.modalOpen}
+                    onClose={controller.handleCloseModal}
+                    gastoToEdit={controller.gastoToEdit}
+                    onSuccess={controller.handleSuccess}
+                    viewOnly={controller.viewOnlyMode}
+                />
 
-                        <ConfirmDialog
-                            open={controller.deleteDialogOpen}
-                            title="Eliminar Gasto"
-                            content={`¿Estás seguro que deseas eliminar "${controller.gastoToDelete?.nombre}"? Esta acción no se puede deshacer.`}
-                            onConfirm={controller.handleConfirmDelete}
-                            onClose={controller.handleCloseDeleteDialog}
-                            confirmText="Eliminar"
-                            cancelText="Cancelar"
-                            severity="error"
-                            isLoading={controller.deleteMutation.isPending}
-                        />
-                    </>
+                {controller.canManageGasto ? (
+                    <ConfirmDialog
+                        open={controller.deleteDialogOpen}
+                        title="Eliminar Gasto"
+                        content={`¿Estás seguro que deseas eliminar "${controller.gastoToDelete?.nombre}"? Esta acción no se puede deshacer.`}
+                        onConfirm={controller.handleConfirmDelete}
+                        onClose={controller.handleCloseDeleteDialog}
+                        confirmText="Eliminar"
+                        cancelText="Cancelar"
+                        severity="error"
+                        isLoading={controller.deleteMutation.isPending}
+                    />
                 ) : null}
             </Box>
         </Box>

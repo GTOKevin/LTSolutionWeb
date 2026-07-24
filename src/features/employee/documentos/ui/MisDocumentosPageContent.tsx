@@ -20,6 +20,7 @@ import {
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
 import { formatDateOnly, formatDateTime } from '@shared/utils/date-utils';
 import { getEstadoColor } from '@entities/employee/lib/status-utils';
+import { getDocumentVigenciaMeta } from '@shared/utils/document-vigencia';
 import { SolicitudActualizacionModal } from './SolicitudActualizacionModal';
 import {
     MisDocumentosMobileList,
@@ -72,8 +73,8 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             <VerifiedIcon />
                         </Box>
                         <Box>
-                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Documentos Vigentes</Typography>
-                            <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.activos}</Typography>
+                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Vigentes Visibles</Typography>
+                            <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.vigentes}</Typography>
                         </Box>
                     </Box>
                 </Grid>
@@ -83,7 +84,7 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             <WarningAmberOutlined />
                         </Box>
                         <Box>
-                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Próximos a Vencer</Typography>
+                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Por Vencer Visibles</Typography>
                             <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.nearExpiry}</Typography>
                         </Box>
                     </Box>
@@ -94,8 +95,8 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             <PendingActionsOutlined />
                         </Box>
                         <Box>
-                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Solicitudes Pendientes</Typography>
-                            <Typography variant="h5" fontWeight={800} color="text.primary">{controller.pendingRequests}</Typography>
+                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Pendientes Visibles</Typography>
+                            <Typography variant="h5" fontWeight={800} color="text.primary">{controller.pendingRequestsVisible}</Typography>
                         </Box>
                     </Box>
                 </Grid>
@@ -117,18 +118,23 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                         </MenuItem>
                     ))}
                 </TextField>
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: { xs: 'stretch', md: 'flex-end' }, gap: 1 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                        Estado administrativo
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
                     <Button variant={controller.activo === '' ? 'contained' : 'outlined'} onClick={() => controller.handleSearch({ activo: '' })} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}>Todos</Button>
-                    <Button variant={controller.activo === 'true' ? 'contained' : 'outlined'} onClick={() => controller.handleSearch({ activo: 'true' })} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, color: controller.activo === 'true' ? undefined : 'text.secondary', borderColor: controller.activo === 'true' ? undefined : 'divider' }}>Activos</Button>
-                    <Button variant={controller.activo === 'false' ? 'contained' : 'outlined'} onClick={() => controller.handleSearch({ activo: 'false' })} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, color: controller.activo === 'false' ? undefined : 'text.secondary', borderColor: controller.activo === 'false' ? undefined : 'divider' }}>Inactivos</Button>
+                    <Button variant={controller.activo === 'true' ? 'contained' : 'outlined'} onClick={() => controller.handleSearch({ activo: 'true' })} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, color: controller.activo === 'true' ? undefined : 'text.secondary', borderColor: controller.activo === 'true' ? undefined : 'divider' }}>Admin. activos</Button>
+                    <Button variant={controller.activo === 'false' ? 'contained' : 'outlined'} onClick={() => controller.handleSearch({ activo: 'false' })} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, color: controller.activo === 'false' ? undefined : 'text.secondary', borderColor: controller.activo === 'false' ? undefined : 'divider' }}>Admin. inactivos</Button>
                     <Button variant="outlined" onClick={() => controller.handleSearch()} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}>
                         Aplicar
                     </Button>
+                    </Box>
                 </Box>
             </Box>
 
             <Typography variant="caption" color="text.secondary" sx={{ mt: -2 }}>
-                Los filtros se aplican sobre la consulta paginada del servidor.
+                La vigencia visible se muestra por documento. El filtro de estado administrativo opera sobre `activo` y los KPI corresponden a la página actual.
             </Typography>
 
             <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
@@ -160,50 +166,54 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                         containerSx={portalTableContainerFlatSx}
                         headerSx={portalTableHeaderFlatSx}
                         variant="flat"
-                        renderRow={(item) => (
-                            <>
-                                <TableCell sx={{ py: 2, px: 3 }}>
-                                    <Typography variant="body2" fontWeight={600} color="text.primary">{item.tipoDocumentoNombre}</Typography>
-                                </TableCell>
-                                <TableCell sx={{ py: 2, px: 3 }}>
-                                    <Typography variant="body2" color="text.secondary">{item.numeroDocumento || '—'}</Typography>
-                                </TableCell>
-                                <TableCell sx={{ py: 2, px: 3 }}>
-                                    <Typography variant="body2" color="text.secondary">{formatDateOnly(item.fechaEmision)}</Typography>
-                                </TableCell>
-                                <TableCell sx={{ py: 2, px: 3 }}>
-                                    <Typography variant="body2" color="text.secondary">{formatDateOnly(item.fechaVencimiento)}</Typography>
-                                </TableCell>
-                                <TableCell sx={{ py: 2, px: 3 }}>
-                                    <Box sx={{ display: 'inline-flex', px: 1, py: 0.5, borderRadius: 1, bgcolor: item.activo ? 'success.50' : 'error.50', color: item.activo ? 'success.main' : 'error.main' }}>
-                                        <Typography variant="caption" fontWeight={800} sx={{ textTransform: 'uppercase', fontSize: '10px' }}>
-                                            {item.activo ? 'Activo' : 'Inactivo'}
-                                        </Typography>
-                                    </Box>
-                                </TableCell>
-                                <TableCell align="right" sx={{ py: 2, px: 3 }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                                        <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleOpenDocument(item)}>
-                                            <VisibilityOutlined fontSize="small" />
-                                        </Button>
-                                        <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleDownloadDocument(item)}>
-                                            <DownloadIcon fontSize="small" />
-                                        </Button>
-                                        {controller.canRequestDocumentUpdate ? (
-                                            <Button
-                                                sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-                                                onClick={() => {
-                                                    controller.setSelectedDocumentoId(item.colaboradorDocumentoId);
-                                                    controller.setDialogOpen(true);
-                                                }}
-                                            >
-                                                <SyncOutlined fontSize="small" />
+                        renderRow={(item) => {
+                            const vigencia = getDocumentVigenciaMeta(item.vigenciaEstado);
+
+                            return (
+                                <>
+                                    <TableCell sx={{ py: 2, px: 3 }}>
+                                        <Typography variant="body2" fontWeight={600} color="text.primary">{item.tipoDocumentoNombre}</Typography>
+                                    </TableCell>
+                                    <TableCell sx={{ py: 2, px: 3 }}>
+                                        <Typography variant="body2" color="text.secondary">{item.numeroDocumento || '—'}</Typography>
+                                    </TableCell>
+                                    <TableCell sx={{ py: 2, px: 3 }}>
+                                        <Typography variant="body2" color="text.secondary">{formatDateOnly(item.fechaEmision)}</Typography>
+                                    </TableCell>
+                                    <TableCell sx={{ py: 2, px: 3 }}>
+                                        <Typography variant="body2" color="text.secondary">{formatDateOnly(item.fechaVencimiento)}</Typography>
+                                    </TableCell>
+                                    <TableCell sx={{ py: 2, px: 3 }}>
+                                        <Box sx={{ display: 'inline-flex', px: 1, py: 0.5, borderRadius: 1, bgcolor: vigencia.bgColor, color: vigencia.textColor }}>
+                                            <Typography variant="caption" fontWeight={800} sx={{ textTransform: 'uppercase', fontSize: '10px' }}>
+                                                {vigencia.label}
+                                            </Typography>
+                                        </Box>
+                                    </TableCell>
+                                    <TableCell align="right" sx={{ py: 2, px: 3 }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                                            <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleOpenDocument(item)}>
+                                                <VisibilityOutlined fontSize="small" />
                                             </Button>
-                                        ) : null}
-                                    </Box>
-                                </TableCell>
-                            </>
-                        )}
+                                            <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleDownloadDocument(item)}>
+                                                <DownloadIcon fontSize="small" />
+                                            </Button>
+                                            {controller.canRequestDocumentUpdate ? (
+                                                <Button
+                                                    sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+                                                    onClick={() => {
+                                                        controller.setSelectedDocumentoId(item.colaboradorDocumentoId);
+                                                        controller.setDialogOpen(true);
+                                                    }}
+                                                >
+                                                    <SyncOutlined fontSize="small" />
+                                                </Button>
+                                            ) : null}
+                                        </Box>
+                                    </TableCell>
+                                </>
+                            );
+                        }}
                     />
                 </Box>
                 <MisDocumentosMobileList
@@ -231,10 +241,10 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                     <SharedTable
                         data={controller.solicitudes}
                         isLoading={controller.isLoadingSolicitudes}
-                        page={0}
-                        rowsPerPage={10}
-                        onPageChange={() => undefined}
-                        onRowsPerPageChange={() => undefined}
+                        page={controller.requestPage}
+                        rowsPerPage={controller.requestRowsPerPage}
+                        onPageChange={controller.handleRequestPageChange}
+                        onRowsPerPageChange={controller.handleRequestRowsPerPageChange}
                         columns={requestColumns}
                         keyExtractor={(item) => item.solicitudId}
                         emptyMessage="Aún no tienes solicitudes de actualización."
@@ -247,7 +257,7 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             return (
                                 <>
                                     <TableCell sx={{ py: 2, px: 3 }}>
-                                        <Typography variant="body2" fontWeight={600} color="text.primary">{controller.documentNameById.get(item.colaboradorDocumentoId) || `Documento #${item.colaboradorDocumentoId}`}</Typography>
+                                        <Typography variant="body2" fontWeight={600} color="text.primary">{item.tipoDocumentoNombre}</Typography>
                                     </TableCell>
                                     <TableCell sx={{ py: 2, px: 3 }}>
                                         <Typography variant="body2" color="text.secondary">{formatDateTime(item.fechaRegistro)}</Typography>
@@ -270,7 +280,10 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                 <MisDocumentoSolicitudesMobileList
                     data={controller.solicitudes}
                     isLoading={controller.isLoadingSolicitudes}
-                    documentNameById={controller.documentNameById}
+                    page={controller.requestPage}
+                    rowsPerPage={controller.requestRowsPerPage}
+                    onPageChange={controller.handleRequestPageChange}
+                    onRowsPerPageChange={controller.handleRequestRowsPerPageChange}
                 />
             </Box>
 

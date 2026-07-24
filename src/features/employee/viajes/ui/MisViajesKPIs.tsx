@@ -2,11 +2,11 @@ import { Box, Typography } from '@mui/material';
 
 interface MisViajesKPIsProps {
     total: number;
-    pendientes: number;
+    abiertos: number;
     cerrados: number;
 }
 
-export function MisViajesKPIs({ total, pendientes, cerrados }: MisViajesKPIsProps) {
+export function MisViajesKPIs({ total, abiertos, cerrados }: MisViajesKPIsProps) {
     return (
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 3, minWidth: 160, border: '1px solid', borderColor: 'divider' }}>
@@ -14,9 +14,9 @@ export function MisViajesKPIs({ total, pendientes, cerrados }: MisViajesKPIsProp
                 <Typography variant="h3" fontWeight={800} color="primary.main">{total}</Typography>
             </Box>
             <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 3, minWidth: 160, border: '1px solid', borderColor: 'divider', borderLeft: '4px solid', borderLeftColor: 'warning.main' }}>
-                <Typography variant="overline" fontWeight={800} color="text.secondary" sx={{ letterSpacing: '0.1em', display: 'block', mb: 1 }}>EN TRÁNSITO</Typography>
+                <Typography variant="overline" fontWeight={800} color="text.secondary" sx={{ letterSpacing: '0.1em', display: 'block', mb: 1 }}>ABIERTOS VISIBLES</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Typography variant="h3" fontWeight={800} color="text.primary">{pendientes}</Typography>
+                    <Typography variant="h3" fontWeight={800} color="text.primary">{abiertos}</Typography>
                     <Box sx={{ position: 'relative', display: 'flex', width: 12, height: 12 }}>
                         <Box sx={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', bgcolor: 'warning.main', opacity: 0.7, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
                         <Box sx={{ position: 'relative', width: 12, height: 12, borderRadius: '50%', bgcolor: 'warning.main' }} />

@@ -44,6 +44,7 @@ const ViajeVerPage = lazy(() => import('@pages/viajes/ver').then(module => ({ de
 const FacturasPage = lazy(() => import('@pages/facturas').then(module => ({ default: module.FacturasPage })));
 const FacturaNuevaPage = lazy(() => import('@pages/facturas/nuevo').then(module => ({ default: module.FacturaNuevaPage })));
 const FacturaEditarPage = lazy(() => import('@pages/facturas/editar').then(module => ({ default: module.FacturaEditarPage })));
+const FacturaVerPage = lazy(() => import('@pages/facturas/ver').then(module => ({ default: module.FacturaVerPage })));
 const GastoPage = lazy(() => import('@pages/gasto').then(module => ({ default: module.GastoPage })));
 const MercaderiaPage = lazy(() => import('@pages/mercaderia').then(module => ({ default: module.MercaderiaPage })));
 const TipoProductoPage = lazy(() => import('@pages/tipo-producto').then(module => ({ default: module.TipoProductoPage })));
@@ -98,6 +99,7 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: APP_ROUTE_SEGMENTS.facturas, permission: PERMISSIONS.FACTURAS.VER, element: <FacturasPage /> },
     { path: `${APP_ROUTE_SEGMENTS.facturas}/nuevo`, permission: PERMISSIONS.FACTURAS.GESTIONAR, element: <FacturaNuevaPage /> },
     { path: `${APP_ROUTE_SEGMENTS.facturas}/:id`, permission: PERMISSIONS.FACTURAS.GESTIONAR, element: <FacturaEditarPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.facturas}/:id/ver`, permission: PERMISSIONS.FACTURAS.VER, element: <FacturaVerPage /> },
     { path: APP_ROUTE_SEGMENTS.flotas, permission: PERMISSIONS.FLOTA.VER, element: <FlotasPage /> },
     { path: `${APP_ROUTE_SEGMENTS.flotas}/nuevo`, permission: PERMISSIONS.FLOTA.GESTIONAR, element: <FlotaNuevoPage /> },
     { path: `${APP_ROUTE_SEGMENTS.flotas}/:id`, permission: PERMISSIONS.FLOTA.GESTIONAR, element: <FlotaEditarPage /> },
