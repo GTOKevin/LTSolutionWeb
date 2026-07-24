@@ -12,6 +12,7 @@ import type {
 import { isPreviewableImageUrl } from '@shared/utils/file-utils';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { tipoDocumentoApi } from '@/entities/tipo-documento/api/tipo-documento.api';
+import { isDocumentNearExpiry, isDocumentVigente } from '@shared/utils/document-vigencia';
 
 export function useMisDocumentosPageController() {
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
@@ -77,16 +78,11 @@ export function useMisDocumentosPageController() {
 
     const documentStats = useMemo(() => {
         const items = documentos?.items ?? [];
-        const today = new Date();
-        const nearExpiry = items.filter((item) => {
-            const expiryDate = new Date(item.fechaVencimiento);
-            const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-            return item.activo && diffDays >= 0 && diffDays <= 30;
-        }).length;
+        const nearExpiry = items.filter((item) => isDocumentNearExpiry(item.vigenciaEstado)).length;
 
         return {
             total: documentos?.total ?? 0,
-            vigentes: items.filter((item) => item.vigenciaEstado === 'vigente').length,
+            vigentes: items.filter((item) => isDocumentVigente(item.vigenciaEstado)).length,
             nearExpiry,
         };
     }, [documentos]);
@@ -154,19 +150,10 @@ export function useMisDocumentosPageController() {
         window.open(item.rutaArchivo, '_blank', 'noopener,noreferrer');
     };
 
-    const documentNameById = useMemo(() => {
-        const map = new Map<number, string>();
-        documentosEnriquecidos.forEach((item) => {
-            map.set(item.colaboradorDocumentoId, item.tipoDocumentoNombre);
-        });
-        return map;
-    }, [documentosEnriquecidos]);
-
     return {
         activo,
         canRequestDocumentUpdate,
         dialogOpen,
-        documentNameById,
         documentStats,
         documentos,
         documentosEnriquecidos,

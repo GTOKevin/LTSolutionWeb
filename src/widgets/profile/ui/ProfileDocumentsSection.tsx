@@ -1,6 +1,7 @@
 import { BadgeOutlined, DescriptionOutlined, WarningAmberRounded } from '@mui/icons-material';
 import { Box, Button, Card, CardContent, Chip, Stack, Typography, alpha, useTheme } from '@mui/material';
 import type { MyProfileDocumentoDto } from '@entities/profile/model/types';
+import { getDocumentVigenciaMeta, isDocumentNearExpiry } from '@shared/utils/document-vigencia';
 import { SectionTitle } from './ProfileShared';
 import { cardSx, formatDate, tableCellSx, tableHeaderSx } from './ProfileShared.helpers';
 
@@ -12,6 +13,7 @@ interface ProfileDocumentsSectionProps {
 export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDocumentsSectionProps) {
     const theme = useTheme();
     const mode = theme.palette.mode;
+    const nearExpiryCount = documentos.filter((documento) => isDocumentNearExpiry(documento.vigenciaEstado)).length;
 
     const resolveDocumentHref = (raw?: string | null) => {
         if (!raw) return undefined;
@@ -52,6 +54,14 @@ export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDo
                             label={`${criticalCount} documento(s) vencido(s)`}
                             sx={{ fontWeight: 700 }}
                         />
+                    ) : nearExpiryCount > 0 ? (
+                        <Chip
+                            size="small"
+                            color="warning"
+                            icon={<WarningAmberRounded />}
+                            label={`${nearExpiryCount} documento(s) por vencer`}
+                            sx={{ fontWeight: 700 }}
+                        />
                     ) : (
                         <Chip size="small" color="success" label="Sin alertas" sx={{ fontWeight: 700 }} />
                     )}
@@ -83,6 +93,7 @@ export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDo
                             <Stack spacing={1}>
                                 {documentos.map((d) => {
                                     const href = resolveDocumentHref(d.rutaArchivo);
+                                    const vigencia = getDocumentVigenciaMeta(d.vigenciaEstado);
 
                                     return (
                                         <Box
@@ -94,8 +105,10 @@ export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDo
                                                 alignItems: 'center',
                                                 p: 1.5,
                                                 borderRadius: 3,
-                                                bgcolor: d.vigenciaEstado === 'vencido'
+                                                bgcolor: vigencia.key === 'vencido'
                                                     ? alpha('#ba1a1a', 0.06)
+                                                    : vigencia.key === 'por_vencer'
+                                                        ? alpha(theme.palette.warning.main, 0.08)
                                                     : mode === 'dark'
                                                         ? alpha('#ffffff', 0.04)
                                                         : '#f7f8fa',
@@ -107,9 +120,11 @@ export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDo
                                                     width: 36,
                                                     height: 36,
                                                     borderRadius: 2,
-                                                    bgcolor: d.vigenciaEstado === 'vencido'
+                                                    bgcolor: vigencia.key === 'vencido'
                                                         ? alpha('#ba1a1a', 0.12)
-                                                        : alpha('#005da8', 0.08),
+                                                        : vigencia.key === 'por_vencer'
+                                                            ? alpha(theme.palette.warning.main, 0.12)
+                                                            : alpha('#005da8', 0.08),
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
@@ -118,7 +133,11 @@ export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDo
                                                 <BadgeOutlined
                                                     sx={{
                                                         fontSize: 18,
-                                                        color: d.vigenciaEstado === 'vencido' ? 'error.main' : 'primary.main',
+                                                        color: vigencia.key === 'vencido'
+                                                            ? 'error.main'
+                                                            : vigencia.key === 'por_vencer'
+                                                                ? 'warning.main'
+                                                                : 'primary.main',
                                                     }}
                                                 />
                                             </Box>
@@ -128,14 +147,24 @@ export function ProfileDocumentsSection({ documentos, criticalCount }: ProfileDo
                                         </Stack>
                                         <Typography sx={tableCellSx}>{d.numeroDocumento ?? '—'}</Typography>
                                         <Typography sx={tableCellSx}>{formatDate(d.fechaEmision)}</Typography>
-                                        <Typography sx={{ ...tableCellSx, color: d.vigenciaEstado === 'vencido' ? 'error.main' : 'text.primary', fontWeight: 700 }}>
+                                        <Typography
+                                            sx={{
+                                                ...tableCellSx,
+                                                color: vigencia.key === 'vencido'
+                                                    ? 'error.main'
+                                                    : vigencia.key === 'por_vencer'
+                                                        ? 'warning.dark'
+                                                        : 'text.primary',
+                                                fontWeight: 700,
+                                            }}
+                                        >
                                             {formatDate(d.fechaVencimiento)}
                                         </Typography>
                                         <Box>
                                             <Chip
                                                 size="small"
-                                                color={d.vigenciaEstado === 'vencido' ? 'error' : 'success'}
-                                                label={d.vigenciaEstado === 'vencido' ? 'Crítico' : 'Vigente'}
+                                                color={vigencia.chipColor}
+                                                label={vigencia.label}
                                                 sx={{ fontWeight: 700 }}
                                             />
                                         </Box>

@@ -12,6 +12,7 @@ import { ProfileSecuritySection } from './ProfileSecuritySection';
 import { ProfileDocumentsSection } from './ProfileDocumentsSection';
 import { ProfileLicenciasAusenciasSection } from './ProfileLicenciasAusenciasSection';
 import { ProfileRecentTripsSection } from './ProfileRecentTripsSection';
+import { isDocumentExpired, isDocumentVigente } from '@shared/utils/document-vigencia';
 
 interface ProfileViewProps {
     data?: MyProfileDto;
@@ -77,8 +78,8 @@ export function ProfileView({ data, isLoading, isFetching, isError, onRetry }: P
 
     if (!data) return null;
 
-    const documentosCriticos = data.documentos.filter(doc => doc.vigenciaEstado === 'vencido').length;
-    const documentosVigentes = data.documentos.filter(doc => doc.vigenciaEstado !== 'vencido').length;
+    const documentosCriticos = data.documentos.filter(doc => isDocumentExpired(doc.vigenciaEstado)).length;
+    const documentosVigentes = data.documentos.filter(doc => isDocumentVigente(doc.vigenciaEstado)).length;
     const actividadPercent = data.documentos.length > 0
         ? Math.round((documentosVigentes / data.documentos.length) * 1000) / 10
         : 100;

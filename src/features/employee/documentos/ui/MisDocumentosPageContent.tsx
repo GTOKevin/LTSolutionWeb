@@ -20,6 +20,7 @@ import {
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
 import { formatDateOnly, formatDateTime } from '@shared/utils/date-utils';
 import { getEstadoColor } from '@entities/employee/lib/status-utils';
+import { getDocumentVigenciaMeta } from '@shared/utils/document-vigencia';
 import { SolicitudActualizacionModal } from './SolicitudActualizacionModal';
 import {
     MisDocumentosMobileList,
@@ -160,50 +161,54 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                         containerSx={portalTableContainerFlatSx}
                         headerSx={portalTableHeaderFlatSx}
                         variant="flat"
-                        renderRow={(item) => (
-                            <>
-                                <TableCell sx={{ py: 2, px: 3 }}>
-                                    <Typography variant="body2" fontWeight={600} color="text.primary">{item.tipoDocumentoNombre}</Typography>
-                                </TableCell>
-                                <TableCell sx={{ py: 2, px: 3 }}>
-                                    <Typography variant="body2" color="text.secondary">{item.numeroDocumento || '—'}</Typography>
-                                </TableCell>
-                                <TableCell sx={{ py: 2, px: 3 }}>
-                                    <Typography variant="body2" color="text.secondary">{formatDateOnly(item.fechaEmision)}</Typography>
-                                </TableCell>
-                                <TableCell sx={{ py: 2, px: 3 }}>
-                                    <Typography variant="body2" color="text.secondary">{formatDateOnly(item.fechaVencimiento)}</Typography>
-                                </TableCell>
-                                <TableCell sx={{ py: 2, px: 3 }}>
-                                    <Box sx={{ display: 'inline-flex', px: 1, py: 0.5, borderRadius: 1, bgcolor: item.activo ? 'success.50' : 'error.50', color: item.activo ? 'success.main' : 'error.main' }}>
-                                        <Typography variant="caption" fontWeight={800} sx={{ textTransform: 'uppercase', fontSize: '10px' }}>
-                                            {item.activo ? 'Activo' : 'Inactivo'}
-                                        </Typography>
-                                    </Box>
-                                </TableCell>
-                                <TableCell align="right" sx={{ py: 2, px: 3 }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                                        <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleOpenDocument(item)}>
-                                            <VisibilityOutlined fontSize="small" />
-                                        </Button>
-                                        <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleDownloadDocument(item)}>
-                                            <DownloadIcon fontSize="small" />
-                                        </Button>
-                                        {controller.canRequestDocumentUpdate ? (
-                                            <Button
-                                                sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-                                                onClick={() => {
-                                                    controller.setSelectedDocumentoId(item.colaboradorDocumentoId);
-                                                    controller.setDialogOpen(true);
-                                                }}
-                                            >
-                                                <SyncOutlined fontSize="small" />
+                        renderRow={(item) => {
+                            const vigencia = getDocumentVigenciaMeta(item.vigenciaEstado);
+
+                            return (
+                                <>
+                                    <TableCell sx={{ py: 2, px: 3 }}>
+                                        <Typography variant="body2" fontWeight={600} color="text.primary">{item.tipoDocumentoNombre}</Typography>
+                                    </TableCell>
+                                    <TableCell sx={{ py: 2, px: 3 }}>
+                                        <Typography variant="body2" color="text.secondary">{item.numeroDocumento || '—'}</Typography>
+                                    </TableCell>
+                                    <TableCell sx={{ py: 2, px: 3 }}>
+                                        <Typography variant="body2" color="text.secondary">{formatDateOnly(item.fechaEmision)}</Typography>
+                                    </TableCell>
+                                    <TableCell sx={{ py: 2, px: 3 }}>
+                                        <Typography variant="body2" color="text.secondary">{formatDateOnly(item.fechaVencimiento)}</Typography>
+                                    </TableCell>
+                                    <TableCell sx={{ py: 2, px: 3 }}>
+                                        <Box sx={{ display: 'inline-flex', px: 1, py: 0.5, borderRadius: 1, bgcolor: vigencia.bgColor, color: vigencia.textColor }}>
+                                            <Typography variant="caption" fontWeight={800} sx={{ textTransform: 'uppercase', fontSize: '10px' }}>
+                                                {vigencia.label}
+                                            </Typography>
+                                        </Box>
+                                    </TableCell>
+                                    <TableCell align="right" sx={{ py: 2, px: 3 }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                                            <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleOpenDocument(item)}>
+                                                <VisibilityOutlined fontSize="small" />
                                             </Button>
-                                        ) : null}
-                                    </Box>
-                                </TableCell>
-                            </>
-                        )}
+                                            <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleDownloadDocument(item)}>
+                                                <DownloadIcon fontSize="small" />
+                                            </Button>
+                                            {controller.canRequestDocumentUpdate ? (
+                                                <Button
+                                                    sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+                                                    onClick={() => {
+                                                        controller.setSelectedDocumentoId(item.colaboradorDocumentoId);
+                                                        controller.setDialogOpen(true);
+                                                    }}
+                                                >
+                                                    <SyncOutlined fontSize="small" />
+                                                </Button>
+                                            ) : null}
+                                        </Box>
+                                    </TableCell>
+                                </>
+                            );
+                        }}
                     />
                 </Box>
                 <MisDocumentosMobileList
@@ -247,7 +252,7 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             return (
                                 <>
                                     <TableCell sx={{ py: 2, px: 3 }}>
-                                        <Typography variant="body2" fontWeight={600} color="text.primary">{controller.documentNameById.get(item.colaboradorDocumentoId) || `Documento #${item.colaboradorDocumentoId}`}</Typography>
+                                        <Typography variant="body2" fontWeight={600} color="text.primary">{item.tipoDocumentoNombre}</Typography>
                                     </TableCell>
                                     <TableCell sx={{ py: 2, px: 3 }}>
                                         <Typography variant="body2" color="text.secondary">{formatDateTime(item.fechaRegistro)}</Typography>
@@ -270,7 +275,6 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                 <MisDocumentoSolicitudesMobileList
                     data={controller.solicitudes}
                     isLoading={controller.isLoadingSolicitudes}
-                    documentNameById={controller.documentNameById}
                     page={controller.requestPage}
                     rowsPerPage={controller.requestRowsPerPage}
                     onPageChange={controller.handleRequestPageChange}

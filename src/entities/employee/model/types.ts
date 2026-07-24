@@ -75,6 +75,8 @@ export interface DocumentoActualizacionSolicitudDto {
     solicitudId: number;
     colaboradorDocumentoId: number;
     colaboradorId: number;
+    tipoDocumentoId: number;
+    tipoDocumentoNombre: string;
     numeroDocumentoPropuesto: string | null;
     rutaArchivoPropuesta: string | null;
     fechaEmisionPropuesta: string | null;
