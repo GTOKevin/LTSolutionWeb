@@ -31,7 +31,7 @@ import { useLayoutStore } from '@shared/store/layout.store';
 import { useAuthStore } from '@shared/store/auth.store';
 import { useState, useMemo, useEffect, useRef, type MouseEvent } from 'react';
 import { hasPermission as hasUserPermission } from '@shared/lib/permissions/hasPermission';
-import { SelfChangePasswordModal } from '@features/auth/change-password/ui/SelfChangePasswordModal';
+import { SelfChangePasswordModal } from '@features/auth/change-password';
 import { APP_PATHS } from '@app/router/model/navigation';
 
 export const DRAWER_WIDTH = 280;

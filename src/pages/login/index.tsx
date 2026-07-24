@@ -1,5 +1,5 @@
 import { Box, Typography, Stack, useTheme, alpha } from '@mui/material';
-import { LoginForm } from '@features/auth/login/ui/LoginForm';
+import { LoginForm } from '@features/auth/login';
 import { SafetyCheck as SafetyCheckIcon } from '@mui/icons-material';
 
 export function LoginPage() {

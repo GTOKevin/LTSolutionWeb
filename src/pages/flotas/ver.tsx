@@ -5,10 +5,10 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { flotaApi } from '@/entities/flota/api/flota.api';
-import { FLOTA_QUERY_KEYS } from '@/features/flota/model/query-keys';
+import { FLOTA_QUERY_KEYS } from '@features/flota';
 import { APP_PATHS } from '@app/router/model/navigation';
 import { FlotaCrudPageContent, useFlotaForm } from '@features/flota/create-edit';
-import { CrudTabbedPageShell } from '@/widgets/crud-page/ui/CrudTabbedPageShell';
+import { CrudTabbedPageShell } from '@widgets/crud-page';
 import { getFlotaCrudTabs } from '@features/flota/create-edit';
 
 export function FlotaVerPage() {

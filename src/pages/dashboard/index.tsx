@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLayoutStore } from '@shared/store/layout.store';
-import { useDashboardOverview } from '@features/dashboard/hooks/useDashboardOverview';
-import { DashboardOverview } from '@widgets/dashboard/ui/DashboardOverview';
+import { useDashboardOverview } from '@features/dashboard';
+import { DashboardOverview } from '@widgets/dashboard';
 
 export function DashboardPage() {
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);

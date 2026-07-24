@@ -299,7 +299,7 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
                             color="success"
                             size="small"
                             startIcon={isExportingExcel ? <CircularProgress size={16} /> : <ExcelIcon />}
-                            disabled={isExportingExcel || !data?.data?.items || data.data.items.length === 0}
+                            disabled={isExportingExcel || !data?.items || data.items.length === 0}
                             onClick={handleExportExcel}
                         >
                             Excel
@@ -311,7 +311,7 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
                             color="error"
                             size="small"
                             startIcon={isExportingPdf ? <CircularProgress size={16} /> : <PdfIcon />}
-                            disabled={isExportingPdf || !data?.data?.items || data.data.items.length === 0}
+                            disabled={isExportingPdf || !data?.items || data.items.length === 0}
                             onClick={handleExportPdf}
                         >
                             PDF
@@ -374,7 +374,7 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
 
             {/* Desktop Table */}
             <SharedTable
-                data={data?.data}
+                data={data}
                 isLoading={isLoading}
                 page={page}
                 rowsPerPage={rowsPerPage}
@@ -403,8 +403,8 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
 
             {/* Mobile List */}
             <MobileListShell
-                items={data?.data?.items || []}
-                total={data?.data?.total || 0}
+                items={data?.items || []}
+                total={data?.total || 0}
                 page={page}
                 rowsPerPage={rowsPerPage}
                 onPageChange={handleChangePage}

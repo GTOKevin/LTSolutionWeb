@@ -28,6 +28,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { loginSchema, type LoginFormData } from '../model/schema';
 import { useLogin } from '../api/use-login';
 import { useThemeStore } from '@shared/store/theme.store';
@@ -313,7 +314,7 @@ export function LoginForm() {
                         />
                         <Link
                             component={RouterLink}
-                            to="/forgot-password"
+                            to={APP_PATHS.forgotPassword}
                             underline="hover"
                             sx={{
                                 fontSize: '0.875rem',

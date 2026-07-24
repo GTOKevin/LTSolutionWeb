@@ -121,7 +121,7 @@ export function ViajesTable({
             renderRow={(viaje) => {
                 const estado = getEstadoConfig(viaje.estadoCodigo, viaje.estadoNombre);
                 const isEditable = canManage && !viaje.cerrado;
-                const showReports = canManage && viaje.cerrado;
+                const showReports = viaje.cerrado && Boolean(onExportExcel || onExportPdf);
                 const showReopen = canReabrir && viaje.cerrado;
 
                 return (

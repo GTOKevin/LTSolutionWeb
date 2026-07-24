@@ -1,5 +1,4 @@
-import { useGastoPageController } from '@features/gasto/list/hooks/useGastoPageController';
-import { GastoPageContent } from '@features/gasto/list/ui/GastoPageContent';
+import { GastoPageContent, useGastoPageController } from '@features/gasto/list';
 
 export function GastoPage() {
     const controller = useGastoPageController();

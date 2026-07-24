@@ -106,8 +106,8 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
         })
     });
 
-    const items = data?.data?.items || [];
-    const totalItems = data?.data?.total || 0;
+    const items = data?.items || [];
+    const totalItems = data?.total || 0;
 
     const deleteMutation = useDeleteColaboradorDocumento();
 
@@ -267,7 +267,7 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
 
             <Box sx={{ flex: 1, overflow: 'auto', p: 0.5 }}>
                 <SharedTable
-                    data={data?.data}
+                    data={data}
                     isLoading={isLoading}
                     page={page}
                     rowsPerPage={rowsPerPage}

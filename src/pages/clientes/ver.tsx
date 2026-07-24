@@ -7,7 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
 import { APP_PATHS } from '@app/router/model/navigation';
 import { ClienteCrudPageContent, getClienteCrudTabs, useClienteForm } from '@features/cliente/create-edit';
-import { CrudTabbedPageShell } from '@/widgets/crud-page/ui/CrudTabbedPageShell';
+import { CrudTabbedPageShell } from '@widgets/crud-page';
 
 export function ClienteVerPage() {
     const navigate = useNavigate();

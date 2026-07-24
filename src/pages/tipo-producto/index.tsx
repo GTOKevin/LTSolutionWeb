@@ -1,5 +1,4 @@
-import { useTipoProductoPageController } from '@features/tipo-producto/list/hooks/useTipoProductoPageController';
-import { TipoProductoPageContent } from '@features/tipo-producto/list/ui/TipoProductoPageContent';
+import { TipoProductoPageContent, useTipoProductoPageController } from '@features/tipo-producto/list';
 
 export function TipoProductoPage() {
     const controller = useTipoProductoPageController();

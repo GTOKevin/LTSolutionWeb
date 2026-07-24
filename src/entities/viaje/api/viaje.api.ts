@@ -36,8 +36,8 @@ export const viajeApi = {
     },
 
     create: async (data: CreateViajeDto) => {
-        return await http.post<number>('/viaje', data);
-
+        const response = await http.post<number>('/viaje', data);
+        return response.data;
     },
 
     update: async (id: number, data: UpdateViajeDto) => {

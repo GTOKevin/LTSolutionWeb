@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { authApi } from '@entities/auth/api/auth.api';
 import { useAuthStore } from '@shared/store/auth.store';
 import type { ApiMutationError } from '@/shared/utils/api-errors';
@@ -19,7 +20,7 @@ export function useLogin() {
             authApi.login(name, password),
         onSuccess: (data) => {
             setAuth(data.token);
-            navigate('/app');
+            navigate(APP_PATHS.appRoot);
         }
     });
 }

@@ -160,7 +160,7 @@ export function ViajesMobileList({
     }
 
     const isEditable = canManage && Boolean(selectedViaje && !selectedViaje.cerrado);
-    const showReports = canManage && Boolean(selectedViaje?.cerrado);
+    const showReports = Boolean(selectedViaje?.cerrado && (onExportExcel || onExportPdf));
     const showReopen = canReabrir && Boolean(selectedViaje?.cerrado);
 
     return (
