@@ -167,7 +167,7 @@ export function useMantenimientos() {
         reopenPending: reopenMutation.isPending,
         
         // Catalogs
-        listaFlotas: flotas?.data || [],
+        listaFlotas: flotas || [],
         listaEstados: estados || [],
 
         // Setters

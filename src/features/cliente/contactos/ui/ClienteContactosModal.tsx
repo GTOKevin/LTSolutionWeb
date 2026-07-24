@@ -326,8 +326,8 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
             
             <Box sx={{ flex: 1, overflow: 'auto', p: 0.5 }}>
                     <MobileListShell
-                        items={data?.data.items || []}
-                        total={data?.data.total || 0}
+                        items={data?.items || []}
+                        total={data?.total || 0}
                         page={page}
                         rowsPerPage={rowsPerPage}
                         onPageChange={(_, p) => setPage(p)}
@@ -373,7 +373,7 @@ export function ClienteContactosList({ clienteId, viewOnly = false }: ClienteCon
                                 { id: 'activo', label: 'Estado', align: 'center' },
                                 ...(!viewOnly ? [{ id: 'acciones', label: 'Acciones', align: 'right' as const }] : [])
                             ]}
-                            data={data?.data}
+                            data={data}
                             page={page}
                             rowsPerPage={rowsPerPage}
                             onPageChange={(_, p) => setPage(p)}

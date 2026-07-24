@@ -108,8 +108,8 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
         enabled: !!flotaId
     });
 
-    const totalItems = data?.data?.total || 0;
-    const items = data?.data?.items || [];
+    const totalItems = data?.total || 0;
+    const items = data?.items || [];
 
     const createMutation = useCreateFlotaDocumento();
     const updateMutation = useUpdateFlotaDocumento();
@@ -302,7 +302,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
 
             <Box sx={{ width: '100%', p: 0.5 }}>
                     <SharedTable
-                        data={data?.data}
+                        data={data}
                         isLoading={isLoading}
                         page={page}
                         rowsPerPage={rowsPerPage}
@@ -497,4 +497,3 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
         </Box>
     );
 }
-

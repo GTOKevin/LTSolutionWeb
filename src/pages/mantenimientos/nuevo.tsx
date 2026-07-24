@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { DirectionsCar as CarIcon, VisibilityOff as HiddenIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
 import { SectionHeader } from '@/shared/components/ui/SectionHeader';
 import { useMantenimientoForm } from '@/features/mantenimiento/hooks/useMantenimientoForm';
@@ -48,7 +49,7 @@ export function MantenimientoNuevoPage() {
     } = useMantenimientoForm({
         mantenimientoToEdit: null,
         onSuccess: () => {},
-        onClose: () => navigate('/app/mantenimientos'),
+        onClose: () => navigate(APP_PATHS.mantenimientos),
         open: true
     });
 
@@ -372,7 +373,7 @@ export function MantenimientoNuevoPage() {
                                 }}
                             >
                                 <Button
-                                    onClick={() => navigate('/app/mantenimientos')}
+                                    onClick={() => navigate(APP_PATHS.mantenimientos)}
                                     variant="outlined"
                                     color="inherit"
                                     disabled={isSubmitting}
@@ -420,4 +421,3 @@ export function MantenimientoNuevoPage() {
         </>
     );
 }
-

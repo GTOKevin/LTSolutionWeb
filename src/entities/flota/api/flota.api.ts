@@ -11,24 +11,37 @@ import type {
 } from '../model/types';
 
 export const flotaApi = {
-    getById: (id: number) => httpClient.get<Flota>(`/Flota/${id}`),
+    getById: async (id: number) => {
+        const { data } = await httpClient.get<Flota>(`/Flota/${id}`);
+        return data;
+    },
 
-    getAll: (params: FlotaParams) => 
-        httpClient.get<PagedResponse<Flota>>('/Flota', { params }),
+    getAll: async (params: FlotaParams) => {
+        const { data } = await httpClient.get<PagedResponse<Flota>>('/Flota', { params });
+        return data;
+    },
 
-    getSelect: (params?: FlotaParamsSelect | string, limit: number = 20) =>
-        httpClient.get<SelectItem[]>('/Flota/select', {
+    getSelect: async (params?: FlotaParamsSelect | string, limit: number = 20) => {
+        const { data } = await httpClient.get<SelectItem[]>('/Flota/select', {
             params: typeof params === 'string'
                 ? { search: params, limit }
                 : params,
-        }),
-    getSelectTipo: (tipo?: string, limit: number = 20) =>
-        httpClient.get<SelectItem[]>('/Flota/tipo-select', { params: { tipo, limit } }),
-    getDisponibilidad: () =>
-        httpClient.get<{ totalTractos: number; tractosLibres: number; porcentajeActiva: number }>('/Flota/disponibilidad'),
+        });
+        return data;
+    },
+    getSelectTipo: async (tipo?: string, limit: number = 20) => {
+        const { data } = await httpClient.get<SelectItem[]>('/Flota/tipo-select', { params: { tipo, limit } });
+        return data;
+    },
+    getDisponibilidad: async () => {
+        const { data } = await httpClient.get<{ totalTractos: number; tractosLibres: number; porcentajeActiva: number }>('/Flota/disponibilidad');
+        return data;
+    },
 
-    getDocumentos: (params: FlotaDocumentoParams) =>
-        httpClient.get<PagedResponse<FlotaDocumento>>('/Flota/documentos', { params }),
+    getDocumentos: async (params: FlotaDocumentoParams) => {
+        const { data } = await httpClient.get<PagedResponse<FlotaDocumento>>('/Flota/documentos', { params });
+        return data;
+    },
 
     create: (data: CreateFlotaDto) => httpClient.post<number>('/Flota', data).then(res => res.data),
 

@@ -3,10 +3,10 @@ import {
     CircularProgress,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useFlotaForm } from '@features/flota/hooks/useFlotaForm';
+import { APP_PATHS } from '@app/router/model/navigation';
+import { FlotaCrudPageContent, useFlotaForm } from '@features/flota/create-edit';
 import { CrudTabbedPageShell } from '@widgets/crud-page/ui/CrudTabbedPageShell';
-import { FlotaCrudPageContent } from '@features/flota/create-edit/ui/FlotaCrudPageContent';
-import { getFlotaCrudTabs } from '@features/flota/create-edit/model/crud-tabs';
+import { getFlotaCrudTabs } from '@features/flota/create-edit';
 
 export function FlotaNuevoPage() {
     const navigate = useNavigate();
@@ -29,7 +29,7 @@ export function FlotaNuevoPage() {
     } = useFlotaForm({
         flotaToEdit: null,
         onSuccess: () => {},
-        onClose: () => navigate('/app/flotas'),
+        onClose: () => navigate(APP_PATHS.flotas),
         open: true
     });
 
@@ -50,7 +50,7 @@ export function FlotaNuevoPage() {
             footer={
                 <>
                     <Button
-                        onClick={() => navigate('/app/flotas')}
+                        onClick={() => navigate(APP_PATHS.flotas)}
                         variant="outlined"
                         color="inherit"
                         disabled={isSubmitting}

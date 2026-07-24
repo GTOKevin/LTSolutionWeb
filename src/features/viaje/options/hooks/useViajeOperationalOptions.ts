@@ -19,7 +19,7 @@ export function useViajeOperationalOptions(
 ) {
     const { data: flotaDisponibilidad } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.flotaDisponibilidad(),
-        queryFn: async () => (await flotaApi.getDisponibilidad()).data,
+        queryFn: async () => flotaApi.getDisponibilidad(),
         enabled,
     });
 

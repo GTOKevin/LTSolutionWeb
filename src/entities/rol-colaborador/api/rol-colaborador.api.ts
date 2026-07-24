@@ -3,14 +3,20 @@ import type { SelectItem, PagedResponse } from '@/shared/model/types';
 import type { RolColaborador } from '../model/types';
 
 export const rolColaboradorApi = {
-    getAll: (params?: { page?: number; size?: number; search?: string }) =>
-        httpClient.get<PagedResponse<RolColaborador>>('/RolColaborador', { params }),
+    getAll: async (params?: { page?: number; size?: number; search?: string }) => {
+        const { data } = await httpClient.get<PagedResponse<RolColaborador>>('/RolColaborador', { params });
+        return data;
+    },
 
-    getById: (id: number) =>
-        httpClient.get<RolColaborador>(`/RolColaborador/${id}`),
+    getById: async (id: number) => {
+        const { data } = await httpClient.get<RolColaborador>(`/RolColaborador/${id}`);
+        return data;
+    },
 
-    getSelect: (search?: string, limit: number = 20) =>
-        httpClient.get<SelectItem[]>('/RolColaborador/select', { params: { search, limit } }),
+    getSelect: async (search?: string, limit: number = 20) => {
+        const { data } = await httpClient.get<SelectItem[]>('/RolColaborador/select', { params: { search, limit } });
+        return data;
+    },
 
     create: (data: Omit<RolColaborador, 'rolColaboradorID'>) =>
         httpClient.post<number>('/RolColaborador', data).then(res => res.data),

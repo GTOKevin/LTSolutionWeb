@@ -50,7 +50,7 @@ export function useGastoPageController() {
 
     const { data: gastoDetail } = useQuery({
         queryKey: ['gasto-detail', selectedGastoId],
-        queryFn: () => gastoApi.getById(selectedGastoId as number).then((response) => response.data),
+        queryFn: () => gastoApi.getById(selectedGastoId as number),
         enabled: modalOpen && viewOnlyMode && selectedGastoId !== null,
     });
 
@@ -126,7 +126,7 @@ export function useGastoPageController() {
     return {
         canViewGasto,
         canManageGasto,
-        data: data?.data,
+        data,
         deleteDialogOpen,
         deleteMutation,
         gastoToDelete,

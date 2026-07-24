@@ -6,11 +6,11 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { colaboradorApi } from '@/entities/colaborador/api/colaborador.api';
-import { useColaboradorForm } from '@/features/colaborador/hooks/useColaboradorForm';
 import { COLABORADOR_QUERY_KEYS } from '@/features/colaborador/model/query-keys';
+import { APP_PATHS } from '@app/router/model/navigation';
+import { ColaboradorCrudPageContent, useColaboradorForm } from '@features/colaborador/create-edit';
 import { CrudTabbedPageShell } from '@/widgets/crud-page/ui/CrudTabbedPageShell';
-import { ColaboradorCrudPageContent } from '@/features/colaborador/create-edit/ui/ColaboradorCrudPageContent';
-import { getColaboradorCrudTabs } from '@/features/colaborador/create-edit/model/crud-tabs';
+import { getColaboradorCrudTabs } from '@features/colaborador/create-edit';
 
 export function ColaboradorEditarPage() {
     const navigate = useNavigate();
@@ -20,7 +20,7 @@ export function ColaboradorEditarPage() {
 
     const { data: colaborador, isLoading, isError, refetch } = useQuery({
         queryKey: COLABORADOR_QUERY_KEYS.detail(colaboradorId),
-        queryFn: () => colaboradorApi.getById(colaboradorId).then((r) => r.data),
+        queryFn: () => colaboradorApi.getById(colaboradorId),
         enabled: Number.isFinite(colaboradorId) && colaboradorId > 0
     });
 
@@ -42,7 +42,7 @@ export function ColaboradorEditarPage() {
     } = useColaboradorForm({
         colaboradorToEdit: colaborador ?? null,
         onSuccess: () => {},
-        onClose: () => navigate('/app/colaboradores'),
+        onClose: () => navigate(APP_PATHS.colaboradores),
         open: true
     });
 
@@ -63,7 +63,7 @@ export function ColaboradorEditarPage() {
             tabsProps={{ variant: 'scrollable', scrollButtons: 'auto' }}
             footer={
                 <>
-                    <Button onClick={() => navigate('/app/colaboradores')} color="inherit" variant="outlined">
+                    <Button onClick={() => navigate(APP_PATHS.colaboradores)} color="inherit" variant="outlined">
                         {activeTab === 0 ? 'Cancelar' : 'Cerrar'}
                     </Button>
                     {loadErrorMessage ? (
@@ -91,7 +91,7 @@ export function ColaboradorEditarPage() {
                     form={form}
                     onSubmit={onSubmit}
                     effectiveId={effectiveId}
-                    roles={roles?.data ?? []}
+                    roles={roles}
                     generos={generos}
                     monedas={monedas}
                     isEdit={isEdit}

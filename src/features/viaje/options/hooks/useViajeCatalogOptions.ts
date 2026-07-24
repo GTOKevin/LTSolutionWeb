@@ -22,13 +22,13 @@ export function useViajeCatalogOptions(enabled: boolean = true) {
 
     const { data: tiposGasto } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.tiposGasto(),
-        queryFn: async () => (await gastoApi.getSelect('', 50)).data ?? [],
+        queryFn: async () => (await gastoApi.getSelect('', 50)) ?? [],
         enabled,
     });
 
     const { data: mercaderias } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.mercaderias(),
-        queryFn: async () => (await mercaderiaApi.getSelect('', 50)).data ?? [],
+        queryFn: async () => (await mercaderiaApi.getSelect('', 50)) ?? [],
         enabled,
     });
 

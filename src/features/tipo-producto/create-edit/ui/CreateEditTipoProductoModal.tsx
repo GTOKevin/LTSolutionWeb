@@ -45,7 +45,7 @@ export function CreateEditTipoProductoModal({ open, onClose, tipoProductoToEdit,
         enabled: open
     });
 
-    const categorias = categoriasQuery?.data?.map(c => c.text) || [];
+    const categorias = categoriasQuery?.map(c => c.text) || [];
 
     const {
         register,

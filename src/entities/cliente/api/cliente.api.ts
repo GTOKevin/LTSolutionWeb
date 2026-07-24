@@ -3,23 +3,37 @@ import type { Cliente, ClienteContacto, CreateClienteDto, CreateClienteContactoD
 import type { PagedResponse, SelectItem } from '@/shared/model/types';
 
 export const clienteApi = {
-    getById: (id: number) => httpClient.get<Cliente>(`/Cliente/${id}`),
+    getById: async (id: number) => {
+        const { data } = await httpClient.get<Cliente>(`/Cliente/${id}`);
+        return data;
+    },
 
-    getAll: (params: ClienteParams) => 
-        httpClient.get<PagedResponse<Cliente>>('/Cliente', { params }),
+    getAll: async (params: ClienteParams) => {
+        const { data } = await httpClient.get<PagedResponse<Cliente>>('/Cliente', { params });
+        return data;
+    },
 
-    getSelect: (search?: string, limit: number = 20) =>
-        httpClient.get<SelectItem[]>('/Cliente/select', { params: { search, limit } }),
+    getSelect: async (search?: string, limit: number = 20) => {
+        const { data } = await httpClient.get<SelectItem[]>('/Cliente/select', { params: { search, limit } });
+        return data;
+    },
 
-    getContactos: (clienteId?: number, search?: string, activo?: boolean, page: number = 1, size: number = 20) =>
-        httpClient.get<PagedResponse<ClienteContacto>>('/Cliente/contactos', { 
+    getContactos: async (clienteId?: number, search?: string, activo?: boolean, page: number = 1, size: number = 20) => {
+        const { data } = await httpClient.get<PagedResponse<ClienteContacto>>('/Cliente/contactos', {
             params: { clienteId, search, activo, page, size } 
-        }),
+        });
+        return data;
+    },
 
-    create: (data: CreateClienteDto) => httpClient.post<number>('/Cliente', data).then(res => res.data),
+    create: async (data: CreateClienteDto) => {
+        const response = await httpClient.post<number>('/Cliente', data);
+        return response.data;
+    },
 
-    addContacto: (clienteId: number, data: CreateClienteContactoDto) => 
-        httpClient.post<number>(`/Cliente/${clienteId}/contactos`, data).then(res => res.data),
+    addContacto: async (clienteId: number, data: CreateClienteContactoDto) => {
+        const response = await httpClient.post<number>(`/Cliente/${clienteId}/contactos`, data);
+        return response.data;
+    },
 
     update: (id: number, data: CreateClienteDto) => httpClient.put<void>(`/Cliente/${id}`, data),
 
