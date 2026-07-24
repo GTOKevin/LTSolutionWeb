@@ -36,7 +36,16 @@ export function DashboardOverview({
     const canViewFacturas = usePermission(PERMISSIONS.FACTURAS.VER);
     const canViewFlota = usePermission(PERMISSIONS.FLOTA.VER);
     const canViewColaboradores = usePermission(PERMISSIONS.COLABORADORES.VER);
-    const canViewSecurityAlerts = canViewFacturas || canViewFlota || canViewColaboradores;
+    const canViewMantenimientos = usePermission(PERMISSIONS.MANTENIMIENTOS.VER);
+    const canViewClientes = usePermission(PERMISSIONS.CLIENTES.VER);
+    const canViewUsuarios = usePermission(PERMISSIONS.SISTEMA.USUARIOS.VER);
+    const canViewSecurityAlerts =
+        canViewFacturas ||
+        canViewFlota ||
+        canViewColaboradores ||
+        canViewMantenimientos ||
+        canViewClientes ||
+        canViewUsuarios;
     const hasVisibleDashboardSections =
         canViewViajes || canViewFacturas || canViewFlota || canViewSecurityAlerts;
     const currentPeriodMeta = DASHBOARD_PERIOD_OPTIONS.find(item => item.value === period) ?? DASHBOARD_PERIOD_OPTIONS[1];
@@ -105,6 +114,9 @@ export function DashboardOverview({
                         canViewSecurityAlerts={canViewSecurityAlerts}
                         canViewFlota={canViewFlota}
                         canViewColaboradores={canViewColaboradores}
+                        canViewMantenimientos={canViewMantenimientos}
+                        canViewClientes={canViewClientes}
+                        canViewUsuarios={canViewUsuarios}
                     />
                 </>
             ) : (

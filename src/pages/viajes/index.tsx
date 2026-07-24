@@ -15,7 +15,7 @@ export function ViajesPage() {
             filters={<ViajesFilters onSearch={controller.setFilters} />}
             viewMode={controller.viewMode}
             onViewModeChange={controller.setViewMode}
-            canExport={controller.canManageViajes}
+            canExport={controller.canViewViajes}
             onExportListPdf={() => controller.handleExportListPdf(controller.filters)}
             onExportListExcel={() => controller.handleExportListExcel(controller.filters)}
         >

@@ -37,6 +37,7 @@ export function useMantenimientoPermissions() {
 
     return {
         canViewMantenimientos,
+        canManageMantenimientos,
         isCompleted,
         isClosed,
         canReopen,

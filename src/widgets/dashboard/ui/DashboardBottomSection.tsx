@@ -25,6 +25,9 @@ interface DashboardBottomSectionProps {
     canViewSecurityAlerts: boolean;
     canViewFlota: boolean;
     canViewColaboradores: boolean;
+    canViewMantenimientos: boolean;
+    canViewClientes: boolean;
+    canViewUsuarios: boolean;
 }
 
 export function DashboardBottomSection({
@@ -34,6 +37,9 @@ export function DashboardBottomSection({
     canViewSecurityAlerts,
     canViewFlota,
     canViewColaboradores,
+    canViewMantenimientos,
+    canViewClientes,
+    canViewUsuarios,
 }: DashboardBottomSectionProps) {
     const theme = useTheme();
     const navigate = useNavigate();
@@ -49,6 +55,12 @@ export function DashboardBottomSection({
                 return canViewFlota;
             case 'colaboradores':
                 return canViewColaboradores;
+            case 'mantenimientos':
+                return canViewMantenimientos;
+            case 'clientes':
+                return canViewClientes;
+            case 'usuarios':
+                return canViewUsuarios;
             default:
                 return false;
         }

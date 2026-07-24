@@ -27,10 +27,9 @@ import { MantenimientoTable } from './MantenimientoTable';
 import { MantenimientoMobileList } from './MantenimientoMobileList';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@app/router/model/navigation';
-import { usePermission } from '@/shared/lib/hooks/usePermission';
-import { PERMISSIONS } from '@/shared/constants/permissions';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { useMantenimientoReport } from '../../hooks/useMantenimientoReport';
+import { useMantenimientoPermissions } from '../../hooks/useMantenimientoPermissions';
 import type { useMantenimientos } from '../hooks/useMantenimientos';
 
 interface MantenimientosPageContentProps {
@@ -40,7 +39,7 @@ interface MantenimientosPageContentProps {
 export function MantenimientosPageContent({ controller }: MantenimientosPageContentProps) {
     const theme = useTheme();
     const navigate = useNavigate();
-    const canManageMantenimientos = usePermission(PERMISSIONS.MANTENIMIENTOS.GESTIONAR);
+    const { canManageMantenimientos, canViewMantenimientos } = useMantenimientoPermissions();
     const { generateSummaryExcel, generateSummaryPdf } = useMantenimientoReport();
     const [showFilters, setShowFilters] = useState(true);
     const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
@@ -143,7 +142,7 @@ export function MantenimientosPageContent({ controller }: MantenimientosPageCont
                             </IconButton>
                         </Tooltip>
 
-                        {canManageMantenimientos && (
+                        {canViewMantenimientos && (
                             <>
                                 <Button
                                     variant="outlined"
@@ -184,21 +183,24 @@ export function MantenimientosPageContent({ controller }: MantenimientosPageCont
                                     </MenuItem>
                                 </Menu>
 
-                                <Button
-                                    variant="contained"
-                                    startIcon={<AddIcon />}
-                                    onClick={handleCreate}
-                                    sx={{
-                                        boxShadow: 2,
-                                        fontWeight: 'bold',
-                                        px: 3,
-                                        py: 1.2,
-                                        borderRadius: 2
-                                     }}
-                                >
-                                    Nuevo Registro
-                                </Button>
                             </>
+                        )}
+
+                        {canManageMantenimientos && (
+                            <Button
+                                variant="contained"
+                                startIcon={<AddIcon />}
+                                onClick={handleCreate}
+                                sx={{
+                                    boxShadow: 2,
+                                    fontWeight: 'bold',
+                                    px: 3,
+                                    py: 1.2,
+                                    borderRadius: 2
+                                 }}
+                            >
+                                Nuevo Registro
+                            </Button>
                         )}
                     </Box>
                 </Box>
