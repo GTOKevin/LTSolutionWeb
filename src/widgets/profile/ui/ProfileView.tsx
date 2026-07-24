@@ -82,7 +82,7 @@ export function ProfileView({ data, isLoading, isFetching, isError, onRetry }: P
     const documentosVigentes = data.documentos.filter(doc => isDocumentVigente(doc.vigenciaEstado)).length;
     const actividadPercent = data.documentos.length > 0
         ? Math.round((documentosVigentes / data.documentos.length) * 1000) / 10
-        : 100;
+        : 0;
     const totalRegistrosLicencias = data.licencias.length + data.ausencias.length;
     const hasCollaborator = !!data.colaborador;
 

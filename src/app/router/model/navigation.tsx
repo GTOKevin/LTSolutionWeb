@@ -64,7 +64,6 @@ export const APP_PATHS = {
     misLicencias: '/app/mis-licencias',
     misDocumentos: '/app/mis-documentos',
     clientes: '/app/clientes',
-    cotizaciones: '/app/cotizaciones',
     facturas: '/app/facturas',
     viajes: '/app/viajes',
     flotas: '/app/flotas',
@@ -87,7 +86,6 @@ export const APP_ROUTE_SEGMENTS = {
     misLicencias: 'mis-licencias',
     misDocumentos: 'mis-documentos',
     clientes: 'clientes',
-    cotizaciones: 'cotizaciones',
     facturas: 'facturas',
     viajes: 'viajes',
     flotas: 'flotas',
@@ -361,6 +359,18 @@ export const APP_BOTTOM_NAV_ITEMS: AppBottomNavItem[] = [
         context: 'portal',
     },
 ];
+
+export function buildAppCreatePath(basePath: string) {
+    return `${basePath}/nuevo`;
+}
+
+export function buildAppDetailPath(basePath: string, id: string | number) {
+    return `${basePath}/${id}`;
+}
+
+export function buildAppViewPath(basePath: string, id: string | number) {
+    return `${buildAppDetailPath(basePath, id)}/ver`;
+}
 
 export function resolveAppRouteMeta(pathname: string): AppRouteMeta | undefined {
     return [...APP_ROUTE_META]

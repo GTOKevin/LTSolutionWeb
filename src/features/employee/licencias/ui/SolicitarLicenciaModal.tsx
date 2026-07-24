@@ -54,7 +54,7 @@ export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModal
 
     const { data: tiposLicencia } = useQuery({
         queryKey: ['employee-portal', 'tipos-licencia'],
-        queryFn: async () => (await maestroApi.getSelect(undefined, SECCION_MAESTRO.LICENCIA)).data,
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.LICENCIA),
     });
 
     const createMutation = useMutation({

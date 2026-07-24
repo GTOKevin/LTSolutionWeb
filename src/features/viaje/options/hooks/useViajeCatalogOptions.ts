@@ -10,13 +10,13 @@ import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
 export function useViajeCatalogOptions(enabled: boolean = true) {
     const { data: tiposMedida } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.tiposMedida(),
-        queryFn: async () => (await maestroApi.getSelect('', TIPO_MAESTRO_SECTIONS.MEDIDA)).data ?? [],
+        queryFn: async () => (await maestroApi.getSelect('', TIPO_MAESTRO_SECTIONS.MEDIDA)) ?? [],
         enabled,
     });
 
     const { data: tiposPeso } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.tiposPeso(),
-        queryFn: async () => (await maestroApi.getSelect('', TIPO_MAESTRO_SECTIONS.PESO)).data ?? [],
+        queryFn: async () => (await maestroApi.getSelect('', TIPO_MAESTRO_SECTIONS.PESO)) ?? [],
         enabled,
     });
 
@@ -34,25 +34,25 @@ export function useViajeCatalogOptions(enabled: boolean = true) {
 
     const { data: tiposIncidente } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.tiposIncidente(),
-        queryFn: async () => (await maestroApi.getSelect('', TIPO_MAESTRO_SECTIONS.INCIDENTE)).data ?? [],
+        queryFn: async () => (await maestroApi.getSelect('', TIPO_MAESTRO_SECTIONS.INCIDENTE)) ?? [],
         enabled,
     });
 
     const { data: tiposGuia } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.tiposGuia(),
-        queryFn: async () => (await maestroApi.getSelect('', TIPO_MAESTRO_SECTIONS.GUIA)).data ?? [],
+        queryFn: async () => (await maestroApi.getSelect('', TIPO_MAESTRO_SECTIONS.GUIA)) ?? [],
         enabled,
     });
 
     const { data: monedas } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.monedas(),
-        queryFn: async () => (await monedaApi.getSelect()).data ?? [],
+        queryFn: async () => (await monedaApi.getSelect()) ?? [],
         enabled,
     });
 
     const { data: estados } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.estados(),
-        queryFn: async () => (await estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE)).data ?? [],
+        queryFn: async () => (await estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE)) ?? [],
         enabled,
     });
 

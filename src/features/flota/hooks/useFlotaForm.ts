@@ -59,9 +59,9 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
         enabled: open
     });
 
-    const listaFlota = tiposFlota?.data || [];
-    const listaPeso = tiposPeso?.data || [];
-    const listaMedida = tiposMedida?.data || [];
+    const listaFlota = tiposFlota || [];
+    const listaPeso = tiposPeso || [];
+    const listaMedida = tiposMedida || [];
 
     // --- Form ---
     const form = useForm({

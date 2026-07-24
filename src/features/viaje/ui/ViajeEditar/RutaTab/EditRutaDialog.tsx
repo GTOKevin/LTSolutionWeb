@@ -94,7 +94,7 @@ export function EditRutaDialog({ open, onClose, viajeId, ruta }: EditRutaDialogP
                             {isLoadingTipos ? (
                                 <MenuItem disabled value="">Cargando...</MenuItem>
                             ) : (
-                                tiposPunto?.data?.map(t => (
+                                tiposPunto?.map(t => (
                                     <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
                                 ))
                             )}

@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FormProvider } from 'react-hook-form';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { useViajeOptions } from '@features/viaje/options';
 import { useViajeWizardController } from '../hooks/useViajeWizardController';
 import { WizardSidebar } from '@features/viaje/ui/ViajeWizardCreate/WizardSidebar';
-import { ViajeWizardShell } from '@widgets/viaje-workspace/ui/ViajeWizardShell';
+import { ViajeWizardShell } from './ViajeWizardShell';
 import { ViajeWizardStepContent } from './ViajeWizardStepContent';
 
 export function ViajeCreatePageContent() {
@@ -31,7 +32,7 @@ export function ViajeCreatePageContent() {
                 title="Creación de Nuevo Viaje"
                 subtitle="Defina los parámetros esenciales para iniciar el proceso logístico y garantizar la seguridad operativa."
                 sidebar={<WizardSidebar activeStep={activeStep} totalSteps={steps.length} options={options} />}
-                onCancel={() => navigate('/app/viajes')}
+                onCancel={() => navigate(APP_PATHS.viajes)}
                 onBack={handleBack}
                 onNext={handleNext}
                 onSave={handleSubmit(onSubmit)}

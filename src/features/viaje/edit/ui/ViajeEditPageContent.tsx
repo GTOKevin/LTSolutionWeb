@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import type { UpdateViajeDto } from '@/entities/viaje/model/types';
 import { useViajeIncidenteOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
@@ -10,7 +11,7 @@ import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
 import { createResumenGeneralDataFromViaje, getViajeEditTabs } from '../model/viaje-edit-tabs';
 import type { ResumenGeneralData } from './tabs/ResumenGeneralTab';
-import { ViajeEditShell } from '@widgets/viaje-workspace/ui/ViajeEditShell';
+import { ViajeEditShell } from './ViajeEditShell';
 import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
 import { ViajeEditContent } from './ViajeEditContent';
 
@@ -53,7 +54,7 @@ export function ViajeEditPageContent() {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.lists() });
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.detail(viajeId) });
             showToast({ entity: 'Viaje', action: 'update' });
-            navigate('/app/viajes');
+            navigate(APP_PATHS.viajes);
         },
         onError: () => {
             showToast({ entity: 'Viaje', action: 'update', isError: true });
@@ -120,7 +121,7 @@ export function ViajeEditPageContent() {
             activeTab={activeTab}
             onTabChange={(_, newValue) => setActiveTab(newValue)}
             tabs={tabs}
-            onBack={() => navigate('/app/viajes')}
+            onBack={() => navigate(APP_PATHS.viajes)}
             onSave={handleSave}
             isSaving={updateMutation.isPending}
             isViewOnly={isViewOnly}

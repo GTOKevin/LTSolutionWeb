@@ -97,7 +97,7 @@ export function CreateEditTipoMaestroModal({
                                     <Autocomplete
                                         {...field}
                                         freeSolo
-                                        options={secciones?.data || []}
+                                        options={secciones || []}
                                         value={value || null}
                                         onChange={(_, newValue) => onChange(newValue)}
                                         onInputChange={(_, newInputValue) => {

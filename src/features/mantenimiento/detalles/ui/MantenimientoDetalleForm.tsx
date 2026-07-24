@@ -125,7 +125,7 @@ export function MantenimientoDetalleForm({
 
     const listaCategorias = categorias?.data || [];
     const listaProductos = tiposProducto?.data || [];
-    const listaMonedas = monedas?.data || [];
+    const listaMonedas = monedas || [];
 
     const handleCategoriaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const categoria = event.target.value;

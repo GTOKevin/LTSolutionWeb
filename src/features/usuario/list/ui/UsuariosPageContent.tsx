@@ -111,7 +111,7 @@ export function UsuariosPageContent({ controller }: UsuariosPageContentProps) {
                     statusFilter={controller.draftStatusFilter}
                     onStatusChange={controller.setDraftStatusFilter}
                     roles={controller.roles?.data || []}
-                    estados={controller.estados?.data || []}
+                    estados={controller.estados || []}
                     onApplyFilters={controller.handleApplyFilters}
                     showFilters={controller.showFilters}
                     onToggleFilters={controller.handleToggleFilters}

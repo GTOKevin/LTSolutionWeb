@@ -187,7 +187,7 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
         
         // Catalogs
         roles,
-        generos,
-        monedas
+        generos: generos ?? [],
+        monedas: monedas ?? []
     };
 }

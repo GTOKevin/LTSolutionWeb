@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@app/router/model/navigation';
 import { facturaApi } from '@/entities/factura/api/factura.api';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import type { Factura, FacturaFilters } from '@/entities/factura/model/types';
@@ -40,21 +41,21 @@ export function useFacturasPageController() {
 
     const updateMutation = useUpdateFactura();
     const deleteMutation = useDeleteFactura();
-    const facturaEstados = facturaEstadosResponse?.data ?? [];
+    const facturaEstados = facturaEstadosResponse ?? [];
     const facturaGeneradaId = resolveFacturaGeneradaId(facturaEstados);
     const facturaEmitidaId = resolveFacturaEmitidaId(facturaEstados);
     const facturaEntregadaId = resolveFacturaEntregadaId(facturaEstados);
 
     const handleCreateClick = () => {
-        navigate('/app/facturas/nuevo');
+        navigate(buildAppCreatePath(APP_PATHS.facturas));
     };
 
     const handleEditClick = (factura: Factura) => {
-        navigate(`/app/facturas/${factura.facturaID}`);
+        navigate(buildAppDetailPath(APP_PATHS.facturas, factura.facturaID));
     };
 
     const handleViewClick = (factura: Factura) => {
-        navigate(`/app/facturas/${factura.facturaID}/ver`);
+        navigate(buildAppViewPath(APP_PATHS.facturas, factura.facturaID));
     };
 
     const handleDeleteClick = async (factura: Factura) => {

@@ -332,7 +332,7 @@ export function LicenciaList({ colaboradorId, viewOnly = false }: LicenciaListPr
                         onChange={(e) => setTipoLicenciaID(e.target.value as number | '')}
                     >
                         <MenuItem value="">Todos</MenuItem>
-                        {tiposLicencia?.data?.map((t) => (
+                        {tiposLicencia?.map((t) => (
                             <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
                         ))}
                     </TextField>

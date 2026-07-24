@@ -52,7 +52,7 @@ export function useMaestrosPageController() {
 
     const { data: maestroDetail } = useQuery({
         queryKey: ['tipo-maestro-detail', selectedMaestroId],
-        queryFn: () => tipoMaestroApi.getById(selectedMaestroId as number).then((response) => response.data),
+        queryFn: () => tipoMaestroApi.getById(selectedMaestroId as number),
         enabled: modalOpen && viewOnlyMode && selectedMaestroId !== null,
     });
 
@@ -109,7 +109,7 @@ export function useMaestrosPageController() {
     return {
         canViewMaestros,
         canManageMaestros,
-        data: data?.data,
+        data,
         handleChangePage,
         handleChangeRowsPerPage,
         handleChangeSeccion,
@@ -126,7 +126,7 @@ export function useMaestrosPageController() {
         rowsPerPage,
         searchTerm,
         selectedSeccion,
-        secciones: secciones?.data ?? [],
+        secciones: secciones ?? [],
         viewOnlyMode,
     };
 }

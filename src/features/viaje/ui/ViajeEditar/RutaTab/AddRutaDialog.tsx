@@ -53,9 +53,9 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
 
     // Establecer un valor por defecto cuando cargan los tipos
     useEffect(() => {
-        if (tiposPunto && tiposPunto.data?.length > 0 && formData.tipoPuntoId === 0) {
+        if (tiposPunto && tiposPunto.length > 0 && formData.tipoPuntoId === 0) {
             // Buscamos un valor razonable como 'Almuerzo' (1104) o el primero de la lista
-            const defaultValue = tiposPunto.data?.find(t => t.text.includes('Almuerzo')) || tiposPunto.data[0];
+            const defaultValue = tiposPunto.find(t => t.text.includes('Almuerzo')) || tiposPunto[0];
             const resetUiTimer = window.setTimeout(() => {
                 setFormData(prev => ({ ...prev, tipoPuntoId: defaultValue.id }));
             }, 0);
@@ -112,7 +112,7 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
                             {isLoadingTipos ? (
                                 <MenuItem disabled value="">Cargando...</MenuItem>
                             ) : (
-                                tiposPunto?.data?.map(t => (
+                                tiposPunto?.map(t => (
                                     <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>
                                 ))
                             )}

@@ -16,6 +16,7 @@ interface DashboardKpisSectionProps {
     canViewFacturas: boolean;
     canViewSecurityAlerts: boolean;
     canViewFlota: boolean;
+    canViewColaboradores: boolean;
 }
 
 export function DashboardKpisSection({
@@ -24,8 +25,12 @@ export function DashboardKpisSection({
     canViewFacturas,
     canViewSecurityAlerts,
     canViewFlota,
+    canViewColaboradores,
 }: DashboardKpisSectionProps) {
     const theme = useTheme();
+    const visibleFacturasVencidas = canViewFacturas ? data.alertasCriticas.facturasVencidas : 0;
+    const visibleDocumentosVencidos = canViewColaboradores || canViewFlota ? data.alertasCriticas.documentosVencidos : 0;
+    const visibleCriticalAlerts = visibleFacturasVencidas + visibleDocumentosVencidos;
 
     return (
         <Box
@@ -86,10 +91,17 @@ export function DashboardKpisSection({
                     accentColor={theme.palette.error.main}
                 >
                     <Typography sx={{ fontSize: { xs: '2rem', md: '2.5rem' }, fontWeight: 700, lineHeight: 1, color: theme.palette.error.main }}>
-                        {data.alertasCriticas.total.toString().padStart(2, '0')}
+                        {visibleCriticalAlerts.toString().padStart(2, '0')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                        {data.alertasCriticas.facturasVencidas} facturas vencidas y {data.alertasCriticas.documentosVencidos} documentos/licencias vencidos.
+                        {[
+                            canViewFacturas ? `${visibleFacturasVencidas} facturas vencidas` : null,
+                            canViewColaboradores || canViewFlota
+                                ? `${visibleDocumentosVencidos} documentos/licencias vencidos`
+                                : null,
+                        ]
+                            .filter(Boolean)
+                            .join(' y ') || 'Sin alertas visibles para tus módulos.'}
                     </Typography>
                 </DashboardMetricCard>
             )}

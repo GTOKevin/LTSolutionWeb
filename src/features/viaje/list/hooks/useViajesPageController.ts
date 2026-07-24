@@ -12,6 +12,7 @@ import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
 import { getErrorMessage, type ApiMutationError } from '@/shared/utils/api-errors';
 import { logger } from '@/shared/utils/logger';
+import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@app/router/model/navigation';
 
 export function useViajesPageController() {
     const navigate = useNavigate();
@@ -82,15 +83,15 @@ export function useViajesPageController() {
     });
 
     const handleCreate = useCallback(() => {
-        navigate('/app/viajes/nuevo');
+        navigate(buildAppCreatePath(APP_PATHS.viajes));
     }, [navigate]);
 
     const handleView = useCallback((item: ViajeListItem) => {
-        navigate(`/app/viajes/${item.viajeID}/ver`);
+        navigate(buildAppViewPath(APP_PATHS.viajes, item.viajeID));
     }, [navigate]);
 
     const handleEdit = useCallback((item: ViajeListItem) => {
-        navigate(`/app/viajes/${item.viajeID}`);
+        navigate(buildAppDetailPath(APP_PATHS.viajes, item.viajeID));
     }, [navigate]);
 
     const handleDelete = useCallback((item: ViajeListItem) => {

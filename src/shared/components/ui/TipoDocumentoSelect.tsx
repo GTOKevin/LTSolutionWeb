@@ -32,7 +32,7 @@ export function TipoDocumentoSelect({
         staleTime: 1000 * 60 * 5, // Cache por 5 minutos
     });
 
-    const options = data?.data || [];
+    const options = data || [];
     const currentValue = value || 0;
 
     return (

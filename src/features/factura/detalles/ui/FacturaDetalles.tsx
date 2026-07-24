@@ -82,6 +82,7 @@ export function FacturaDetalles({ factura, forceReadOnly = false }: FacturaDetal
                 facturaId={factura.facturaID}
                 monedaId={factura.monedaID}
                 clienteId={factura.clienteID}
+                monedaSimbolo={factura.moneda?.simbolo}
                 onClose={() => setIsFormOpen(false)}
             />
 

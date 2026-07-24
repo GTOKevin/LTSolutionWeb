@@ -33,9 +33,17 @@ interface FacturaDetalleFormProps {
     facturaId: number;
     monedaId: number;
     clienteId: number;
+    monedaSimbolo?: string;
 }
 
-export function FacturaDetalleForm({ open, onClose, facturaId, monedaId, clienteId }: FacturaDetalleFormProps) {
+export function FacturaDetalleForm({
+    open,
+    onClose,
+    facturaId,
+    monedaId,
+    clienteId,
+    monedaSimbolo,
+}: FacturaDetalleFormProps) {
     const theme = useTheme();
     const createMutation = useCreateFacturaDetalle();
     const [isSelectorOpen, setIsSelectorOpen] = useState(false);
@@ -90,6 +98,8 @@ export function FacturaDetalleForm({ open, onClose, facturaId, monedaId, cliente
         queryKey: ['monedas'],
         queryFn: () => monedaApi.getSelect()
     });
+
+    const currencySymbol = monedaSimbolo || 'S/';
 
     const handleViajeSelect = (viaje: Viaje) => {
         setValue('viajeID', viaje.viajeID);
@@ -215,7 +225,7 @@ export function FacturaDetalleForm({ open, onClose, facturaId, monedaId, cliente
                                         sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                     >
                                         <MenuItem value={0} disabled>Seleccione Moneda</MenuItem>
-                                        {monedas?.data?.map((m) => (
+                                        {monedas?.map((m) => (
                                             <MenuItem key={m.id} value={m.id}>
                                                 {m.text}
                                             </MenuItem>
@@ -233,7 +243,7 @@ export function FacturaDetalleForm({ open, onClose, facturaId, monedaId, cliente
                         <Paper elevation={0} sx={{ p: 3, border: `1px solid ${theme.palette.divider}`, borderRadius: 3, bgcolor: 'background.default' }}>
                             <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>Subtotal</Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Typography variant="h5" color="text.secondary" fontWeight="bold">S/</Typography>
+                                <Typography variant="h5" color="text.secondary" fontWeight="bold">{currencySymbol}</Typography>
                                 <Controller
                                     name="subTotal"
                                     control={control}
@@ -286,7 +296,7 @@ export function FacturaDetalleForm({ open, onClose, facturaId, monedaId, cliente
                                 />
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mt: 2 }}>
-                                <Typography variant="body1" color="text.secondary" fontWeight="medium">S/</Typography>
+                                <Typography variant="body1" color="text.secondary" fontWeight="medium">{currencySymbol}</Typography>
                                 <Typography variant="h5" color="text.secondary" fontWeight="bold">{displayIgv.toFixed(2)}</Typography>
                             </Box>
                         </Paper>
@@ -294,7 +304,7 @@ export function FacturaDetalleForm({ open, onClose, facturaId, monedaId, cliente
                         <Paper elevation={0} sx={{ p: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.05), display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <Typography variant="caption" fontWeight="bold" color="primary.main" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>Total Final</Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
-                                <Typography variant="h6" color={errors.total ? 'error.main' : 'primary.main'} fontWeight="bold">S/</Typography>
+                                <Typography variant="h6" color={errors.total ? 'error.main' : 'primary.main'} fontWeight="bold">{currencySymbol}</Typography>
                                 <TextField
                                     type="number"
                                     name='total'

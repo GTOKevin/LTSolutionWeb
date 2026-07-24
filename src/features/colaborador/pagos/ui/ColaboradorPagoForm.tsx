@@ -131,7 +131,7 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
                                             helperText={errors.tipoPagoID?.message}
                                         >
                                             <MenuItem value={0} disabled>Seleccione</MenuItem>
-                                            {tiposPago?.data?.map((t) => (
+                                            {tiposPago?.map((t) => (
                                                 <MenuItem key={t.id} value={t.id}>
                                                     {t.text}
                                                 </MenuItem>
@@ -193,7 +193,7 @@ export function ColaboradorPagoForm({ open, onClose, colaboradorId, pagoToEdit }
                                             helperText={errors.monedaID?.message}
                                         >
                                             <MenuItem value={0} disabled>Seleccione</MenuItem>
-                                            {monedas?.data?.map((m) => (
+                                            {monedas?.map((m) => (
                                                 <MenuItem key={m.id} value={m.id}>
                                                     {m.text}
                                                 </MenuItem>
