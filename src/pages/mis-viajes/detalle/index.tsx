@@ -32,6 +32,7 @@ import {
     type UpdateMisViajesKmsForm,
     type UpdateMisViajesKmsFormInput,
 } from '@/features/employee/viajes/model/schema';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { getErrorMessage } from '@/shared/utils/api-errors';
 
 const styles = {
@@ -166,7 +167,7 @@ export function MisViajesDetallePage() {
         return (
             <Box sx={{ p: 4, textAlign: 'center' }}>
                 <Typography variant="h6">No se encontró el viaje</Typography>
-                <Button onClick={() => navigate('/app/mis-viajes')} sx={{ mt: 2 }}>Volver</Button>
+                <Button onClick={() => navigate(APP_PATHS.misViajes)} sx={{ mt: 2 }}>Volver</Button>
             </Box>
         );
     }
@@ -183,7 +184,7 @@ export function MisViajesDetallePage() {
             <Box sx={{ ...styles.heroHeader, position: 'sticky', top: 0, zIndex: 10, px: { xs: 2, md: 4 }, py: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid', borderColor: 'divider' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Button 
-                        onClick={() => navigate('/app/mis-viajes')}
+                        onClick={() => navigate(APP_PATHS.misViajes)}
                         sx={{ minWidth: 'auto', p: 1, borderRadius: '50%', color: 'text.secondary', '&:hover': { bgcolor: 'action.hover' } }}
                     >
                         <ArrowBackIcon />

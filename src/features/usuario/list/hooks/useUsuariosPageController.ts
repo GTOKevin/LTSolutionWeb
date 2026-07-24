@@ -163,7 +163,7 @@ export function useUsuariosPageController() {
         isLoading,
         modalOpen,
         page,
-        roles,
+        roles: roles ?? [],
         rowsPerPage,
         searchTerm,
         setChangePasswordOpen,

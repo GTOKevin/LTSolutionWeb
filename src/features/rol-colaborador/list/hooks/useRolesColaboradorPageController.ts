@@ -45,7 +45,7 @@ export function useRolesColaboradorPageController() {
 
     const { data: rolDetail } = useQuery({
         queryKey: ['rol-colaborador-detail', selectedRolId],
-        queryFn: () => rolColaboradorApi.getById(selectedRolId as number).then((response) => response.data),
+        queryFn: () => rolColaboradorApi.getById(selectedRolId as number),
         enabled: modalOpen && viewOnlyMode && selectedRolId !== null,
     });
 
@@ -97,7 +97,7 @@ export function useRolesColaboradorPageController() {
     return {
         canViewRoles,
         canManageRoles,
-        data: data?.data,
+        data,
         handleChangePage,
         handleChangeRowsPerPage,
         handleCloseModal,

@@ -3,6 +3,7 @@ import {
     CircularProgress,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { ClienteCrudPageContent, getClienteCrudTabs, useClienteForm } from '@features/cliente/create-edit';
 import { CrudTabbedPageShell } from '@/widgets/crud-page/ui/CrudTabbedPageShell';
 
@@ -23,7 +24,7 @@ export function ClienteNuevoPage() {
         isSubmitting
     } = useClienteForm({
         open: true,
-        onClose: () => navigate('/app/clientes'),
+        onClose: () => navigate(APP_PATHS.clientes),
         onSuccess: () => {},
         clienteToEdit: null
     });
@@ -45,7 +46,7 @@ export function ClienteNuevoPage() {
             footer={
                 <>
                     <Button
-                        onClick={() => navigate('/app/clientes')}
+                        onClick={() => navigate(APP_PATHS.clientes)}
                         variant="outlined"
                         color="inherit"
                         disabled={isSubmitting}

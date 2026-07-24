@@ -57,7 +57,7 @@ export function useTipoProductoPageController() {
 
     const { data: tipoDetail } = useQuery({
         queryKey: ['tipo-producto-detail', selectedTipoId],
-        queryFn: () => tipoProductoApi.getById(selectedTipoId as number).then((response) => response.data),
+        queryFn: () => tipoProductoApi.getById(selectedTipoId as number),
         enabled: modalOpen && viewOnlyMode && selectedTipoId !== null,
     });
 
@@ -138,8 +138,8 @@ export function useTipoProductoPageController() {
     return {
         canViewTipoProducto,
         canManageTipoProducto,
-        categorias: categorias?.data?.map((categoria) => categoria.text) ?? [],
-        data: data?.data,
+        categorias: categorias?.map((categoria) => categoria.text) ?? [],
+        data,
         deleteDialogOpen,
         deleteMutation,
         handleChangeCategoria,

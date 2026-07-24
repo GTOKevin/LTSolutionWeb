@@ -247,7 +247,7 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
                                                     sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                                 >
                                                     <MenuItem value={0} disabled>Seleccione un cliente</MenuItem>
-                                                    {clientes?.data?.map((cliente) => (
+                                                    {clientes?.map((cliente) => (
                                                         <MenuItem key={cliente.id} value={cliente.id}>
                                                             {cliente.text}
                                                         </MenuItem>

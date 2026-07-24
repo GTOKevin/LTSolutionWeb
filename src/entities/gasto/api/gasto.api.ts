@@ -3,12 +3,18 @@ import type { Gasto, GastoDto, CreateGastoDto, GastoParams } from '../model/type
 import type { PagedResponse, SelectItem } from '@/shared/model/types';
 
 export const gastoApi = {
-    getSelect: (search?: string, limit: number = 20) =>
-        httpClient.get<SelectItem[]>('/Gasto/select', { params: { search, limit } }),
-    getAll: (params: GastoParams) =>
-        httpClient.get<PagedResponse<Gasto>>('/Gasto', { params }),
-    getById: (id: number) =>
-        httpClient.get<GastoDto>(`/Gasto/${id}`),
+    getSelect: async (search?: string, limit: number = 20) => {
+        const { data } = await httpClient.get<SelectItem[]>('/Gasto/select', { params: { search, limit } });
+        return data;
+    },
+    getAll: async (params: GastoParams) => {
+        const { data } = await httpClient.get<PagedResponse<Gasto>>('/Gasto', { params });
+        return data;
+    },
+    getById: async (id: number) => {
+        const { data } = await httpClient.get<GastoDto>(`/Gasto/${id}`);
+        return data;
+    },
     create: (data: CreateGastoDto) => httpClient.post<number>('/Gasto', data).then(res => res.data),
     update: (id: number, data: CreateGastoDto) =>
         httpClient.put<void>(`/Gasto/${id}`, data),

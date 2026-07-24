@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
 import type { Cliente } from '@entities/cliente/model/types';
+import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@app/router/model/navigation';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { usePermission } from '@shared/lib/hooks/usePermission';
 import { handleSanitizeSearchInput } from '@shared/utils/input-validators';
@@ -48,15 +49,15 @@ export function useClientesPageController() {
     const deleteMutation = useDeleteCliente();
 
     const handleCreate = () => {
-        navigate('/app/clientes/nuevo');
+        navigate(buildAppCreatePath(APP_PATHS.clientes));
     };
 
     const handleEdit = (cliente: Cliente) => {
-        navigate(`/app/clientes/${cliente.clienteID}`);
+        navigate(buildAppDetailPath(APP_PATHS.clientes, cliente.clienteID));
     };
 
     const handleView = (cliente: Cliente) => {
-        navigate(`/app/clientes/${cliente.clienteID}/ver`);
+        navigate(buildAppViewPath(APP_PATHS.clientes, cliente.clienteID));
     };
 
     const handleDeleteClick = (cliente: Cliente) => {
@@ -94,7 +95,7 @@ export function useClientesPageController() {
         canManageClientes,
         canViewClientes,
         clienteToDelete,
-        data: data?.data,
+        data,
         deleteConfirmOpen,
         deleteMutation,
         handleChangePage,

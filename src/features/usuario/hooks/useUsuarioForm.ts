@@ -43,9 +43,9 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
         enabled: open
     });
 
-    const listaRoles = roles?.data || [];
+    const listaRoles = roles || [];
     const listaEstados = estados || [];
-    const listaColaboradores = colaboradores?.data || [];
+    const listaColaboradores = colaboradores || [];
 
     // --- Form ---
     const form = useForm({

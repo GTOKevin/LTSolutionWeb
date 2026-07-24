@@ -32,6 +32,7 @@ import { useAuthStore } from '@shared/store/auth.store';
 import { useState, useMemo, useEffect, useRef, type MouseEvent } from 'react';
 import { hasPermission as hasUserPermission } from '@shared/lib/permissions/hasPermission';
 import { SelfChangePasswordModal } from '@features/auth/change-password/ui/SelfChangePasswordModal';
+import { APP_PATHS } from '@app/router/model/navigation';
 
 export const DRAWER_WIDTH = 280;
 
@@ -162,13 +163,13 @@ export function Sidebar({ menu }: SidebarProps) {
 
     const handleGoToMyProfile = () => {
         handleMenuClose();
-        navigate('/app/perfil');
+        navigate(APP_PATHS.profile);
     };
 
     const handleLogout = () => {
         handleMenuClose();
         logout();
-        navigate('/login');
+        navigate(APP_PATHS.login);
     };
 
     const handleOpenChangePassword = () => {

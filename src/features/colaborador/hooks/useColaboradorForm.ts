@@ -186,7 +186,7 @@ export function useColaboradorForm({ colaboradorToEdit, onSuccess, onClose, open
         isSubmitting: createMutation.isPending || updateMutation.isPending,
         
         // Catalogs
-        roles,
+        roles: roles ?? [],
         generos: generos ?? [],
         monedas: monedas ?? []
     };

@@ -61,7 +61,7 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
         enabled: open
     });
 
-    const listaFlotas = flotas?.data || [];
+    const listaFlotas = flotas || [];
     const listaTiposServicio = tiposServicio || [];
     const listaEstados = estados || [];
     const estadoCompletadoId = resolveMantenimientoCompletadoId(listaEstados);

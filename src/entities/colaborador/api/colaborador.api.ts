@@ -3,17 +3,25 @@ import type { SelectItem,PagedResponse } from '@/shared/model/types';
 import type { Colaborador, CreateColaboradorDto, ColaboradorParams } from '../model/types';
 
 export const colaboradorApi = {
-    getAll: (params: ColaboradorParams) => 
-        httpClient.get<PagedResponse<Colaborador>>('/Colaborador', { params }),
+    getAll: async (params: ColaboradorParams) => {
+        const { data } = await httpClient.get<PagedResponse<Colaborador>>('/Colaborador', { params });
+        return data;
+    },
 
-    getById: (id: number) => 
-        httpClient.get<Colaborador>(`/Colaborador/${id}`),
+    getById: async (id: number) => {
+        const { data } = await httpClient.get<Colaborador>(`/Colaborador/${id}`);
+        return data;
+    },
 
-    getSelect: (search?: string, limit: number = 20) =>
-        httpClient.get<SelectItem[]>('/Colaborador/select', { params: { search, limit } }),
+    getSelect: async (search?: string, limit: number = 20) => {
+        const { data } = await httpClient.get<SelectItem[]>('/Colaborador/select', { params: { search, limit } });
+        return data;
+    },
 
-    getSelectAvailable: (currentColaboradorId?: number) =>
-        httpClient.get<SelectItem[]>('/Colaborador/select-available', { params: { currentColaboradorId } }),
+    getSelectAvailable: async (currentColaboradorId?: number) => {
+        const { data } = await httpClient.get<SelectItem[]>('/Colaborador/select-available', { params: { currentColaboradorId } });
+        return data;
+    },
 
     create: (data: CreateColaboradorDto) => httpClient.post<number>('/Colaborador', data).then(res => res.data),
 

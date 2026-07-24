@@ -6,6 +6,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { ClienteCrudPageContent, getClienteCrudTabs, useClienteForm } from '@features/cliente/create-edit';
 import { CrudTabbedPageShell } from '@/widgets/crud-page/ui/CrudTabbedPageShell';
 
@@ -17,7 +18,7 @@ export function ClienteEditarPage() {
 
     const { data: cliente, isLoading } = useQuery({
         queryKey: ['cliente', clienteId],
-        queryFn: () => clienteApi.getById(clienteId).then((r) => r.data),
+        queryFn: () => clienteApi.getById(clienteId),
         enabled: Number.isFinite(clienteId) && clienteId > 0
     });
 
@@ -35,7 +36,7 @@ export function ClienteEditarPage() {
         isSubmitting
     } = useClienteForm({
         open: true,
-        onClose: () => navigate('/app/clientes'),
+        onClose: () => navigate(APP_PATHS.clientes),
         onSuccess: () => {},
         clienteToEdit: cliente ?? null
     });
@@ -61,7 +62,7 @@ export function ClienteEditarPage() {
             footer={
                 <>
                     <Button
-                        onClick={() => navigate('/app/clientes')}
+                        onClick={() => navigate(APP_PATHS.clientes)}
                         variant="outlined"
                         color="inherit"
                         disabled={isSubmitting}

@@ -8,6 +8,7 @@ import {
     Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
+import { APP_PATHS, buildAppDetailPath } from '@app/router/model/navigation';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { MobileListShell } from '@shared/components/ui/MobileListShell';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@/entities/employee/api/employee-portal.api';
@@ -105,7 +106,7 @@ export function MisViajesPage() {
             {/* Trips Grid */}
             <MisViajesGrid 
                 items={data?.items ?? []} 
-                onNavigate={(id) => navigate(`/app/mis-viajes/${id}`)}
+                onNavigate={(id) => navigate(buildAppDetailPath(APP_PATHS.misViajes, id))}
             />
 
             <Box sx={{ display: { xs: 'block', md: 'none' } }}>
@@ -121,7 +122,7 @@ export function MisViajesPage() {
                     }}
                     keyExtractor={(item) => item.viajeId}
                     emptyMessage="No tienes viajes registrados con los filtros seleccionados."
-                    onView={(item) => navigate(`/app/mis-viajes/${item.viajeId}`)}
+                    onView={(item) => navigate(buildAppDetailPath(APP_PATHS.misViajes, item.viajeId))}
                     getCardStyle={(item, theme) => ({
                         borderRadius: 4,
                         borderColor: item.cerrado ? theme.palette.success.light : theme.palette.warning.light,

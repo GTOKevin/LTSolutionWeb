@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { mantenimientoApi } from '@/entities/mantenimiento/api/mantenimiento.api';
 import { useMantenimientoForm } from '@/features/mantenimiento/hooks/useMantenimientoForm';
 import { CrudTabbedPageShell } from '@/widgets/crud-page/ui/CrudTabbedPageShell';
@@ -48,7 +49,7 @@ export function MantenimientoEditarPage() {
     } = useMantenimientoForm({
         mantenimientoToEdit: mantenimiento ?? null,
         onSuccess: () => {},
-        onClose: () => navigate('/app/mantenimientos'),
+        onClose: () => navigate(APP_PATHS.mantenimientos),
         open: true
     });
 
@@ -69,7 +70,7 @@ export function MantenimientoEditarPage() {
                 footer={
                     <>
                         <Button
-                            onClick={() => navigate('/app/mantenimientos')}
+                            onClick={() => navigate(APP_PATHS.mantenimientos)}
                             variant="outlined"
                             color="inherit"
                             disabled={isSubmitting}

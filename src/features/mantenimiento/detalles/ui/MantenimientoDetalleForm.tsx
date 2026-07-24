@@ -123,8 +123,8 @@ export function MantenimientoDetalleForm({
         queryFn: () => monedaApi.getSelect()
     });
 
-    const listaCategorias = categorias?.data || [];
-    const listaProductos = tiposProducto?.data || [];
+    const listaCategorias = categorias || [];
+    const listaProductos = tiposProducto || [];
     const listaMonedas = monedas || [];
 
     const handleCategoriaChange = (event: React.ChangeEvent<HTMLInputElement>) => {

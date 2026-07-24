@@ -6,11 +6,11 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { flotaApi } from '@/entities/flota/api/flota.api';
-import { useFlotaForm } from '@/features/flota/hooks/useFlotaForm';
 import { FLOTA_QUERY_KEYS } from '@/features/flota/model/query-keys';
+import { APP_PATHS } from '@app/router/model/navigation';
+import { FlotaCrudPageContent, useFlotaForm } from '@features/flota/create-edit';
 import { CrudTabbedPageShell } from '@/widgets/crud-page/ui/CrudTabbedPageShell';
-import { FlotaCrudPageContent } from '@/features/flota/create-edit/ui/FlotaCrudPageContent';
-import { getFlotaCrudTabs } from '@/features/flota/create-edit/model/crud-tabs';
+import { getFlotaCrudTabs } from '@features/flota/create-edit';
 
 export function FlotaEditarPage() {
     const navigate = useNavigate();
@@ -20,7 +20,7 @@ export function FlotaEditarPage() {
 
     const { data: flota, isLoading, isError, refetch } = useQuery({
         queryKey: FLOTA_QUERY_KEYS.detail(flotaId),
-        queryFn: () => flotaApi.getById(flotaId).then((r) => r.data),
+        queryFn: () => flotaApi.getById(flotaId),
         enabled: Number.isFinite(flotaId) && flotaId > 0
     });
 
@@ -42,7 +42,7 @@ export function FlotaEditarPage() {
     } = useFlotaForm({
         flotaToEdit: flota ?? null,
         onSuccess: () => {},
-        onClose: () => navigate('/app/flotas'),
+        onClose: () => navigate(APP_PATHS.flotas),
         open: true
     });
 
@@ -63,7 +63,7 @@ export function FlotaEditarPage() {
             footer={
                 <>
                     <Button
-                        onClick={() => navigate('/app/flotas')}
+                        onClick={() => navigate(APP_PATHS.flotas)}
                         variant="outlined"
                         color="inherit"
                         disabled={isSubmitting}

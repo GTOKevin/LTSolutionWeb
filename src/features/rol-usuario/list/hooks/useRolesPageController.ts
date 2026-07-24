@@ -45,7 +45,7 @@ export function useRolesPageController() {
 
     const { data: rolDetail } = useQuery({
         queryKey: ['rol-usuario-detail', selectedRolId],
-        queryFn: () => rolUsuarioApi.getById(selectedRolId as number).then((response) => response.data),
+        queryFn: () => rolUsuarioApi.getById(selectedRolId as number),
         enabled: modalOpen && viewOnlyMode && selectedRolId !== null,
     });
 
@@ -97,7 +97,7 @@ export function useRolesPageController() {
     return {
         canViewRoles,
         canManageRoles,
-        data: data?.data,
+        data,
         handleChangePage,
         handleChangeRowsPerPage,
         handleCloseModal,

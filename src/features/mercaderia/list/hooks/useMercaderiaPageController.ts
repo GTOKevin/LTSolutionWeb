@@ -50,7 +50,7 @@ export function useMercaderiaPageController() {
 
     const { data: mercaderiaDetail } = useQuery({
         queryKey: ['mercaderia-detail', selectedMercaderiaId],
-        queryFn: () => mercaderiaApi.getById(selectedMercaderiaId as number).then((response) => response.data),
+        queryFn: () => mercaderiaApi.getById(selectedMercaderiaId as number),
         enabled: modalOpen && viewOnlyMode && selectedMercaderiaId !== null,
     });
 
@@ -126,7 +126,7 @@ export function useMercaderiaPageController() {
     return {
         canViewMercaderia,
         canManageMercaderia,
-        data: data?.data,
+        data,
         deleteDialogOpen,
         deleteMutation,
         handleChangePage,

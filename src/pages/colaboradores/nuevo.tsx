@@ -3,10 +3,10 @@ import {
     CircularProgress,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useColaboradorForm } from '@/features/colaborador/hooks/useColaboradorForm';
+import { APP_PATHS } from '@app/router/model/navigation';
+import { ColaboradorCrudPageContent, useColaboradorForm } from '@features/colaborador/create-edit';
 import { CrudTabbedPageShell } from '@/widgets/crud-page/ui/CrudTabbedPageShell';
-import { ColaboradorCrudPageContent } from '@/features/colaborador/create-edit/ui/ColaboradorCrudPageContent';
-import { getColaboradorCrudTabs } from '@/features/colaborador/create-edit/model/crud-tabs';
+import { getColaboradorCrudTabs } from '@features/colaborador/create-edit';
 
 export function ColaboradorNuevoPage() {
     const navigate = useNavigate();
@@ -29,7 +29,7 @@ export function ColaboradorNuevoPage() {
     } = useColaboradorForm({
         colaboradorToEdit: null,
         onSuccess: () => {},
-        onClose: () => navigate('/app/colaboradores'),
+        onClose: () => navigate(APP_PATHS.colaboradores),
         open: true
     });
 
@@ -50,7 +50,7 @@ export function ColaboradorNuevoPage() {
             tabsProps={{ variant: 'scrollable', scrollButtons: 'auto' }}
             footer={
                 <>
-                    <Button onClick={() => navigate('/app/colaboradores')} color="inherit" variant="outlined">
+                    <Button onClick={() => navigate(APP_PATHS.colaboradores)} color="inherit" variant="outlined">
                         {activeTab === 0 ? 'Cancelar' : 'Cerrar'}
                     </Button>
                     {activeTab === 0 ? (
@@ -72,7 +72,7 @@ export function ColaboradorNuevoPage() {
                 form={form}
                 onSubmit={onSubmit}
                 effectiveId={effectiveId}
-                roles={roles?.data ?? []}
+                roles={roles}
                 generos={generos}
                 monedas={monedas}
                 isEdit={isEdit}
