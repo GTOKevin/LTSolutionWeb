@@ -2,7 +2,7 @@ import { Alert, Box, Button, Card, CardContent, Stack, Typography, useTheme } fr
 import { AccountCircleOutlined } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import type { MyProfileDto } from '@entities/profile/model/types';
-import { SelfChangePasswordModal } from '@features/auth/change-password/ui/SelfChangePasswordModal';
+import { SelfChangePasswordModal } from '@features/auth/change-password';
 import { cardSx } from './ProfileShared.helpers';
 import { ProfileHero } from './ProfileHero';
 import { ProfileMetrics } from './ProfileMetrics';

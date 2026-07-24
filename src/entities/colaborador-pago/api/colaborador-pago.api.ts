@@ -3,8 +3,10 @@ import type { PagedResponse } from '@/shared/model/types';
 import type { ColaboradorPago, CreateColaboradorPagoDto, ColaboradorPagoParams, ColaboradorPagosReportDto } from '../model/types';
 
 export const colaboradorPagoApi = {
-    getAll: (params: ColaboradorPagoParams) => 
-        httpClient.get<PagedResponse<ColaboradorPago>>('/Colaborador/pagos', { params }),
+    getAll: async (params: ColaboradorPagoParams) => {
+        const { data } = await httpClient.get<PagedResponse<ColaboradorPago>>('/Colaborador/pagos', { params });
+        return data;
+    },
 
     getReportData: (id: number, params?: ColaboradorPagoParams) =>
         httpClient.get<ColaboradorPagosReportDto>(`/Colaborador/${id}/pagos/reporte`, { params }).then(res => res.data),

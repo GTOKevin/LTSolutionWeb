@@ -5,7 +5,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { APP_PATHS } from '@app/router/model/navigation';
 import { FlotaCrudPageContent, useFlotaForm } from '@features/flota/create-edit';
-import { CrudTabbedPageShell } from '@widgets/crud-page/ui/CrudTabbedPageShell';
+import { CrudTabbedPageShell } from '@widgets/crud-page';
 import { getFlotaCrudTabs } from '@features/flota/create-edit';
 
 export function FlotaNuevoPage() {

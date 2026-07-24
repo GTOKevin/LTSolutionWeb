@@ -5,7 +5,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { APP_PATHS } from '@app/router/model/navigation';
 import { ColaboradorCrudPageContent, useColaboradorForm } from '@features/colaborador/create-edit';
-import { CrudTabbedPageShell } from '@/widgets/crud-page/ui/CrudTabbedPageShell';
+import { CrudTabbedPageShell } from '@widgets/crud-page';
 import { getColaboradorCrudTabs } from '@features/colaborador/create-edit';
 
 export function ColaboradorNuevoPage() {

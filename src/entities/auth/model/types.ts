@@ -19,6 +19,14 @@ export interface ChangeOwnPasswordRequest {
     newPassword: string;
 }
 
+export interface ForgotPasswordRequest {
+    email: string;
+}
+
+export interface ForgotPasswordResponse {
+    message?: string;
+}
+
 export interface User {
     userId: string;
     roleId: string;

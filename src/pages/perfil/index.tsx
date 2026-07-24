@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLayoutStore } from '@shared/store/layout.store';
-import { useMyProfile } from '@features/profile/hooks/useMyProfile';
-import { ProfileView } from '@widgets/profile/ui/ProfileView';
+import { useMyProfile } from '@features/profile';
+import { ProfileView } from '@widgets/profile';
 
 export function PerfilPage() {
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
@@ -23,4 +23,3 @@ export function PerfilPage() {
         />
     );
 }
-

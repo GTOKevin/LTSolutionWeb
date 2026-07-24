@@ -1,5 +1,4 @@
-import { useMaestrosPageController } from '@features/tipo-maestro/list/hooks/useMaestrosPageController';
-import { MaestrosPageContent } from '@features/tipo-maestro/list/ui/MaestrosPageContent';
+import { MaestrosPageContent, useMaestrosPageController } from '@features/tipo-maestro/list';
 
 export function MaestrosPage() {
     const controller = useMaestrosPageController();

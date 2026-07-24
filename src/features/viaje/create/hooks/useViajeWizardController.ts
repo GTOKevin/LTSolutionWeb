@@ -69,8 +69,7 @@ export function useViajeWizardController() {
                 })),
             };
 
-            const response = await viajeApi.create(cleanData);
-            return response.data;
+            return viajeApi.create(cleanData);
         },
         onSuccess: (newViajeId) => {
             showToast({ message: 'Viaje creado exitosamente', severity: 'success' });

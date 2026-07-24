@@ -1,5 +1,4 @@
-import { useRolesPageController } from '@features/rol-usuario/list/hooks/useRolesPageController';
-import { RolesPageContent } from '@features/rol-usuario/list/ui/RolesPageContent';
+import { RolesPageContent, useRolesPageController } from '@features/rol-usuario/list';
 
 export function RolesPage() {
     const controller = useRolesPageController();

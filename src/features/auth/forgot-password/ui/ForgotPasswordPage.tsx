@@ -22,6 +22,7 @@ import { alpha } from '@mui/material/styles';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { APP_PATHS } from '@app/router/model/navigation';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '../model/schema';
 import { useForgotPassword } from '../api/use-forgot-password';
 import { useState } from 'react';
@@ -131,7 +132,7 @@ export function ForgotPasswordPage() {
                     </Typography>
                     <Button
                         variant="contained"
-                        onClick={() => navigate('/login')}
+                        onClick={() => navigate(APP_PATHS.login)}
                         sx={{
                             borderRadius: 2,
                             textTransform: 'none',
@@ -297,7 +298,7 @@ export function ForgotPasswordPage() {
                                 
                                 <Link
                                     component={RouterLink}
-                                    to="/login"
+                                    to={APP_PATHS.login}
                                     underline="hover"
                                     sx={{
                                         display: 'flex',

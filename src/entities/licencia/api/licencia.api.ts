@@ -3,14 +3,18 @@ import type { PagedResponse } from '@/shared/model/types';
 import type { Licencia, CreateLicenciaDto, LicenciaParams, ColaboradorLicenciasReportDto } from '../model/types';
 
 export const licenciaApi = {
-    getAll: (params: LicenciaParams) => 
-        httpClient.get<PagedResponse<Licencia>>('/Colaborador/licencias', { params }),
+    getAll: async (params: LicenciaParams) => {
+        const { data } = await httpClient.get<PagedResponse<Licencia>>('/Colaborador/licencias', { params });
+        return data;
+    },
 
     getReportData: (id: number, params?: LicenciaParams) =>
         httpClient.get<ColaboradorLicenciasReportDto>(`/Colaborador/${id}/licencias/reporte`, { params }).then(res => res.data),
 
-    getById: (id: number) => 
-        httpClient.get<Licencia>(`/Colaborador/licencias/${id}`), // Note: Controller doesn't have GetById for Licencia specifically, but let's keep it or remove if unused. The list comes from getAll.
+    getById: async (id: number) => {
+        const { data } = await httpClient.get<Licencia>(`/Colaborador/licencias/${id}`);
+        return data;
+    },
 
     create: (colaboradorId: number, data: CreateLicenciaDto) => 
         httpClient.post<number>(`/Colaborador/${colaboradorId}/licencias`, data).then(res => res.data),
