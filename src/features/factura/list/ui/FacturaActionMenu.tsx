@@ -43,6 +43,7 @@ interface FacturaActionMenuProps {
     onPayment?: (f: Factura) => void;
     onViewPayments?: (f: Factura) => void;
     onUpdateStatus?: (f: Factura, newStatusId: number) => void;
+    canDownloadReports?: boolean;
     statusCatalog?: SelectItem[];
 }
 
@@ -54,6 +55,7 @@ export function FacturaActionMenu({
     onPayment,
     onViewPayments,
     onUpdateStatus,
+    canDownloadReports = false,
     statusCatalog = [],
 }: FacturaActionMenuProps) {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -100,6 +102,7 @@ export function FacturaActionMenu({
         Boolean(onPayment) ||
         Boolean(onViewPayments) ||
         Boolean(onUpdateStatus) ||
+        canDownloadReports ||
         Boolean(onView);
 
     if (!canManageFactura) {
@@ -182,7 +185,7 @@ export function FacturaActionMenu({
                 ) : null}
 
                 {/* Descarga de Reportes */}
-                {isEntregado && onUpdateStatus
+                {isEntregado && canDownloadReports
                     ? [
                           <Divider key="report-divider" />,
                           <MenuItem key="report-pdf" onClick={() => handleGenerateReport('pdf')} disabled={isGenerating}>

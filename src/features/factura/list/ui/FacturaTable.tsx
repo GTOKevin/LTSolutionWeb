@@ -21,6 +21,7 @@ interface FacturaTableProps {
     onPayment?: (item: Factura) => void;
     onViewPayments?: (item: Factura) => void;
     onUpdateStatus?: (item: Factura, newStatusId: number) => void;
+    canDownloadReports?: boolean;
     statusCatalog?: SelectItem[];
 }
 
@@ -37,6 +38,7 @@ export function FacturaTable({
     onPayment,
     onViewPayments,
     onUpdateStatus,
+    canDownloadReports = false,
     statusCatalog = [],
 }: FacturaTableProps) {
     const columns: Column[] = React.useMemo(() => [
@@ -104,7 +106,7 @@ export function FacturaTable({
                     </TableCell>
                     <TableCell align="right">
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                            {(onView || onEdit || onDelete || onPayment || onViewPayments || onUpdateStatus) && (
+                            {(onView || onEdit || onDelete || onPayment || onViewPayments || onUpdateStatus || canDownloadReports) && (
                                 <FacturaActionMenu
                                     factura={item}
                                     onView={onView}
@@ -113,6 +115,7 @@ export function FacturaTable({
                                     onPayment={onPayment}
                                     onViewPayments={onViewPayments}
                                     onUpdateStatus={onUpdateStatus}
+                                    canDownloadReports={canDownloadReports}
                                     statusCatalog={statusCatalog}
                                 />
                             )}

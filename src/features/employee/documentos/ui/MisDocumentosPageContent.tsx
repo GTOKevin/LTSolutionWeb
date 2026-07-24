@@ -73,7 +73,7 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             <VerifiedIcon />
                         </Box>
                         <Box>
-                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Documentos Vigentes</Typography>
+                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Vigentes Visibles</Typography>
                             <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.vigentes}</Typography>
                         </Box>
                     </Box>
@@ -84,7 +84,7 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             <WarningAmberOutlined />
                         </Box>
                         <Box>
-                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Próximos a Vencer</Typography>
+                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Por Vencer Visibles</Typography>
                             <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.nearExpiry}</Typography>
                         </Box>
                     </Box>
@@ -118,18 +118,23 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                         </MenuItem>
                     ))}
                 </TextField>
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: { xs: 'stretch', md: 'flex-end' }, gap: 1 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                        Estado administrativo
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
                     <Button variant={controller.activo === '' ? 'contained' : 'outlined'} onClick={() => controller.handleSearch({ activo: '' })} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}>Todos</Button>
-                    <Button variant={controller.activo === 'true' ? 'contained' : 'outlined'} onClick={() => controller.handleSearch({ activo: 'true' })} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, color: controller.activo === 'true' ? undefined : 'text.secondary', borderColor: controller.activo === 'true' ? undefined : 'divider' }}>Activos</Button>
-                    <Button variant={controller.activo === 'false' ? 'contained' : 'outlined'} onClick={() => controller.handleSearch({ activo: 'false' })} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, color: controller.activo === 'false' ? undefined : 'text.secondary', borderColor: controller.activo === 'false' ? undefined : 'divider' }}>Inactivos</Button>
+                    <Button variant={controller.activo === 'true' ? 'contained' : 'outlined'} onClick={() => controller.handleSearch({ activo: 'true' })} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, color: controller.activo === 'true' ? undefined : 'text.secondary', borderColor: controller.activo === 'true' ? undefined : 'divider' }}>Admin. activos</Button>
+                    <Button variant={controller.activo === 'false' ? 'contained' : 'outlined'} onClick={() => controller.handleSearch({ activo: 'false' })} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, color: controller.activo === 'false' ? undefined : 'text.secondary', borderColor: controller.activo === 'false' ? undefined : 'divider' }}>Admin. inactivos</Button>
                     <Button variant="outlined" onClick={() => controller.handleSearch()} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}>
                         Aplicar
                     </Button>
+                    </Box>
                 </Box>
             </Box>
 
             <Typography variant="caption" color="text.secondary" sx={{ mt: -2 }}>
-                Los filtros se aplican sobre la consulta paginada del servidor.
+                La vigencia visible se muestra por documento. El filtro de estado administrativo opera sobre `activo` y los KPI corresponden a la página actual.
             </Typography>
 
             <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
