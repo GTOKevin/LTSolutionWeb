@@ -1,4 +1,4 @@
-import { MantenimientoCrudRouteContent } from '@features/mantenimiento/create-edit';
+import { MantenimientoCrudRouteContent } from '@features/mantenimiento';
 
 export function MantenimientoEditarPage() {
     return <MantenimientoCrudRouteContent mode="edit" />;

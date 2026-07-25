@@ -2,6 +2,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import type { ViajeGeneralReportDto } from '@entities/viaje/model/types';
 import { themePalette } from '@/shared/config/theme/palette';
+import { formatDecimalAmount } from '@/shared/utils/format-utils';
 
 export class ViajeGeneralExcelGenerator {
     private data: ViajeGeneralReportDto;
@@ -98,13 +99,13 @@ export class ViajeGeneralExcelGenerator {
         rowIdx++;
 
         addHeaderRow("Días de Viaje:", this.data.diasViaje.toString(), "Total Galones:", this.data.totalGalonesCombustible.toFixed(2));
-        addHeaderRow("Gastos Operativos:", `S/ ${this.data.totalGastos.toFixed(2)}`, "Costo Total Combustible:", `S/ ${this.data.totalCostoCombustible.toFixed(2)}`);
-        addHeaderRow("Sueldo Conductor (S/100/día):", `S/ ${this.data.sueldoConductor.toFixed(2)}`, "Precio Promedio x Galón:", `S/ ${this.data.precioPromedioGalon.toFixed(2)}`);
+        addHeaderRow("Gastos Operativos:", formatDecimalAmount(this.data.totalGastos), "Costo Total Combustible:", formatDecimalAmount(this.data.totalCostoCombustible));
+        addHeaderRow("Sueldo Conductor:", formatDecimalAmount(this.data.sueldoConductor), "Precio Promedio x Galón:", formatDecimalAmount(this.data.precioPromedioGalon));
         
         const totalOpRow = worksheet.getRow(rowIdx);
         totalOpRow.getCell(1).value = "COSTO TOTAL OPERACIÓN:";
         totalOpRow.getCell(1).font = { bold: true, color: { argb: `FF${PRIMARY_COLOR}` } };
-        totalOpRow.getCell(2).value = `S/ ${this.data.costoTotalOperacion.toFixed(2)}`;
+        totalOpRow.getCell(2).value = formatDecimalAmount(this.data.costoTotalOperacion);
         totalOpRow.getCell(2).font = { bold: true, color: { argb: `FF${PRIMARY_COLOR}` } };
         rowIdx += 2;
 

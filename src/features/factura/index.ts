@@ -1,3 +1,3 @@
 export { FacturaCreateEdit } from './create-edit';
-export { FacturasPageContent, useFacturasPageController } from './list';
+export * from './list';
 export { FacturaPagoForm, FacturaPagosModal } from './pagos';

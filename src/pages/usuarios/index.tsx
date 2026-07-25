@@ -1,4 +1,4 @@
-import { UsuariosPageContent, useUsuariosPageController } from '@features/usuario/list';
+import { UsuariosPageContent, useUsuariosPageController } from '@features/usuario';
 
 export function UsuariosPage() {
     const controller = useUsuariosPageController();

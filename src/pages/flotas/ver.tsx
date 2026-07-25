@@ -1,4 +1,4 @@
-import { FlotaCrudRouteContent } from '@features/flota/create-edit';
+import { FlotaCrudRouteContent } from '@features/flota';
 
 export function FlotaVerPage() {
     return <FlotaCrudRouteContent mode="view" />;

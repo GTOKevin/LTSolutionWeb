@@ -1,4 +1,4 @@
-import { ClientesPageContent, useClientesPageController } from '@features/cliente/list';
+import { ClientesPageContent, useClientesPageController } from '@features/cliente';
 
 export function ClientesPage() {
     const controller = useClientesPageController();

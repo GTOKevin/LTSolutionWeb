@@ -1,4 +1,4 @@
-import { MantenimientoCrudRouteContent } from '@features/mantenimiento/create-edit';
+import { MantenimientoCrudRouteContent } from '@features/mantenimiento';
 
 export function MantenimientoVerPage() {
     return <MantenimientoCrudRouteContent mode="view" />;

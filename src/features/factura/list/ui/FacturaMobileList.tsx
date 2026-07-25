@@ -3,7 +3,7 @@ import type { Factura } from '@/entities/factura/model/types';
 import type { PagedResponse, SelectItem } from '@/shared/model/types';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 import { formatDateLong } from '@/shared/utils/date-utils';
-import { formatCurrency } from '@/shared/utils/format-utils';
+import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import { getFacturaStatusColor } from '@/entities/factura/model/status';
 import { FacturaActionMenu } from './FacturaActionMenu';
 
@@ -98,7 +98,7 @@ export function FacturaMobileList({
                                 Total
                             </Typography>
                             <Typography variant="body2" fontWeight="bold">
-                                {formatCurrency(row.total, row.moneda?.simbolo)}
+                                {formatCurrencyAmount(row.total, row.moneda)}
                             </Typography>
                         </Box>
                         <Box>
@@ -106,7 +106,7 @@ export function FacturaMobileList({
                                 Saldo
                             </Typography>
                             <Typography variant="body2" color={row.saldoPendiente > 0 ? 'warning.main' : 'success.main'}>
-                                {formatCurrency(row.saldoPendiente, row.moneda?.simbolo)}
+                                {formatCurrencyAmount(row.saldoPendiente, row.moneda)}
                             </Typography>
                         </Box>
                         <Box>

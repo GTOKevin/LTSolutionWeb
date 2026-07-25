@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useViajeGastos, useDeleteViajeGasto } from '@features/viaje/hooks/useViajeGastos';
 import { useViajeGastoOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import { formatDecimalAmount, resolveCurrencyToken } from '@/shared/utils/format-utils';
+import { formatCurrencyAmount, formatDecimalAmount } from '@/shared/utils/format-utils';
 import { logger } from '@/shared/utils/logger';
 
 interface GastosListProps {
@@ -102,7 +102,10 @@ export function GastosList({ viajeID, isViewOnly }: GastosListProps) {
                                 gastos.map((gasto) => {
                                     const tipo = tiposGasto?.find(t => t.id === gasto.gastoID)?.text || gasto.gasto?.descripcion || 'Otro';
                                     const moneda = monedas?.find(m => m.id === gasto.monedaID);
-                                    const monedaSimbolo = resolveCurrencyToken(moneda?.extra || moneda?.text) || 'MON';
+                                    const monedaDescriptor = {
+                                        simbolo: moneda?.extra,
+                                        codigo: moneda?.text,
+                                    };
 
                                     return (
                                         <Box component="tr" key={gasto.viajeGastoID} sx={{ borderBottom: '1px solid', borderColor: alpha(theme.palette.divider, 0.1) }}>
@@ -130,7 +133,7 @@ export function GastosList({ viajeID, isViewOnly }: GastosListProps) {
                                             </Box>
                                             <Box component="td" sx={{ py: 2, textAlign: 'right' }}>
                                                 <Typography variant="body2" sx={{ fontWeight: 800 }}>
-                                                    {monedaSimbolo} {Number(gasto.monto).toFixed(2)}
+                                                        {formatCurrencyAmount(Number(gasto.monto), monedaDescriptor)}
                                                 </Typography>
                                                 {gasto.combustible && (
                                                     <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>

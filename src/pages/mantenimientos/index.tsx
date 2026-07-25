@@ -1,4 +1,4 @@
-import { MantenimientosPageContent, useMantenimientos } from '@features/mantenimiento/list';
+import { MantenimientosPageContent, useMantenimientos } from '@features/mantenimiento';
 
 export function MantenimientosPage() {
     const controller = useMantenimientos();

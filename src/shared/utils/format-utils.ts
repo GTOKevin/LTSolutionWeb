@@ -17,12 +17,18 @@ export const getInitials = (name: string): string => {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-export const formatCurrency = (amount: number, currencyCodeOrSymbol = 'USD'): string => {
+export const formatCurrency = (amount: number, currencyCodeOrSymbol?: string | null): string => {
+    const normalizedToken = currencyCodeOrSymbol?.trim();
+
+    if (!normalizedToken) {
+        return formatDecimalAmount(amount);
+    }
+
     // Si viene el símbolo en lugar del código ISO, lo mapeamos al código ISO correspondiente
-    let isoCode = currencyCodeOrSymbol;
-    if (currencyCodeOrSymbol === '$') isoCode = 'USD';
-    else if (currencyCodeOrSymbol === '€') isoCode = 'EUR';
-    else if (currencyCodeOrSymbol === 'S/') isoCode = 'PEN';
+    let isoCode = normalizedToken;
+    if (normalizedToken === '$') isoCode = 'USD';
+    else if (normalizedToken === '€') isoCode = 'EUR';
+    else if (normalizedToken === 'S/') isoCode = 'PEN';
 
     // Determinar el locale basado en la moneda para un mejor formateo
     let locale = 'en-US';
@@ -38,7 +44,7 @@ export const formatCurrency = (amount: number, currencyCodeOrSymbol = 'USD'): st
         }).format(amount);
     } catch {
         // Fallback en caso de que se pase un string que no sea un código ISO válido
-        return `${currencyCodeOrSymbol} ${amount.toFixed(2)}`;
+        return `${normalizedToken} ${amount.toFixed(2)}`;
     }
 };
 
@@ -88,6 +94,13 @@ export const resolveCurrencyExcelFormat = (currency?: CurrencyDescriptor): strin
 
 export const formatCurrencyAmount = (amount: number, currency?: CurrencyDescriptor): string => {
     const token = resolveCurrencyToken(currency);
+    const label = resolveCurrencyLabel(currency);
 
-    return token ? formatCurrency(amount, token) : formatDecimalAmount(amount);
+    if (token) {
+        return formatCurrency(amount, token);
+    }
+
+    return label !== 'Moneda'
+        ? `${label} ${formatDecimalAmount(amount)}`
+        : formatDecimalAmount(amount);
 };

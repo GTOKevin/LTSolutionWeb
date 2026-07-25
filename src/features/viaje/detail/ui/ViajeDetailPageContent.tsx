@@ -5,9 +5,9 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import { useViajeOptions, useViajeIncidenteOptions } from '@features/viaje/options';
 import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
-import { ViajeCreateEdit } from '@features/viaje/ui/Viaje/ViajeCreateEdit';
-import { ViajeIncidente } from '@features/viaje/edit/ui/tabs/ViajeIncidente';
-import { ViajeTimeline } from '@features/viaje/ui/ViajeDetalle/ViajeTimeline';
+import { ViajeIncidente } from '@features/viaje/edit';
+import { ViajeCreateEdit } from './ViajeCreateEdit';
+import { ViajeTimeline } from './ViajeTimeline';
 
 export function ViajeDetailPageContent() {
     const { id } = useParams<{ id: string }>();

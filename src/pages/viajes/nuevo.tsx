@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import { ViajeCreatePageContent } from '@features/viaje/create';
+import { ViajeCreatePageContent } from '@features/viaje';
 
 export function ViajeNuevoPage() {
     return (

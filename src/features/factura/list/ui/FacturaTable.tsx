@@ -4,7 +4,7 @@ import type { Factura } from '@/entities/factura/model/types';
 import type { PagedResponse, SelectItem } from '@/shared/model/types';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
-import { formatCurrency } from '@/shared/utils/format-utils';
+import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import { getFacturaStatusColor } from '@/entities/factura/model/status';
 import { FacturaActionMenu } from './FacturaActionMenu';
 
@@ -89,10 +89,10 @@ export function FacturaTable({
                     <TableCell>
                         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                             <Typography variant="body2" fontWeight="bold">
-                                {formatCurrency(item.total, item.moneda?.simbolo)}
+                                {formatCurrencyAmount(item.total, item.moneda)}
                             </Typography>
                             <Typography variant="caption" color={item.saldoPendiente > 0 ? 'warning.main' : 'success.main'}>
-                                Saldo: {formatCurrency(item.saldoPendiente, item.moneda?.simbolo)}
+                                Saldo: {formatCurrencyAmount(item.saldoPendiente, item.moneda)}
                             </Typography>
                         </Box>
                     </TableCell>
