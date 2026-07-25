@@ -18,6 +18,7 @@ type JsPdfWithAutoTable = jsPDF & {
 
 export const generateFacturaPdf = (reportData: FacturaReporte) => {
     const doc = new jsPDF('p', 'pt', 'a4');
+    const currencyDisplay = resolveCurrencyDisplay(reportData.moneda);
 
     // --- Header ---
     doc.setFontSize(18);
@@ -36,11 +37,12 @@ export const generateFacturaPdf = (reportData: FacturaReporte) => {
     // Left Side: Client Info & Dates
     doc.text(`Cliente: ${reportData.cliente?.razonSocial || ''}`, 40, 70);
     doc.text(`RUC: ${reportData.cliente?.ruc || ''}`, 40, 85);
+    doc.text(`Moneda: ${currencyDisplay}`, 40, 100);
     
-    doc.text(`Fecha Emisión: ${formatDateShort(reportData.fechaEmision)}`, 40, 100);
-    doc.text(`Días Crédito: ${reportData.diasCredito || 0}`, 40, 115);
-    doc.text(`Fecha Vencimiento: ${reportData.fechaVencimiento ? formatDateShort(reportData.fechaVencimiento) : '-'}`, 40, 130);
-    doc.text(`Fecha Compromiso: ${reportData.fechaCompromisoPago ? formatDateShort(reportData.fechaCompromisoPago) : '-'}`, 40, 145);
+    doc.text(`Fecha Emisión: ${formatDateShort(reportData.fechaEmision)}`, 40, 115);
+    doc.text(`Días Crédito: ${reportData.diasCredito || 0}`, 40, 130);
+    doc.text(`Fecha Vencimiento: ${reportData.fechaVencimiento ? formatDateShort(reportData.fechaVencimiento) : '-'}`, 40, 145);
+    doc.text(`Fecha Compromiso: ${reportData.fechaCompromisoPago ? formatDateShort(reportData.fechaCompromisoPago) : '-'}`, 40, 160);
 
     // Financial Info
     doc.setFont('helvetica', 'bold');
@@ -49,7 +51,7 @@ export const generateFacturaPdf = (reportData: FacturaReporte) => {
     doc.setTextColor(200, 0, 0); // Red for pending
     doc.text(`Saldo Pendiente: ${formatCurrencyAmount(reportData.saldoPendiente, reportData.moneda)}`, 350, 130);
     
-    let currentY = 170;
+    let currentY = 185;
 
     // --- Detalles de Factura ---
     doc.setFontSize(12);
