@@ -57,12 +57,33 @@ export const resolveCurrencyToken = (currency?: CurrencyDescriptor): string | un
     return currency?.simbolo?.trim() || currency?.codigo?.trim() || undefined;
 };
 
+export const getCurrencyCandidates = (currency?: CurrencyDescriptor): string[] => {
+    if (typeof currency === 'string') {
+        const value = currency.trim();
+        return value ? [value] : [];
+    }
+
+    return [currency?.simbolo, currency?.codigo, currency?.nombre]
+        .map((value) => value?.trim())
+        .filter((value): value is string => Boolean(value));
+};
+
 export const resolveCurrencyLabel = (currency?: CurrencyDescriptor): string => {
     if (typeof currency === 'string') {
         return currency.trim() || 'Moneda';
     }
 
     return currency?.nombre?.trim() || currency?.codigo?.trim() || currency?.simbolo?.trim() || 'Moneda';
+};
+
+export const resolveCurrencyDisplay = (currency?: CurrencyDescriptor): string => {
+    return resolveCurrencyToken(currency) || resolveCurrencyLabel(currency);
+};
+
+export const resolveCurrencyExcelFormat = (currency?: CurrencyDescriptor): string => {
+    const token = resolveCurrencyToken(currency);
+
+    return token ? `"${token}" #,##0.00` : '#,##0.00';
 };
 
 export const formatCurrencyAmount = (amount: number, currency?: CurrencyDescriptor): string => {

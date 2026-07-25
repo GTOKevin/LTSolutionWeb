@@ -3,7 +3,11 @@ import autoTable from 'jspdf-autotable';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import { formatCurrency, resolveCurrencyToken } from '@/shared/utils/format-utils';
+import {
+    formatCurrencyAmount,
+    resolveCurrencyDisplay,
+    resolveCurrencyExcelFormat,
+} from '@/shared/utils/format-utils';
 import type { FacturaReporte } from '@/entities/factura/model/types';
 
 type JsPdfWithAutoTable = jsPDF & {
@@ -14,7 +18,7 @@ type JsPdfWithAutoTable = jsPDF & {
 
 export const generateFacturaPdf = (reportData: FacturaReporte) => {
     const doc = new jsPDF('p', 'pt', 'a4');
-    const currencySymbol = resolveCurrencyToken(reportData.moneda) || 'MON';
+    const currencyDisplay = resolveCurrencyDisplay(reportData.moneda);
 
     // --- Header ---
     doc.setFontSize(18);
@@ -33,20 +37,21 @@ export const generateFacturaPdf = (reportData: FacturaReporte) => {
     // Left Side: Client Info & Dates
     doc.text(`Cliente: ${reportData.cliente?.razonSocial || ''}`, 40, 70);
     doc.text(`RUC: ${reportData.cliente?.ruc || ''}`, 40, 85);
+    doc.text(`Moneda: ${currencyDisplay}`, 40, 100);
     
-    doc.text(`Fecha Emisión: ${formatDateShort(reportData.fechaEmision)}`, 40, 100);
-    doc.text(`Días Crédito: ${reportData.diasCredito || 0}`, 40, 115);
-    doc.text(`Fecha Vencimiento: ${reportData.fechaVencimiento ? formatDateShort(reportData.fechaVencimiento) : '-'}`, 40, 130);
-    doc.text(`Fecha Compromiso: ${reportData.fechaCompromisoPago ? formatDateShort(reportData.fechaCompromisoPago) : '-'}`, 40, 145);
+    doc.text(`Fecha Emisión: ${formatDateShort(reportData.fechaEmision)}`, 40, 115);
+    doc.text(`Días Crédito: ${reportData.diasCredito || 0}`, 40, 130);
+    doc.text(`Fecha Vencimiento: ${reportData.fechaVencimiento ? formatDateShort(reportData.fechaVencimiento) : '-'}`, 40, 145);
+    doc.text(`Fecha Compromiso: ${reportData.fechaCompromisoPago ? formatDateShort(reportData.fechaCompromisoPago) : '-'}`, 40, 160);
 
     // Financial Info
     doc.setFont('helvetica', 'bold');
-    doc.text(`Monto Facturado: ${formatCurrency(reportData.total, currencySymbol)}`, 350, 100);
-    doc.text(`Monto Pagado: ${formatCurrency(reportData.total - reportData.saldoPendiente, currencySymbol)}`, 350, 115);
+    doc.text(`Monto Facturado: ${formatCurrencyAmount(reportData.total, reportData.moneda)}`, 350, 100);
+    doc.text(`Monto Pagado: ${formatCurrencyAmount(reportData.total - reportData.saldoPendiente, reportData.moneda)}`, 350, 115);
     doc.setTextColor(200, 0, 0); // Red for pending
-    doc.text(`Saldo Pendiente: ${formatCurrency(reportData.saldoPendiente, currencySymbol)}`, 350, 130);
+    doc.text(`Saldo Pendiente: ${formatCurrencyAmount(reportData.saldoPendiente, reportData.moneda)}`, 350, 130);
     
-    let currentY = 170;
+    let currentY = 185;
 
     // --- Detalles de Factura ---
     doc.setFontSize(12);
@@ -59,9 +64,9 @@ export const generateFacturaPdf = (reportData: FacturaReporte) => {
         body: reportData.detalles.map(d => [
             d.viajeCodigo || '-',
             `Ruta: ${d.origen || '-'} - ${d.destino || '-'}\nPlaca: ${d.tractoPlaca || '-'}\n${d.descripcion || ''}`,
-            formatCurrency(d.subTotal, currencySymbol),
-            formatCurrency(d.igv, currencySymbol),
-            formatCurrency(d.total, currencySymbol)
+            formatCurrencyAmount(d.subTotal, reportData.moneda),
+            formatCurrencyAmount(d.igv, reportData.moneda),
+            formatCurrencyAmount(d.total, reportData.moneda)
         ]),
         styles: { fontSize: 8 },
         headStyles: { fillColor: [41, 128, 185] },
@@ -89,7 +94,7 @@ export const generateFacturaPdf = (reportData: FacturaReporte) => {
                 p.estadoNombre || '-',
                 p.numeroOperacion || '-',
                 p.observacion || '-',
-                formatCurrency(p.montoAbonado, currencySymbol)
+                formatCurrencyAmount(p.montoAbonado, reportData.moneda)
             ]),
             styles: { fontSize: 8 },
             headStyles: { fillColor: [39, 174, 96] },
@@ -109,7 +114,8 @@ export const generateFacturaPdf = (reportData: FacturaReporte) => {
 export const generateFacturaExcel = async (reportData: FacturaReporte) => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Factura');
-    const currencySymbol = resolveCurrencyToken(reportData.moneda) || 'MON';
+    const currencyDisplay = resolveCurrencyDisplay(reportData.moneda);
+    const currencyNumberFormat = resolveCurrencyExcelFormat(reportData.moneda);
 
     // --- Header ---
     sheet.getColumn('A').width = 20;
@@ -128,6 +134,8 @@ export const generateFacturaExcel = async (reportData: FacturaReporte) => {
 
     sheet.getCell('A3').value = 'Cliente:';
     sheet.getCell('B3').value = reportData.cliente?.razonSocial;
+    sheet.getCell('A7').value = 'Moneda:';
+    sheet.getCell('B7').value = currencyDisplay;
     sheet.getCell('E3').value = 'Monto Facturado:';
     sheet.getCell('F3').value = reportData.total;
 
@@ -148,7 +156,7 @@ export const generateFacturaExcel = async (reportData: FacturaReporte) => {
 
     // Format currency cells
     ['F3', 'F4', 'F5'].forEach(cell => {
-        sheet.getCell(cell).numFmt = `"${currencySymbol}" #,##0.00`;
+        sheet.getCell(cell).numFmt = currencyNumberFormat;
     });
 
     // --- Detalles ---
@@ -174,9 +182,9 @@ export const generateFacturaExcel = async (reportData: FacturaReporte) => {
         sheet.getCell(row, 5).value = d.total;
         
         // Format currencies
-        sheet.getCell(row, 3).numFmt = `"${currencySymbol}" #,##0.00`;
-        sheet.getCell(row, 4).numFmt = `"${currencySymbol}" #,##0.00`;
-        sheet.getCell(row, 5).numFmt = `"${currencySymbol}" #,##0.00`;
+        sheet.getCell(row, 3).numFmt = currencyNumberFormat;
+        sheet.getCell(row, 4).numFmt = currencyNumberFormat;
+        sheet.getCell(row, 5).numFmt = currencyNumberFormat;
         
         sheet.getCell(row, 2).alignment = { wrapText: true };
         row++;
@@ -207,7 +215,7 @@ export const generateFacturaExcel = async (reportData: FacturaReporte) => {
             sheet.getCell(row, 6).value = p.observacion || '-';
             sheet.getCell(row, 7).value = p.montoAbonado;
             
-            sheet.getCell(row, 7).numFmt = `"${currencySymbol}" #,##0.00`;
+            sheet.getCell(row, 7).numFmt = currencyNumberFormat;
             row++;
         });
     } else {

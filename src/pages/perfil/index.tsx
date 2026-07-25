@@ -1,24 +1,17 @@
-import { useEffect } from 'react';
-import { useLayoutStore } from '@shared/store/layout.store';
-import { useMyProfile } from '@features/profile';
+import { useProfilePageController } from '@features/profile';
 import { ProfileView } from '@widgets/profile';
 
 export function PerfilPage() {
-    const setPageTitle = useLayoutStore((state) => state.setPageTitle);
-    const { data, isLoading, isFetching, isError, refetch } = useMyProfile();
-
-    useEffect(() => {
-        setPageTitle('Perfil');
-    }, [setPageTitle]);
+    const controller = useProfilePageController();
 
     return (
         <ProfileView
-            data={data}
-            isLoading={isLoading}
-            isFetching={isFetching}
-            isError={isError}
+            data={controller.data}
+            isLoading={controller.isLoading}
+            isFetching={controller.isFetching}
+            isError={controller.isError}
             onRetry={() => {
-                void refetch();
+                void controller.refetch();
             }}
         />
     );

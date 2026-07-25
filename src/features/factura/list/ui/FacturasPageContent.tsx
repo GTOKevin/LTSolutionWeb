@@ -13,9 +13,9 @@ import {
     AddCircle as AddCircleIcon,
     Info as InfoIcon,
 } from '@mui/icons-material';
+import { FacturaPagoForm, FacturaPagosModal } from '@/features/factura/pagos';
 import { FacturaTable } from './FacturaTable';
 import { FacturaMobileList } from './FacturaMobileList';
-import { FacturaPagoForm, FacturaPagosModal } from '@/features/factura/pagos/ui';
 import { formatDecimalAmount } from '@/shared/utils/format-utils';
 import type { useFacturasPageController } from '../hooks/useFacturasPageController';
 
