@@ -24,9 +24,10 @@ import { createFacturaDetalleSchema, type CreateFacturaDetalleSchema } from '../
 import { useCreateFacturaDetalle } from '../../hooks/useFacturaDetalleCrud';
 import { ViajeSelectorModal } from './ViajeSelectorModal';
 import type { Viaje } from '@/entities/viaje/model/types';
+import type { Moneda } from '@/entities/moneda/model/types';
 import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { IGV_RATE } from '@entities/factura/model/constants';
-import { resolveCurrencyToken } from '@/shared/utils/format-utils';
+import { resolveCurrencyDisplay } from '@/shared/utils/format-utils';
 
 interface FacturaDetalleFormProps {
     open: boolean;
@@ -34,7 +35,7 @@ interface FacturaDetalleFormProps {
     facturaId: number;
     monedaId: number;
     clienteId: number;
-    monedaSimbolo?: string;
+    moneda?: Moneda;
 }
 
 export function FacturaDetalleForm({
@@ -43,7 +44,7 @@ export function FacturaDetalleForm({
     facturaId,
     monedaId,
     clienteId,
-    monedaSimbolo,
+    moneda,
 }: FacturaDetalleFormProps) {
     const theme = useTheme();
     const createMutation = useCreateFacturaDetalle();
@@ -100,7 +101,7 @@ export function FacturaDetalleForm({
         queryFn: () => monedaApi.getSelect()
     });
 
-    const currencySymbol = resolveCurrencyToken(monedaSimbolo) || 'MON';
+    const currencyDisplay = resolveCurrencyDisplay(moneda);
 
     const handleViajeSelect = (viaje: Viaje) => {
         setValue('viajeID', viaje.viajeID);
@@ -244,7 +245,7 @@ export function FacturaDetalleForm({
                         <Paper elevation={0} sx={{ p: 3, border: `1px solid ${theme.palette.divider}`, borderRadius: 3, bgcolor: 'background.default' }}>
                             <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>Subtotal</Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Typography variant="h5" color="text.secondary" fontWeight="bold">{currencySymbol}</Typography>
+                                <Typography variant="h5" color="text.secondary" fontWeight="bold">{currencyDisplay}</Typography>
                                 <Controller
                                     name="subTotal"
                                     control={control}
@@ -297,7 +298,7 @@ export function FacturaDetalleForm({
                                 />
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mt: 2 }}>
-                                <Typography variant="body1" color="text.secondary" fontWeight="medium">{currencySymbol}</Typography>
+                                <Typography variant="body1" color="text.secondary" fontWeight="medium">{currencyDisplay}</Typography>
                                 <Typography variant="h5" color="text.secondary" fontWeight="bold">{displayIgv.toFixed(2)}</Typography>
                             </Box>
                         </Paper>
@@ -305,7 +306,7 @@ export function FacturaDetalleForm({
                         <Paper elevation={0} sx={{ p: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.05), display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <Typography variant="caption" fontWeight="bold" color="primary.main" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>Total Final</Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
-                                <Typography variant="h6" color={errors.total ? 'error.main' : 'primary.main'} fontWeight="bold">{currencySymbol}</Typography>
+                                <Typography variant="h6" color={errors.total ? 'error.main' : 'primary.main'} fontWeight="bold">{currencyDisplay}</Typography>
                                 <TextField
                                     type="number"
                                     name='total'

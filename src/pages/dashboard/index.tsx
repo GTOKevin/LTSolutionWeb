@@ -1,35 +1,7 @@
-import { useEffect } from 'react';
-import { useLayoutStore } from '@shared/store/layout.store';
-import { useDashboardOverview } from '@features/dashboard';
-import { DashboardOverview } from '@widgets/dashboard';
+import { DashboardPageContent, useDashboardPageController } from '@features/dashboard';
 
 export function DashboardPage() {
-    const setPageTitle = useLayoutStore((state) => state.setPageTitle);
-    const {
-        data,
-        isLoading,
-        isFetching,
-        isError,
-        refetch,
-        period,
-        setPeriod,
-    } = useDashboardOverview();
+    const controller = useDashboardPageController();
 
-    useEffect(() => {
-        setPageTitle('Dashboard');
-    }, [setPageTitle]);
-
-    return (
-        <DashboardOverview
-            data={data}
-            period={period}
-            onPeriodChange={setPeriod}
-            isLoading={isLoading}
-            isFetching={isFetching}
-            isError={isError}
-            onRetry={() => {
-                void refetch();
-            }}
-        />
-    );
+    return <DashboardPageContent controller={controller} />;
 }

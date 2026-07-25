@@ -8,6 +8,7 @@ import { formatDateLong } from '@shared/utils/date-utils';
 import type { MantenimientoParams, Mantenimiento, MantenimientoDetalle } from '@entities/mantenimiento/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
 import { getErrorMessage } from '@/shared/utils/api-errors';
+import { getCurrencyCandidates } from '@/shared/utils/format-utils';
 import { logger } from '@/shared/utils/logger';
 
 type ExcelStyle = Partial<ExcelJS.Style>;
@@ -16,6 +17,32 @@ type JsPdfWithAutoTable = jsPDF & {
     lastAutoTable?: {
         finalY: number;
     };
+};
+
+const normalizeCurrencyKey = (value: string) => value.trim().toLowerCase();
+
+const resolveSummaryCurrencyKey = (detail: MantenimientoDetalle, currencyKeys: string[]) => {
+    const candidates = getCurrencyCandidates(detail.moneda);
+
+    return currencyKeys.find((currencyKey) =>
+        candidates.some((candidate) => normalizeCurrencyKey(candidate) === normalizeCurrencyKey(currencyKey))
+    );
+};
+
+const buildSummaryDetailTotals = (details: MantenimientoDetalle[] | undefined, currencyKeys: string[]) => {
+    const totals = Object.fromEntries(currencyKeys.map((currencyKey) => [currencyKey, 0])) as Record<string, number>;
+
+    (details || []).forEach((detail) => {
+        const currencyKey = resolveSummaryCurrencyKey(detail, currencyKeys);
+
+        if (!currencyKey) {
+            return;
+        }
+
+        totals[currencyKey] = (totals[currencyKey] || 0) + detail.total;
+    });
+
+    return totals;
 };
 
 export const useMantenimientoReport = () => {
@@ -364,11 +391,7 @@ export const useMantenimientoReport = () => {
             // --- Data ---
             let currentRowIndex = headerRowIndex + 1;
             reportData.mantenimientos.forEach((item: Mantenimiento) => {
-                const maintTotals: Record<string, number> = {};
-                (item.mantenimientoDetalles || []).forEach((d: MantenimientoDetalle) => {
-                    const symbol = d.moneda?.simbolo || '';
-                    maintTotals[symbol] = (maintTotals[symbol] || 0) + d.total;
-                });
+                const maintTotals = buildSummaryDetailTotals(item.mantenimientoDetalles, currencies);
 
                 const rowValues: (string | number)[] = [
                     `${item.flota?.marca || ''} ${item.flota?.modelo || ''} (${item.flota?.placa || ''})`.trim(),
@@ -466,11 +489,7 @@ export const useMantenimientoReport = () => {
             const tableRows: (string | number)[][] = [];
 
             reportData.mantenimientos.forEach((item: Mantenimiento) => {
-                const maintTotals: Record<string, number> = {};
-                (item.mantenimientoDetalles || []).forEach((d: MantenimientoDetalle) => {
-                    const symbol = d.moneda?.simbolo || '';
-                    maintTotals[symbol] = (maintTotals[symbol] || 0) + d.total;
-                });
+                const maintTotals = buildSummaryDetailTotals(item.mantenimientoDetalles, currencies);
 
                 const row = [
                     `${item.flota?.marca || ''} ${item.flota?.modelo || ''} (${item.flota?.placa || ''})`.trim(),
