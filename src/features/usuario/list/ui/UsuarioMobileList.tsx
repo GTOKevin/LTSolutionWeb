@@ -6,8 +6,8 @@ import {
     Lock as LockIcon
 } from '@mui/icons-material';
 import type { Usuario } from '@entities/usuario/model/types';
+import { isUsuarioActivo } from '@entities/usuario/model/status';
 import type { PagedResponse } from '@/shared/model/types';
-import { EstadoUsuarioEnum } from '@/shared/constants/enums';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 
 interface UsuarioMobileListProps {
@@ -65,7 +65,11 @@ export function UsuarioMobileList({
                     </Box>
                 )}
                 renderBody={(user) => (
-                    <>
+                    (() => {
+                        const isActive = isUsuarioActivo(user);
+
+                        return (
+                            <>
                         <Stack spacing={1} sx={{ mb: 2 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <EmailIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
@@ -89,8 +93,8 @@ export function UsuarioMobileList({
                             <Chip 
                                 label={user.estado?.nombre} 
                                 size="small"
-                                color={user.estadoID === EstadoUsuarioEnum.Activo ? 'success' : 'default'}
-                                variant={user.estadoID === EstadoUsuarioEnum.Activo ? 'filled' : 'outlined'}
+                                color={isActive ? 'success' : 'default'}
+                                variant={isActive ? 'filled' : 'outlined'}
                             />
                             <Box sx={{ display: 'flex', gap: 1 }}>
                                 {onChangePassword && (
@@ -111,7 +115,9 @@ export function UsuarioMobileList({
                                 </Button>
                             </Box>
                         </Box>
-                    </>
+                            </>
+                        );
+                    })()
                 )}
             />
         </Box>

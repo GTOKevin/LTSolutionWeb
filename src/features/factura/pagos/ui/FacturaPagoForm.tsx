@@ -27,6 +27,7 @@ import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import { ESTADO_SECCIONES, SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import type { Factura } from '@/entities/factura/model/types';
+import { resolveCurrencyLabel } from '@/shared/utils/format-utils';
 
 interface FacturaPagoFormProps {
     open: boolean;
@@ -40,6 +41,7 @@ interface FacturaPagoFormProps {
 export function FacturaPagoForm({ open, onClose, factura, facturaId, monedaId, maxAmount }: FacturaPagoFormProps) {
     const theme = useTheme();
     const createMutation = useCreateFacturaPago();
+    const currencyLabel = resolveCurrencyLabel(factura.moneda);
 
     const { control, handleSubmit, reset } = useForm<CreateFacturaPagoSchema>({
         resolver: zodResolver(createFacturaPagoSchema) as Resolver<CreateFacturaPagoSchema>,
@@ -133,7 +135,7 @@ export function FacturaPagoForm({ open, onClose, factura, facturaId, monedaId, m
                         <Box>
                             <Typography variant="caption" fontWeight="bold" sx={{ textTransform: 'uppercase', letterSpacing: 1 }} color="text.secondary">Saldo Pendiente</Typography>
                             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                                <Typography variant="body2" color="text.secondary" fontWeight="medium">{factura.moneda?.simbolo || 'S/'}</Typography>
+                                <Typography variant="body2" color="text.secondary" fontWeight="medium">{currencyLabel}</Typography>
                                 <Typography variant="h5" fontWeight="bold">{maxAmount.toFixed(2)}</Typography>
                             </Box>
                         </Box>

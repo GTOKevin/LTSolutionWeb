@@ -35,6 +35,7 @@ import { MantenimientoDetalleForm } from './MantenimientoDetalleForm';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 import { useCreateMantenimientoDetalle, useUpdateMantenimientoDetalle, useDeleteMantenimientoDetalle } from '../../hooks/useMantenimientoDetalleCrud';
+import { formatDecimalAmount, resolveCurrencyLabel, resolveCurrencyToken } from '@/shared/utils/format-utils';
 
 
 interface MantenimientoDetalleListProps {
@@ -262,7 +263,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                             renderRow={(item) => (
                                 <>
                                     <TableCell>
-                                        {item.tipoProducto?.nombre || `ID: ${item.tipoProductoID}`}
+                                        {item.tipoProducto?.nombre || 'Producto no disponible'}
                                     </TableCell>
                                     <TableCell sx={{ maxWidth: 200 }}>
                                         <Tooltip title={item.descripcion || ''}>
@@ -321,7 +322,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                                     renderHeader={(item) => (
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, width: '100%' }}>
                                             <Typography variant="subtitle2" fontWeight="bold">
-                                                {item.tipoProducto?.nombre || `Item #${item.mantenimientoDetalleID}`}
+                                                {item.tipoProducto?.nombre || 'Producto no disponible'}
                                             </Typography>
                                             <Typography variant="subtitle2" color="primary" fontWeight="bold" sx={{ ml: 2 }}>
                                                 {item.moneda?.simbolo} {item.total.toFixed(2)}
@@ -393,10 +394,10 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                                                 }}>
                                                     <Box>
                                                         <Typography variant="caption" color="text.secondary" fontWeight="bold" sx={{ display: 'block', mb: 0.5 }}>
-                                                            TOTAL {symbol === 'S/' ? 'SOLES' : 'DÓLARES'}
+                                                            TOTAL {resolveCurrencyLabel(symbol).toUpperCase()}
                                                         </Typography>
                                                         <Typography variant="h5" fontWeight="800" color="text.primary">
-                                                            {symbol} {total.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            {resolveCurrencyToken(symbol) || resolveCurrencyLabel(symbol)} {formatDecimalAmount(total)}
                                                         </Typography>
                                                     </Box>
                                                     <Box sx={{ 
@@ -405,7 +406,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                                                         bgcolor: alpha(theme.palette.primary.main, 0.1),
                                                         color: theme.palette.primary.main
                                                     }}>
-                                                        {symbol === 'S/' ? <Typography fontWeight="bold">S/</Typography> : <Typography fontWeight="bold">$</Typography>}
+                                                        <Typography fontWeight="bold">{resolveCurrencyToken(symbol) || 'M'}</Typography>
                                                     </Box>
                                                 </Paper>
                                             </Grid>

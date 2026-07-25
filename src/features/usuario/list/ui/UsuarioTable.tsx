@@ -15,10 +15,10 @@ import {
     Link as LinkIcon,
 } from '@mui/icons-material';
 import type { Usuario } from '@entities/usuario/model/types';
+import { isUsuarioActivo } from '@entities/usuario/model/status';
 import type { PagedResponse } from '@/shared/model/types';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
-import { EstadoUsuarioEnum } from '@/shared/constants/enums';
 
 interface UsuarioTableProps {
     data?: PagedResponse<Usuario>;
@@ -68,7 +68,11 @@ export function UsuarioTable({
             keyExtractor={(item) => item.usuarioID}
             emptyMessage="No se encontraron usuarios"
             renderRow={(item) => (
-                <>
+                (() => {
+                    const isActive = isUsuarioActivo(item);
+
+                    return (
+                        <>
                     <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Avatar 
@@ -125,8 +129,8 @@ export function UsuarioTable({
                             px: 1.5,
                             py: 0.5,
                             borderRadius: 10,
-                            bgcolor: item.estadoID === EstadoUsuarioEnum.Activo ? alpha(theme.palette.success.main, 0.1) : alpha(theme.palette.error.main, 0.1),
-                            color: item.estadoID === EstadoUsuarioEnum.Activo ? theme.palette.success.main : theme.palette.error.main,
+                            bgcolor: isActive ? alpha(theme.palette.success.main, 0.1) : alpha(theme.palette.error.main, 0.1),
+                            color: isActive ? theme.palette.success.main : theme.palette.error.main,
                         }}>
                             <Box sx={{ 
                                 width: 6, 
@@ -167,7 +171,9 @@ export function UsuarioTable({
                             />
                         </Box>
                     </TableCell>
-                </>
+                        </>
+                    );
+                })()
             )}
         />
     );

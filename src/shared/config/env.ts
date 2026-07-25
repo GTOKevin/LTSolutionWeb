@@ -1,6 +1,7 @@
 export const env = {
     apiUrl: import.meta.env.VITE_API_URL || 'https://localhost:44332/api/v1',
     imgUrlBase: (import.meta.env.VITE_IMG_URL_BASE || import.meta.env.VITE_API_URL || '').replace(/\/api(?:\/v\d+)?\/?$/, ''),
+    orsApiKey: import.meta.env.VITE_ORS_API_KEY || '',
     isDev: import.meta.env.DEV,
     isProd: import.meta.env.PROD,
 } as const;

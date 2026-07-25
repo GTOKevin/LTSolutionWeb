@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { orsApi } from '@shared/api/ors.api';
+import { env } from '@shared/config/env';
 import { logger } from '@shared/utils/logger';
-
-const ORS_API_KEY = import.meta.env.VITE_ORS_API_KEY;
 
 export interface RouteData {
     path: [number, number][];
@@ -29,21 +29,12 @@ export function useOrsRoute(
         queryFn: async (): Promise<RouteData | null> => {
             if (!origenCoords || !destinoCoords) return null;
 
-            if (!ORS_API_KEY) {
+            if (!env.orsApiKey) {
                 logger.error('VITE_ORS_API_KEY no está configurada en las variables de entorno. Deshabilitando cálculo de ruta ORS.');
                 throw new Error('VITE_ORS_API_KEY no configurada.');
             }
 
-            const start = `${origenCoords[1]},${origenCoords[0]}`;
-            const end = `${destinoCoords[1]},${destinoCoords[0]}`;
-
-            const response = await fetch(`https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${start}&end=${end}`);
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch route');
-            }
-
-            const data = await response.json();
+            const data = await orsApi.getDrivingHgvRoute(origenCoords, destinoCoords);
 
             if (!data.features || data.features.length === 0) {
                 throw new Error('No route found');
@@ -71,7 +62,7 @@ export function useOrsRoute(
                 geographyFactor: peruvianFactor
             };
         },
-        enabled: !!origenCoords && !!destinoCoords && !!ORS_API_KEY,
+        enabled: !!origenCoords && !!destinoCoords,
         staleTime: 1000 * 60 * 15,
         retry: 1
     });

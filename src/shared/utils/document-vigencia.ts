@@ -1,3 +1,5 @@
+import { parseDateOnly } from './date-utils';
+
 export type DocumentVigenciaKey = 'vigente' | 'por_vencer' | 'vencido' | 'desconocido';
 
 export interface DocumentVigenciaMeta {
@@ -68,4 +70,28 @@ export function isDocumentNearExpiry(value?: string | null) {
 
 export function isDocumentExpired(value?: string | null) {
     return getDocumentVigenciaMeta(value).key === 'vencido';
+}
+
+export function getDocumentVigenciaMetaByExpirationDate(expirationDate?: string | null): DocumentVigenciaMeta {
+    const vencimiento = parseDateOnly(expirationDate ?? '');
+
+    if (!vencimiento) {
+        return getDocumentVigenciaMeta();
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const diffTime = vencimiento.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+        return getDocumentVigenciaMeta('vencido');
+    }
+
+    if (diffDays <= 30) {
+        return getDocumentVigenciaMeta('por_vencer');
+    }
+
+    return getDocumentVigenciaMeta('vigente');
 }

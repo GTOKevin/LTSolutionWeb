@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import { FacturaCreateEdit } from '@/features/factura/create-edit/ui/FacturaCreateEdit';
+import { FacturaCreateEdit } from '@features/factura';
 
 export function FacturaNuevaPage() {
     return (

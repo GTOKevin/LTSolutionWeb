@@ -13,7 +13,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { APP_PATHS } from '@app/router/model/navigation';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
 import { useMantenimientoForm } from '@features/mantenimiento/hooks/useMantenimientoForm';
-import { CrudTabbedPageShell } from '@widgets/crud-page';
+import { CrudTabbedPageShell } from '@shared/components/ui/CrudTabbedPageShell';
 import { getMantenimientoCrudTabs } from '../model/crud-tabs';
 import { MantenimientoCrudPageContent } from './MantenimientoCrudPageContent';
 

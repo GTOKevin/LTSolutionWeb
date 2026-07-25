@@ -1,6 +1,6 @@
 import { alpha, Box, Card, CardContent, Divider, FormControl, MenuItem, Select, Stack, Typography, useTheme } from '@mui/material';
 import type { DashboardOverview, DashboardPeriod } from '@entities/dashboard/model/types';
-import { DASHBOARD_PERIOD_OPTIONS } from '@features/dashboard/lib/dashboard-helpers';
+import { DASHBOARD_PERIOD_OPTIONS } from '@features/dashboard';
 import { dashboardCardSx } from '../lib/dashboard-styles';
 import { FacturacionLegendItem } from './DashboardShared';
 

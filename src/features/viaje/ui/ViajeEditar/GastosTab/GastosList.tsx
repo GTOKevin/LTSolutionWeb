@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useViajeGastos, useDeleteViajeGasto } from '@features/viaje/hooks/useViajeGastos';
 import { useViajeGastoOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { formatDateShort } from '@/shared/utils/date-utils';
+import { formatDecimalAmount, resolveCurrencyToken } from '@/shared/utils/format-utils';
 import { logger } from '@/shared/utils/logger';
 
 interface GastosListProps {
@@ -67,7 +68,7 @@ export function GastosList({ viajeID, isViewOnly }: GastosListProps) {
                             ))
                         ) : (
                             <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary' }}>
-                                S/ 0.00
+                                {formatDecimalAmount(0)}
                             </Typography>
                         )}
                     </Box>
@@ -100,7 +101,8 @@ export function GastosList({ viajeID, isViewOnly }: GastosListProps) {
                             ) : (
                                 gastos.map((gasto) => {
                                     const tipo = tiposGasto?.find(t => t.id === gasto.gastoID)?.text || gasto.gasto?.descripcion || 'Otro';
-                                    const monedaSimbolo = monedas?.find(m => m.id === gasto.monedaID)?.extra || 'S/';
+                                    const moneda = monedas?.find(m => m.id === gasto.monedaID);
+                                    const monedaSimbolo = resolveCurrencyToken(moneda?.extra || moneda?.text) || 'MON';
 
                                     return (
                                         <Box component="tr" key={gasto.viajeGastoID} sx={{ borderBottom: '1px solid', borderColor: alpha(theme.palette.divider, 0.1) }}>

@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import { FacturaCreateEdit } from '@/features/factura/create-edit/ui/FacturaCreateEdit';
+import { FacturaCreateEdit } from '@features/factura';
 
 export function FacturaVerPage() {
     const { id } = useParams<{ id: string }>();

@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { APP_PATHS } from '@app/router/model/navigation';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
-import { CrudTabbedPageShell } from '@widgets/crud-page';
+import { CrudTabbedPageShell } from '@shared/components/ui/CrudTabbedPageShell';
 import { getClienteCrudTabs } from '../model/crud-tabs';
 import { useClienteForm } from '@features/cliente/hooks/useClienteForm';
 import { ClienteCrudPageContent } from './ClienteCrudPageContent';

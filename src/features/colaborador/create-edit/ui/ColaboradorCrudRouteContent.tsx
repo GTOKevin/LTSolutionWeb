@@ -9,7 +9,7 @@ import { APP_PATHS } from '@app/router/model/navigation';
 import { colaboradorApi } from '@/entities/colaborador/api/colaborador.api';
 import { COLABORADOR_QUERY_KEYS } from '@features/colaborador';
 import { useColaboradorForm } from '@features/colaborador/hooks/useColaboradorForm';
-import { CrudTabbedPageShell } from '@widgets/crud-page';
+import { CrudTabbedPageShell } from '@shared/components/ui/CrudTabbedPageShell';
 import { getColaboradorCrudTabs } from '../model/crud-tabs';
 import { ColaboradorCrudPageContent } from './ColaboradorCrudPageContent';
 

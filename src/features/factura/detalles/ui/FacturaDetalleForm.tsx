@@ -26,6 +26,7 @@ import { ViajeSelectorModal } from './ViajeSelectorModal';
 import type { Viaje } from '@/entities/viaje/model/types';
 import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { IGV_RATE } from '@entities/factura/model/constants';
+import { resolveCurrencyToken } from '@/shared/utils/format-utils';
 
 interface FacturaDetalleFormProps {
     open: boolean;
@@ -99,7 +100,7 @@ export function FacturaDetalleForm({
         queryFn: () => monedaApi.getSelect()
     });
 
-    const currencySymbol = monedaSimbolo || 'S/';
+    const currencySymbol = resolveCurrencyToken(monedaSimbolo) || 'MON';
 
     const handleViajeSelect = (viaje: Viaje) => {
         setValue('viajeID', viaje.viajeID);

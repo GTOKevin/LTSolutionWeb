@@ -3,7 +3,7 @@ import autoTable from 'jspdf-autotable';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import { formatCurrency } from '@/shared/utils/format-utils';
+import { formatCurrency, resolveCurrencyToken } from '@/shared/utils/format-utils';
 import type { FacturaReporte } from '@/entities/factura/model/types';
 
 type JsPdfWithAutoTable = jsPDF & {
@@ -14,7 +14,7 @@ type JsPdfWithAutoTable = jsPDF & {
 
 export const generateFacturaPdf = (reportData: FacturaReporte) => {
     const doc = new jsPDF('p', 'pt', 'a4');
-    const currencySymbol = reportData.moneda?.simbolo || 'S/';
+    const currencySymbol = resolveCurrencyToken(reportData.moneda) || 'MON';
 
     // --- Header ---
     doc.setFontSize(18);
@@ -109,7 +109,7 @@ export const generateFacturaPdf = (reportData: FacturaReporte) => {
 export const generateFacturaExcel = async (reportData: FacturaReporte) => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Factura');
-    const currencySymbol = reportData.moneda?.simbolo || 'S/';
+    const currencySymbol = resolveCurrencyToken(reportData.moneda) || 'MON';
 
     // --- Header ---
     sheet.getColumn('A').width = 20;

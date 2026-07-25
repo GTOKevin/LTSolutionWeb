@@ -1,1 +1,1 @@
-export { CrudTabbedPageShell } from './ui/CrudTabbedPageShell';
+export { CrudTabbedPageShell } from '@shared/components/ui/CrudTabbedPageShell';
