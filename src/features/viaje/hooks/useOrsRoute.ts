@@ -18,6 +18,12 @@ const SIERRA_SELVA_DEPARTMENTS = [
     'UCAYALI', 'MADRE DE DIOS'
 ];
 
+export const ORS_CONFIG_ERROR_MESSAGE = 'VITE_ORS_API_KEY no configurada.';
+
+export function isOrsConfigurationError(error: unknown) {
+    return error instanceof Error && error.message === ORS_CONFIG_ERROR_MESSAGE;
+}
+
 export function useOrsRoute(
     origenCoords: [number, number] | null,
     destinoCoords: [number, number] | null,
@@ -31,7 +37,7 @@ export function useOrsRoute(
 
             if (!env.orsApiKey) {
                 logger.error('VITE_ORS_API_KEY no está configurada en las variables de entorno. Deshabilitando cálculo de ruta ORS.');
-                throw new Error('VITE_ORS_API_KEY no configurada.');
+                throw new Error(ORS_CONFIG_ERROR_MESSAGE);
             }
 
             const data = await orsApi.getDrivingHgvRoute(origenCoords, destinoCoords);
@@ -64,6 +70,12 @@ export function useOrsRoute(
         },
         enabled: !!origenCoords && !!destinoCoords,
         staleTime: 1000 * 60 * 15,
-        retry: 1
+        retry: (failureCount, error) => {
+            if (isOrsConfigurationError(error)) {
+                return false;
+            }
+
+            return failureCount < 1;
+        }
     });
 }

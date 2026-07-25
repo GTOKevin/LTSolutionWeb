@@ -9,7 +9,7 @@ import L from 'leaflet';
 import 'leaflet-routing-machine';
 import { useEffect } from 'react';
 import { useUbigeoDetails } from '@/shared/hooks/useUbigeoDetails';
-import { useOrsRoute } from '@features/viaje/hooks/useOrsRoute';
+import { isOrsConfigurationError, useOrsRoute } from '@features/viaje/hooks/useOrsRoute';
 import type { ViajeWizardFormData } from '../../model/schema';
 
 // Fix for default markers in leaflet with Webpack/Vite
@@ -86,12 +86,22 @@ export function Step2Ruta() {
             : null;
 
     // Query to calculate route via OpenRouteService
-    const { data: routeData, isLoading: isRouteLoading, isError: isRouteError } = useOrsRoute(
+    const { data: routeData, error: routeError, isLoading: isRouteLoading, isError: isRouteError } = useOrsRoute(
         origenCoords, 
         destinoCoords, 
         origenDetails?.departamento, 
         destinoDetails?.departamento
     );
+    const isOrsConfigError = isOrsConfigurationError(routeError);
+    const routeStatusMessage = !origenCoords || !destinoCoords
+        ? 'Seleccione origen y destino para calcular ruta'
+        : isRouteLoading
+            ? 'Calculando ruta para vehículo pesado...'
+            : isOrsConfigError
+                ? 'Ruta directa (configuración ORS pendiente)'
+                : isRouteError
+                    ? 'Ruta directa (servicio ORS no disponible)'
+                    : `Ruta óptima: ${routeData?.distance} km (Aprox. ${routeData?.estimatedDays} días operativos / ${routeData?.drivingTimeHours} hrs viaje)`;
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -268,13 +278,7 @@ export function Step2Ruta() {
                     <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)' }}>
                         <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: isRouteError ? 'warning.main' : 'primary.main', animation: isRouteError ? 'none' : 'pulse 2s infinite' }} />
                         <Typography variant="body2" fontWeight={600}>
-                            {!origenCoords || !destinoCoords 
-                                ? 'Seleccione origen y destino para calcular ruta'
-                                : isRouteLoading
-                                    ? 'Calculando ruta para vehículo pesado...'
-                                    : isRouteError
-                                        ? 'Ruta directa (Servidor de vías ocupado)'
-                                        : `Ruta óptima: ${routeData?.distance} km (Aprox. ${routeData?.estimatedDays} días operativos / ${routeData?.drivingTimeHours} hrs viaje)`}
+                            {routeStatusMessage}
                         </Typography>
                     </Paper>
                 </Box>

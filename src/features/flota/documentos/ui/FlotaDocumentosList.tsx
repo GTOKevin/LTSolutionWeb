@@ -63,6 +63,16 @@ const getExpirationStatus = (fechaVencimiento: string) => {
         };
     }
 
+    if (vigenciaMeta.key === 'por_vencer' && vigenciaMeta.urgency === 'critical') {
+        return {
+            color: 'error' as const,
+            icon: <WarningIcon fontSize="small" />,
+            label: 'Vence pronto',
+            fullLabel: 'El documento vencerá pronto, actualice el documento.',
+            textColor: 'error.main',
+        };
+    }
+
     if (vigenciaMeta.key === 'por_vencer') {
         return {
             color: 'warning' as const,

@@ -26,7 +26,7 @@ export function ExpirationStatus({ expirationDate }: ExpirationStatusProps) {
     } as const;
     const color = colorMap[vigenciaMeta.key];
     const label = vigenciaMeta.label;
-    const sx = vigenciaMeta.key === 'vencido'
+    const sx = vigenciaMeta.chipColor === 'error'
         ? { bgcolor: '#d32f2f', color: '#fff' }
         : {};
     const tooltipTitle = daysLeft < 0
