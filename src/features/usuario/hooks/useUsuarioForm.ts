@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { rolUsuarioApi } from '@entities/rol-usuario/api/rol-usuario.api';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import { colaboradorApi } from '@entities/colaborador/api/colaborador.api';
+import { ESTADO_SECCIONES } from '@entities/master-data/model/constants';
+import { resolveUsuarioActivoId } from '@entities/usuario/model/status';
 import { createUsuarioSchemaFull, editUsuarioSchemaFull, type CreateUsuarioSchema, type UsuarioFormSchema } from '../model/schema';
 import { useEffect, useState } from 'react';
 import type { Usuario, CreateUsuarioDto } from '@entities/usuario/model/types';
@@ -33,7 +35,7 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
 
     const { data: estados } = useQuery({
         queryKey: ['estados-usuario-select'],
-        queryFn: () => estadoApi.getSelect(),
+        queryFn: () => estadoApi.getSelect(undefined, 20, ESTADO_SECCIONES.USUARIO),
         enabled: open
     });
 
@@ -46,6 +48,7 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
     const listaRoles = roles || [];
     const listaEstados = estados || [];
     const listaColaboradores = colaboradores || [];
+    const estadoActivoId = resolveUsuarioActivoId(listaEstados);
 
     // --- Form ---
     const form = useForm({
@@ -54,7 +57,7 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
             nombre: '',
             email: '',
             rolUsuarioID: 0,
-            estadoID: 1, // Default Activo
+            estadoID: 0,
             colaboradorID: 0,
             clave: ''
         }
@@ -82,7 +85,7 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
                     nombre: '',
                     email: '',
                     rolUsuarioID: 0,
-                    estadoID: 1, // Default Activo
+                    estadoID: estadoActivoId ?? 0,
                     colaboradorID: 0,
                     clave: ''
                 });
@@ -98,7 +101,15 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
                 window.clearTimeout(resetUiTimer);
             };
         }
-    }, [open, usuarioToEdit, reset]);
+    }, [estadoActivoId, open, usuarioToEdit, reset]);
+
+    useEffect(() => {
+        if (!open || isEdit || !estadoActivoId || form.getValues('estadoID')) {
+            return;
+        }
+
+        setValue('estadoID', estadoActivoId, { shouldValidate: true });
+    }, [estadoActivoId, form, isEdit, open, setValue]);
 
     const onSubmit = (data: UsuarioFormSchema) => {
         const commonData = {

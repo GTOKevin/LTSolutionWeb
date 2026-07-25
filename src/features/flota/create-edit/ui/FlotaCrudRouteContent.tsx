@@ -9,7 +9,7 @@ import { APP_PATHS } from '@app/router/model/navigation';
 import { flotaApi } from '@/entities/flota/api/flota.api';
 import { FLOTA_QUERY_KEYS } from '@features/flota';
 import { useFlotaForm } from '@features/flota/hooks/useFlotaForm';
-import { CrudTabbedPageShell } from '@widgets/crud-page';
+import { CrudTabbedPageShell } from '@shared/components/ui/CrudTabbedPageShell';
 import { getFlotaCrudTabs } from '../model/crud-tabs';
 import { FlotaCrudPageContent } from './FlotaCrudPageContent';
 

@@ -31,6 +31,7 @@ import { FacturaDetalles } from '../../detalles/ui';
 import { useToast } from '@/shared/components/ui/Toast';
 import { getErrorMessage } from '@/shared/utils/api-errors';
 import { handleBackendErrors } from '@/shared/utils/form-validation';
+import { resolveCurrencyLabel } from '@/shared/utils/format-utils';
 import { logger } from '@/shared/utils/logger';
 
 interface FacturaCreateEditProps {
@@ -48,6 +49,7 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
     const createMutation = useCreateFactura();
     const updateMutation = useUpdateFactura();
     const isSaving = createMutation.isPending || updateMutation.isPending;
+    const facturaCurrencyLabel = resolveCurrencyLabel(factura?.moneda);
 
     const { control, handleSubmit, reset, setError, setValue, getValues, formState: { errors } } = useForm<CreateFacturaSchema>({
         resolver: zodResolver(createFacturaSchema) as Resolver<CreateFacturaSchema>,
@@ -416,7 +418,7 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Typography variant="body1" color="text.secondary" fontWeight="medium">Subtotal</Typography>
                                         <Box sx={{ textAlign: 'right' }}>
-                                            <Typography variant="caption" color="text.disabled" sx={{ display: 'block' }}>{factura.moneda?.simbolo || 'S/'}</Typography>
+                                            <Typography variant="caption" color="text.disabled" sx={{ display: 'block' }}>{facturaCurrencyLabel}</Typography>
                                             <Typography variant="h6" fontWeight="bold" fontFamily="monospace">{factura.subTotal.toFixed(2)}</Typography>
                                         </Box>
                                     </Box>
@@ -438,7 +440,7 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Typography variant="h6" fontWeight="bold" color="text.primary">Total Factura</Typography>
                                         <Box sx={{ textAlign: 'right' }}>
-                                            <Typography variant="caption" color="primary.main" fontWeight="bold" sx={{ display: 'block' }}>{factura.moneda?.nombre}</Typography>
+                                            <Typography variant="caption" color="primary.main" fontWeight="bold" sx={{ display: 'block' }}>{facturaCurrencyLabel}</Typography>
                                             <Typography variant="h4" fontWeight="bold" color="primary.main" fontFamily="monospace">{factura.total.toFixed(2)}</Typography>
                                         </Box>
                                     </Box>

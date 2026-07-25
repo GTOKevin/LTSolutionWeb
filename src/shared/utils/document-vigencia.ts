@@ -1,3 +1,5 @@
+import { parseDateOnly } from './date-utils';
+
 export type DocumentVigenciaKey = 'vigente' | 'por_vencer' | 'vencido' | 'desconocido';
 
 export interface DocumentVigenciaMeta {
@@ -6,6 +8,11 @@ export interface DocumentVigenciaMeta {
     chipColor: 'success' | 'warning' | 'error' | 'default';
     bgColor: string;
     textColor: string;
+}
+
+export interface DocumentExpirationMeta extends DocumentVigenciaMeta {
+    daysLeft?: number;
+    urgency: 'critical' | 'warning' | 'normal' | 'unknown';
 }
 
 function normalizeVigenciaEstado(value?: string | null) {
@@ -68,4 +75,56 @@ export function isDocumentNearExpiry(value?: string | null) {
 
 export function isDocumentExpired(value?: string | null) {
     return getDocumentVigenciaMeta(value).key === 'vencido';
+}
+
+export function getDocumentVigenciaMetaByExpirationDate(expirationDate?: string | null): DocumentExpirationMeta {
+    const vencimiento = parseDateOnly(expirationDate ?? '');
+
+    if (!vencimiento) {
+        return {
+            ...getDocumentVigenciaMeta(),
+            urgency: 'unknown',
+        };
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const diffTime = vencimiento.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+        return {
+            ...getDocumentVigenciaMeta('vencido'),
+            daysLeft: diffDays,
+            urgency: 'critical',
+        };
+    }
+
+    if (diffDays <= 30) {
+        return {
+            ...getDocumentVigenciaMeta('por_vencer'),
+            label: 'Vence pronto',
+            chipColor: 'error',
+            bgColor: 'error.50',
+            textColor: 'error.main',
+            daysLeft: diffDays,
+            urgency: 'critical',
+        };
+    }
+
+    if (diffDays <= 90) {
+        return {
+            ...getDocumentVigenciaMeta('por_vencer'),
+            label: 'Próximo a vencer',
+            daysLeft: diffDays,
+            urgency: 'warning',
+        };
+    }
+
+    return {
+        ...getDocumentVigenciaMeta('vigente'),
+        daysLeft: diffDays,
+        urgency: 'normal',
+    };
 }

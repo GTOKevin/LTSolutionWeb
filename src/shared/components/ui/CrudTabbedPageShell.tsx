@@ -58,7 +58,7 @@ export function CrudTabbedPageShell({
                 bgcolor: theme.palette.mode === 'dark' ? '#101922' : '#f6f7f8',
                 p: { xs: 2, md: 3 },
                 position: 'relative',
-                pb: { xs: 10, md: 3 }
+                pb: { xs: 10, md: 3 },
             }}
         >
             <Box
@@ -67,7 +67,7 @@ export function CrudTabbedPageShell({
                     mx: 'auto',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: { xs: 2, md: 3 }
+                    gap: { xs: 2, md: 3 },
                 }}
             >
                 <Box
@@ -75,7 +75,7 @@ export function CrudTabbedPageShell({
                         borderRadius: 3,
                         border: `1px solid ${theme.palette.divider}`,
                         bgcolor: theme.palette.background.paper,
-                        overflow: 'hidden'
+                        overflow: 'hidden',
                     }}
                 >
                     <Box
@@ -84,7 +84,7 @@ export function CrudTabbedPageShell({
                             bgcolor: alpha(theme.palette.background.default, 0.5),
                             px: 3,
                             pt: 2,
-                            pb: 0
+                            pb: 0,
                         }}
                     >
                         <Box sx={{ mb: 2 }}>
@@ -135,7 +135,7 @@ export function CrudTabbedPageShell({
                                     display: 'flex',
                                     justifyContent: footerJustifyContent,
                                     gap: 2,
-                                    flexWrap: 'wrap'
+                                    flexWrap: 'wrap',
                                 }}
                             >
                                 {footer}

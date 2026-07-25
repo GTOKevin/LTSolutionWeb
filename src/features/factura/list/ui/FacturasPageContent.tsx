@@ -15,9 +15,8 @@ import {
 } from '@mui/icons-material';
 import { FacturaTable } from './FacturaTable';
 import { FacturaMobileList } from './FacturaMobileList';
-import { FacturaPagoForm } from '@/features/factura/pagos/ui/FacturaPagoForm';
-import { FacturaPagosModal } from '@/features/factura/pagos/ui/FacturaPagosModal';
-import { formatCurrency } from '@/shared/utils/format-utils';
+import { FacturaPagoForm, FacturaPagosModal } from '@/features/factura/pagos/ui';
+import { formatDecimalAmount } from '@/shared/utils/format-utils';
 import type { useFacturasPageController } from '../hooks/useFacturasPageController';
 
 interface FacturasPageContentProps {
@@ -102,7 +101,7 @@ export function FacturasPageContent({ controller }: FacturasPageContentProps) {
                             </Typography>
                             <Box sx={{ mt: 2, display: 'flex', alignItems: 'baseline', gap: 1 }}>
                                 <Typography variant="h3" fontWeight="bold" color="text.primary">
-                                    {controller.resumen ? formatCurrency(controller.resumen.saldoPendienteTotal, 'S/') : 'S/ 0.00'}
+                                    {controller.resumen ? formatDecimalAmount(controller.resumen.saldoPendienteTotal) : '0.00'}
                                 </Typography>
                             </Box>
                         </Box>

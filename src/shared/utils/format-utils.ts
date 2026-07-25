@@ -1,3 +1,13 @@
+type CurrencyDescriptor =
+    | string
+    | {
+        simbolo?: string | null;
+        codigo?: string | null;
+        nombre?: string | null;
+    }
+    | null
+    | undefined;
+
 export const getInitials = (name: string): string => {
     if (!name) return '';
     const parts = name.trim().split(/\s+/);
@@ -30,4 +40,33 @@ export const formatCurrency = (amount: number, currencyCodeOrSymbol = 'USD'): st
         // Fallback en caso de que se pase un string que no sea un código ISO válido
         return `${currencyCodeOrSymbol} ${amount.toFixed(2)}`;
     }
+};
+
+export const formatDecimalAmount = (amount: number): string => {
+    return new Intl.NumberFormat('es-PE', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(amount);
+};
+
+export const resolveCurrencyToken = (currency?: CurrencyDescriptor): string | undefined => {
+    if (typeof currency === 'string') {
+        return currency.trim() || undefined;
+    }
+
+    return currency?.simbolo?.trim() || currency?.codigo?.trim() || undefined;
+};
+
+export const resolveCurrencyLabel = (currency?: CurrencyDescriptor): string => {
+    if (typeof currency === 'string') {
+        return currency.trim() || 'Moneda';
+    }
+
+    return currency?.nombre?.trim() || currency?.codigo?.trim() || currency?.simbolo?.trim() || 'Moneda';
+};
+
+export const formatCurrencyAmount = (amount: number, currency?: CurrencyDescriptor): string => {
+    const token = resolveCurrencyToken(currency);
+
+    return token ? formatCurrency(amount, token) : formatDecimalAmount(amount);
 };

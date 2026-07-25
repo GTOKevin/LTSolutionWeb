@@ -29,7 +29,7 @@ import { flotaApi } from '@entities/flota/api/flota.api';
 import type { CreateFlotaDocumentoSchema } from '../../model/schema';
 import { useState, useRef } from 'react';
 import type { FlotaDocumento } from '@entities/flota/model/types';
-import { parseDateOnly, formatDateLong } from '@/shared/utils/date-utils';
+import { formatDateLong } from '@/shared/utils/date-utils';
 
 import { FlotaDocumentosForm } from './FlotaDocumentosForm';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
@@ -39,6 +39,7 @@ import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 import { TableActions } from '@/shared/components/ui/TableActions';
 import { buildInternalFileUrl } from '@/shared/config/env';
+import { getDocumentVigenciaMetaByExpirationDate } from '@/shared/utils/document-vigencia';
 
 interface FlotaDocumentosListProps {
     flotaId: number;
@@ -46,46 +47,49 @@ interface FlotaDocumentosListProps {
 }
 
 const getExpirationStatus = (fechaVencimiento: string) => {
-    const vencimiento = parseDateOnly(fechaVencimiento);
-    if (!vencimiento) return null;
+    const vigenciaMeta = getDocumentVigenciaMetaByExpirationDate(fechaVencimiento);
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    if (vigenciaMeta.key === 'desconocido') {
+        return null;
+    }
 
-    const diffTime = vencimiento.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays <= 30) {
+    if (vigenciaMeta.key === 'vencido') {
         return {
             color: 'error' as const,
             icon: <ErrorIcon fontSize="small" />,
+            label: 'Vencido',
+            fullLabel: 'El documento ya venció y requiere actualización.',
+            textColor: 'error.main',
+        };
+    }
+
+    if (vigenciaMeta.key === 'por_vencer' && vigenciaMeta.urgency === 'critical') {
+        return {
+            color: 'error' as const,
+            icon: <WarningIcon fontSize="small" />,
             label: 'Vence pronto',
             fullLabel: 'El documento vencerá pronto, actualice el documento.',
             textColor: 'error.main',
-            bgColor: 'error.lighter',
-            borderColor: 'error.main'
         };
-    } else if (diffDays <= 90) {
+    }
+
+    if (vigenciaMeta.key === 'por_vencer') {
         return {
             color: 'warning' as const,
             icon: <WarningIcon fontSize="small" />,
             label: 'Próximo a vencer',
             fullLabel: 'El documento está próximo a vencer.',
             textColor: 'warning.main',
-            bgColor: 'warning.lighter',
-            borderColor: 'warning.main'
-        };
-    } else {
-        return {
-            color: 'success' as const,
-            icon: <CheckIcon fontSize="small" />,
-            label: 'Vigente',
-            fullLabel: 'Documento vigente',
-            textColor: 'success.main',
-            bgColor: 'success.lighter',
-            borderColor: 'success.main'
         };
     }
+
+    return {
+        color: 'success' as const,
+        icon: <CheckIcon fontSize="small" />,
+        label: 'Vigente',
+        fullLabel: 'Documento vigente',
+        textColor: 'success.main',
+    };
 };
 
 export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocumentosListProps) {

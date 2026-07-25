@@ -94,8 +94,7 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: `${APP_ROUTE_SEGMENTS.clientes}/nuevo`, permission: PERMISSIONS.CLIENTES.GESTIONAR, element: <ClienteNuevoPage /> },
     {
         path: `${APP_ROUTE_SEGMENTS.clientes}/:id`,
-        permission: [PERMISSIONS.CLIENTES.VER, PERMISSIONS.CLIENTES.GESTIONAR],
-        mode: 'all',
+        permission: PERMISSIONS.CLIENTES.GESTIONAR,
         element: <ClienteEditarPage />,
     },
     { path: `${APP_ROUTE_SEGMENTS.clientes}/:id/ver`, permission: PERMISSIONS.CLIENTES.VER, element: <ClienteVerPage /> },
@@ -103,8 +102,7 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: `${APP_ROUTE_SEGMENTS.viajes}/nuevo`, permission: PERMISSIONS.VIAJES.GESTIONAR, element: <ViajeNuevoPage /> },
     {
         path: `${APP_ROUTE_SEGMENTS.viajes}/:id`,
-        permission: [PERMISSIONS.VIAJES.VER, PERMISSIONS.VIAJES.GESTIONAR],
-        mode: 'all',
+        permission: PERMISSIONS.VIAJES.GESTIONAR,
         element: <ViajeEditarPage />,
     },
     { path: `${APP_ROUTE_SEGMENTS.viajes}/:id/ver`, permission: PERMISSIONS.VIAJES.VER, element: <ViajeVerPage /> },
@@ -112,8 +110,7 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: `${APP_ROUTE_SEGMENTS.facturas}/nuevo`, permission: PERMISSIONS.FACTURAS.GESTIONAR, element: <FacturaNuevaPage /> },
     {
         path: `${APP_ROUTE_SEGMENTS.facturas}/:id`,
-        permission: [PERMISSIONS.FACTURAS.VER, PERMISSIONS.FACTURAS.GESTIONAR],
-        mode: 'all',
+        permission: PERMISSIONS.FACTURAS.GESTIONAR,
         element: <FacturaEditarPage />,
     },
     { path: `${APP_ROUTE_SEGMENTS.facturas}/:id/ver`, permission: PERMISSIONS.FACTURAS.VER, element: <FacturaVerPage /> },
@@ -121,8 +118,7 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: `${APP_ROUTE_SEGMENTS.flotas}/nuevo`, permission: PERMISSIONS.FLOTA.GESTIONAR, element: <FlotaNuevoPage /> },
     {
         path: `${APP_ROUTE_SEGMENTS.flotas}/:id`,
-        permission: [PERMISSIONS.FLOTA.VER, PERMISSIONS.FLOTA.GESTIONAR],
-        mode: 'all',
+        permission: PERMISSIONS.FLOTA.GESTIONAR,
         element: <FlotaEditarPage />,
     },
     { path: `${APP_ROUTE_SEGMENTS.flotas}/:id/ver`, permission: PERMISSIONS.FLOTA.VER, element: <FlotaVerPage /> },
@@ -130,8 +126,7 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: `${APP_ROUTE_SEGMENTS.colaboradores}/nuevo`, permission: PERMISSIONS.COLABORADORES.GESTIONAR, element: <ColaboradorNuevoPage /> },
     {
         path: `${APP_ROUTE_SEGMENTS.colaboradores}/:id`,
-        permission: [PERMISSIONS.COLABORADORES.VER, PERMISSIONS.COLABORADORES.GESTIONAR],
-        mode: 'all',
+        permission: PERMISSIONS.COLABORADORES.GESTIONAR,
         element: <ColaboradorEditarPage />,
     },
     { path: `${APP_ROUTE_SEGMENTS.colaboradores}/:id/ver`, permission: PERMISSIONS.COLABORADORES.VER, element: <ColaboradorVerPage /> },
@@ -139,8 +134,7 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: `${APP_ROUTE_SEGMENTS.mantenimientos}/nuevo`, permission: PERMISSIONS.MANTENIMIENTOS.GESTIONAR, element: <MantenimientoNuevoPage /> },
     {
         path: `${APP_ROUTE_SEGMENTS.mantenimientos}/:id`,
-        permission: [PERMISSIONS.MANTENIMIENTOS.VER, PERMISSIONS.MANTENIMIENTOS.GESTIONAR],
-        mode: 'all',
+        permission: PERMISSIONS.MANTENIMIENTOS.GESTIONAR,
         element: <MantenimientoEditarPage />,
     },
     { path: `${APP_ROUTE_SEGMENTS.mantenimientos}/:id/ver`, permission: PERMISSIONS.MANTENIMIENTOS.VER, element: <MantenimientoVerPage /> },

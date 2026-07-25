@@ -6,7 +6,7 @@ import {
 import type { DashboardOverview as DashboardOverviewData, DashboardPeriod } from '@entities/dashboard/model/types';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { usePermission } from '@shared/lib/hooks/usePermission';
-import { DASHBOARD_PERIOD_OPTIONS } from '@features/dashboard/lib/dashboard-helpers';
+import { DASHBOARD_PERIOD_OPTIONS } from '@features/dashboard';
 import { DashboardChartsSection } from './DashboardChartsSection';
 import { DashboardBottomSection } from './DashboardBottomSection';
 import { DashboardKpisSection } from './DashboardKpisSection';
