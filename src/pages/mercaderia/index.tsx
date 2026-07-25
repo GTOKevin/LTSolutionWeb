@@ -1,4 +1,4 @@
-import { MercaderiaPageContent, useMercaderiaPageController } from '@features/mercaderia/list';
+import { MercaderiaPageContent, useMercaderiaPageController } from '@features/mercaderia';
 
 export function MercaderiaPage() {
     const controller = useMercaderiaPageController();

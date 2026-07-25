@@ -1,6 +1,6 @@
 import React from 'react';
 import { TableCell } from '@mui/material';
-import { formatCurrency } from '@/shared/utils/format-utils';
+import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import type { FacturaDetalle } from '@/entities/factura/model/types';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
@@ -44,9 +44,9 @@ export function FacturaDetalleList({
         <>
             <TableCell>{detalle.codigo}</TableCell>
             <TableCell>{detalle.descripcion || '-'}</TableCell>
-            <TableCell align="right">{formatCurrency(detalle.subTotal, detalle.moneda?.simbolo)}</TableCell>
-            <TableCell align="right">{formatCurrency(detalle.igv, detalle.moneda?.simbolo)}</TableCell>
-            <TableCell align="right"><strong>{formatCurrency(detalle.total, detalle.moneda?.simbolo)}</strong></TableCell>
+            <TableCell align="right">{formatCurrencyAmount(detalle.subTotal, detalle.moneda)}</TableCell>
+            <TableCell align="right">{formatCurrencyAmount(detalle.igv, detalle.moneda)}</TableCell>
+            <TableCell align="right"><strong>{formatCurrencyAmount(detalle.total, detalle.moneda)}</strong></TableCell>
             <TableCell align="center">
                 <TableActions
                     onDelete={isReadOnly ? undefined : () => onDelete(detalle.facturaDetalleID)}

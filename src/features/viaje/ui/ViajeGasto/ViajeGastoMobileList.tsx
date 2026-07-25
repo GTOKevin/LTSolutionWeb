@@ -14,6 +14,7 @@ import {
 import type { ViajeGasto } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
+import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 
 interface Props {
@@ -91,7 +92,6 @@ export function ViajeGastoMobileList({
             }}
             renderBody={(item) => {
                 const moneda = monedas.find(m => m.id === item.monedaID);
-                const monedaSymbol = moneda?.extra || 'PEN';
                 
                 return (
                     <Grid container spacing={2}>
@@ -110,7 +110,10 @@ export function ViajeGastoMobileList({
                                 <Typography variant="caption">Monto</Typography>
                             </Box>
                             <Typography variant="body2" fontWeight="bold" color="primary">
-                                {monedaSymbol} {Number(item.monto).toFixed(2)}
+                                {formatCurrencyAmount(Number(item.monto), {
+                                    simbolo: moneda?.extra,
+                                    codigo: moneda?.text,
+                                })}
                             </Typography>
                         </Grid>
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Chip } from '@mui/material';
-import { formatCurrency } from '@/shared/utils/format-utils';
+import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import type { FacturaPago } from '@/entities/factura/model/types';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
@@ -71,7 +71,7 @@ export function FacturaPagoMobileList({
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
                         <Typography variant="subtitle2" fontWeight="bold">Monto:</Typography>
                         <Typography variant="subtitle2" fontWeight="bold" color="success.main">
-                            {formatCurrency(item.montoAbonado, item.moneda?.simbolo)}
+                            {formatCurrencyAmount(item.montoAbonado, item.moneda)}
                         </Typography>
                     </Box>
                 </Box>

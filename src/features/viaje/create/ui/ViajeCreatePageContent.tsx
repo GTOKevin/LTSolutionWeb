@@ -4,9 +4,9 @@ import { FormProvider } from 'react-hook-form';
 import { APP_PATHS } from '@app/router/model/navigation';
 import { useViajeOptions } from '@features/viaje/options';
 import { useViajeWizardController } from '../hooks/useViajeWizardController';
-import { WizardSidebar } from '@features/viaje/ui/ViajeWizardCreate/WizardSidebar';
 import { ViajeWizardShell } from './ViajeWizardShell';
 import { ViajeWizardStepContent } from './ViajeWizardStepContent';
+import { WizardSidebar } from './WizardSidebar';
 
 export function ViajeCreatePageContent() {
     const navigate = useNavigate();

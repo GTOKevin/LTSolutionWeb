@@ -1,4 +1,4 @@
-import { ClienteCrudRouteContent } from '@features/cliente/create-edit';
+import { ClienteCrudRouteContent } from '@features/cliente';
 
 export function ClienteNuevoPage() {
     return <ClienteCrudRouteContent mode="create" />;

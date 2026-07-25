@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { ViajeGeneralReportDto } from '@entities/viaje/model/types';
 import { themePalette } from '@/shared/config/theme/palette';
+import { formatDecimalAmount } from '@/shared/utils/format-utils';
 
 // Register a standard font (Helvetica is built-in, but good practice to be explicit if using others)
 // For now, we stick to built-in fonts for simplicity and speed.
@@ -176,15 +177,15 @@ export const ViajeGeneralPdf = ({ data }: Props) => {
                             </View>
                             <View style={styles.financialRow}>
                                 <Text style={styles.financialLabel}>Gastos Operativos:</Text>
-                                <Text style={styles.financialValue}>S/ {data.totalGastos.toFixed(2)}</Text>
+                                <Text style={styles.financialValue}>{formatDecimalAmount(data.totalGastos)}</Text>
                             </View>
                             <View style={styles.financialRow}>
-                                <Text style={styles.financialLabel}>Sueldo Conductor (S/100/día):</Text>
-                                <Text style={styles.financialValue}>S/ {data.sueldoConductor.toFixed(2)}</Text>
+                                <Text style={styles.financialLabel}>Sueldo Conductor:</Text>
+                                <Text style={styles.financialValue}>{formatDecimalAmount(data.sueldoConductor)}</Text>
                             </View>
                             <View style={[styles.financialRow, { borderTopWidth: 1, borderTopColor: themePalette.common.border, paddingTop: 2, marginTop: 2 }]}>
                                 <Text style={[styles.financialLabel, { color: themePalette.primary.main }]}>COSTO TOTAL OPERACIÓN:</Text>
-                                <Text style={[styles.financialValue, { color: themePalette.primary.main }]}>S/ {data.costoTotalOperacion.toFixed(2)}</Text>
+                                <Text style={[styles.financialValue, { color: themePalette.primary.main }]}>{formatDecimalAmount(data.costoTotalOperacion)}</Text>
                             </View>
                             
                             <Text style={[styles.financialTitle, { marginTop: 10 }]}>CONSUMO COMBUSTIBLE</Text>
@@ -194,11 +195,11 @@ export const ViajeGeneralPdf = ({ data }: Props) => {
                             </View>
                             <View style={styles.financialRow}>
                                 <Text style={styles.financialLabel}>Costo Total Combustible:</Text>
-                                <Text style={styles.financialValue}>S/ {data.totalCostoCombustible.toFixed(2)}</Text>
+                                <Text style={styles.financialValue}>{formatDecimalAmount(data.totalCostoCombustible)}</Text>
                             </View>
                             <View style={styles.financialRow}>
                                 <Text style={styles.financialLabel}>Precio Promedio x Galón:</Text>
-                                <Text style={styles.financialValue}>S/ {data.precioPromedioGalon.toFixed(2)}</Text>
+                                <Text style={styles.financialValue}>{formatDecimalAmount(data.precioPromedioGalon)}</Text>
                             </View>
                         </View>
 

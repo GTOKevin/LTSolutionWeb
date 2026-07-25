@@ -1,4 +1,4 @@
-import { RolesColaboradorPageContent, useRolesColaboradorPageController } from '@features/rol-colaborador/list';
+import { RolesColaboradorPageContent, useRolesColaboradorPageController } from '@features/rol-colaborador';
 
 export function RolesColaboradorPage() {
     const controller = useRolesColaboradorPageController();

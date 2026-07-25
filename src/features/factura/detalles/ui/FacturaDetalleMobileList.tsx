@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { formatCurrency } from '@/shared/utils/format-utils';
+import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import type { FacturaDetalle } from '@/entities/factura/model/types';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 
@@ -50,16 +50,16 @@ export function FacturaDetalleMobileList({
                     </Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
                         <Typography variant="body2">SubTotal:</Typography>
-                        <Typography variant="body2">{formatCurrency(item.subTotal, item.moneda?.simbolo)}</Typography>
+                        <Typography variant="body2">{formatCurrencyAmount(item.subTotal, item.moneda)}</Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography variant="body2">IGV:</Typography>
-                        <Typography variant="body2">{formatCurrency(item.igv, item.moneda?.simbolo)}</Typography>
+                        <Typography variant="body2">{formatCurrencyAmount(item.igv, item.moneda)}</Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
                         <Typography variant="subtitle2" fontWeight="bold">Total:</Typography>
                         <Typography variant="subtitle2" fontWeight="bold" color="primary">
-                            {formatCurrency(item.total, item.moneda?.simbolo)}
+                            {formatCurrencyAmount(item.total, item.moneda)}
                         </Typography>
                     </Box>
                 </Box>

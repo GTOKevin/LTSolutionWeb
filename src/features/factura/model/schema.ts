@@ -38,7 +38,7 @@ export const createFacturaDetalleSchema = z.object({
 
 export type CreateFacturaDetalleSchema = z.infer<typeof createFacturaDetalleSchema>;
 
-export const createFacturaPagoSchema = z.object({
+const createFacturaPagoSchemaBase = z.object({
     fechaPago: z.string().min(1, 'Fecha de Pago es requerida'),
     fechaAcreditacion: z.string().optional().nullable(),
     tipoPagoID: z.number().min(1, 'Tipo de Pago es requerido'),
@@ -53,4 +53,25 @@ export const createFacturaPagoSchema = z.object({
     })
 });
 
-export type CreateFacturaPagoSchema = z.infer<typeof createFacturaPagoSchema>;
+export const createFacturaPagoSchema = (maxAmount: number) => createFacturaPagoSchemaBase.superRefine((data, ctx) => {
+    if (data.montoAbonado > maxAmount) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['montoAbonado'],
+            message: `El monto no puede exceder el saldo pendiente (${maxAmount.toFixed(2)}).`,
+        });
+    }
+});
+
+export const buildFacturaPagoDefaultValues = (monedaId: number, maxAmount: number) => ({
+    fechaPago: new Date().toISOString().split('T')[0],
+    fechaAcreditacion: '',
+    tipoPagoID: 0,
+    estadoID: 0,
+    monedaID: monedaId,
+    montoAbonado: maxAmount,
+    numeroOperacion: '',
+    observacion: '',
+});
+
+export type CreateFacturaPagoSchema = z.infer<typeof createFacturaPagoSchemaBase>;

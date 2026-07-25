@@ -1,7 +1,7 @@
 import React from 'react';
 import { TableCell, Chip } from '@mui/material';
 import type { FacturaPago } from '@/entities/factura/model/types';
-import { formatCurrency } from '@/shared/utils/format-utils';
+import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
@@ -58,7 +58,7 @@ export function FacturaPagoList({
             <TableCell>{pago.numeroOperacion || '-'}</TableCell>
             <TableCell>{pago.observacion || '-'}</TableCell>
             <TableCell align="right">
-                <strong>{formatCurrency(pago.montoAbonado, pago.moneda?.simbolo)}</strong>
+                <strong>{formatCurrencyAmount(pago.montoAbonado, pago.moneda)}</strong>
             </TableCell>
             <TableCell align="center">
                 <TableActions

@@ -1,4 +1,4 @@
-import { FacturasPageContent, useFacturasPageController } from '@features/factura/list';
+import { FacturasPageContent, useFacturasPageController } from '@features/factura';
 
 export function FacturasPage() {
     const controller = useFacturasPageController();

@@ -1,4 +1,4 @@
-import { ColaboradoresPageContent, useColaboradoresPageController } from '@features/colaborador/list';
+import { ColaboradoresPageContent, useColaboradoresPageController } from '@features/colaborador';
 
 export function ColaboradoresPage() {
     const controller = useColaboradoresPageController();

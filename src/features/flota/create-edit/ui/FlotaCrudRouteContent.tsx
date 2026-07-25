@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { APP_PATHS } from '@app/router/model/navigation';
 import { flotaApi } from '@/entities/flota/api/flota.api';
-import { FLOTA_QUERY_KEYS } from '@features/flota';
+import { FLOTA_QUERY_KEYS } from '../../model/query-keys';
 import { useFlotaForm } from '@features/flota/hooks/useFlotaForm';
 import { CrudTabbedPageShell } from '@shared/components/ui/CrudTabbedPageShell';
 import { getFlotaCrudTabs } from '../model/crud-tabs';

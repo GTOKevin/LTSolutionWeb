@@ -28,6 +28,7 @@ import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableLoading } from '@/shared/components/ui/TableLoading';
 import { TableActions } from '@/shared/components/ui/TableActions';
 import { formatDateShort } from '@/shared/utils/date-utils';
+import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 
 import { ViajeGastoMobileList } from './index';
 
@@ -270,7 +271,10 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                                         {item.galones ? Number(item.galones).toFixed(2) : '-'}
                                     </TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-                                        {moneda?.extra || 'PEN'} {Number(item.monto).toFixed(2)}
+                                        {formatCurrencyAmount(Number(item.monto), {
+                                            simbolo: moneda?.extra,
+                                            codigo: moneda?.text,
+                                        })}
                                     </TableCell>
                                     <TableCell align="center">
                                         <TableActions

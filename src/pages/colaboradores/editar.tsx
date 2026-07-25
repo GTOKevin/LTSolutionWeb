@@ -1,4 +1,4 @@
-import { ColaboradorCrudRouteContent } from '@features/colaborador/create-edit';
+import { ColaboradorCrudRouteContent } from '@features/colaborador';
 
 export function ColaboradorEditarPage() {
     return <ColaboradorCrudRouteContent mode="edit" />;

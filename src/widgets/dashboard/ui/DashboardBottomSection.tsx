@@ -8,10 +8,10 @@ import { useNavigate } from 'react-router-dom';
 import type { DashboardOverview } from '@entities/dashboard/model/types';
 import { formatCurrency } from '@shared/utils/format-utils';
 import { formatDateShort, formatDateTime } from '@shared/utils/date-utils';
+import { normalizeNotificationActionUrl } from '@shared/utils/notification-navigation';
 import {
     getNotificationTone,
     getTripStatusTone,
-    normalizeDashboardActionUrl,
     resolveDashboardNotificationModule,
 } from '@features/dashboard';
 import { APP_PATHS } from '@app/router/model/navigation';
@@ -172,7 +172,7 @@ export function DashboardBottomSection({
                                 <Stack spacing={1.25}>
                                     {visibleSecurityNotifications.length > 0 ? visibleSecurityNotifications.map(notification => {
                                         const tone = getNotificationTone(notification);
-                                        const actionUrl = normalizeDashboardActionUrl(notification.urlAccion);
+                                        const actionUrl = normalizeNotificationActionUrl(notification.urlAccion);
 
                                         return (
                                             <Box

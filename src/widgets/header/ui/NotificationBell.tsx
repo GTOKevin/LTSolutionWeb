@@ -24,6 +24,7 @@ import { useNotificaciones, useMarcarNotificacionLeida, useMarcarTodasNotificaci
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { normalizeNotificationActionUrl } from '@shared/utils/notification-navigation';
 
 export function NotificationBell() {
     const theme = useTheme();
@@ -47,10 +48,13 @@ export function NotificationBell() {
 
     const handleNotificacionClick = (id: number, urlAccion?: string) => {
         marcarLeidaMutation.mutate(id);
-        if (urlAccion) {
-            navigate(urlAccion);
-            handleClose();
+        const normalizedUrl = normalizeNotificationActionUrl(urlAccion);
+
+        if (normalizedUrl) {
+            navigate(normalizedUrl);
         }
+
+        handleClose();
     };
 
     const handleMarcarTodasLeidas = () => {

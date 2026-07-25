@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
     Box,
     Button,
@@ -19,7 +19,11 @@ import { Close as CloseIcon } from '@mui/icons-material';
 import { useForm, Controller, type Resolver, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
-import { createFacturaPagoSchema, type CreateFacturaPagoSchema } from '../../model/schema';
+import {
+    buildFacturaPagoDefaultValues,
+    createFacturaPagoSchema,
+    type CreateFacturaPagoSchema,
+} from '../../model/schema';
 import { useCreateFacturaPago } from '../../hooks/useFacturaPagoCrud';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
@@ -42,33 +46,17 @@ export function FacturaPagoForm({ open, onClose, factura, facturaId, monedaId, m
     const theme = useTheme();
     const createMutation = useCreateFacturaPago();
     const currencyLabel = resolveCurrencyLabel(factura.moneda);
+    const pagoSchema = useMemo(() => createFacturaPagoSchema(maxAmount), [maxAmount]);
+    const defaultValues = useMemo(() => buildFacturaPagoDefaultValues(monedaId, maxAmount), [monedaId, maxAmount]);
 
     const { control, handleSubmit, reset } = useForm<CreateFacturaPagoSchema>({
-        resolver: zodResolver(createFacturaPagoSchema) as Resolver<CreateFacturaPagoSchema>,
-        defaultValues: {
-            fechaPago: new Date().toISOString().split('T')[0],
-            fechaAcreditacion: '',
-            tipoPagoID: 0,
-            estadoID: 0,
-            monedaID: monedaId,
-            montoAbonado: maxAmount,
-            numeroOperacion: '',
-            observacion: ''
-        }
+        resolver: zodResolver(pagoSchema) as Resolver<CreateFacturaPagoSchema>,
+        defaultValues,
     });
 
     useEffect(() => {
-        reset({
-            fechaPago: new Date().toISOString().split('T')[0],
-            fechaAcreditacion: '',
-            tipoPagoID: 0,
-            estadoID: 0,
-            monedaID: monedaId,
-            montoAbonado: maxAmount,
-            numeroOperacion: '',
-            observacion: ''
-        });
-    }, [reset, monedaId, maxAmount]);
+        reset(defaultValues);
+    }, [defaultValues, reset]);
 
     const { data: tiposPago } = useQuery({
         queryKey: ['maestros', 'tipo-pago'],
