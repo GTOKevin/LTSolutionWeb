@@ -51,6 +51,7 @@ interface MisLicenciasPageContentProps {
 export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentProps) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const isRefreshing = controller.isFetching && !controller.isLoading;
 
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column', gap: 4, minHeight: '100%', flex: '1 0 auto' }}>
@@ -90,7 +91,7 @@ export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentP
                         <Box sx={{ mt: 3 }}>
                             <Typography variant="h3" fontWeight={800} color="text.primary">{controller.licenciaStats.total.toString().padStart(2, '0')}</Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                Registros consultados con los filtros actuales
+                                {isRefreshing ? 'Actualizando resultados...' : 'Registros consultados con los filtros actuales'}
                             </Typography>
                         </Box>
                     </Box>
@@ -108,7 +109,9 @@ export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentP
                         <Box sx={{ mt: 3 }}>
                             <Typography variant="h3" fontWeight={800} color="text.primary">{controller.licenciaStats.pendingVisible.toString().padStart(2, '0')}</Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                Pendientes en la pagina actual ({controller.licenciaStats.visibleCount} visibles)
+                                {isRefreshing
+                                    ? 'Actualizando licencias visibles...'
+                                    : `Pendientes en la consulta visible (${controller.licenciaStats.visibleCount} registros)`}
                             </Typography>
                         </Box>
                     </Box>
@@ -126,7 +129,7 @@ export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentP
                         <Box sx={{ mt: 3 }}>
                             <Typography variant="h3" fontWeight={800} color="text.primary">{controller.licenciaStats.approvedVisible.toString().padStart(2, '0')}</Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                Aprobadas en la pagina actual
+                                {isRefreshing ? 'Actualizando aprobaciones...' : 'Aprobadas en la consulta visible'}
                             </Typography>
                         </Box>
                     </Box>
@@ -194,6 +197,12 @@ export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentP
                     <FilterListIcon />
                 </Button>
             </Box>
+
+            {isRefreshing ? (
+                <Box sx={{ px: 2.5, py: 1.5, borderRadius: 3, bgcolor: 'action.hover', color: 'text.secondary', fontWeight: 600 }}>
+                    Actualizando licencias segun los filtros aplicados...
+                </Box>
+            ) : null}
 
             <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
                 {isMobile ? (

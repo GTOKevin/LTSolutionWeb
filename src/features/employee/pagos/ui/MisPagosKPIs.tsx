@@ -21,6 +21,7 @@ interface MisPagosKPIsProps {
     dataItems?: MiPagoDto[];
     onSelectPending: (pago: MiPagoDto) => void;
     canConfirmPayments: boolean;
+    isRefreshing?: boolean;
 }
 
 export function MisPagosKPIs({
@@ -28,6 +29,7 @@ export function MisPagosKPIs({
     dataItems = [],
     onSelectPending,
     canConfirmPayments,
+    isRefreshing = false,
 }: MisPagosKPIsProps) {
     const hasSingleCurrency = paymentStats.currencyTotals.length === 1;
     const singleCurrencyTotal = hasSingleCurrency ? paymentStats.currencyTotals[0] : null;
@@ -38,7 +40,7 @@ export function MisPagosKPIs({
                 <Box sx={{ bgcolor: 'background.paper', p: 4, borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
                     <Box sx={{ position: 'relative', zIndex: 1 }}>
                         <Typography variant="overline" fontWeight={800} color="text.secondary" sx={{ letterSpacing: '0.1em', opacity: 0.6 }}>
-                            Vista actual
+                            {isRefreshing ? 'Actualizando consulta' : 'Resultados visibles'}
                         </Typography>
                         <Typography variant="h2" fontWeight={900} color="primary.main" sx={{ mt: 1, letterSpacing: '-0.02em' }}>
                             {singleCurrencyTotal
@@ -46,9 +48,11 @@ export function MisPagosKPIs({
                                 : paymentStats.visibleCount.toString().padStart(2, '0')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 2, maxWidth: 360 }}>
-                            {singleCurrencyTotal
-                                ? 'Monto visible en la pagina actual segun los filtros aplicados.'
-                                : 'La pagina actual mezcla monedas; por eso se muestran los registros visibles y el subtotal por divisa.'}
+                            {isRefreshing
+                                ? 'Estamos actualizando los pagos segun los filtros aplicados.'
+                                : singleCurrencyTotal
+                                    ? 'Monto visible en la consulta actual segun los filtros aplicados.'
+                                    : 'La consulta actual mezcla monedas; por eso se muestran los registros visibles y el subtotal por divisa.'}
                         </Typography>
                         {!singleCurrencyTotal ? (
                             <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -72,7 +76,9 @@ export function MisPagosKPIs({
                         ) : null}
                     </Box>
                     <Box sx={{ mt: 4, display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', fontWeight: 'bold', fontSize: '0.875rem' }}>
-                        {paymentStats.visibleCount} visibles en esta pagina de {paymentStats.total} registros consultados
+                        {isRefreshing
+                            ? 'Actualizando resultados...'
+                            : `${paymentStats.visibleCount} visibles en esta consulta de ${paymentStats.total} registros encontrados`}
                     </Box>
                     <Box sx={{ position: 'absolute', right: -48, bottom: -48, width: 192, height: 192, bgcolor: 'primary.main', opacity: 0.05, borderRadius: '50%', filter: 'blur(40px)' }} />
                 </Box>
@@ -90,13 +96,15 @@ export function MisPagosKPIs({
                             </Typography>
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
-                            {paymentStats.confirmedCount} confirmados en la vista actual.
+                            {isRefreshing
+                                ? 'Los estados se estan actualizando.'
+                                : `${paymentStats.confirmedCount} confirmados en la consulta actual.`}
                         </Typography>
                     </Box>
                     <Button
                         fullWidth
                         variant="contained"
-                        disabled={!canConfirmPayments || paymentStats.pendingCount === 0}
+                        disabled={!canConfirmPayments || paymentStats.pendingCount === 0 || isRefreshing}
                         onClick={() => {
                             const firstPending = dataItems.find((item) => item.confirmadoPago == null);
                             if (firstPending) onSelectPending(firstPending);

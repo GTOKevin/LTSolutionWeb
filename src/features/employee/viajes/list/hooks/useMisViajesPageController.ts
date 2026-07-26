@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { APP_PATHS, buildAppDetailPath } from '@app/router/model/navigation';
+import { APP_PATHS, buildAppDetailPath } from '@shared/config/app-routes';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
 import type { MiViajeFilters } from '@entities/employee/model/types';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
@@ -32,10 +32,9 @@ export function useMisViajesPageController() {
         size: rowsPerPage,
     }), [filters, page, rowsPerPage]);
 
-    const { data, isLoading } = useQuery({
+    const { data, isFetching, isLoading } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.viajes(queryFilters),
         queryFn: () => employeePortalApi.getMyViajes(queryFilters),
-        placeholderData: (previousData) => previousData,
     });
 
     const totals = useMemo(() => {
@@ -79,6 +78,7 @@ export function useMisViajesPageController() {
         handleChangeRowsPerPage,
         handleNavigate,
         handleSearch,
+        isFetching,
         isLoading,
         page,
         rowsPerPage,

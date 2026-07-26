@@ -5,15 +5,14 @@ import {
     WarningAmber as WarningAmberIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import type { DashboardOverview } from '@entities/dashboard/model/types';
+import type { DashboardOverview, DashboardTripStatusIds } from '@entities/dashboard/model/types';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { formatCurrency } from '@shared/utils/format-utils';
 import { formatDateShort, formatDateTime } from '@shared/utils/date-utils';
-import { normalizeNotificationActionUrl } from '@shared/utils/notification-navigation';
 import {
+    resolveDashboardNotificationAction,
     getNotificationTone,
     getTripStatusTone,
-    resolveDashboardNotificationModule,
 } from '../lib/dashboard-view-helpers';
 import { dashboardCardSx, notificationIconSx, tableHeaderCellSx, tripStatusChipSx } from '../lib/dashboard-styles';
 import { TrendBadge } from './DashboardShared';
@@ -28,6 +27,7 @@ interface DashboardBottomSectionProps {
     canViewMantenimientos: boolean;
     canViewClientes: boolean;
     canViewUsuarios: boolean;
+    viajeStatusIds: DashboardTripStatusIds;
 }
 
 export function DashboardBottomSection({
@@ -40,11 +40,12 @@ export function DashboardBottomSection({
     canViewMantenimientos,
     canViewClientes,
     canViewUsuarios,
+    viajeStatusIds,
 }: DashboardBottomSectionProps) {
     const theme = useTheme();
     const navigate = useNavigate();
     const visibleSecurityNotifications = data.notificacionesSeguridad.filter((notification) => {
-        const module = resolveDashboardNotificationModule(notification);
+        const { module } = resolveDashboardNotificationAction(notification);
 
         switch (module) {
             case 'facturas':
@@ -109,7 +110,7 @@ export function DashboardBottomSection({
                                 </TableHead>
                                 <TableBody>
                                     {data.viajesRecientes.map(item => {
-                                        const tone = getTripStatusTone(item);
+                                        const tone = getTripStatusTone(item.estadoID, viajeStatusIds);
                                         return (
                                             <TableRow key={item.viajeID} hover>
                                                 <TableCell>
@@ -172,7 +173,7 @@ export function DashboardBottomSection({
                                 <Stack spacing={1.25}>
                                     {visibleSecurityNotifications.length > 0 ? visibleSecurityNotifications.map(notification => {
                                         const tone = getNotificationTone(notification);
-                                        const actionUrl = normalizeNotificationActionUrl(notification.urlAccion);
+                                        const { actionUrl } = resolveDashboardNotificationAction(notification);
 
                                         return (
                                             <Box

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@app/router/model/navigation';
+import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@shared/config/app-routes';
 import { facturaApi } from '@/entities/factura/api/factura.api';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import type { Factura, FacturaFilters } from '@/entities/factura/model/types';

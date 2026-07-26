@@ -7,6 +7,19 @@ const positiveRequiredNumber = (field: string) =>
         .refine((value) => Number.isFinite(value), `${field} es requerido`)
         .refine((value) => value > 0, `${field} debe ser mayor a 0`);
 
+const requiredDecimalNumber = (minimum: number, minimumMessage: string) =>
+    z.preprocess(
+        (value) => {
+            if (value === undefined || value === null || value === '') {
+                return undefined;
+            }
+
+            const parsed = Number(value);
+            return Number.isNaN(parsed) ? value : parsed;
+        },
+        z.number().min(minimum, minimumMessage)
+    );
+
 const optionalRegexText = (pattern: RegExp, message: string) =>
     z.string()
         .refine((value) => value === '' || pattern.test(value), message)
@@ -74,16 +87,12 @@ export const viajeGastoSchema = z.object({
     gastoID: z.number().min(1, 'El tipo de gasto es requerido'),
     fechaGasto: z.string().min(1, 'La fecha es requerida'),
     monedaID: z.number().min(1, 'La moneda es requerida'),
-    monto: z.any().transform(v => Number(v)).pipe(z.number().min(0.5, 'El monto mínimo es 0.50')),
+    monto: requiredDecimalNumber(0.5, 'El monto mínimo es 0.50'),
     comprobante: z.boolean(),
     numeroComprobante: z.string().optional(),
     descripcion: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL).optional(),
     combustible: z.boolean().optional(),
-    galones: z.any().transform(v => {
-        if (v === '' || v === null || v === undefined) return 0;
-        const num = Number(v);
-        return isNaN(num) ? 0 : num;
-    }).pipe(z.number())
+    galones: optionalNumber(0)
 }).superRefine((data, ctx) => {
     if (data.combustible) {
         if (!data.galones || data.galones < 0.50) {
@@ -195,6 +204,7 @@ export type ViajeFormData = z.infer<typeof viajeSchema>;
 export type ViajeWizardFormData = z.infer<typeof viajeWizardSchema>;
 export type ViajeEscoltaFormData = z.infer<typeof viajeEscoltaSchema>;
 export type ViajeGastoFormData = z.infer<typeof viajeGastoSchema>;
+export type ViajeGastoFormInput = z.input<typeof viajeGastoSchema>;
 export type ViajeGuiaFormData = z.infer<typeof viajeGuiaSchema>;
 export type ViajeIncidenteFormData = z.infer<typeof viajeIncidenteSchema>;
 export type ViajeMercaderiaFormData = z.infer<typeof viajeMercaderiaSchema>;

@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { APP_PATHS } from '@app/router/model/navigation';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { authApi } from '@entities/auth/api/auth.api';
 import { useAuthStore } from '@shared/store/auth.store';
 import type { ApiMutationError } from '@/shared/utils/api-errors';

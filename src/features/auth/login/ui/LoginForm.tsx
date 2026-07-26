@@ -28,7 +28,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { APP_PATHS } from '@app/router/model/navigation';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { loginSchema, type LoginFormData } from '../model/schema';
 import { useLogin } from '../api/use-login';
 import { useThemeStore } from '@shared/store/theme.store';

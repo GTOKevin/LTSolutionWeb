@@ -5,7 +5,7 @@ import { flotaApi } from '@entities/flota/api/flota.api';
 import type { Flota } from '@entities/flota/model/types';
 import { useDeleteFlota } from '@features/flota/hooks/useFlotaCrud';
 import { FLOTA_QUERY_KEYS } from '@features/flota/model/query-keys';
-import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@app/router/model/navigation';
+import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@shared/config/app-routes';
 import { handleSanitizeSearchInput } from '@shared/utils/input-validators';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { usePermission } from '@shared/lib/hooks/usePermission';

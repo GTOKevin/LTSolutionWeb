@@ -9,7 +9,7 @@ import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateViajeGasto } from '@features/viaje/hooks/useViajeGastos';
 import { useViajeGastoOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
-import { viajeGastoSchema, type ViajeGastoFormData } from '@features/viaje/model/schema';
+import { viajeGastoSchema, type ViajeGastoFormData, type ViajeGastoFormInput } from '@features/viaje/model/schema';
 import { getCurrentDateISO } from '@/shared/utils/date-utils';
 import { logger } from '@/shared/utils/logger';
 import { getSelectItemId } from '@/entities/master-data/lib/catalog-utils';
@@ -24,7 +24,7 @@ export function GastosForm({ viajeID }: GastosFormProps) {
     const createMutation = useCreateViajeGasto();
     const { tiposGasto, monedas, defaultMonedaId = 0 } = useViajeGastoOptions(true);
 
-    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajeGastoFormData>({
+    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajeGastoFormInput, unknown, ViajeGastoFormData>({
         resolver: zodResolver(viajeGastoSchema),
         defaultValues: {
             gastoID: 0,

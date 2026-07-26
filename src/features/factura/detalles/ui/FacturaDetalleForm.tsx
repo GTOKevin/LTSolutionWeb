@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     Box,
     Button,
@@ -17,16 +17,23 @@ import {
     useTheme
 } from '@mui/material';
 import { Search as SearchIcon, LocalShipping as LocalShippingIcon } from '@mui/icons-material';
-import { useForm, Controller, useWatch, type Resolver, type SubmitHandler } from 'react-hook-form';
+import { useForm, Controller, useWatch, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
-import { createFacturaDetalleSchema, type CreateFacturaDetalleSchema } from '../../model/schema';
+import {
+    buildFacturaDetalleDefaultValues,
+    calculateFacturaDetalleIgv,
+    calculateFacturaDetalleTotal,
+    createFacturaDetalleSchema,
+    type CreateFacturaDetalleForm,
+    type CreateFacturaDetalleFormInput,
+} from '../../model/schema';
 import { useCreateFacturaDetalle } from '../../hooks/useFacturaDetalleCrud';
 import { ViajeSelectorModal } from './ViajeSelectorModal';
 import type { Viaje } from '@/entities/viaje/model/types';
 import type { Moneda } from '@/entities/moneda/model/types';
-import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { IGV_RATE } from '@entities/factura/model/constants';
+import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { resolveCurrencyDisplay } from '@/shared/utils/format-utils';
 
 interface FacturaDetalleFormProps {
@@ -50,51 +57,37 @@ export function FacturaDetalleForm({
     const createMutation = useCreateFacturaDetalle();
     const [isSelectorOpen, setIsSelectorOpen] = useState(false);
     const [selectedViajeText, setSelectedViajeText] = useState('');
+    const defaultValues = useMemo(() => buildFacturaDetalleDefaultValues(monedaId), [monedaId]);
 
-    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<CreateFacturaDetalleSchema>({
-        resolver: zodResolver(createFacturaDetalleSchema) as Resolver<CreateFacturaDetalleSchema>,
-        defaultValues: {
-            viajeID: 0,
-            descripcion: '',
-            monedaID: monedaId,
-            subTotal: 0,
-            igv: true,
-            total: 0
-        }
+    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<CreateFacturaDetalleFormInput, unknown, CreateFacturaDetalleForm>({
+        resolver: zodResolver(createFacturaDetalleSchema),
+        defaultValues,
     });
 
-    // Watch values
     const subTotal = useWatch({ control, name: 'subTotal', defaultValue: 0 });
-    const total = useWatch({ control, name: 'total', defaultValue: 0 });
     const applyIgv = useWatch({ control, name: 'igv', defaultValue: true });
+    const displayTotal = useMemo(
+        () => calculateFacturaDetalleTotal(Number(subTotal) || 0, applyIgv),
+        [applyIgv, subTotal]
+    );
+    const displayIgv = useMemo(
+        () => calculateFacturaDetalleIgv(Number(subTotal) || 0, applyIgv),
+        [applyIgv, subTotal]
+    );
     
-    const displayIgv = applyIgv ? Math.round((total - subTotal) * 100) / 100 : 0;
-
-    const [localTotal, setLocalTotal] = useState<string>('');
-    const [isTypingTotal, setIsTypingTotal] = useState(false);
-
     useEffect(() => {
         if (open) {
-            reset({
-                viajeID: 0,
-                descripcion: '',
-                monedaID: monedaId,
-                subTotal: 0,
-                igv: true,
-                total: 0
-            });
+            reset(defaultValues);
 
             const resetUiTimer = window.setTimeout(() => {
                 setSelectedViajeText('');
-                setLocalTotal('');
-                setIsTypingTotal(false);
             }, 0);
 
             return () => {
                 window.clearTimeout(resetUiTimer);
             };
         }
-    }, [open, reset, monedaId]);
+    }, [defaultValues, open, reset]);
 
     const { data: monedas } = useQuery({
         queryKey: ['monedas'],
@@ -128,8 +121,17 @@ export function FacturaDetalleForm({
         setValue('descripcion', desc, { shouldValidate: true });
     };
 
-    const onSubmit: SubmitHandler<CreateFacturaDetalleSchema> = async (data) => {
-        await createMutation.mutateAsync({ facturaId, data: { ...data, descripcion: data.descripcion?.trim() } });
+    const onSubmit: SubmitHandler<CreateFacturaDetalleForm> = async (data) => {
+        await createMutation.mutateAsync({
+            facturaId,
+            data: {
+                viajeID: data.viajeID,
+                monedaID: data.monedaID,
+                subTotal: data.subTotal,
+                igv: data.igv,
+                descripcion: data.descripcion?.trim() || undefined,
+            }
+        });
         onClose();
     };
 
@@ -259,17 +261,7 @@ export function FacturaDetalleForm({
                                             helperText={error?.message}
                                             inputProps={{ step: "0.01", min: "0", style: { fontSize: '1.5rem', fontWeight: 'bold' } }}
                                             InputProps={{ disableUnderline: true }}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                field.onChange(val === '' ? '' : Number(val));
-                                                if (val !== '') {
-                                                    const newSub = parseFloat(val);
-                                                    const newTot = applyIgv ? Math.round((newSub * (1 + IGV_RATE)) * 100) / 100 : newSub;
-                                                    setValue('total', newTot, { shouldValidate: true });
-                                                } else {
-                                                    setValue('total', 0, { shouldValidate: true });
-                                                }
-                                            }}
+                                            onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
                                         />
                                     )}
                                 />
@@ -285,13 +277,7 @@ export function FacturaDetalleForm({
                                     render={({ field }) => (
                                         <Checkbox 
                                             checked={field.value} 
-                                            onChange={(e) => {
-                                                field.onChange(e);
-                                                const newIgv = e.target.checked;
-                                                const currentSub = subTotal;
-                                                const newTot = newIgv ? Math.round((currentSub * (1 + IGV_RATE)) * 100) / 100 : currentSub;
-                                                setValue('total', newTot, { shouldValidate: true });
-                                            }} 
+                                            onChange={(e) => field.onChange(e.target.checked)}
                                             size="small" 
                                         />
                                     )}
@@ -306,35 +292,16 @@ export function FacturaDetalleForm({
                         <Paper elevation={0} sx={{ p: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.05), display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <Typography variant="caption" fontWeight="bold" color="primary.main" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>Total Final</Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
-                                <Typography variant="h6" color={errors.total ? 'error.main' : 'primary.main'} fontWeight="bold">{currencyDisplay}</Typography>
+                                <Typography variant="h6" color={errors.subTotal ? 'error.main' : 'primary.main'} fontWeight="bold">{currencyDisplay}</Typography>
                                 <TextField
-                                    type="number"
-                                    name='total'
+                                    type="text"
                                     fullWidth
-                                    error={!!errors.total}
-                                    helperText={errors.total?.message}
+                                    error={!!errors.subTotal}
+                                    helperText={errors.subTotal?.message ?? 'Total calculado automáticamente según subtotal e IGV.'}
                                     variant="standard"
-                                    value={isTypingTotal ? localTotal : (total === 0 ? '' : total.toFixed(2))}
-                                    inputProps={{ step: "0.01", min: "0", style: { fontSize: '2.125rem', fontWeight: 'bold', color: errors.total ? theme.palette.error.main : theme.palette.primary.main } }}
-                                    InputProps={{ disableUnderline: true }}
-                                    onFocus={() => setIsTypingTotal(true)}
-                                    onBlur={() => {
-                                        setIsTypingTotal(false);
-                                        setLocalTotal(total === 0 ? '' : total.toFixed(2));
-                                    }}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setLocalTotal(val);
-                                        if (val === '') {
-                                            setValue('subTotal', 0, { shouldValidate: true });
-                                            setValue('total', 0, { shouldValidate: true });
-                                        } else {
-                                            const newTotal = parseFloat(val);
-                                            const newSubTotal = applyIgv ? Math.round((newTotal / (1 + IGV_RATE)) * 100) / 100 : newTotal;
-                                            setValue('subTotal', newSubTotal, { shouldValidate: true });
-                                            setValue('total', newTotal, { shouldValidate: true });
-                                        }
-                                    }}
+                                    value={displayTotal === 0 ? '' : displayTotal.toFixed(2)}
+                                    inputProps={{ style: { fontSize: '2.125rem', fontWeight: 'bold', color: errors.subTotal ? theme.palette.error.main : theme.palette.primary.main } }}
+                                    InputProps={{ disableUnderline: true, readOnly: true }}
                                 />
                             </Box>
                         </Paper>

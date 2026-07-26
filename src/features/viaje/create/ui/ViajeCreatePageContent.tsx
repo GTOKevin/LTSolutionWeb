@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FormProvider } from 'react-hook-form';
-import { APP_PATHS } from '@app/router/model/navigation';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { useViajeOptions } from '@features/viaje/options';
 import { useViajeWizardController } from '../hooks/useViajeWizardController';
 import { ViajeWizardShell } from './ViajeWizardShell';

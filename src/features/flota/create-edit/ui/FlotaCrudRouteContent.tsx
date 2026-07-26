@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { APP_PATHS } from '@app/router/model/navigation';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { flotaApi } from '@/entities/flota/api/flota.api';
 import { FLOTA_QUERY_KEYS } from '../../model/query-keys';
 import { useFlotaForm } from '@features/flota/hooks/useFlotaForm';

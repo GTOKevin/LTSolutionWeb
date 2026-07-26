@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { APP_PATHS } from '@app/router/model/navigation';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { colaboradorApi } from '@/entities/colaborador/api/colaborador.api';
 import { COLABORADOR_QUERY_KEYS } from '../../model/query-keys';
 import { useColaboradorForm } from '@features/colaborador/hooks/useColaboradorForm';

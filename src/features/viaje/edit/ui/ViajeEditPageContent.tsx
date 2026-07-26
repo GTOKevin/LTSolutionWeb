@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { APP_PATHS } from '@app/router/model/navigation';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import type { UpdateViajeDto } from '@/entities/viaje/model/types';
 import { useViajeIncidenteOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';

@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { APP_PATHS } from '@app/router/model/navigation';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
 import { CrudTabbedPageShell } from '@shared/components/ui/CrudTabbedPageShell';
 import { getClienteCrudTabs } from '../model/crud-tabs';

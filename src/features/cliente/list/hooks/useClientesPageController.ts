@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
 import type { Cliente } from '@entities/cliente/model/types';
-import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@app/router/model/navigation';
+import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@shared/config/app-routes';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { usePermission } from '@shared/lib/hooks/usePermission';
 import { handleSanitizeSearchInput } from '@shared/utils/input-validators';

@@ -51,6 +51,9 @@ interface MisDocumentosPageContentProps {
 }
 
 export function MisDocumentosPageContent({ controller }: MisDocumentosPageContentProps) {
+    const isRefreshingDocumentos = controller.isFetchingDocumentos && !controller.isLoadingDocumentos;
+    const isRefreshingSolicitudes = controller.isFetchingSolicitudes && !controller.isLoadingSolicitudes;
+
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column', gap: 4, minHeight: '100%', flex: '1 0 auto' }}>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { xs: 'flex-start', md: 'flex-end' }, justifyContent: 'space-between', gap: 4, borderBottom: '1px solid', borderColor: 'divider', pb: 4 }}>
@@ -73,7 +76,9 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             <VerifiedIcon />
                         </Box>
                         <Box>
-                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Vigentes Visibles</Typography>
+                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>
+                                {isRefreshingDocumentos ? 'Actualizando vigencia' : 'Vigentes Visibles'}
+                            </Typography>
                             <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.vigentes}</Typography>
                         </Box>
                     </Box>
@@ -84,7 +89,9 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             <WarningAmberOutlined />
                         </Box>
                         <Box>
-                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Por Vencer Visibles</Typography>
+                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>
+                                {isRefreshingDocumentos ? 'Actualizando alertas' : 'Por Vencer Visibles'}
+                            </Typography>
                             <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.nearExpiry}</Typography>
                         </Box>
                     </Box>
@@ -95,7 +102,9 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             <PendingActionsOutlined />
                         </Box>
                         <Box>
-                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>Pendientes Visibles</Typography>
+                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>
+                                {isRefreshingSolicitudes ? 'Actualizando historial' : 'Pendientes Visibles'}
+                            </Typography>
                             <Typography variant="h5" fontWeight={800} color="text.primary">{controller.pendingRequestsVisible}</Typography>
                         </Box>
                     </Box>
@@ -134,7 +143,9 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
             </Box>
 
             <Typography variant="caption" color="text.secondary" sx={{ mt: -2 }}>
-                La vigencia visible se muestra por documento. El filtro de estado administrativo opera sobre `activo` y los KPI corresponden a la página actual.
+                {isRefreshingDocumentos || isRefreshingSolicitudes
+                    ? 'Estamos actualizando la consulta del portal empleado.'
+                    : 'La vigencia visible se muestra por documento. El filtro de estado administrativo opera sobre `activo` y los KPI corresponden a la consulta cargada.'}
             </Typography>
 
             <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
@@ -146,12 +157,18 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             size="small"
                             startIcon={<AddIcon />}
                             onClick={() => { controller.setSelectedDocumentoId(undefined); controller.setDialogOpen(true); }}
+                            disabled={isRefreshingDocumentos}
                             sx={{ borderRadius: 2, boxShadow: 'none' }}
                         >
                             Nueva Solicitud
                         </Button>
                     ) : null}
                 </Box>
+                {isRefreshingDocumentos ? (
+                    <Box sx={{ px: 3, py: 1.5, bgcolor: 'action.hover', color: 'text.secondary', fontWeight: 600 }}>
+                        Actualizando documentos segun los filtros aplicados...
+                    </Box>
+                ) : null}
                 <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                     <SharedTable
                         data={controller.documentos}
@@ -237,6 +254,11 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                 <Box sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="h6" fontWeight={800} color="text.primary">Historial de Solicitudes</Typography>
                 </Box>
+                {isRefreshingSolicitudes ? (
+                    <Box sx={{ px: 3, py: 1.5, bgcolor: 'action.hover', color: 'text.secondary', fontWeight: 600 }}>
+                        Actualizando historial de solicitudes...
+                    </Box>
+                ) : null}
                 <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                     <SharedTable
                         data={controller.solicitudes}

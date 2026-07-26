@@ -12,6 +12,8 @@ export function DashboardPage() {
             isLoading={controller.isLoading}
             isFetching={controller.isFetching}
             isError={controller.isError}
+            permissions={controller.permissions}
+            viajeStatusIds={controller.viajeStatusIds}
             onRetry={() => {
                 void controller.refetch();
             }}

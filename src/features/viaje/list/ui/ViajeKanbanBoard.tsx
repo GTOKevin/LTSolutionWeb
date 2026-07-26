@@ -14,7 +14,6 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Box, CircularProgress, Alert } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
-import { LegacyKanbanCard, LegacyKanbanColumn } from '@features/viaje/legacy';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
 import {
     resolveViajeAgendadoId,
@@ -29,6 +28,7 @@ import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
 import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
+import { LegacyKanbanCard, LegacyKanbanColumn } from './legacy/LegacyKanban';
 
 interface KanbanBoardProps {
     viajes: ViajeListItem[];
