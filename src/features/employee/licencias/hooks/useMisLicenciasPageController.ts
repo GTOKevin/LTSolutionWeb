@@ -39,10 +39,9 @@ export function useMisLicenciasPageController() {
         size: rowsPerPage,
     }), [filters, page, rowsPerPage]);
 
-    const { data, isLoading } = useQuery({
+    const { data, isFetching, isLoading } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.licencias(queryFilters),
         queryFn: () => employeePortalApi.getMyLicencias(queryFilters),
-        placeholderData: (previousData) => previousData,
     });
 
     const licenciaStats = useMemo(() => {
@@ -84,6 +83,7 @@ export function useMisLicenciasPageController() {
         handleChangeRowsPerPage,
         handleSearch,
         hasta,
+        isFetching,
         isLoading,
         licenciaStats,
         page,

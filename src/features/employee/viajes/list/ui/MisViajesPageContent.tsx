@@ -17,6 +17,8 @@ interface MisViajesPageContentProps {
 }
 
 export function MisViajesPageContent({ controller }: MisViajesPageContentProps) {
+    const isRefreshing = controller.isFetching && !controller.isLoading;
+
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column', gap: 4, minHeight: '100%', flex: '1 0 auto' }}>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', lg: 'flex-end' }, gap: 4 }}>
@@ -32,6 +34,7 @@ export function MisViajesPageContent({ controller }: MisViajesPageContentProps) 
                     total={controller.totals.totalVisible}
                     abiertos={controller.totals.abiertos}
                     cerrados={controller.totals.cerrados}
+                    isRefreshing={isRefreshing}
                 />
             </Box>
 
@@ -44,6 +47,12 @@ export function MisViajesPageContent({ controller }: MisViajesPageContentProps) 
                 onHastaChange={controller.setHasta}
                 onSearch={controller.handleSearch}
             />
+
+            {isRefreshing ? (
+                <Box sx={{ px: 2.5, py: 1.5, borderRadius: 3, bgcolor: 'action.hover', color: 'text.secondary', fontWeight: 600 }}>
+                    Actualizando viajes segun los filtros aplicados...
+                </Box>
+            ) : null}
 
             <MisViajesGrid
                 items={controller.data?.items ?? []}
@@ -107,7 +116,9 @@ export function MisViajesPageContent({ controller }: MisViajesPageContentProps) 
             {controller.totals.total > 0 ? (
                 <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'space-between', alignItems: 'center', mt: 2, px: 2 }}>
                     <Typography variant="body2" color="text.secondary">
-                        Mostrando {(controller.data?.items ?? []).length} de {controller.totals.total} registros encontrados
+                        {isRefreshing
+                            ? 'Actualizando resultados de la consulta...'
+                            : `Mostrando ${(controller.data?.items ?? []).length} de ${controller.totals.total} registros encontrados`}
                     </Typography>
                     <Pagination
                         count={Math.ceil(controller.totals.total / controller.rowsPerPage)}

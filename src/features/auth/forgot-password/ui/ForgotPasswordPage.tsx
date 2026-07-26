@@ -22,7 +22,7 @@ import { alpha } from '@mui/material/styles';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { APP_PATHS } from '@app/router/model/navigation';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '../model/schema';
 import { useForgotPassword } from '../api/use-forgot-password';
 import { useState } from 'react';

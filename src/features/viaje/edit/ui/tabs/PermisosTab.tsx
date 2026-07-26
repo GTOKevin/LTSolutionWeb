@@ -1,6 +1,7 @@
 import { Box, Grid } from '@mui/material';
 import type { Viaje } from '@/entities/viaje/model/types';
-import { LegacyPermisosForm, LegacyPermisosList } from '@features/viaje/legacy';
+import { PermisosForm as LegacyPermisosForm } from '@features/viaje/ui/ViajeEditar/PermisosTab/PermisosForm';
+import { PermisosList as LegacyPermisosList } from '@features/viaje/ui/ViajeEditar/PermisosTab/PermisosList';
 
 interface PermisosTabProps {
     viaje: Viaje;

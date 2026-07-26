@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { APP_PATHS } from '@app/router/model/navigation';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
 import { useMantenimientoForm } from '@features/mantenimiento/hooks/useMantenimientoForm';
 import { CrudTabbedPageShell } from '@shared/components/ui/CrudTabbedPageShell';

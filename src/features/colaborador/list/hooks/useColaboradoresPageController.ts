@@ -5,7 +5,7 @@ import { colaboradorApi } from '@entities/colaborador/api/colaborador.api';
 import type { Colaborador } from '@entities/colaborador/model/types';
 import { useDeleteColaborador } from '@features/colaborador/hooks/useColaboradorCrud';
 import { COLABORADOR_QUERY_KEYS } from '@features/colaborador/model/query-keys';
-import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@app/router/model/navigation';
+import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@shared/config/app-routes';
 import { handleSanitizeSearchInput } from '@shared/utils/input-validators';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { usePermission } from '@shared/lib/hooks/usePermission';

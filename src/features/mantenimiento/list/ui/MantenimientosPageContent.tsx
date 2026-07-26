@@ -26,7 +26,7 @@ import { MantenimientoFilter } from './MantenimientoFilter';
 import { MantenimientoTable } from './MantenimientoTable';
 import { MantenimientoMobileList } from './MantenimientoMobileList';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
-import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@app/router/model/navigation';
+import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@shared/config/app-routes';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { useMantenimientoReport } from '../../hooks/useMantenimientoReport';
 import { useMantenimientoPermissions } from '../../hooks/useMantenimientoPermissions';

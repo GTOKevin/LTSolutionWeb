@@ -40,10 +40,9 @@ export function useMisDocumentosPageController() {
         size: rowsPerPage,
     }), [filters, page, rowsPerPage]);
 
-    const { data: documentos, isLoading: isLoadingDocumentos } = useQuery({
+    const { data: documentos, isFetching: isFetchingDocumentos, isLoading: isLoadingDocumentos } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.documentos(queryFilters),
         queryFn: () => employeePortalApi.getMyDocumentos(queryFilters),
-        placeholderData: (previousData) => previousData,
     });
 
     const { data: tiposDocumento } = useQuery({
@@ -58,10 +57,9 @@ export function useMisDocumentosPageController() {
         size: requestRowsPerPage,
     }), [requestPage, requestRowsPerPage]);
 
-    const { data: solicitudes, isLoading: isLoadingSolicitudes } = useQuery({
+    const { data: solicitudes, isFetching: isFetchingSolicitudes, isLoading: isLoadingSolicitudes } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.solicitudes(requestFilters),
         queryFn: () => employeePortalApi.getMyDocumentoSolicitudes(requestFilters),
-        placeholderData: (previousData) => previousData,
     });
 
     const pendingRequestsVisible = useMemo(
@@ -157,6 +155,8 @@ export function useMisDocumentosPageController() {
         handleRequestPageChange,
         handleRequestRowsPerPageChange,
         handleSearch,
+        isFetchingDocumentos,
+        isFetchingSolicitudes,
         isLoadingDocumentos,
         isLoadingSolicitudes,
         page,

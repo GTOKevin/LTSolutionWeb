@@ -8,7 +8,7 @@ import type { CreateViajeDto } from '@/entities/viaje/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
 import { notifyMutationError, type ApiMutationError } from '@/shared/utils/api-errors';
 import { addDaysToDateISO, toInputDate } from '@/shared/utils/date-utils';
-import { APP_PATHS, buildAppDetailPath } from '@app/router/model/navigation';
+import { APP_PATHS, buildAppDetailPath } from '@shared/config/app-routes';
 import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
 import { viajeWizardSchema, type ViajeWizardFormData } from '../../model/schema';
 import { getViajeWizardStepFields, VIAJE_WIZARD_STEPS } from '../model/wizard-config';

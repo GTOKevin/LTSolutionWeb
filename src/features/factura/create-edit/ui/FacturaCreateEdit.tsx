@@ -18,7 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createFacturaSchema, type CreateFacturaSchema } from '../../model/schema';
-import { APP_PATHS, buildAppDetailPath } from '@app/router/model/navigation';
+import { APP_PATHS, buildAppDetailPath } from '@shared/config/app-routes';
 import { clienteApi } from '@/entities/cliente/api/cliente.api';
 import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { estadoApi } from '@entities/estado/api/estado.api';

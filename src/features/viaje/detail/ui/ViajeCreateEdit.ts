@@ -1,1 +1,1 @@
-export { LegacyViajeCreateEdit as ViajeCreateEdit } from '@features/viaje/legacy';
+export { ViajeCreateEdit } from '@features/viaje/ui/Viaje/ViajeCreateEdit';

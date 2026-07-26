@@ -12,7 +12,7 @@ import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
 import { getErrorMessage, type ApiMutationError } from '@/shared/utils/api-errors';
 import { logger } from '@/shared/utils/logger';
-import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@app/router/model/navigation';
+import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@shared/config/app-routes';
 
 export function useViajesPageController() {
     const navigate = useNavigate();

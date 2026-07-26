@@ -14,7 +14,8 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Box, CircularProgress, Alert } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
-import { LegacyKanbanCard, LegacyKanbanColumn } from '@features/viaje/legacy';
+import { KanbanCard as LegacyKanbanCard } from '@features/viaje/ui/ViajeKanban/KanbanCard';
+import { KanbanColumn as LegacyKanbanColumn } from '@features/viaje/ui/ViajeKanban/KanbanColumn';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
 import {
     resolveViajeAgendadoId,
