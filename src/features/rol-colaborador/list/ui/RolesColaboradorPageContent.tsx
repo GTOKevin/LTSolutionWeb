@@ -10,7 +10,7 @@ import {
     Add as AddIcon,
     Search as SearchIcon,
 } from '@mui/icons-material';
-import { CreateEditRolColaboradorModal } from '@features/rol-colaborador/create-edit/ui/CreateEditRolColaboradorModal';
+import { CreateEditRolColaboradorModal } from '@features/rol-colaborador/create-edit';
 import { RolColaboradorTable } from './RolColaboradorTable';
 import { RolColaboradorMobileList } from './RolColaboradorMobileList';
 import type { useRolesColaboradorPageController } from '../hooks/useRolesColaboradorPageController';

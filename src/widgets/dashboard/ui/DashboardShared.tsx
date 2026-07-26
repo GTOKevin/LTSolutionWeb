@@ -4,7 +4,7 @@ import {
     TrendingFlat as TrendingFlatIcon,
     TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
-import { formatTrendPercentage, getTrendDirection } from '@features/dashboard';
+import { formatTrendPercentage, getTrendDirection } from '../lib/dashboard-view-helpers';
 
 export function TrendBadge({ value, compact = false }: { value: number; compact?: boolean }) {
     const theme = useTheme();

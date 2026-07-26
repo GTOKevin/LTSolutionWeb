@@ -110,7 +110,7 @@ export function FlotaMobileList({
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <FuelIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                                 <Typography variant="body2" color="text.secondary">
-                                    {flota.tipoCombustible}
+                                    {flota.tipoCombustibleNavigation?.nombre || `Combustible ${flota.tipoCombustibleID}`}
                                 </Typography>
                             </Box>
                         </Box>

@@ -1,8 +1,7 @@
 import { Alert, Box, Button, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import { AccountCircleOutlined } from '@mui/icons-material';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { MyProfileDto } from '@entities/profile/model/types';
-import { SelfChangePasswordModal } from '@features/auth/change-password';
 import { cardSx } from './ProfileShared.helpers';
 import { ProfileHero } from './ProfileHero';
 import { ProfileMetrics } from './ProfileMetrics';
@@ -20,11 +19,11 @@ interface ProfileViewProps {
     isFetching: boolean;
     isError: boolean;
     onRetry: () => void;
+    onOpenChangePassword: () => void;
 }
 
-export function ProfileView({ data, isLoading, isFetching, isError, onRetry }: ProfileViewProps) {
+export function ProfileView({ data, isLoading, isFetching, isError, onRetry, onOpenChangePassword }: ProfileViewProps) {
     const theme = useTheme();
-    const [openChangePassword, setOpenChangePassword] = useState(false);
 
     const headerTitle = useMemo(() => {
         if (data?.colaborador?.nombreCompleto) return data.colaborador.nombreCompleto;
@@ -105,7 +104,7 @@ export function ProfileView({ data, isLoading, isFetching, isError, onRetry }: P
                         isFetching={isFetching}
                         isActivoColaborador={data.colaborador?.activo ?? false}
                         isPerfilColaborador={hasCollaborator}
-                        onOpenChangePassword={() => setOpenChangePassword(true)}
+                        onOpenChangePassword={onOpenChangePassword}
                         onRetry={onRetry}
                     />
 
@@ -160,7 +159,7 @@ export function ProfileView({ data, isLoading, isFetching, isError, onRetry }: P
 
                         <ProfileSecuritySection
                             bloqueado={data.usuario.bloqueado}
-                            onOpenChangePassword={() => setOpenChangePassword(true)}
+                            onOpenChangePassword={onOpenChangePassword}
                         />
                     </Stack>
 
@@ -189,12 +188,6 @@ export function ProfileView({ data, isLoading, isFetching, isError, onRetry }: P
                 </Box>
             </Stack>
 
-            <SelfChangePasswordModal
-                open={openChangePassword}
-                onClose={() => setOpenChangePassword(false)}
-                usuarioNombre={data.colaborador?.nombreCompleto ?? data.usuario.nombreUsuario}
-                onSuccess={() => undefined}
-            />
         </Box>
     );
 }

@@ -130,17 +130,12 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
 
     const hasCurrencyTotals = totalsByCurrency.length > 0;
 
-    const getExpenseVisualMeta = (text: string = '') => {
-        const lower = text.toLowerCase();
-        const color = lower.includes('combustible')
+    const getExpenseVisualMeta = (item: ViajeGasto) => {
+        const color = item.combustible
             ? theme.palette.primary.main
-            : lower.includes('peaje')
+            : item.comprobante
                 ? theme.palette.success.main
-                : lower.includes('viatico')
-                    ? theme.palette.warning.main
-                    : lower.includes('mantenimiento')
-                        ? theme.palette.error.main
-                        : theme.palette.info.main;
+                : theme.palette.info.main;
 
         return {
             color,
@@ -241,7 +236,7 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                             const tipo = tiposGasto.find(t => t.id === item.gastoID);
                             const moneda = monedas.find(m => m.id === item.monedaID);
                             const tipoText = tipo?.text || item.gasto?.descripcion || 'Otro';
-                            const expenseVisualMeta = getExpenseVisualMeta(tipoText);
+                            const expenseVisualMeta = getExpenseVisualMeta(item);
 
                             return (
                                 <>
@@ -272,8 +267,8 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                                     </TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', color: 'text.primary' }}>
                                         {formatCurrencyAmount(Number(item.monto), {
-                                            simbolo: moneda?.extra,
-                                            codigo: moneda?.text,
+                                            codigo: moneda?.extra,
+                                            nombre: moneda?.text,
                                         })}
                                     </TableCell>
                                     <TableCell align="center">
@@ -315,7 +310,10 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                                             {currency.code}
                                         </Typography>
                                         <Typography variant="subtitle2" fontWeight="bold">
-                                            {currency.symbol} {currency.total.toFixed(2)}
+                                            {formatCurrencyAmount(currency.total, {
+                                                simbolo: currency.symbol,
+                                                codigo: currency.code,
+                                            })}
                                         </Typography>
                                     </Box>
                                 ))}
@@ -367,7 +365,10 @@ export function ViajeGastoList({ viajeId, viewOnly, tiposGasto, monedas, onEdit 
                                     TOTAL ({currency.code})
                                 </Typography>
                                 <Typography variant={index === 0 ? 'h6' : 'subtitle1'} fontWeight="bold">
-                                    {currency.symbol} {currency.total.toFixed(2)}
+                                    {formatCurrencyAmount(currency.total, {
+                                        simbolo: currency.symbol,
+                                        codigo: currency.code,
+                                    })}
                                 </Typography>
                             </Box>
                         ))}

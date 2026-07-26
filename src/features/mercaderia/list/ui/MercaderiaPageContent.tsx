@@ -11,7 +11,7 @@ import {
     Search as SearchIcon,
 } from '@mui/icons-material';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
-import { CreateEditMercaderiaModal } from '@features/mercaderia/create-edit/ui/CreateEditMercaderiaModal';
+import { CreateEditMercaderiaModal } from '@features/mercaderia/create-edit';
 import { MercaderiaTable } from './MercaderiaTable';
 import { MercaderiaMobileList } from './MercaderiaMobileList';
 import type { useMercaderiaPageController } from '../hooks/useMercaderiaPageController';

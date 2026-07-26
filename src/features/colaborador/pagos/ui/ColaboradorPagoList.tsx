@@ -47,6 +47,7 @@ import { pdf } from '@react-pdf/renderer';
 import { ColaboradorPagosPdf } from '../reports/ColaboradorPagosPdf';
 import { ColaboradorPagosExcelGenerator } from '../lib/ColaboradorPagosExcelGenerator';
 import { logger } from '@/shared/utils/logger';
+import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 
 interface ColaboradorPagoListProps {
     colaboradorId: number;
@@ -139,10 +140,6 @@ export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: Colabor
     const handleDelete = (pago: ColaboradorPago) => {
         setPagoToDelete(pago);
         setOpenDelete(true);
-    };
-
-    const formatMoney = (amount: number, symbol?: string) => {
-        return `${symbol || ''} ${amount.toFixed(2)}`;
     };
 
     const handleSearch = () => {
@@ -426,7 +423,7 @@ export function ColaboradorPagoList({ colaboradorId, viewOnly = false }: Colabor
                                             {pago.tipoPago?.nombre || 'Pago'}
                                         </Typography>
                                         <Chip 
-                                            label={formatMoney(pago.monto, pago.moneda?.simbolo)} 
+                                            label={formatCurrencyAmount(pago.monto, pago.moneda)}
                                             size="small" 
                                             color="success" 
                                             variant="outlined" 

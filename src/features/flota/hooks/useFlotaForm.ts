@@ -59,9 +59,16 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
         enabled: open
     });
 
+    const { data: tiposCombustible } = useQuery({
+        queryKey: ['tipos-combustible'],
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.COMBUSTIBLE),
+        enabled: open
+    });
+
     const listaFlota = tiposFlota || [];
     const listaPeso = tiposPeso || [];
     const listaMedida = tiposMedida || [];
+    const listaCombustible = tiposCombustible || [];
 
     // --- Form ---
     const form = useForm({
@@ -83,7 +90,7 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
             largo: 0,
             alto: 0,
             ancho: 0,
-            tipoCombustible: '',
+            tipoCombustibleID: 0,
         }
     });
 
@@ -109,7 +116,7 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
                     largo: flotaToEdit.largo,
                     alto: flotaToEdit.alto,
                     ancho: flotaToEdit.ancho,
-                    tipoCombustible: flotaToEdit.tipoCombustible,
+                    tipoCombustibleID: flotaToEdit.tipoCombustibleID,
                     activo: flotaToEdit.estado
                 });
             } else {
@@ -129,7 +136,7 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
                     largo: 0,
                     alto: 0,
                     ancho: 0,
-                    tipoCombustible: '',
+                    tipoCombustibleID: 0,
                     activo: true,
                 });
             }
@@ -190,6 +197,7 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
         // Catalogs
         listaFlota,
         listaPeso,
-        listaMedida
+        listaMedida,
+        listaCombustible
     };
 }

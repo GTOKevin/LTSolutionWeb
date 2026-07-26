@@ -8,7 +8,13 @@ import { formatDateLong } from '@shared/utils/date-utils';
 import type { MantenimientoParams, Mantenimiento, MantenimientoDetalle } from '@entities/mantenimiento/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
 import { getErrorMessage } from '@/shared/utils/api-errors';
-import { getCurrencyCandidates } from '@/shared/utils/format-utils';
+import {
+    formatCurrencyAmount,
+    formatDecimalAmount,
+    getCurrencyCandidates,
+    resolveCurrencyDisplay,
+    resolveCurrencyExcelFormat,
+} from '@/shared/utils/format-utils';
 import { logger } from '@/shared/utils/logger';
 
 type ExcelStyle = Partial<ExcelJS.Style>;
@@ -171,11 +177,11 @@ export const useMantenimientoReport = () => {
                     cell.style = dataStyle;
                 });
                 
-                // Number formats
-                row.getCell(6).numFmt = '#,##0.00';
-                row.getCell(7).numFmt = '#,##0.00';
-                row.getCell(8).numFmt = '#,##0.00';
-                row.getCell(9).numFmt = '#,##0.00';
+                const currencyFormat = resolveCurrencyExcelFormat(item.moneda);
+                row.getCell(6).numFmt = currencyFormat;
+                row.getCell(7).numFmt = currencyFormat;
+                row.getCell(8).numFmt = currencyFormat;
+                row.getCell(9).numFmt = currencyFormat;
                 
                 currentRowIndex++;
             });
@@ -190,7 +196,7 @@ export const useMantenimientoReport = () => {
             currentRowIndex += 1;
             Object.entries(reportData.totalsByCurrency || {}).forEach(([symbol, total]) => {
                 const totalLabelCell = worksheet.getCell(`H${currentRowIndex}`);
-                totalLabelCell.value = `TOTAL ${symbol}`;
+                totalLabelCell.value = `TOTAL ${resolveCurrencyDisplay(symbol)}`;
                 totalLabelCell.font = { bold: true };
                 totalLabelCell.alignment = { horizontal: 'right' };
                 totalLabelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEEEEEE' } };
@@ -198,7 +204,7 @@ export const useMantenimientoReport = () => {
                 const totalValueCell = worksheet.getCell(`I${currentRowIndex}`);
                 totalValueCell.value = total as number;
                 totalValueCell.font = { bold: true, color: { argb: 'FF2E7D32' } };
-                totalValueCell.numFmt = '#,##0.00';
+                totalValueCell.numFmt = resolveCurrencyExcelFormat(symbol);
                 totalValueCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEEEEEE' } };
                 
                 currentRowIndex++;
@@ -297,9 +303,9 @@ export const useMantenimientoReport = () => {
                     item.descripcion || '',
                     item.cantidad,
                     item.moneda?.codigo || '',
-                    item.costo.toFixed(2),
-                    item.montoIGV.toFixed(2),
-                    item.total.toFixed(2)
+                    formatDecimalAmount(item.costo),
+                    formatDecimalAmount(item.montoIGV),
+                    formatDecimalAmount(item.total)
                 ];
                 tableRows.push(row);
             });
@@ -330,7 +336,7 @@ export const useMantenimientoReport = () => {
             
             let currentTotalY = finalY;
             Object.entries(reportData.totalsByCurrency || {}).forEach(([symbol, total]) => {
-                doc.text(`TOTAL ${symbol}: ${(total as number).toFixed(2)}`, 195, currentTotalY, { align: 'right' });
+                doc.text(`TOTAL ${resolveCurrencyDisplay(symbol)}: ${formatCurrencyAmount(total as number, symbol)}`, 195, currentTotalY, { align: 'right' });
                 currentTotalY += 6;
             });
 
@@ -378,7 +384,7 @@ export const useMantenimientoReport = () => {
             const headers = [
                 'Tracto', 'Tipo Servicio', 'Fecha Ingreso', 'Fecha Salida', 
                 'Km. Ingreso', 'Km. Salida', 'Motivo Ingreso', 'Diagnóstico Mecánico', 'Solución',
-                ...currencies.map(c => `Gastos (${c})`)
+                ...currencies.map(c => `Gastos (${resolveCurrencyDisplay(c)})`)
             ];
             const headerRow = worksheet.getRow(headerRowIndex);
             headerRow.values = headers;
@@ -415,7 +421,7 @@ export const useMantenimientoReport = () => {
                 row.eachCell((cell, colNumber) => {
                     cell.style = dataStyle;
                     if (colNumber > 9) {
-                        cell.numFmt = '#,##0.00';
+                        cell.numFmt = resolveCurrencyExcelFormat(currencies[colNumber - 10]);
                     }
                 });
                 
@@ -438,7 +444,7 @@ export const useMantenimientoReport = () => {
 
             Object.entries(reportData.totalsByCurrency || {}).forEach(([symbol, total]) => {
                 const totalLabelCell = worksheet.getCell(`H${currentRowIndex}`);
-                totalLabelCell.value = `TOTAL ${symbol}`;
+                totalLabelCell.value = `TOTAL ${resolveCurrencyDisplay(symbol)}`;
                 totalLabelCell.font = { bold: true };
                 totalLabelCell.alignment = { horizontal: 'right' };
                 totalLabelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEEEEEE' } };
@@ -446,7 +452,7 @@ export const useMantenimientoReport = () => {
                 const totalValueCell = worksheet.getCell(`I${currentRowIndex}`);
                 totalValueCell.value = total as number;
                 totalValueCell.font = { bold: true, color: { argb: 'FF2E7D32' } };
-                totalValueCell.numFmt = '#,##0.00';
+                totalValueCell.numFmt = resolveCurrencyExcelFormat(symbol);
                 totalValueCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEEEEEE' } };
                 
                 currentRowIndex++;
@@ -484,7 +490,7 @@ export const useMantenimientoReport = () => {
             const tableColumn = [
                 "Tracto", "Tipo Servicio", "Fecha Ing.", "Fecha Sal.", 
                 "Km. Ing.", "Km. Sal.", "Motivo", "Solución",
-                ...currencies.map(c => `Total ${c}`)
+                ...currencies.map(c => `Total ${resolveCurrencyDisplay(c)}`)
             ];
             const tableRows: (string | number)[][] = [];
 
@@ -503,7 +509,7 @@ export const useMantenimientoReport = () => {
                 ];
 
                 currencies.forEach(c => {
-                    row.push((maintTotals[c] || 0).toFixed(2));
+                    row.push(formatDecimalAmount(maintTotals[c] || 0));
                 });
 
                 tableRows.push(row);
@@ -544,7 +550,7 @@ export const useMantenimientoReport = () => {
             currentTotalY += 6;
             
             Object.entries(reportData.totalsByCurrency || {}).forEach(([symbol, total]) => {
-                doc.text(`TOTAL ${symbol}: ${(total as number).toFixed(2)}`, 280, currentTotalY, { align: 'right' });
+                doc.text(`TOTAL ${resolveCurrencyDisplay(symbol)}: ${formatCurrencyAmount(total as number, symbol)}`, 280, currentTotalY, { align: 'right' });
                 currentTotalY += 6;
             });
 

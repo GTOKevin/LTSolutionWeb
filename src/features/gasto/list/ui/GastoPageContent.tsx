@@ -11,7 +11,7 @@ import {
     Search as SearchIcon,
 } from '@mui/icons-material';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
-import { CreateEditGastoModal } from '@features/gasto/create-edit/ui/CreateEditGastoModal';
+import { CreateEditGastoModal } from '@features/gasto/create-edit';
 import { GastoTable } from './GastoTable';
 import { GastoMobileList } from './GastoMobileList';
 import type { useGastoPageController } from '../hooks/useGastoPageController';

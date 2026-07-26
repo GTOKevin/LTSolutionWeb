@@ -3,10 +3,12 @@ import { Add as AddIcon } from '@mui/icons-material';
 import { AppLayout } from '@widgets/layout';
 import { useSignalR } from '@shared/hooks/useSignalR';
 import { SessionExpiredModal } from '@shared/components/ui/SessionExpiredModal';
+import { SelfChangePasswordModal } from '@features/auth/change-password';
 import { useAuthStore } from '@shared/store/auth.store';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { hasPermission } from '@shared/lib/permissions/hasPermission';
 import { PERMISSIONS } from '@shared/constants/permissions';
+import { useState } from 'react';
 import {
     APP_BOTTOM_NAV_ITEMS,
     APP_PATHS,
@@ -21,6 +23,7 @@ export function AppShell() {
     const user = useAuthStore((state) => state.user);
     const pageTitle = useLayoutStore((state) => state.pageTitle);
     const toggleSidebar = useLayoutStore((state) => state.toggleSidebar);
+    const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
     useSignalR();
 
@@ -59,6 +62,7 @@ export function AppShell() {
                 sidebarMenu={APP_SIDEBAR_MENU}
                 bottomNavItems={bottomNavItems}
                 bottomNavValue={bottomNavValue}
+                onRequestChangePassword={() => setChangePasswordOpen(true)}
                 onBottomNavChange={(item) => {
                     if (item.path) {
                         navigate(item.path);
@@ -71,6 +75,12 @@ export function AppShell() {
             >
                 <Outlet />
             </AppLayout>
+            <SelfChangePasswordModal
+                open={changePasswordOpen}
+                onClose={() => setChangePasswordOpen(false)}
+                usuarioNombre={user?.name ?? undefined}
+                onSuccess={() => setChangePasswordOpen(false)}
+            />
         </>
     );
 }

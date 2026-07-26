@@ -27,7 +27,7 @@ interface Props {
     viewOnly?: boolean;
     tiposGasto: SelectItem[];
     monedas: SelectItem[];
-    getExpenseVisualMeta: (text: string) => { color: string; backgroundColor: string };
+    getExpenseVisualMeta: (item: ViajeGasto) => { color: string; backgroundColor: string };
     onEdit?: (item: ViajeGasto) => void;
     onDelete?: (id: number) => void;
 }
@@ -62,15 +62,13 @@ export function ViajeGastoMobileList({
             onEdit={onEdit}
             onDelete={onDelete ? (item) => onDelete(item.viajeGastoID) : undefined}
             getCardStyle={(item) => {
-                const tipo = tiposGasto.find(t => t.id === item.gastoID);
-                const tipoText = tipo?.text || item.gasto?.descripcion || 'Otro';
-                const expenseVisualMeta = getExpenseVisualMeta(tipoText);
+                const expenseVisualMeta = getExpenseVisualMeta(item);
                 return { borderLeft: `4px solid ${expenseVisualMeta.color}` };
             }}
             renderHeader={(item) => {
                 const tipo = tiposGasto.find(t => t.id === item.gastoID);
                 const tipoText = tipo?.text || item.gasto?.descripcion || 'Otro';
-                const expenseVisualMeta = getExpenseVisualMeta(tipoText);
+                const expenseVisualMeta = getExpenseVisualMeta(item);
                 
                 return (
                     <Box sx={{ 
@@ -111,8 +109,8 @@ export function ViajeGastoMobileList({
                             </Box>
                             <Typography variant="body2" fontWeight="bold" color="primary">
                                 {formatCurrencyAmount(Number(item.monto), {
-                                    simbolo: moneda?.extra,
-                                    codigo: moneda?.text,
+                                    codigo: moneda?.extra,
+                                    nombre: moneda?.text,
                                 })}
                             </Typography>
                         </Grid>

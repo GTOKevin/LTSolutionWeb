@@ -11,8 +11,9 @@ import type { CreateViajeGastoDto, ViajeGasto } from '@/entities/viaje/model/typ
 import type { SelectItem } from '@/shared/model/types';
 import { useCreateViajeGasto, useUpdateViajeGasto } from '@/features/viaje/hooks/useViajeGastos';
 import { viajeGastoSchema, type ViajeGastoFormData } from '../../model/schema';
-import { getGastoMetadata } from '../../model/gasto-metadata';
 import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
+import { getSelectItemId } from '@/entities/master-data/lib/catalog-utils';
+import { resolveGastoSelectMetadata } from '@/entities/gasto/model/metadata';
 
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
@@ -54,6 +55,12 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, defaultMone
     const isCombustible = useWatch({ control, name: 'combustible', defaultValue: false });
     const selectedGastoID = useWatch({ control, name: 'gastoID', defaultValue: 0 });
     const selectedMonedaID = useWatch({ control, name: 'monedaID', defaultValue: defaultMonedaId });
+    const hasSelectedGasto = selectedGastoID > 0;
+    const selectedGasto = tiposGasto.find((item) => item.id === selectedGastoID);
+    const selectedGastoMetadata = resolveGastoSelectMetadata(selectedGasto);
+    const enforcedMonedaId = selectedGastoMetadata.defaultCurrencyCode
+        ? getSelectItemId(monedas, [selectedGastoMetadata.defaultCurrencyCode])
+        : null;
 
     useEffect(() => {
         if (!gasto && defaultMonedaId && !selectedMonedaID) {
@@ -61,30 +68,28 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, defaultMone
         }
     }, [defaultMonedaId, gasto, selectedMonedaID, setValue]);
 
-    // Determine if currency should be restricted to Soles (Combustible/Peaje)
-    const selectedGasto = tiposGasto.find(t => t.id === selectedGastoID);
-    const metadata = getGastoMetadata(selectedGasto);
-    const isRestrictedCurrency = metadata.forcesCurrency;
-
     useEffect(() => {
-        if (selectedGastoID && tiposGasto.length > 0) {
-            const gasto = tiposGasto.find(t => t.id === selectedGastoID);
-            if (gasto) {
-                const metadata = getGastoMetadata(gasto);
-                
-                setValue('combustible', metadata.isFuel);
-
-                // Force Currency if needed
-                if (metadata.forcesCurrency && defaultMonedaId) {
-                    setValue('monedaID', defaultMonedaId);
-                }
-
-                if (!metadata.isFuel) {
-                    setValue('galones', 0);
-                }
-            }
+        if (!hasSelectedGasto) {
+            setValue('combustible', false);
+            setValue('galones', 0);
+            return;
         }
-    }, [defaultMonedaId, selectedGastoID, tiposGasto, setValue]);
+
+        // Wait until the selected catalog item is resolved before enforcing metadata.
+        if (!selectedGasto) {
+            return;
+        }
+
+        setValue('combustible', selectedGastoMetadata.isFuel);
+
+        if (enforcedMonedaId) {
+            setValue('monedaID', enforcedMonedaId);
+        }
+
+        if (!selectedGastoMetadata.isFuel) {
+            setValue('galones', 0);
+        }
+    }, [enforcedMonedaId, hasSelectedGasto, selectedGasto, selectedGastoMetadata.isFuel, setValue]);
 
     useEffect(() => {
         if (gasto) {
@@ -141,7 +146,9 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, defaultMone
                 monto: 0,
                 comprobante: false,
                 numeroComprobante: '',
-                descripcion: ''
+                descripcion: '',
+                combustible: false,
+                galones: 0
             });
             
             if (onCancel) onCancel();
@@ -193,10 +200,10 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, defaultMone
                         options={monedas}
                         value={selectedMonedaID || 0}
                         onChange={(e) => setValue('monedaID', Number(e.target.value))}
-                        disabled={isRestrictedCurrency}
                         error={!!errors.monedaID}
-                        helperText={errors.monedaID?.message}
+                        helperText={errors.monedaID?.message || (selectedGastoMetadata.defaultCurrencyCode ? `Moneda obligatoria: ${selectedGastoMetadata.defaultCurrencyCode}` : undefined)}
                         sx={{ bgcolor: 'background.paper' }}
+                        disabled={!!selectedGastoMetadata.defaultCurrencyCode}
                     />
                 </Grid>
 
@@ -250,11 +257,11 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, defaultMone
                         </Grid>
                     )}
 
-                    <Grid size={{xs:12, md:3}}>
+                    <Grid size={{xs:12, md:4}}>
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block' }}>
-                            Comprobante
+                            Validaciones del Gasto
                         </Typography>
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                             <Controller
                                 name="comprobante"
                                 control={control}
@@ -271,6 +278,11 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, defaultMone
                                     />
                                 )}
                             />
+                            {selectedGastoMetadata.isFuel ? (
+                                <Typography variant="body2" color="text.secondary">
+                                    El tipo de gasto seleccionado requiere registrar galones.
+                                </Typography>
+                            ) : null}
                             {hasComprobante && (
                                 <Controller
                                     name="numeroComprobante"

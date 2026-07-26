@@ -3,6 +3,7 @@ import { saveAs } from 'file-saver';
 import type { ViajeGeneralReportDto } from '@entities/viaje/model/types';
 import { themePalette } from '@/shared/config/theme/palette';
 import { formatDecimalAmount } from '@/shared/utils/format-utils';
+import { isFuelReportExpense } from './fuel-report-utils';
 
 export class ViajeGeneralExcelGenerator {
     private data: ViajeGeneralReportDto;
@@ -184,13 +185,13 @@ export class ViajeGeneralExcelGenerator {
             addSectionHeader("3. GASTOS", ["Fecha", "Tipo", "Descripción", "Doc.", "Galones", "Moneda", "Monto"]);
             this.data.gastos.forEach(item => {
                 const row = worksheet.getRow(rowIdx);
-                const isFuel = item.tipoGasto.toLowerCase().includes('combustible');
+                const isFuel = isFuelReportExpense(item);
                 
                 row.getCell(1).value = item.fechaGasto;
                 row.getCell(2).value = item.tipoGasto;
                 row.getCell(3).value = item.descripcion;
                 row.getCell(4).value = item.numeroComprobante;
-                row.getCell(5).value = item.galones || '';
+                row.getCell(5).value = item.galones ?? '';
                 row.getCell(6).value = item.moneda;
                 row.getCell(7).value = item.monto;
                 row.getCell(7).numFmt = '#,##0.00';

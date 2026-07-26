@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
     Dialog,
     DialogTitle,
@@ -6,6 +7,7 @@ import {
     DialogActions,
     Button,
     TextField,
+    MenuItem,
     Grid,
     Box,
     Switch,
@@ -20,6 +22,7 @@ import { createGastoSchema, type CreateGastoSchema } from '../../model/schema';
 import type { Gasto } from '@entities/gasto/model/types';
 import { useCreateGasto, useUpdateGasto } from '../../hooks/useGastoCrud';
 import { handleBackendErrors } from '@/shared/utils/form-validation';
+import { monedaApi } from '@/entities/moneda/api/moneda.api';
 
 interface Props {
     open: boolean;
@@ -34,6 +37,11 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess, vi
     const createMutation = useCreateGasto();
     const updateMutation = useUpdateGasto();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const { data: monedas = [] } = useQuery({
+        queryKey: ['monedas-select', 'gasto-metadata'],
+        queryFn: () => monedaApi.getSelect('', 20),
+        enabled: open,
+    });
 
     const {
         register,
@@ -46,6 +54,8 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess, vi
         resolver: zodResolver(createGastoSchema),
         defaultValues: {
             nombre: '',
+            codigo: '',
+            monedaCodigoDefault: '',
             activo: true
         }
     });
@@ -55,11 +65,15 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess, vi
             if (gastoToEdit) {
                 reset({
                     nombre: gastoToEdit.nombre,
+                    codigo: gastoToEdit.codigo,
+                    monedaCodigoDefault: gastoToEdit.monedaCodigoDefault || '',
                     activo: gastoToEdit.activo ?? true
                 });
             } else {
                 reset({
                     nombre: '',
+                    codigo: '',
+                    monedaCodigoDefault: '',
                     activo: true
                 });
             }
@@ -127,6 +141,41 @@ export function CreateEditGastoModal({ open, onClose, gastoToEdit, onSuccess, vi
                                 size="small"
                                 disabled={viewOnly}
                             />
+                        </Grid>
+
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <TextField
+                                label="Código"
+                                fullWidth
+                                {...register('codigo')}
+                                error={!!errors.codigo}
+                                helperText={errors.codigo?.message}
+                                size="small"
+                                disabled={viewOnly}
+                            />
+                        </Grid>
+
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <TextField
+                                select
+                                label="Moneda por defecto"
+                                fullWidth
+                                {...register('monedaCodigoDefault')}
+                                error={!!errors.monedaCodigoDefault}
+                                helperText={errors.monedaCodigoDefault?.message || 'Opcional. Se aplicará al registrar el gasto en viaje.'}
+                                size="small"
+                                disabled={viewOnly}
+                                defaultValue=""
+                            >
+                                <MenuItem value="">
+                                    Sin moneda por defecto
+                                </MenuItem>
+                                {monedas.map((moneda) => (
+                                    <MenuItem key={moneda.id} value={moneda.extra || moneda.text}>
+                                        {moneda.text}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         </Grid>
 
                         <Grid size={{ xs: 12 }}>

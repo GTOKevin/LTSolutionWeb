@@ -13,7 +13,7 @@ import {
     getNotificationTone,
     getTripStatusTone,
     resolveDashboardNotificationModule,
-} from '@features/dashboard';
+} from '../lib/dashboard-view-helpers';
 import { APP_PATHS } from '@app/router/model/navigation';
 import { dashboardCardSx, notificationIconSx, tableHeaderCellSx, tripStatusChipSx } from '../lib/dashboard-styles';
 import { TrendBadge } from './DashboardShared';

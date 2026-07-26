@@ -61,6 +61,12 @@ export function GastoMobileList({
                     <Typography variant="body2" color="text.secondary">
                         ID: {item.gastoID}
                     </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Código: {item.codigo}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Moneda Default: {item.monedaCodigoDefault || '-'}
+                    </Typography>
                 </Stack>
             )}
         />

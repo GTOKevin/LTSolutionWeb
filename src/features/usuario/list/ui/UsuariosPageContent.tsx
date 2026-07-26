@@ -12,7 +12,7 @@ import {
     Block as BlockIcon,
     RemoveCircle as RemoveCircleIcon,
 } from '@mui/icons-material';
-import { CreateEditUsuarioModal } from '@/features/usuario/create-edit/ui/CreateEditUsuarioModal';
+import { CreateEditUsuarioModal } from '@/features/usuario/create-edit';
 import { ChangePasswordModal } from '@/features/usuario/change-password/ui/ChangePasswordModal';
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
 import { UsuarioTable } from './UsuarioTable';

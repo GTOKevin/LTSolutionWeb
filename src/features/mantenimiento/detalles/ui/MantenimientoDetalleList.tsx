@@ -35,7 +35,11 @@ import { MantenimientoDetalleForm } from './MantenimientoDetalleForm';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 import { useCreateMantenimientoDetalle, useUpdateMantenimientoDetalle, useDeleteMantenimientoDetalle } from '../../hooks/useMantenimientoDetalleCrud';
-import { formatDecimalAmount, resolveCurrencyLabel, resolveCurrencyToken } from '@/shared/utils/format-utils';
+import {
+    formatCurrencyAmount,
+    resolveCurrencyLabel,
+    resolveCurrencyToken,
+} from '@/shared/utils/format-utils';
 
 
 interface MantenimientoDetalleListProps {
@@ -274,16 +278,16 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                                     </TableCell>
                                     <TableCell align="right">{item.cantidad}</TableCell>
                                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                                        {item.moneda?.simbolo} {item.costo.toFixed(2)}
+                                        {formatCurrencyAmount(item.costo, item.moneda)}
                                     </TableCell>
                                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                                        {item.moneda?.simbolo} {item.subTotal.toFixed(2)}
+                                        {formatCurrencyAmount(item.subTotal, item.moneda)}
                                     </TableCell>
                                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                                        {item.moneda?.simbolo} {item.montoIGV.toFixed(2)}
+                                        {formatCurrencyAmount(item.montoIGV, item.moneda)}
                                     </TableCell>
                                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                                        {item.moneda?.simbolo} {item.total.toFixed(2)}
+                                        {formatCurrencyAmount(item.total, item.moneda)}
                                     </TableCell>
                                     {showActions && (
                                         <TableCell align="right">
@@ -325,7 +329,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                                                 {item.tipoProducto?.nombre || 'Producto no disponible'}
                                             </Typography>
                                             <Typography variant="subtitle2" color="primary" fontWeight="bold" sx={{ ml: 2 }}>
-                                                {item.moneda?.simbolo} {item.total.toFixed(2)}
+                                                {formatCurrencyAmount(item.total, item.moneda)}
                                             </Typography>
                                         </Box>
                                     )}
@@ -344,15 +348,15 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                                                 </Grid>
                                                 <Grid size={{xs:6}}>
                                                     <Typography variant="caption" display="block" color="text.secondary">Unitario</Typography>
-                                                    <Typography variant="body2">{item.moneda?.simbolo} {item.costo.toFixed(2)}</Typography>
+                                                    <Typography variant="body2">{formatCurrencyAmount(item.costo, item.moneda)}</Typography>
                                                 </Grid>
                                                 <Grid size={{xs:6}}>
                                                     <Typography variant="caption" display="block" color="text.secondary">SubTotal</Typography>
-                                                    <Typography variant="body2">{item.moneda?.simbolo} {item.subTotal.toFixed(2)}</Typography>
+                                                    <Typography variant="body2">{formatCurrencyAmount(item.subTotal, item.moneda)}</Typography>
                                                 </Grid>
                                                 <Grid size={{xs:6}}>
                                                     <Typography variant="caption" display="block" color="text.secondary">IGV</Typography>
-                                                    <Typography variant="body2">{item.moneda?.simbolo} {item.montoIGV.toFixed(2)}</Typography>
+                                                    <Typography variant="body2">{formatCurrencyAmount(item.montoIGV, item.moneda)}</Typography>
                                                 </Grid>
                                             </Grid>
                                         </>
@@ -397,7 +401,7 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                                                             TOTAL {resolveCurrencyLabel(symbol).toUpperCase()}
                                                         </Typography>
                                                         <Typography variant="h5" fontWeight="800" color="text.primary">
-                                                            {resolveCurrencyToken(symbol) || resolveCurrencyLabel(symbol)} {formatDecimalAmount(total)}
+                                                            {formatCurrencyAmount(total, symbol)}
                                                         </Typography>
                                                     </Box>
                                                     <Box sx={{ 
@@ -406,7 +410,9 @@ export function MantenimientoDetalleList({ mantenimientoId, viewOnly = false, ma
                                                         bgcolor: alpha(theme.palette.primary.main, 0.1),
                                                         color: theme.palette.primary.main
                                                     }}>
-                                                        <Typography fontWeight="bold">{resolveCurrencyToken(symbol) || 'M'}</Typography>
+                                                        <Typography fontWeight="bold">
+                                                            {(resolveCurrencyToken(symbol) || resolveCurrencyLabel(symbol).slice(0, 3)).toUpperCase()}
+                                                        </Typography>
                                                     </Box>
                                                 </Paper>
                                             </Grid>
