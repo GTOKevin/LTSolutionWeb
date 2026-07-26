@@ -16,7 +16,7 @@ import {
 } from '@shared/utils/date-utils';
 import { saveAs } from 'file-saver';
 import { getErrorMessage } from '@shared/utils/api-errors';
-import { formatCurrencyAmount, formatDecimalAmount, resolveCurrencyDisplay } from '@shared/utils/format-utils';
+import { formatCurrencyAmount, formatDecimalAmount } from '@shared/utils/format-utils';
 
 function escapeCsvValue(value: string) {
     return `"${value.replaceAll('"', '""')}"`;
@@ -29,11 +29,15 @@ function getPagoCurrencyDescriptor(item: Pick<MiPagoDto, 'monedaCodigo' | 'moned
     };
 }
 
+function getPagoCurrencyKey(item: Pick<MiPagoDto, 'monedaCodigo'>) {
+    return item.monedaCodigo;
+}
+
 function exportPagosCsv(items: MiPagoDto[], fileName: string) {
     const headers = ['Tipo', 'Moneda', 'Monto', 'Periodo', 'Fecha pago', 'Estado', 'Observaciones'];
     const rows = items.map((item) => [
         item.tipoPagoNombre,
-        resolveCurrencyDisplay(getPagoCurrencyDescriptor(item)),
+        getPagoCurrencyKey(item),
         formatDecimalAmount(item.monto),
         `${formatDateOnly(item.fechaInicio)} - ${formatDateOnly(item.fechaCierre)}`,
         formatDateOnly(item.fechaPago),
@@ -114,8 +118,8 @@ export function useMisPagosPageController() {
         const currencyTotalsMap = new Map<string, { amount: number; currency: ReturnType<typeof getPagoCurrencyDescriptor> }>();
 
         items.forEach((item) => {
+            const currencyKey = getPagoCurrencyKey(item);
             const currency = getPagoCurrencyDescriptor(item);
-            const currencyKey = resolveCurrencyDisplay(currency);
             const current = currencyTotalsMap.get(currencyKey);
             currencyTotalsMap.set(currencyKey, {
                 amount: (current?.amount ?? 0) + item.monto,

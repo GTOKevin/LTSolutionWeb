@@ -2,10 +2,16 @@ import type { SelectItem } from '@shared/model/types';
 import type { Mantenimiento } from './types';
 import { matchesCatalogCandidate } from '@entities/master-data/lib/catalog-utils';
 
+export const MANTENIMIENTO_STATUS_CODE = {
+    AGENDADO: '2',
+    TALLER: '3',
+    COMPLETADO: '1',
+} as const;
+
 const MANTENIMIENTO_STATUS = {
-    AGENDADO: ['2'],
-    TALLER: ['3'],
-    COMPLETADO: ['1'],
+    AGENDADO: [MANTENIMIENTO_STATUS_CODE.AGENDADO],
+    TALLER: [MANTENIMIENTO_STATUS_CODE.TALLER],
+    COMPLETADO: [MANTENIMIENTO_STATUS_CODE.COMPLETADO],
 } as const;
 
 export function isMantenimientoStatus(item: Mantenimiento | null | undefined, candidates: readonly string[]) {
