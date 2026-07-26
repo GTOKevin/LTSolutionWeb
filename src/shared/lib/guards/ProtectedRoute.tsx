@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { APP_PATHS } from '@app/router/model/navigation';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { useAuthStore } from '@shared/store/auth.store';
 import { useEffect } from 'react';
 

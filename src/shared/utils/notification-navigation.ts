@@ -1,4 +1,4 @@
-import { APP_PATHS, buildAppViewPath } from '@app/router/model/navigation';
+import { APP_PATHS, buildAppViewPath } from '@shared/config/app-routes';
 
 export function normalizeNotificationActionUrl(url?: string) {
     if (!url) return null;

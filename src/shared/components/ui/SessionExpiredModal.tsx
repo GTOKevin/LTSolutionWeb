@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { Warning as WarningIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { APP_PATHS } from '@app/router/model/navigation';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { useAuthStore } from '@shared/store/auth.store';
 
 function SessionExpiredDialog({ onLogout }: { onLogout: () => void }) {

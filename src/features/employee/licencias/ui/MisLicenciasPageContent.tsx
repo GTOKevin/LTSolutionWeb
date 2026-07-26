@@ -271,7 +271,7 @@ export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentP
                 <Box>
                     <Typography variant="caption" fontWeight={800} color="info.dark" sx={{ textTransform: 'uppercase', letterSpacing: '0.1em' }}>Nota Importante</Typography>
                     <Typography variant="body2" color="info.main" sx={{ mt: 0.5 }}>
-                        Las solicitudes de licencia deben presentarse con al menos 15 días de anticipación para asegurar la continuidad operativa de las rutas asignadas. Las licencias médicas deben adjuntar el certificado correspondiente en la sección de 'Mis Documentos'.
+                        Esta solicitud registra el periodo y el motivo de tu ausencia. La evaluación, aprobación y cualquier sustento adicional se gestionan durante la revisión interna según la política vigente de la empresa.
                     </Typography>
                 </Box>
             </Box>
