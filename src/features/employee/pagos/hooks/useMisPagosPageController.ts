@@ -94,10 +94,9 @@ export function useMisPagosPageController() {
         size: rowsPerPage,
     }), [filters, page, rowsPerPage]);
 
-    const { data, isLoading } = useQuery({
+    const { data, isFetching, isLoading } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.pagos(queryFilters),
         queryFn: () => employeePortalApi.getMyPagos(queryFilters),
-        placeholderData: (previousData) => previousData,
     });
 
     const confirmMutation = useMutation({
@@ -192,6 +191,7 @@ export function useMisPagosPageController() {
         handleExportPayment,
         handleExportReport,
         handleSearch,
+        isFetching,
         isLoading,
         monedaID,
         monedas,

@@ -38,6 +38,7 @@ interface MisPagosPageContentProps {
 export function MisPagosPageContent({ controller }: MisPagosPageContentProps) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const isRefreshing = controller.isFetching && !controller.isLoading;
 
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column', gap: 4, minHeight: '100%', flex: '1 0 auto' }}>
@@ -54,9 +55,10 @@ export function MisPagosPageContent({ controller }: MisPagosPageContentProps) {
                     variant="contained"
                     startIcon={<DownloadForOfflineIcon />}
                     onClick={controller.handleExportReport}
+                    disabled={isRefreshing}
                     sx={{ bgcolor: 'action.hover', color: 'text.primary', boxShadow: 'none', '&:hover': { bgcolor: 'action.selected', boxShadow: 'none' }, borderRadius: 3, px: 4, py: 1.5, fontWeight: 700 }}
                 >
-                    Exportar Reporte
+                    {isRefreshing ? 'Actualizando...' : 'Exportar Reporte'}
                 </Button>
             </Box>
 
@@ -65,6 +67,7 @@ export function MisPagosPageContent({ controller }: MisPagosPageContentProps) {
                 dataItems={controller.data?.items}
                 onSelectPending={controller.setSelectedPago}
                 canConfirmPayments={controller.canConfirmPayments}
+                isRefreshing={isRefreshing}
             />
 
             <MisPagosFilters
@@ -81,16 +84,24 @@ export function MisPagosPageContent({ controller }: MisPagosPageContentProps) {
                 onSearch={controller.handleSearch}
             />
 
+            {isRefreshing ? (
+                <Box sx={{ px: 2.5, py: 1.5, borderRadius: 3, bgcolor: 'action.hover', color: 'text.secondary', fontWeight: 600 }}>
+                    Actualizando resultados segun los filtros aplicados...
+                </Box>
+            ) : null}
+
             <Box sx={{ bgcolor: 'background.paper', borderRadius: 4, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
                 {isMobile ? (
                     <MisPagosMobileList
                         data={controller.data}
                         isLoading={controller.isLoading}
+                        isRefreshing={isRefreshing}
                         page={controller.page}
                         rowsPerPage={controller.rowsPerPage}
                         onPageChange={controller.handleChangePage}
                         onRowsPerPageChange={controller.handleChangeRowsPerPage}
                         canConfirmPayments={controller.canConfirmPayments}
+                        actionsDisabled={isRefreshing}
                         onConfirmPayment={controller.setSelectedPago}
                         onExportPayment={controller.handleExportPayment}
                         formatMoney={formatPagoMoney}
@@ -143,12 +154,13 @@ export function MisPagosPageContent({ controller }: MisPagosPageContentProps) {
                                         {isPending && controller.canConfirmPayments ? (
                                             <Button
                                                 onClick={() => controller.setSelectedPago(item)}
+                                                disabled={isRefreshing}
                                                 sx={{ fontWeight: 900, letterSpacing: '0.1em', color: 'primary.main', '&:hover': { textDecoration: 'underline', textUnderlineOffset: 4, bgcolor: 'transparent' } }}
                                             >
                                                 CONFIRMAR PAGO
                                             </Button>
                                         ) : (
-                                            <Button onClick={() => controller.handleExportPayment(item)} sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { bgcolor: 'action.selected', color: 'text.primary' } }}>
+                                            <Button disabled={isRefreshing} onClick={() => controller.handleExportPayment(item)} sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { bgcolor: 'action.selected', color: 'text.primary' } }}>
                                                 <DownloadForOfflineIcon />
                                             </Button>
                                         )}

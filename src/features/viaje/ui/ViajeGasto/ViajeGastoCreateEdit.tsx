@@ -10,7 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { CreateViajeGastoDto, ViajeGasto } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
 import { useCreateViajeGasto, useUpdateViajeGasto } from '@/features/viaje/hooks/useViajeGastos';
-import { viajeGastoSchema, type ViajeGastoFormData } from '../../model/schema';
+import { viajeGastoSchema, type ViajeGastoFormData, type ViajeGastoFormInput } from '../../model/schema';
 import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
 import { getSelectItemId } from '@/entities/master-data/lib/catalog-utils';
 import { resolveGastoSelectMetadata } from '@/entities/gasto/model/metadata';
@@ -36,7 +36,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, defaultMone
     const isEditing = !!gasto;
     const isLoading = createMutation.isPending || updateMutation.isPending;
 
-    const { control, register, handleSubmit, reset, setValue, setError, formState: { errors } } = useForm<ViajeGastoFormData>({
+    const { control, register, handleSubmit, reset, setValue, setError, formState: { errors } } = useForm<ViajeGastoFormInput, unknown, ViajeGastoFormData>({
         resolver: zodResolver(viajeGastoSchema),
         defaultValues: {
             gastoID: 0,

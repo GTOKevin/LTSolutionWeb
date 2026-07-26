@@ -1,16 +1,13 @@
 import { useState } from 'react';
 import { 
-    Box, Typography, Button, useTheme, alpha, IconButton, CircularProgress 
+    Box, Typography, Button, useTheme, alpha, CircularProgress, IconButton
 } from '@mui/material';
 import { 
-    FilterList as FilterListIcon, 
-    GridView as GridViewIcon, 
     Description as DescriptionIcon, 
     LocalShipping as LocalShippingIcon, 
     Visibility as VisibilityIcon, 
     Download as DownloadIcon, 
     Delete as DeleteIcon, 
-    AddCircle as AddCircleIcon,
     ImageNotSupported as ImageNotSupportedIcon
 } from '@mui/icons-material';
 import { useViajeGuias, useDeleteViajeGuia } from '@features/viaje/hooks/useViajeGuias';
@@ -77,10 +74,6 @@ export function GuiasList({ viajeID, isViewOnly }: GuiasListProps) {
                 <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: 1.5 }}>
                     Documentos Cargados ({guias.length})
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <IconButton size="small" sx={{ bgcolor: 'background.paper', borderRadius: 2 }}><FilterListIcon fontSize="small" /></IconButton>
-                    <IconButton size="small" sx={{ bgcolor: 'background.paper', borderRadius: 2 }}><GridViewIcon fontSize="small" /></IconButton>
-                </Box>
             </Box>
 
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
@@ -185,23 +178,24 @@ export function GuiasList({ viajeID, isViewOnly }: GuiasListProps) {
                     );
                 })}
 
-                {/* Empty State / Add Action Card */}
                 {!isViewOnly && (
                     <Box sx={{ 
-                        border: '2px dashed', borderColor: alpha(theme.palette.divider, 0.5), 
-                        borderRadius: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                        p: 3, textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s',
+                        border: '1px dashed',
+                        borderColor: alpha(theme.palette.divider, 0.7),
+                        borderRadius: 3,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        p: 3,
+                        textAlign: 'center',
                         bgcolor: alpha(theme.palette.background.default, 0.5),
-                        '&:hover': { borderColor: alpha(theme.palette.primary.main, 0.4), '& .icon': { color: 'primary.main' } }
                     }}>
-                        <Box className="icon" sx={{ width: 48, height: 48, borderRadius: '50%', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.secondary', mb: 1, transition: 'color 0.2s' }}>
-                            <AddCircleIcon />
-                        </Box>
-                        <Typography variant="body2" fontWeight={800} color="text.secondary" sx={{ '&:hover': { color: 'text.primary' } }}>
-                            Añadir otra Guía
+                        <Typography variant="body2" fontWeight={800} color="text.primary">
+                            Registra una nueva guía desde el formulario lateral
                         </Typography>
-                        <Typography variant="caption" color="text.disabled">
-                            Total máximo: 10 documentos
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, maxWidth: 260 }}>
+                            Usa el formulario de esta sección para adjuntar otro documento al viaje actual.
                         </Typography>
                     </Box>
                 )}

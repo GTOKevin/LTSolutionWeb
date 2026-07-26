@@ -13,11 +13,13 @@ import type { MiPagoDto } from '@entities/employee/model/types';
 interface MisPagosMobileListProps {
     data?: PagedResponse<MiPagoDto>;
     isLoading: boolean;
+    isRefreshing?: boolean;
     page: number;
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     canConfirmPayments: boolean;
+    actionsDisabled?: boolean;
     onConfirmPayment: (item: MiPagoDto) => void;
     onExportPayment: (item: MiPagoDto) => void;
     formatMoney: (item: MiPagoDto) => string;
@@ -26,11 +28,13 @@ interface MisPagosMobileListProps {
 export function MisPagosMobileList({
     data,
     isLoading,
+    isRefreshing = false,
     page,
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
     canConfirmPayments,
+    actionsDisabled = false,
     onConfirmPayment,
     onExportPayment,
     formatMoney,
@@ -99,6 +103,7 @@ export function MisPagosMobileList({
                                     size="small"
                                     variant="contained"
                                     startIcon={<CheckCircleIcon />}
+                                    disabled={actionsDisabled}
                                     onClick={() => onConfirmPayment(item)}
                                     sx={{ borderRadius: 2, boxShadow: 'none' }}
                                 >
@@ -109,12 +114,18 @@ export function MisPagosMobileList({
                                 size="small"
                                 variant={isPending && canConfirmPayments ? 'outlined' : 'contained'}
                                 startIcon={<DownloadForOfflineIcon />}
+                                disabled={actionsDisabled}
                                 onClick={() => onExportPayment(item)}
                                 sx={{ borderRadius: 2, boxShadow: 'none' }}
                             >
                                 Exportar
                             </Button>
                         </Box>
+                        {isRefreshing ? (
+                            <Typography variant="caption" color="text.secondary">
+                                Actualizando resultados...
+                            </Typography>
+                        ) : null}
                     </Stack>
                 );
             }}
