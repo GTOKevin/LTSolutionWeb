@@ -72,6 +72,8 @@ export interface ViajeGastoReportItemDto {
     descripcion: string;
     fechaGasto: string;
     numeroComprobante: string;
+    gastoCodigo?: string;
+    combustible?: boolean;
     galones: number | null;
     moneda: string;
     monto: number;

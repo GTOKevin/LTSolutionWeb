@@ -55,6 +55,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, defaultMone
     const isCombustible = useWatch({ control, name: 'combustible', defaultValue: false });
     const selectedGastoID = useWatch({ control, name: 'gastoID', defaultValue: 0 });
     const selectedMonedaID = useWatch({ control, name: 'monedaID', defaultValue: defaultMonedaId });
+    const hasSelectedGasto = selectedGastoID > 0;
     const selectedGasto = tiposGasto.find((item) => item.id === selectedGastoID);
     const selectedGastoMetadata = resolveGastoSelectMetadata(selectedGasto);
     const enforcedMonedaId = selectedGastoMetadata.defaultCurrencyCode
@@ -68,6 +69,17 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, defaultMone
     }, [defaultMonedaId, gasto, selectedMonedaID, setValue]);
 
     useEffect(() => {
+        if (!hasSelectedGasto) {
+            setValue('combustible', false);
+            setValue('galones', 0);
+            return;
+        }
+
+        // Wait until the selected catalog item is resolved before enforcing metadata.
+        if (!selectedGasto) {
+            return;
+        }
+
         setValue('combustible', selectedGastoMetadata.isFuel);
 
         if (enforcedMonedaId) {
@@ -77,7 +89,7 @@ export function ViajeGastoCreateEdit({ viajeId, tiposGasto, monedas, defaultMone
         if (!selectedGastoMetadata.isFuel) {
             setValue('galones', 0);
         }
-    }, [enforcedMonedaId, selectedGastoMetadata.isFuel, setValue]);
+    }, [enforcedMonedaId, hasSelectedGasto, selectedGasto, selectedGastoMetadata.isFuel, setValue]);
 
     useEffect(() => {
         if (gasto) {

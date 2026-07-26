@@ -43,6 +43,7 @@ export function GastosForm({ viajeID }: GastosFormProps) {
     const isCombustible = useWatch({ control, name: 'combustible', defaultValue: false });
     const selectedGastoID = useWatch({ control, name: 'gastoID', defaultValue: 0 });
     const selectedMonedaID = useWatch({ control, name: 'monedaID', defaultValue: defaultMonedaId });
+    const hasSelectedGasto = selectedGastoID > 0;
     const selectedGasto = tiposGasto?.find((item) => item.id === selectedGastoID);
     const selectedGastoMetadata = resolveGastoSelectMetadata(selectedGasto);
     const enforcedMonedaId = selectedGastoMetadata.defaultCurrencyCode
@@ -56,6 +57,17 @@ export function GastosForm({ viajeID }: GastosFormProps) {
     }, [defaultMonedaId, selectedMonedaID, setValue]);
 
     useEffect(() => {
+        if (!hasSelectedGasto) {
+            setValue('combustible', false);
+            setValue('galones', 0);
+            return;
+        }
+
+        // Avoid wiping fields while the selected catalog item is still loading.
+        if (!selectedGasto) {
+            return;
+        }
+
         setValue('combustible', selectedGastoMetadata.isFuel);
 
         if (enforcedMonedaId) {
@@ -65,7 +77,7 @@ export function GastosForm({ viajeID }: GastosFormProps) {
         if (!selectedGastoMetadata.isFuel) {
             setValue('galones', 0);
         }
-    }, [enforcedMonedaId, selectedGastoMetadata.isFuel, setValue]);
+    }, [enforcedMonedaId, hasSelectedGasto, selectedGasto, selectedGastoMetadata.isFuel, setValue]);
 
     const onSubmit = async (data: ViajeGastoFormData) => {
         try {
