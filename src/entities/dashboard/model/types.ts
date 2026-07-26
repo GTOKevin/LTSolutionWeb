@@ -69,6 +69,13 @@ export interface DashboardRecentTrip {
     carretaPlaca?: string | null;
 }
 
+export interface DashboardTripStatusIds {
+    agendadoId?: number;
+    transitoId?: number;
+    descargandoId?: number;
+    completadoId?: number;
+}
+
 export interface DashboardNotification {
     notificacionID: number;
     titulo: string;

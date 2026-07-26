@@ -1,6 +1,7 @@
 import type {
     DashboardNotification,
     DashboardPeriod,
+    DashboardTripStatusIds,
 } from '@entities/dashboard/model/types';
 import { matchesCatalogCandidate } from '@entities/master-data/lib/catalog-utils';
 import { APP_PATHS } from '@shared/config/app-routes';
@@ -51,13 +52,6 @@ export function getTrendDirection(value: number) {
     if (value > 0) return 'up';
     if (value < 0) return 'down';
     return 'neutral';
-}
-
-export interface DashboardTripStatusIds {
-    agendadoId?: number;
-    transitoId?: number;
-    descargandoId?: number;
-    completadoId?: number;
 }
 
 export function getTripStatusTone(estadoId: number | null | undefined, statusIds: DashboardTripStatusIds) {

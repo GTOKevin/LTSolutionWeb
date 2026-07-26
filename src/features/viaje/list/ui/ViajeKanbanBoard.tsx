@@ -28,7 +28,7 @@ import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
 import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
-import { LegacyKanbanCard, LegacyKanbanColumn } from './legacy-kanban-components';
+import { LegacyKanbanCard, LegacyKanbanColumn } from './legacy/LegacyKanban';
 
 interface KanbanBoardProps {
     viajes: ViajeListItem[];

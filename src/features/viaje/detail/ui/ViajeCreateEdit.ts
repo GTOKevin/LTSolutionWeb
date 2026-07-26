@@ -1,1 +1,1 @@
-export { LegacyViajeCreateEdit as ViajeCreateEdit } from './legacy-detail-components';
+export { LegacyViajeCreateEdit as ViajeCreateEdit } from './legacy/LegacyViajeCreateEdit';

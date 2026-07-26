@@ -3,9 +3,11 @@ import {
     Box,
     Button,
 } from '@mui/material';
-import type { DashboardOverview as DashboardOverviewData, DashboardPeriod } from '@entities/dashboard/model/types';
-import { PERMISSIONS } from '@shared/constants/permissions';
-import { usePermission } from '@shared/lib/hooks/usePermission';
+import type {
+    DashboardOverview as DashboardOverviewData,
+    DashboardPeriod,
+    DashboardTripStatusIds,
+} from '@entities/dashboard/model/types';
 import { DASHBOARD_PERIOD_OPTIONS } from '../lib/dashboard-view-helpers';
 import { DashboardChartsSection } from './DashboardChartsSection';
 import { DashboardBottomSection } from './DashboardBottomSection';
@@ -20,6 +22,17 @@ interface DashboardOverviewProps {
     isLoading: boolean;
     isFetching: boolean;
     isError: boolean;
+    permissions: {
+        canViewViajes: boolean;
+        canViewFacturas: boolean;
+        canViewFlota: boolean;
+        canViewColaboradores: boolean;
+        canViewMantenimientos: boolean;
+        canViewClientes: boolean;
+        canViewUsuarios: boolean;
+        canViewSecurityAlerts: boolean;
+    };
+    viajeStatusIds: DashboardTripStatusIds;
     onRetry: () => void;
 }
 
@@ -30,22 +43,20 @@ export function DashboardOverview({
     isLoading,
     isFetching,
     isError,
+    permissions,
+    viajeStatusIds,
     onRetry,
 }: DashboardOverviewProps) {
-    const canViewViajes = usePermission(PERMISSIONS.VIAJES.VER);
-    const canViewFacturas = usePermission(PERMISSIONS.FACTURAS.VER);
-    const canViewFlota = usePermission(PERMISSIONS.FLOTA.VER);
-    const canViewColaboradores = usePermission(PERMISSIONS.COLABORADORES.VER);
-    const canViewMantenimientos = usePermission(PERMISSIONS.MANTENIMIENTOS.VER);
-    const canViewClientes = usePermission(PERMISSIONS.CLIENTES.VER);
-    const canViewUsuarios = usePermission(PERMISSIONS.SISTEMA.USUARIOS.VER);
-    const canViewSecurityAlerts =
-        canViewFacturas ||
-        canViewFlota ||
-        canViewColaboradores ||
-        canViewMantenimientos ||
-        canViewClientes ||
-        canViewUsuarios;
+    const {
+        canViewViajes,
+        canViewFacturas,
+        canViewFlota,
+        canViewColaboradores,
+        canViewMantenimientos,
+        canViewClientes,
+        canViewUsuarios,
+        canViewSecurityAlerts,
+    } = permissions;
     const hasVisibleDashboardSections =
         canViewViajes || canViewFacturas || canViewFlota || canViewSecurityAlerts;
     const currentPeriodMeta = DASHBOARD_PERIOD_OPTIONS.find(item => item.value === period) ?? DASHBOARD_PERIOD_OPTIONS[1];
@@ -117,6 +128,7 @@ export function DashboardOverview({
                         canViewMantenimientos={canViewMantenimientos}
                         canViewClientes={canViewClientes}
                         canViewUsuarios={canViewUsuarios}
+                        viajeStatusIds={viajeStatusIds}
                     />
                 </>
             ) : (

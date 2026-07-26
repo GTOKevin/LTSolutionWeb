@@ -5,7 +5,7 @@ import { useState } from 'react';
 import {
     LegacyViajeIncidenteCreateEdit,
     LegacyViajeIncidenteList,
-} from './legacy-tab-components';
+} from './legacy/LegacyViajeIncidente';
 
 interface Props {
     viajeId?: number;
