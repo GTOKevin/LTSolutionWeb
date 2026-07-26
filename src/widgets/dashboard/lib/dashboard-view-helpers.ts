@@ -3,7 +3,6 @@ import type {
     DashboardPeriod,
     DashboardRecentTrip,
 } from '@entities/dashboard/model/types';
-import { APP_PATHS } from '@app/router/model/navigation';
 import { matchesCatalogCandidate } from '@entities/master-data/lib/catalog-utils';
 import {
     isViajeAgendado,
@@ -11,6 +10,7 @@ import {
     isViajeDescargando,
     isViajeTransito,
 } from '@entities/viaje/model/status';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { normalizeNotificationActionUrl } from '@shared/utils/notification-navigation';
 
 export const DASHBOARD_PERIOD_OPTIONS: Array<{ value: DashboardPeriod; label: string; description: string }> = [

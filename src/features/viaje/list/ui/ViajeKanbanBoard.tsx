@@ -14,8 +14,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Box, CircularProgress, Alert } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
-import { KanbanColumn } from '@features/viaje/ui/ViajeKanban/KanbanColumn';
-import { KanbanCard } from '@features/viaje/ui/ViajeKanban/KanbanCard';
+import { LegacyKanbanCard, LegacyKanbanColumn } from '@features/viaje/legacy';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
 import {
     resolveViajeAgendadoId,
@@ -215,7 +214,7 @@ export function ViajeKanbanBoard({
             >
                 <Box sx={{ display: 'flex', height: '100%', minWidth: 'min-content' }}>
                     {columns.map((col) => (
-                        <KanbanColumn
+                        <LegacyKanbanColumn
                             key={col.id}
                             id={col.id}
                             title={col.title}
@@ -233,7 +232,7 @@ export function ViajeKanbanBoard({
 
                 <DragOverlay>
                     {activeViaje ? (
-                        <KanbanCard viaje={activeViaje} onClick={() => {}} draggable={canManage && !activeViaje.cerrado} />
+                        <LegacyKanbanCard viaje={activeViaje} onClick={() => {}} draggable={canManage && !activeViaje.cerrado} />
                     ) : null}
                 </DragOverlay>
             </DndContext>

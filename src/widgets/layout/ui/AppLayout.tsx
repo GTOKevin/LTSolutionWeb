@@ -1,13 +1,13 @@
 import { Box, Toolbar, useTheme } from '@mui/material';
 import { Header } from '@widgets/header';
 import { Sidebar, DRAWER_WIDTH } from '@widgets/sidebar';
+import type { SidebarMenuItem } from '@widgets/sidebar';
 import { BottomNav, type BottomNavItem } from './BottomNav';
-import type { AppNavigationItem } from '@app/router/model/navigation';
 
 interface AppLayoutProps {
     title: string;
     sectionTitle: string;
-    sidebarMenu: AppNavigationItem[];
+    sidebarMenu: SidebarMenuItem[];
     bottomNavItems: BottomNavItem[];
     bottomNavValue: number;
     onBottomNavChange: (item: BottomNavItem) => void;

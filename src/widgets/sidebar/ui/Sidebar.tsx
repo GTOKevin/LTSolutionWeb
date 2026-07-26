@@ -31,7 +31,7 @@ import { useLayoutStore } from '@shared/store/layout.store';
 import { useAuthStore } from '@shared/store/auth.store';
 import { useState, useMemo, useEffect, useRef, type MouseEvent } from 'react';
 import { hasPermission as hasUserPermission } from '@shared/lib/permissions/hasPermission';
-import { APP_PATHS } from '@app/router/model/navigation';
+import { APP_PATHS } from '@shared/config/app-routes';
 
 export const DRAWER_WIDTH = 280;
 

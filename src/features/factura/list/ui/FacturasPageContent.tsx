@@ -32,6 +32,8 @@ export function FacturasPageContent({ controller }: FacturasPageContentProps) {
     const recaudacionPorcentaje = totalFacturado > 0
         ? Math.min((montoRecaudado / totalFacturado) * 100, 100)
         : 0;
+    const getEstadoLabel = (estadoId?: number, fallback?: string) =>
+        controller.facturaEstados?.find((item) => item.id === estadoId)?.text ?? fallback ?? '-';
 
     return (
         <Box
@@ -143,9 +145,9 @@ export function FacturasPageContent({ controller }: FacturasPageContentProps) {
                                     sx={{ bgcolor: 'background.paper', borderRadius: 2, '& fieldset': { border: 'none' } }}
                                 >
                                     <MenuItem value="todos">Todos los estados</MenuItem>
-                                    {controller.facturaGeneradaId ? <MenuItem value={controller.facturaGeneradaId.toString()}>Registrada</MenuItem> : null}
-                                    {controller.facturaEmitidaId ? <MenuItem value={controller.facturaEmitidaId.toString()}>Emitida</MenuItem> : null}
-                                    {controller.facturaEntregadaId ? <MenuItem value={controller.facturaEntregadaId.toString()}>Entregada</MenuItem> : null}
+                                    {controller.facturaGeneradaId ? <MenuItem value={controller.facturaGeneradaId.toString()}>{getEstadoLabel(controller.facturaGeneradaId, 'Generado')}</MenuItem> : null}
+                                    {controller.facturaEmitidaId ? <MenuItem value={controller.facturaEmitidaId.toString()}>{getEstadoLabel(controller.facturaEmitidaId, 'Emitido')}</MenuItem> : null}
+                                    {controller.facturaEntregadaId ? <MenuItem value={controller.facturaEntregadaId.toString()}>{getEstadoLabel(controller.facturaEntregadaId, 'Entregado')}</MenuItem> : null}
                                 </Select>
                             </Box>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>

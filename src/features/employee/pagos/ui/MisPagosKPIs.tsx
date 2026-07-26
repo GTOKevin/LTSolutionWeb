@@ -1,5 +1,6 @@
 import { Box, Button, Grid, Typography } from '@mui/material';
 import type { MiPagoDto } from '@entities/employee/model/types';
+import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 
 interface PaymentStats {
     total: number;
@@ -7,7 +8,10 @@ interface PaymentStats {
     pendingCount: number;
     confirmedCount: number;
     currencyTotals: Array<{
-        currency: string;
+        currency: {
+            codigo?: string | null;
+            simbolo?: string | null;
+        };
         amount: number;
     }>;
 }
@@ -38,7 +42,7 @@ export function MisPagosKPIs({
                         </Typography>
                         <Typography variant="h2" fontWeight={900} color="primary.main" sx={{ mt: 1, letterSpacing: '-0.02em' }}>
                             {singleCurrencyTotal
-                                ? `${singleCurrencyTotal.currency} ${singleCurrencyTotal.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+                                ? formatCurrencyAmount(singleCurrencyTotal.amount, singleCurrencyTotal.currency)
                                 : paymentStats.visibleCount.toString().padStart(2, '0')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 2, maxWidth: 360 }}>
@@ -50,7 +54,7 @@ export function MisPagosKPIs({
                             <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                                 {paymentStats.currencyTotals.map((item) => (
                                     <Box
-                                        key={item.currency}
+                                        key={`${item.currency.codigo ?? item.currency.simbolo ?? 'moneda'}-${item.amount}`}
                                         sx={{
                                             px: 1.5,
                                             py: 0.75,
@@ -61,7 +65,7 @@ export function MisPagosKPIs({
                                             fontWeight: 700,
                                         }}
                                     >
-                                        {item.currency} {item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                        {formatCurrencyAmount(item.amount, item.currency)}
                                     </Box>
                                 ))}
                             </Box>

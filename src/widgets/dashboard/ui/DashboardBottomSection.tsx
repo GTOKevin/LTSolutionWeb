@@ -6,6 +6,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import type { DashboardOverview } from '@entities/dashboard/model/types';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { formatCurrency } from '@shared/utils/format-utils';
 import { formatDateShort, formatDateTime } from '@shared/utils/date-utils';
 import { normalizeNotificationActionUrl } from '@shared/utils/notification-navigation';
@@ -14,7 +15,6 @@ import {
     getTripStatusTone,
     resolveDashboardNotificationModule,
 } from '../lib/dashboard-view-helpers';
-import { APP_PATHS } from '@app/router/model/navigation';
 import { dashboardCardSx, notificationIconSx, tableHeaderCellSx, tripStatusChipSx } from '../lib/dashboard-styles';
 import { TrendBadge } from './DashboardShared';
 

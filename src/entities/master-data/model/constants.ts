@@ -30,5 +30,10 @@ export const MONEDA_CODES = {
     EUR: 'EUR',
 } as const;
 
+export const TIPO_MAESTRO_CODES = {
+    MEDIDA_METRO: 'M',
+    PESO_KILOGRAMO: 'Kg',
+} as const;
+
 export const ESTADO_SECCIONES = ESTADO_SECTIONS;
 export const SECCION_MAESTRO = TIPO_MAESTRO_SECTIONS;

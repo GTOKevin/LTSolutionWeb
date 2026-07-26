@@ -1,20 +1,28 @@
 import type { SelectItem } from '@shared/model/types';
 import type { Factura } from './types';
-import { getSelectItemId, matchesCatalogCandidate, matchesEstado } from '@entities/master-data/lib/catalog-utils';
+import { matchesCatalogCandidate } from '@entities/master-data/lib/catalog-utils';
+
+export const FACTURA_STATUS_CODE = {
+    GENERADO: 'GEN',
+    EMITIDO: 'EMI',
+    ENTREGADO: 'ENT',
+    ANULADO: 'ANU',
+} as const;
 
 const FACTURA_STATUS = {
-    GENERADO: ['generado', 'registrada'],
-    EMITIDO: ['emitido'],
-    ENTREGADO: ['entregado'],
-    ANULADO: ['anulado'],
+    GENERADO: [FACTURA_STATUS_CODE.GENERADO],
+    EMITIDO: [FACTURA_STATUS_CODE.EMITIDO],
+    ENTREGADO: [FACTURA_STATUS_CODE.ENTREGADO],
+    ANULADO: [FACTURA_STATUS_CODE.ANULADO],
 } as const;
 
 export function isFacturaStatus(factura: Factura | null | undefined, candidates: readonly string[]) {
-    if (!factura) {
+    const estadoCodigo = factura?.estado?.codigo;
+    if (!estadoCodigo) {
         return false;
     }
 
-    return matchesEstado(factura.estado, candidates) || matchesCatalogCandidate(factura.estado?.nombre, candidates);
+    return matchesCatalogCandidate(estadoCodigo, candidates);
 }
 
 export function isFacturaGenerada(factura: Factura | null | undefined) {
@@ -34,19 +42,19 @@ export function isFacturaAnulada(factura: Factura | null | undefined) {
 }
 
 export function resolveFacturaGeneradaId(items: SelectItem[] | undefined) {
-    return getSelectItemId(items, FACTURA_STATUS.GENERADO);
+    return items?.find((item) => matchesCatalogCandidate(item.extra, FACTURA_STATUS.GENERADO))?.id;
 }
 
 export function resolveFacturaEmitidaId(items: SelectItem[] | undefined) {
-    return getSelectItemId(items, FACTURA_STATUS.EMITIDO);
+    return items?.find((item) => matchesCatalogCandidate(item.extra, FACTURA_STATUS.EMITIDO))?.id;
 }
 
 export function resolveFacturaEntregadaId(items: SelectItem[] | undefined) {
-    return getSelectItemId(items, FACTURA_STATUS.ENTREGADO);
+    return items?.find((item) => matchesCatalogCandidate(item.extra, FACTURA_STATUS.ENTREGADO))?.id;
 }
 
 export function resolveFacturaAnuladaId(items: SelectItem[] | undefined) {
-    return getSelectItemId(items, FACTURA_STATUS.ANULADO);
+    return items?.find((item) => matchesCatalogCandidate(item.extra, FACTURA_STATUS.ANULADO))?.id;
 }
 
 export function getFacturaStatusColor(factura: Factura | null | undefined) {

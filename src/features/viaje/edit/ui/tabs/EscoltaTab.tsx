@@ -1,7 +1,6 @@
 import { Box, Grid } from '@mui/material';
 import type { Viaje } from '@/entities/viaje/model/types';
-import { EscoltasForm } from '@features/viaje/ui/ViajeEditar/EscoltaTab/EscoltasForm';
-import { EscoltasList } from '@features/viaje/ui/ViajeEditar/EscoltaTab/EscoltasList';
+import { LegacyEscoltasForm, LegacyEscoltasList } from '@features/viaje/legacy';
 
 interface EscoltaTabProps {
     viaje: Viaje;
@@ -14,11 +13,11 @@ export function EscoltaTab({ viaje, isViewOnly }: EscoltaTabProps) {
             <Grid container spacing={3}>
                 {!isViewOnly && (
                     <Grid size={{ xs: 12, lg: 4 }}>
-                        <EscoltasForm viajeId={viaje.viajeID} />
+                        <LegacyEscoltasForm viajeId={viaje.viajeID} />
                     </Grid>
                 )}
                 <Grid size={{ xs: 12, lg: isViewOnly ? 12 : 8 }}>
-                    <EscoltasList viajeId={viaje.viajeID} isViewOnly={isViewOnly} />
+                    <LegacyEscoltasList viajeId={viaje.viajeID} isViewOnly={isViewOnly} />
                 </Grid>
             </Grid>
         </Box>

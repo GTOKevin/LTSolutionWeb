@@ -89,7 +89,7 @@ export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModal
             <DialogTitle sx={{ px: 4, py: 3, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
                     <Typography variant="h5" fontWeight="bold" color="text.primary" sx={{ letterSpacing: '-0.02em' }}>Nueva Solicitud</Typography>
-                    <Typography variant="body2" color="text.secondary">Complete el formulario para solicitar una licencia.</Typography>
+                    <Typography variant="body2" color="text.secondary">Complete los datos basicos de su solicitud para iniciar la revision interna.</Typography>
                 </Box>
             </DialogTitle>
             <DialogContent sx={{ p: 4 }}>
@@ -176,7 +176,7 @@ export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModal
                                     minRows={4}
                                     placeholder="Brinde más detalles sobre su solicitud..."
                                     error={Boolean(fieldState.error)}
-                                    helperText={fieldState.error?.message}
+                                    helperText={fieldState.error?.message ?? 'Use este campo para agregar el contexto que ayude a la revisión interna.'}
                                     sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'action.hover', borderRadius: 2 } }}
                                 />
                             )}

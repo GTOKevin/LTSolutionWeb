@@ -8,8 +8,8 @@ import {
     Typography,
 } from '@mui/material';
 import { Controller } from 'react-hook-form';
+import { ClienteContactosList } from '@features/cliente/contactos';
 import { TabPanel } from '@shared/components/ui/TabPanel';
-import { ClienteContactosList } from '@features/cliente/contactos/ui/ClienteContactosModal';
 import { handleLettersOnlyKeyDown, handleNumbersOnlyKeyDown } from '@shared/utils/input-validators';
 import type { CreateClienteSchema } from '@features/cliente/model/schema';
 import type { useClienteForm } from '@features/cliente/hooks/useClienteForm';
