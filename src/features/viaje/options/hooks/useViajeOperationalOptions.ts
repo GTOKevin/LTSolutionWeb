@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import { getSelectItemId } from '@entities/master-data/lib/catalog-utils';
-import { MONEDA_CODES } from '@entities/master-data/model/constants';
+import { MONEDA_CODES, TIPO_MAESTRO_CODES } from '@entities/master-data/model/constants';
 import {
     resolveViajeAgendadoId,
     resolveViajeCompletadoId,
@@ -25,11 +25,11 @@ export function useViajeOperationalOptions(
     });
 
     const defaultTipoMedidaId = useMemo(
-        () => getSelectItemId(catalogs?.tiposMedida, ['metro']),
+        () => getSelectItemId(catalogs?.tiposMedida, [TIPO_MAESTRO_CODES.MEDIDA_METRO]),
         [catalogs?.tiposMedida],
     );
     const defaultTipoPesoId = useMemo(
-        () => getSelectItemId(catalogs?.tiposPeso, ['kilogramo']),
+        () => getSelectItemId(catalogs?.tiposPeso, [TIPO_MAESTRO_CODES.PESO_KILOGRAMO]),
         [catalogs?.tiposPeso],
     );
     const defaultMonedaId = useMemo(

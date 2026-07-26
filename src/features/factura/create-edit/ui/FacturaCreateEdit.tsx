@@ -95,7 +95,7 @@ export function FacturaCreateEdit({ id, viewOnly = false }: FacturaCreateEditPro
         queryFn: () => estadoApi.getSelect('', 20, ESTADO_SECTIONS.FACTURA),
     });
 
-    const monedaDefaultId = getSelectItemId(monedas, [MONEDA_CODES.PEN, 'sol', 'soles']);
+    const monedaDefaultId = getSelectItemId(monedas, [MONEDA_CODES.PEN]);
     const estadoGeneradoId = resolveFacturaGeneradaId(facturaEstadosResponse);
 
     useEffect(() => {

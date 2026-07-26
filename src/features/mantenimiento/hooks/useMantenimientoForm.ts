@@ -5,7 +5,7 @@ import { flotaApi } from '@entities/flota/api/flota.api';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { createMantenimientoSchema, type CreateMantenimientoFormInput, type CreateMantenimientoSchema } from '../model/schema';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { resolveMantenimientoCompletadoId } from '@entities/mantenimiento/model/status';
 import { ESTADO_SECTIONS, TIPO_MAESTRO_SECTIONS } from '@entities/master-data/model/constants';
@@ -67,8 +67,12 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
     const estadoCompletadoId = resolveMantenimientoCompletadoId(listaEstados);
 
     // --- Form ---
+    const mantenimientoSchema = useMemo(
+        () => createMantenimientoSchema(estadoCompletadoId),
+        [estadoCompletadoId],
+    );
     const form = useForm<CreateMantenimientoFormInput, unknown, CreateMantenimientoSchema>({
-        resolver: zodResolver(createMantenimientoSchema)
+        resolver: zodResolver(mantenimientoSchema)
     });
 
     const { reset, setError } = form;
@@ -152,53 +156,7 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
         }
     };
 
-    const validateCompletedState = (data: CreateMantenimientoSchema) => {
-        if (!estadoCompletadoId || data.estadoID !== estadoCompletadoId) {
-            return true;
-        }
-
-        let isValid = true;
-
-        if (!data.fechaSalida) {
-            setError('fechaSalida', {
-                type: 'manual',
-                message: 'Fecha de Salida es requerida para finalizar'
-            });
-            isValid = false;
-        }
-
-        if (!data.kmSalida || data.kmSalida <= 0) {
-            setError('kmSalida', {
-                type: 'manual',
-                message: 'Km Salida es requerido para finalizar'
-            });
-            isValid = false;
-        }
-
-        if (!data.diagnosticoMecanico) {
-            setError('diagnosticoMecanico', {
-                type: 'manual',
-                message: 'Diagnóstico es requerido para finalizar'
-            });
-            isValid = false;
-        }
-
-        if (!data.solucion) {
-            setError('solucion', {
-                type: 'manual',
-                message: 'Solución es requerida para finalizar'
-            });
-            isValid = false;
-        }
-
-        return isValid;
-    };
-
     const onSubmit: SubmitHandler<CreateMantenimientoSchema> = (data) => {
-        if (!validateCompletedState(data)) {
-            return;
-        }
-
         if (estadoCompletadoId && data.estadoID === estadoCompletadoId) {
             setPendingData(data);
             setConfirmationOpen(true);

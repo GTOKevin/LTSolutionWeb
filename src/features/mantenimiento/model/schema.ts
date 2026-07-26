@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
 
-export const createMantenimientoSchema = z.object({
+const mantenimientoSchemaBase = z.object({
     flotaID: z.coerce.number().min(1, 'Vehículo es requerido'),
     tipoServicioID: z.coerce.number().min(1, 'Tipo de Servicio es requerido'),
     fechaIngreso: z.string().min(1, 'Fecha de Ingreso es requerida'),
@@ -23,8 +23,46 @@ export const createMantenimientoSchema = z.object({
     estadoID: z.coerce.number().min(1, 'Estado es requerido')
 });
 
-export type CreateMantenimientoSchema = z.infer<typeof createMantenimientoSchema>;
-export type CreateMantenimientoFormInput = z.input<typeof createMantenimientoSchema>;
+export const createMantenimientoSchema = (completedEstadoId?: number | null) => mantenimientoSchemaBase.superRefine((data, ctx) => {
+    if (!completedEstadoId || data.estadoID !== completedEstadoId) {
+        return;
+    }
+
+    if (!data.fechaSalida) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['fechaSalida'],
+            message: 'Fecha de Salida es requerida para finalizar',
+        });
+    }
+
+    if (!data.kmSalida || data.kmSalida <= 0) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['kmSalida'],
+            message: 'Km Salida es requerido para finalizar',
+        });
+    }
+
+    if (!data.diagnosticoMecanico?.trim()) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['diagnosticoMecanico'],
+            message: 'Diagnóstico es requerido para finalizar',
+        });
+    }
+
+    if (!data.solucion?.trim()) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['solucion'],
+            message: 'Solución es requerida para finalizar',
+        });
+    }
+});
+
+export type CreateMantenimientoSchema = z.infer<typeof mantenimientoSchemaBase>;
+export type CreateMantenimientoFormInput = z.input<typeof mantenimientoSchemaBase>;
 
 export const createMantenimientoDetalleSchema = z.object({
     tipoProductoID: z.coerce.number().min(1, 'Tipo de Producto es requerido'),

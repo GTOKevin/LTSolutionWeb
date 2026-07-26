@@ -1,19 +1,20 @@
 import type { SelectItem } from '@shared/model/types';
 import type { Mantenimiento } from './types';
-import { getSelectItemId, matchesCatalogCandidate, matchesEstado } from '@entities/master-data/lib/catalog-utils';
+import { matchesCatalogCandidate } from '@entities/master-data/lib/catalog-utils';
 
 const MANTENIMIENTO_STATUS = {
-    AGENDADO: ['agendado'],
-    TALLER: ['taller'],
-    COMPLETADO: ['completado'],
+    AGENDADO: ['2'],
+    TALLER: ['3'],
+    COMPLETADO: ['1'],
 } as const;
 
 export function isMantenimientoStatus(item: Mantenimiento | null | undefined, candidates: readonly string[]) {
-    if (!item) {
+    const estadoCodigo = item?.estado?.codigo;
+    if (!estadoCodigo) {
         return false;
     }
 
-    return matchesEstado(item.estado, candidates) || matchesCatalogCandidate(item.estado?.nombre, candidates);
+    return matchesCatalogCandidate(estadoCodigo, candidates);
 }
 
 export function isMantenimientoCompletado(item: Mantenimiento | null | undefined) {
@@ -21,7 +22,7 @@ export function isMantenimientoCompletado(item: Mantenimiento | null | undefined
 }
 
 export function resolveMantenimientoCompletadoId(items: SelectItem[] | undefined) {
-    return getSelectItemId(items, MANTENIMIENTO_STATUS.COMPLETADO);
+    return items?.find((item) => matchesCatalogCandidate(item.extra, MANTENIMIENTO_STATUS.COMPLETADO))?.id;
 }
 
 export function getMantenimientoEstadoColorCandidates() {

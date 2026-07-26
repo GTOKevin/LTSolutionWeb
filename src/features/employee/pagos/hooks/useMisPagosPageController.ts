@@ -16,17 +16,25 @@ import {
 } from '@shared/utils/date-utils';
 import { saveAs } from 'file-saver';
 import { getErrorMessage } from '@shared/utils/api-errors';
+import { formatCurrencyAmount, formatDecimalAmount, resolveCurrencyDisplay } from '@shared/utils/format-utils';
 
 function escapeCsvValue(value: string) {
     return `"${value.replaceAll('"', '""')}"`;
+}
+
+function getPagoCurrencyDescriptor(item: Pick<MiPagoDto, 'monedaCodigo' | 'monedaSimbolo'>) {
+    return {
+        codigo: item.monedaCodigo,
+        simbolo: item.monedaSimbolo,
+    };
 }
 
 function exportPagosCsv(items: MiPagoDto[], fileName: string) {
     const headers = ['Tipo', 'Moneda', 'Monto', 'Periodo', 'Fecha pago', 'Estado', 'Observaciones'];
     const rows = items.map((item) => [
         item.tipoPagoNombre,
-        item.monedaCodigo,
-        item.monto.toFixed(2),
+        resolveCurrencyDisplay(getPagoCurrencyDescriptor(item)),
+        formatDecimalAmount(item.monto),
         `${formatDateOnly(item.fechaInicio)} - ${formatDateOnly(item.fechaCierre)}`,
         formatDateOnly(item.fechaPago),
         item.estadoConfirmacion,
@@ -42,7 +50,7 @@ function exportPagosCsv(items: MiPagoDto[], fileName: string) {
 }
 
 export function formatPagoMoney(item: MiPagoDto) {
-    return `${item.monedaSimbolo || item.monedaCodigo} ${item.monto.toFixed(2)}`;
+    return formatCurrencyAmount(item.monto, getPagoCurrencyDescriptor(item));
 }
 
 export function useMisPagosPageController() {
@@ -103,11 +111,16 @@ export function useMisPagosPageController() {
 
     const paymentStats = useMemo(() => {
         const items = data?.items ?? [];
-        const currencyTotalsMap = new Map<string, number>();
+        const currencyTotalsMap = new Map<string, { amount: number; currency: ReturnType<typeof getPagoCurrencyDescriptor> }>();
 
         items.forEach((item) => {
-            const currency = item.monedaSimbolo || item.monedaCodigo;
-            currencyTotalsMap.set(currency, (currencyTotalsMap.get(currency) ?? 0) + item.monto);
+            const currency = getPagoCurrencyDescriptor(item);
+            const currencyKey = resolveCurrencyDisplay(currency);
+            const current = currencyTotalsMap.get(currencyKey);
+            currencyTotalsMap.set(currencyKey, {
+                amount: (current?.amount ?? 0) + item.monto,
+                currency,
+            });
         });
 
         return {
@@ -115,7 +128,7 @@ export function useMisPagosPageController() {
             visibleCount: items.length,
             pendingCount: items.filter((item) => item.confirmadoPago == null).length,
             confirmedCount: items.filter((item) => item.confirmadoPago === true).length,
-            currencyTotals: Array.from(currencyTotalsMap.entries()).map(([currency, amount]) => ({
+            currencyTotals: Array.from(currencyTotalsMap.values()).map(({ currency, amount }) => ({
                 currency,
                 amount,
             })),
