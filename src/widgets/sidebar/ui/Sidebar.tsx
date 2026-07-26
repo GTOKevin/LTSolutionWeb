@@ -31,7 +31,6 @@ import { useLayoutStore } from '@shared/store/layout.store';
 import { useAuthStore } from '@shared/store/auth.store';
 import { useState, useMemo, useEffect, useRef, type MouseEvent } from 'react';
 import { hasPermission as hasUserPermission } from '@shared/lib/permissions/hasPermission';
-import { SelfChangePasswordModal } from '@features/auth/change-password';
 import { APP_PATHS } from '@app/router/model/navigation';
 
 export const DRAWER_WIDTH = 280;
@@ -47,16 +46,16 @@ export interface SidebarMenuItem {
 
 interface SidebarProps {
     menu: SidebarMenuItem[];
+    onRequestChangePassword?: () => void;
 }
 
-export function Sidebar({ menu }: SidebarProps) {
+export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
     const navigate = useNavigate();
     const location = useLocation();
     const { sidebarOpen, setSidebarOpen } = useLayoutStore();
     const { user, logout } = useAuthStore();
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [changePasswordOpen, setChangePasswordOpen] = useState(false);
     const [pendingNavigation, setPendingNavigation] = useState<{ path: string; label: string } | null>(null);
     const openMenu = Boolean(anchorEl);
     const userInitials = useMemo(() => {
@@ -174,7 +173,7 @@ export function Sidebar({ menu }: SidebarProps) {
 
     const handleOpenChangePassword = () => {
         handleMenuClose();
-        setChangePasswordOpen(true);
+        onRequestChangePassword?.();
     };
 
     const isPathActive = (path?: string) => {
@@ -475,12 +474,6 @@ export function Sidebar({ menu }: SidebarProps) {
                     Ingresando a {navigationLabel || 'la vista'}...
                 </Typography>
             </Backdrop>
-            <SelfChangePasswordModal
-                open={changePasswordOpen}
-                onClose={() => setChangePasswordOpen(false)}
-                usuarioNombre={user?.name ?? undefined}
-                onSuccess={() => setChangePasswordOpen(false)}
-            />
         </Box>
     );
 

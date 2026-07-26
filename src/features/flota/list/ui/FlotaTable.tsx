@@ -64,7 +64,7 @@ export function FlotaTable({
                         {flota.tipoFlotaNavigation?.nombre || flota.tipoFlota}
                     </TableCell>
                     <TableCell>{flota.anio}</TableCell>
-                    <TableCell>{flota.tipoCombustible}</TableCell>
+                    <TableCell>{flota.tipoCombustibleNavigation?.nombre || flota.tipoCombustibleID}</TableCell>
                     <TableCell>
                         <StatusChip active={flota.estado} />
                     </TableCell>

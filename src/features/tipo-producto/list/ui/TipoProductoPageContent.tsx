@@ -13,7 +13,7 @@ import {
     FilterList as FilterIcon,
 } from '@mui/icons-material';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
-import { CreateEditTipoProductoModal } from '@features/tipo-producto/create-edit/ui/CreateEditTipoProductoModal';
+import { CreateEditTipoProductoModal } from '@features/tipo-producto/create-edit';
 import { TipoProductoTable } from './TipoProductoTable';
 import { TipoProductoMobileList } from './TipoProductoMobileList';
 import type { useTipoProductoPageController } from '../hooks/useTipoProductoPageController';

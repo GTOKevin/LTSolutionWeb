@@ -10,7 +10,7 @@ import {
     Add as AddIcon,
     Search as SearchIcon,
 } from '@mui/icons-material';
-import { CreateEditRolUsuarioModal } from '@features/rol-usuario/create-edit/ui/CreateEditRolUsuarioModal';
+import { CreateEditRolUsuarioModal } from '@features/rol-usuario/create-edit';
 import { RolUsuarioTable } from './RolUsuarioTable';
 import { RolUsuarioMobileList } from './RolUsuarioMobileList';
 import type { useRolesPageController } from '../hooks/useRolesPageController';

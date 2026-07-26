@@ -10,9 +10,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateViajeGasto } from '@features/viaje/hooks/useViajeGastos';
 import { useViajeGastoOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { viajeGastoSchema, type ViajeGastoFormData } from '@features/viaje/model/schema';
-import { getGastoMetadata } from '@features/viaje/model/gasto-metadata';
 import { getCurrentDateISO } from '@/shared/utils/date-utils';
 import { logger } from '@/shared/utils/logger';
+import { getSelectItemId } from '@/entities/master-data/lib/catalog-utils';
+import { resolveGastoSelectMetadata } from '@/entities/gasto/model/metadata';
 
 interface GastosFormProps {
     viajeID: number;
@@ -38,10 +39,15 @@ export function GastosForm({ viajeID }: GastosFormProps) {
         }
     });
 
-    const selectedGastoID = useWatch({ control, name: 'gastoID', defaultValue: 0 });
     const hasComprobante = useWatch({ control, name: 'comprobante', defaultValue: false });
     const isCombustible = useWatch({ control, name: 'combustible', defaultValue: false });
+    const selectedGastoID = useWatch({ control, name: 'gastoID', defaultValue: 0 });
     const selectedMonedaID = useWatch({ control, name: 'monedaID', defaultValue: defaultMonedaId });
+    const selectedGasto = tiposGasto?.find((item) => item.id === selectedGastoID);
+    const selectedGastoMetadata = resolveGastoSelectMetadata(selectedGasto);
+    const enforcedMonedaId = selectedGastoMetadata.defaultCurrencyCode
+        ? getSelectItemId(monedas, [selectedGastoMetadata.defaultCurrencyCode])
+        : null;
 
     useEffect(() => {
         if (defaultMonedaId && !selectedMonedaID) {
@@ -50,20 +56,16 @@ export function GastosForm({ viajeID }: GastosFormProps) {
     }, [defaultMonedaId, selectedMonedaID, setValue]);
 
     useEffect(() => {
-        if (selectedGastoID && tiposGasto && tiposGasto.length > 0) {
-            const gasto = tiposGasto.find(t => t.id === selectedGastoID);
-            if (gasto) {
-                const metadata = getGastoMetadata(gasto);
-                setValue('combustible', metadata.isFuel);
-                if (metadata.forcesCurrency && defaultMonedaId) {
-                    setValue('monedaID', defaultMonedaId);
-                }
-                if (!metadata.isFuel) {
-                    setValue('galones', 0);
-                }
-            }
+        setValue('combustible', selectedGastoMetadata.isFuel);
+
+        if (enforcedMonedaId) {
+            setValue('monedaID', enforcedMonedaId);
         }
-    }, [defaultMonedaId, selectedGastoID, tiposGasto, setValue]);
+
+        if (!selectedGastoMetadata.isFuel) {
+            setValue('galones', 0);
+        }
+    }, [enforcedMonedaId, selectedGastoMetadata.isFuel, setValue]);
 
     const onSubmit = async (data: ViajeGastoFormData) => {
         try {
@@ -190,8 +192,9 @@ export function GastosForm({ viajeID }: GastosFormProps) {
                                         fullWidth
                                         size="small"
                                         error={!!errors.monedaID}
-                                        helperText={errors.monedaID?.message}
+                                        helperText={errors.monedaID?.message || (selectedGastoMetadata.defaultCurrencyCode ? `Moneda obligatoria: ${selectedGastoMetadata.defaultCurrencyCode}` : undefined)}
                                         sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'background.default', borderRadius: 2 } }}
+                                        disabled={!!selectedGastoMetadata.defaultCurrencyCode}
                                     >
                                         <MenuItem value={0} disabled>Seleccione</MenuItem>
                                         {monedas?.map((m) => (
@@ -227,16 +230,23 @@ export function GastosForm({ viajeID }: GastosFormProps) {
                             />
                         </Box>
                         <Box sx={{ pt: 3 }}>
-                            <Controller
-                                name="comprobante"
-                                control={control}
-                                render={({ field: { value, onChange } }) => (
-                                    <FormControlLabel
-                                        control={<Checkbox checked={value} onChange={onChange} color="primary" />}
-                                        label={<Typography variant="body2" fontWeight={600}>Tiene Comprobante</Typography>}
-                                    />
-                                )}
-                            />
+                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                <Controller
+                                    name="comprobante"
+                                    control={control}
+                                    render={({ field: { value, onChange } }) => (
+                                        <FormControlLabel
+                                            control={<Checkbox checked={value} onChange={onChange} color="primary" />}
+                                            label={<Typography variant="body2" fontWeight={600}>Tiene Comprobante</Typography>}
+                                        />
+                                    )}
+                                />
+                                {selectedGastoMetadata.isFuel ? (
+                                    <Typography variant="body2" fontWeight={600} color="text.secondary" sx={{ px: 2 }}>
+                                        Este gasto requiere registrar galones.
+                                    </Typography>
+                                ) : null}
+                            </Box>
                         </Box>
                     </Box>
 

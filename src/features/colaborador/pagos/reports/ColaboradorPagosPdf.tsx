@@ -2,6 +2,7 @@ import React from 'react';
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { ColaboradorPagosReportDto } from '@entities/colaborador-pago/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
+import { formatCurrencyAmount, resolveCurrencyDisplay } from '@/shared/utils/format-utils';
 
 const styles = StyleSheet.create({
     page: { padding: 30, fontSize: 10, fontFamily: 'Helvetica' },
@@ -54,8 +55,8 @@ export const ColaboradorPagosPdf: React.FC<{ data: ColaboradorPagosReportDto }> 
                         <View style={styles.tableCol}><Text style={styles.tableCell}>{pago.observaciones || '-'}</Text></View>
                         <View style={styles.tableCol}><Text style={styles.tableCell}>{formatDateShort(pago.fechaPago)}</Text></View>
                         <View style={styles.tableCol}><Text style={styles.tableCell}>{formatDateShort(pago.fechaInicio)} - {formatDateShort(pago.fechaCierre)}</Text></View>
-                        <View style={styles.tableCol}><Text style={styles.tableCell}>{pago.moneda}</Text></View>
-                        <View style={styles.tableCol}><Text style={styles.tableCell}>{pago.monto.toFixed(2)}</Text></View>
+                        <View style={styles.tableCol}><Text style={styles.tableCell}>{resolveCurrencyDisplay(pago.moneda)}</Text></View>
+                        <View style={styles.tableCol}><Text style={styles.tableCell}>{formatCurrencyAmount(pago.monto, pago.moneda)}</Text></View>
                     </View>
                 ))}
             </View>
@@ -64,8 +65,8 @@ export const ColaboradorPagosPdf: React.FC<{ data: ColaboradorPagosReportDto }> 
                 <Text style={[styles.title, { fontSize: 12, textAlign: 'left', marginBottom: 5 }]}>Totales por Moneda</Text>
                 {Object.entries(data.totalesPorMoneda).map(([moneda, total]) => (
                     <View style={styles.totalRow} key={moneda}>
-                        <Text style={styles.totalLabel}>{moneda}:</Text>
-                        <Text style={styles.totalValue}>{total.toFixed(2)}</Text>
+                        <Text style={styles.totalLabel}>{resolveCurrencyDisplay(moneda)}:</Text>
+                        <Text style={styles.totalValue}>{formatCurrencyAmount(total, moneda)}</Text>
                     </View>
                 ))}
             </View>

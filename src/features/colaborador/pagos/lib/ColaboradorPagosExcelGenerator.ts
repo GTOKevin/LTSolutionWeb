@@ -3,6 +3,7 @@ import { saveAs } from 'file-saver';
 import type { ColaboradorPagosReportDto } from '@entities/colaborador-pago/model/types';
 import { themePalette } from '@/shared/config/theme/palette';
 import { formatDateShort } from '@/shared/utils/date-utils';
+import { resolveCurrencyDisplay, resolveCurrencyExcelFormat } from '@/shared/utils/format-utils';
 
 export class ColaboradorPagosExcelGenerator {
     private data: ColaboradorPagosReportDto;
@@ -70,9 +71,9 @@ export class ColaboradorPagosExcelGenerator {
                 row.getCell(2).value = item.observaciones;
                 row.getCell(3).value = formatDateShort(item.fechaPago);
                 row.getCell(4).value = `${formatDateShort(item.fechaInicio)} - ${formatDateShort(item.fechaCierre)}`;
-                row.getCell(5).value = item.moneda;
+                row.getCell(5).value = resolveCurrencyDisplay(item.moneda);
                 row.getCell(6).value = item.monto;
-                row.getCell(6).numFmt = '#,##0.00';
+                row.getCell(6).numFmt = resolveCurrencyExcelFormat(item.moneda);
                 row.eachCell((cell) => { cell.border = BORDER_STYLE; });
                 rowIdx++;
             });
@@ -89,10 +90,10 @@ export class ColaboradorPagosExcelGenerator {
 
             totalsKeys.forEach(moneda => {
                 const row = worksheet.getRow(rowIdx);
-                row.getCell(5).value = `Total ${moneda}:`;
+                row.getCell(5).value = `Total ${resolveCurrencyDisplay(moneda)}:`;
                 row.getCell(5).font = { bold: true };
                 row.getCell(6).value = this.data.totalesPorMoneda[moneda];
-                row.getCell(6).numFmt = '#,##0.00';
+                row.getCell(6).numFmt = resolveCurrencyExcelFormat(moneda);
                 row.getCell(6).font = { bold: true };
                 rowIdx++;
             });

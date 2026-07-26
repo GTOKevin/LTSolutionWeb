@@ -1,7 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { ViajeGeneralReportDto } from '@entities/viaje/model/types';
 import { themePalette } from '@/shared/config/theme/palette';
-import { formatDecimalAmount } from '@/shared/utils/format-utils';
+import { formatCurrencyAmount, formatDecimalAmount } from '@/shared/utils/format-utils';
 
 // Register a standard font (Helvetica is built-in, but good practice to be explicit if using others)
 // For now, we stick to built-in fonts for simplicity and speed.
@@ -140,8 +140,8 @@ interface Props {
 }
 
 export const ViajeGeneralPdf = ({ data }: Props) => {
-    const isFuelExpense = (tipo: string) => {
-        return tipo.toLowerCase().includes('combustible');
+    const isFuelExpense = (galones?: number | null) => {
+        return (galones ?? 0) > 0;
     };
 
     return (
@@ -276,14 +276,14 @@ export const ViajeGeneralPdf = ({ data }: Props) => {
                     </View>
                     {data.gastos.length > 0 ? (
                         data.gastos.map((g, i) => (
-                            <View key={i} style={[styles.tableRow, isFuelExpense(g.tipoGasto) ? styles.fuelRow : {}]}>
+                            <View key={i} style={[styles.tableRow, isFuelExpense(g.galones) ? styles.fuelRow : {}]}>
                                 <Text style={[styles.tableCell, { width: '15%' }]}>{g.fechaGasto}</Text>
                                 <Text style={[styles.tableCell, { width: '20%' }]}>{g.tipoGasto}</Text>
                                 <Text style={[styles.tableCell, { width: '25%' }]}>{g.descripcion}</Text>
                                 <Text style={[styles.tableCell, { width: '15%' }]}>{g.numeroComprobante}</Text>
                                 <Text style={[styles.tableCell, { width: '10%' }]}>{g.galones ?? '-'}</Text>
                                 <Text style={[styles.tableCell, { width: '15%', textAlign: 'right' }]}>
-                                    {g.moneda} {g.monto.toFixed(2)}
+                                    {formatCurrencyAmount(g.monto, g.moneda)}
                                 </Text>
                             </View>
                         ))

@@ -31,6 +31,8 @@ export function GastoTable({
 }: Props) {
     const columns: Column[] = [
         { id: 'nombre', label: 'Nombre' },
+        { id: 'codigo', label: 'Código' },
+        { id: 'moneda', label: 'Moneda Default' },
         { id: 'estado', label: 'Estado', align: 'center' },
         { id: 'acciones', label: 'Acciones', align: 'center' }
     ];
@@ -55,6 +57,16 @@ export function GastoTable({
                                 {row.nombre}
                             </Typography>
                         </Box>
+                    </TableCell>
+                    <TableCell>
+                        <Typography variant="body2" fontFamily="monospace">
+                            {row.codigo}
+                        </Typography>
+                    </TableCell>
+                    <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                            {row.monedaCodigoDefault || '-'}
+                        </Typography>
                     </TableCell>
                     <TableCell align="center">
                         <StatusChip active={row.activo ?? true} />

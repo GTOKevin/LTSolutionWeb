@@ -35,11 +35,12 @@ export interface Flota {
     largo?: number;
     alto?: number;
     ancho?: number;
-    tipoCombustible: string;
+    tipoCombustibleID: number;
     estado: boolean;
     flotaDocumentos: FlotaDocumento[];
     // mantenimientos: Mantenimiento[]; // Omitted for now as not in scope yet
     tipoFlotaNavigation?: TipoMaestro;
+    tipoCombustibleNavigation?: TipoMaestro;
     tipoMedida?: TipoMaestro;
     tipoPeso?: TipoMaestro;
 }
@@ -60,7 +61,7 @@ export interface CreateFlotaDto {
     largo?: number;
     alto?: number;
     ancho?: number;
-    tipoCombustible: string;
+    tipoCombustibleID: number;
     activo: boolean;
 }
 

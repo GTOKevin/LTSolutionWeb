@@ -12,7 +12,7 @@ import {
     Search as SearchIcon,
     FilterList as FilterIcon,
 } from '@mui/icons-material';
-import { CreateEditTipoMaestroModal } from '@features/tipo-maestro/create-edit/ui/CreateEditTipoMaestroModal';
+import { CreateEditTipoMaestroModal } from '@features/tipo-maestro/create-edit';
 import { TipoMaestroTable } from './TipoMaestroTable';
 import { TipoMaestroMobileList } from './TipoMaestroMobileList';
 import type { useMaestrosPageController } from '../hooks/useMaestrosPageController';

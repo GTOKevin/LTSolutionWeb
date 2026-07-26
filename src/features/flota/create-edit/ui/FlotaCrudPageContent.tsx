@@ -7,7 +7,6 @@ import {
 } from '@mui/material';
 import type { SelectItem } from '@/shared/model/types';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
-import { TIPOS_COMBUSTIBLE } from '@entities/flota/model/constants';
 import { FlotaDocumentosList } from '../../documentos/ui/FlotaDocumentosList';
 import type { CreateFlotaSchema } from '../../model/schema';
 import type { useFlotaForm } from '../../hooks/useFlotaForm';
@@ -20,6 +19,7 @@ interface FlotaCrudPageContentProps {
     listaFlota: SelectItem[];
     listaPeso: SelectItem[];
     listaMedida: SelectItem[];
+    listaCombustible: SelectItem[];
     viewOnly?: boolean;
 }
 
@@ -31,6 +31,7 @@ export function FlotaCrudPageContent({
     listaFlota,
     listaPeso,
     listaMedida,
+    listaCombustible,
     viewOnly = false,
 }: FlotaCrudPageContentProps) {
     const {
@@ -274,15 +275,18 @@ export function FlotaCrudPageContent({
                                     select
                                     label="Combustible"
                                     fullWidth
-                                    {...register('tipoCombustible')}
-                                    defaultValue=""
-                                    error={!!errors.tipoCombustible}
-                                    helperText={errors.tipoCombustible?.message}
+                                    {...register('tipoCombustibleID')}
+                                    defaultValue={0}
+                                    error={!!errors.tipoCombustibleID}
+                                    helperText={errors.tipoCombustibleID?.message}
                                     disabled={viewOnly}
                                 >
-                                    {TIPOS_COMBUSTIBLE.map((option) => (
-                                        <MenuItem key={option.value} value={option.value}>
-                                            {option.label}
+                                    <MenuItem value={0} disabled>
+                                        Seleccione un tipo
+                                    </MenuItem>
+                                    {listaCombustible.map((tipo) => (
+                                        <MenuItem key={tipo.id} value={tipo.id}>
+                                            {tipo.text}
                                         </MenuItem>
                                     ))}
                                 </TextField>

@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { INPUT_VAL, ERROR_MESSAGES } from '@/shared/constants/constantes';
-import { TIPOS_COMBUSTIBLE } from '@entities/flota/model/constants';
 
 export const createFlotaSchema = z.object({
     tipoFlota: z.coerce.number().min(1, 'Tipo de Flota es requerido'),
@@ -39,11 +38,7 @@ export const createFlotaSchema = z.object({
     ancho: z.coerce.number().optional().refine(val => !val || INPUT_VAL.DECIMAL_10_2_REGEX.test(val.toString()), {
         message: ERROR_MESSAGES.DECIMAL_10_2
     }),
-    tipoCombustible: z.string()
-        .min(1, 'Tipo de Combustible es requerido')
-        .refine(val => TIPOS_COMBUSTIBLE.some(c => c.value === val), {
-            message: 'Seleccione un tipo de combustible válido'
-        }),
+    tipoCombustibleID: z.coerce.number().min(1, 'Tipo de Combustible es requerido'),
     activo: z.boolean().default(true),
 });
 

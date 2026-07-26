@@ -184,7 +184,7 @@ export class ViajeGeneralExcelGenerator {
             addSectionHeader("3. GASTOS", ["Fecha", "Tipo", "Descripción", "Doc.", "Galones", "Moneda", "Monto"]);
             this.data.gastos.forEach(item => {
                 const row = worksheet.getRow(rowIdx);
-                const isFuel = item.tipoGasto.toLowerCase().includes('combustible');
+                const isFuel = (item.galones ?? 0) > 0;
                 
                 row.getCell(1).value = item.fechaGasto;
                 row.getCell(2).value = item.tipoGasto;

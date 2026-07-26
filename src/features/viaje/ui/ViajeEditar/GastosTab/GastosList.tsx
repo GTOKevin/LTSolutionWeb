@@ -103,8 +103,8 @@ export function GastosList({ viajeID, isViewOnly }: GastosListProps) {
                                     const tipo = tiposGasto?.find(t => t.id === gasto.gastoID)?.text || gasto.gasto?.descripcion || 'Otro';
                                     const moneda = monedas?.find(m => m.id === gasto.monedaID);
                                     const monedaDescriptor = {
-                                        simbolo: moneda?.extra,
-                                        codigo: moneda?.text,
+                                        codigo: moneda?.extra,
+                                        nombre: moneda?.text,
                                     };
 
                                     return (
