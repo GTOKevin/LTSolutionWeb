@@ -1,15 +1,8 @@
 import type {
     DashboardNotification,
     DashboardPeriod,
-    DashboardRecentTrip,
 } from '@entities/dashboard/model/types';
 import { matchesCatalogCandidate } from '@entities/master-data/lib/catalog-utils';
-import {
-    isViajeAgendado,
-    isViajeCompletado,
-    isViajeDescargando,
-    isViajeTransito,
-} from '@entities/viaje/model/status';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { normalizeNotificationActionUrl } from '@shared/utils/notification-navigation';
 
@@ -29,40 +22,23 @@ export type DashboardNotificationModule =
     | 'usuarios'
     | 'desconocido';
 
-const DASHBOARD_NOTIFICATION_MODULE_CANDIDATES = {
-    facturas: ['factura', 'facturas'],
-    viajes: ['viaje', 'viajes'],
-    flota: ['flota', 'flotas', 'vehiculo', 'vehiculos'],
-    colaboradores: ['colaborador', 'colaboradores', 'documento', 'documentos', 'licencia', 'licencias'],
-    mantenimientos: ['mantenimiento', 'mantenimientos'],
-    clientes: ['cliente', 'clientes'],
-    usuarios: ['usuario', 'usuarios'],
-} as const;
-
 const DASHBOARD_NOTIFICATION_TONE_CANDIDATES = {
     critical: ['error', 'critico', 'critica', 'critical'],
     warning: ['warning', 'advertencia', 'mantenimiento'],
 } as const;
 
-function normalizeDashboardSearchText(value?: string | null) {
-    return value
-        ?.normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .trim()
-        .toLowerCase() ?? '';
-}
-
-function notificationMatchesModuleText(notification: DashboardNotification, candidates: readonly string[]) {
-    const searchableText = normalizeDashboardSearchText(
-        [notification.urlAccion, notification.titulo, notification.mensaje].filter(Boolean).join(' '),
-    );
-
-    if (!searchableText) {
-        return false;
-    }
-
-    return candidates.some((candidate) => searchableText.includes(normalizeDashboardSearchText(candidate)));
-}
+const DASHBOARD_NOTIFICATION_ROUTE_PREFIXES: Array<{
+    module: DashboardNotificationModule;
+    path: string;
+}> = [
+    { module: 'facturas', path: APP_PATHS.facturas },
+    { module: 'viajes', path: APP_PATHS.viajes },
+    { module: 'flota', path: APP_PATHS.flotas },
+    { module: 'colaboradores', path: APP_PATHS.colaboradores },
+    { module: 'mantenimientos', path: APP_PATHS.mantenimientos },
+    { module: 'clientes', path: APP_PATHS.clientes },
+    { module: 'usuarios', path: APP_PATHS.usuarios },
+];
 
 export function formatTrendPercentage(value: number) {
     const rounded = Math.abs(value).toFixed(1);
@@ -77,75 +53,50 @@ export function getTrendDirection(value: number) {
     return 'neutral';
 }
 
-export function getTripStatusTone(trip: DashboardRecentTrip) {
-    if (isViajeTransito({ estadoNombre: trip.estadoNombre }) || isViajeDescargando({ estadoNombre: trip.estadoNombre })) {
+export interface DashboardTripStatusIds {
+    agendadoId?: number;
+    transitoId?: number;
+    descargandoId?: number;
+    completadoId?: number;
+}
+
+export function getTripStatusTone(estadoId: number | null | undefined, statusIds: DashboardTripStatusIds) {
+    if (!estadoId) {
+        return 'default';
+    }
+
+    if (estadoId === statusIds.transitoId || estadoId === statusIds.descargandoId) {
         return 'active';
     }
 
-    if (isViajeAgendado({ estadoNombre: trip.estadoNombre })) {
+    if (estadoId === statusIds.agendadoId) {
         return 'scheduled';
     }
 
-    if (isViajeCompletado({ estadoNombre: trip.estadoNombre })) {
+    if (estadoId === statusIds.completadoId) {
         return 'completed';
     }
 
     return 'default';
 }
 
-export function resolveDashboardNotificationModule(notification: DashboardNotification): DashboardNotificationModule {
+export function resolveDashboardNotificationAction(notification: DashboardNotification): {
+    actionUrl: string | null;
+    module: DashboardNotificationModule;
+} {
     const normalizedUrl = normalizeNotificationActionUrl(notification.urlAccion);
+    const matchedRoute = DASHBOARD_NOTIFICATION_ROUTE_PREFIXES.find(({ path }) =>
+        normalizedUrl === path || normalizedUrl?.startsWith(`${path}/`)
+    );
 
-    if (
-        normalizedUrl?.startsWith(APP_PATHS.facturas) ||
-        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.facturas)
-    ) {
-        return 'facturas';
-    }
+    return {
+        actionUrl: normalizedUrl,
+        module: matchedRoute?.module ?? 'desconocido',
+    };
+}
 
-    if (
-        normalizedUrl?.startsWith(APP_PATHS.viajes) ||
-        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.viajes)
-    ) {
-        return 'viajes';
-    }
-
-    if (
-        normalizedUrl?.startsWith(APP_PATHS.flotas) ||
-        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.flota)
-    ) {
-        return 'flota';
-    }
-
-    if (
-        normalizedUrl?.startsWith(APP_PATHS.colaboradores) ||
-        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.colaboradores)
-    ) {
-        return 'colaboradores';
-    }
-
-    if (
-        normalizedUrl?.startsWith(APP_PATHS.mantenimientos) ||
-        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.mantenimientos)
-    ) {
-        return 'mantenimientos';
-    }
-
-    if (
-        normalizedUrl?.startsWith(APP_PATHS.clientes) ||
-        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.clientes)
-    ) {
-        return 'clientes';
-    }
-
-    if (
-        normalizedUrl?.startsWith(APP_PATHS.usuarios) ||
-        notificationMatchesModuleText(notification, DASHBOARD_NOTIFICATION_MODULE_CANDIDATES.usuarios)
-    ) {
-        return 'usuarios';
-    }
-
-    return 'desconocido';
+export function resolveDashboardNotificationModule(notification: DashboardNotification): DashboardNotificationModule {
+    return resolveDashboardNotificationAction(notification).module;
 }
 
 export function getNotificationTone(notification: DashboardNotification) {

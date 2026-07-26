@@ -5,15 +5,23 @@ import {
     WarningAmber as WarningAmberIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import type { DashboardOverview } from '@entities/dashboard/model/types';
+import { estadoApi } from '@entities/estado/api/estado.api';
+import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
+import {
+    resolveViajeAgendadoId,
+    resolveViajeCompletadoId,
+    resolveViajeDescargandoId,
+    resolveViajeTransitoId,
+} from '@entities/viaje/model/status';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { formatCurrency } from '@shared/utils/format-utils';
 import { formatDateShort, formatDateTime } from '@shared/utils/date-utils';
-import { normalizeNotificationActionUrl } from '@shared/utils/notification-navigation';
 import {
+    resolveDashboardNotificationAction,
     getNotificationTone,
     getTripStatusTone,
-    resolveDashboardNotificationModule,
 } from '../lib/dashboard-view-helpers';
 import { dashboardCardSx, notificationIconSx, tableHeaderCellSx, tripStatusChipSx } from '../lib/dashboard-styles';
 import { TrendBadge } from './DashboardShared';
@@ -43,8 +51,18 @@ export function DashboardBottomSection({
 }: DashboardBottomSectionProps) {
     const theme = useTheme();
     const navigate = useNavigate();
+    const { data: viajeEstados } = useQuery({
+        queryKey: ['dashboard', 'viaje-estados'],
+        queryFn: () => estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE),
+    });
+    const viajeStatusIds = {
+        agendadoId: resolveViajeAgendadoId(viajeEstados),
+        transitoId: resolveViajeTransitoId(viajeEstados),
+        descargandoId: resolveViajeDescargandoId(viajeEstados),
+        completadoId: resolveViajeCompletadoId(viajeEstados),
+    };
     const visibleSecurityNotifications = data.notificacionesSeguridad.filter((notification) => {
-        const module = resolveDashboardNotificationModule(notification);
+        const { module } = resolveDashboardNotificationAction(notification);
 
         switch (module) {
             case 'facturas':
@@ -109,7 +127,7 @@ export function DashboardBottomSection({
                                 </TableHead>
                                 <TableBody>
                                     {data.viajesRecientes.map(item => {
-                                        const tone = getTripStatusTone(item);
+                                        const tone = getTripStatusTone(item.estadoID, viajeStatusIds);
                                         return (
                                             <TableRow key={item.viajeID} hover>
                                                 <TableCell>
@@ -172,7 +190,7 @@ export function DashboardBottomSection({
                                 <Stack spacing={1.25}>
                                     {visibleSecurityNotifications.length > 0 ? visibleSecurityNotifications.map(notification => {
                                         const tone = getNotificationTone(notification);
-                                        const actionUrl = normalizeNotificationActionUrl(notification.urlAccion);
+                                        const { actionUrl } = resolveDashboardNotificationAction(notification);
 
                                         return (
                                             <Box

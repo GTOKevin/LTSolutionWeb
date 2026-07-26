@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
+import { IGV_RATE } from '@entities/factura/model/constants';
 
 export const createFacturaSchema = z.object({
     clienteID: z.number().min(1, 'Cliente es requerido'),
@@ -25,18 +26,66 @@ export const createFacturaSchema = z.object({
 
 export type CreateFacturaSchema = z.infer<typeof createFacturaSchema>;
 
-export const createFacturaDetalleSchema = z.object({
+const optionalStringField = z.string().optional().nullable();
+
+const decimalAmountField = (minimum: number, message: string) => z.preprocess(
+    (value) => {
+        if (value === undefined || value === null || value === '') {
+            return undefined;
+        }
+
+        const parsed = Number(value);
+        return Number.isNaN(parsed) ? value : parsed;
+    },
+    z.number().min(minimum, message)
+);
+
+export function calculateFacturaDetalleTotal(subTotal: number, applyIgv: boolean) {
+    const rawTotal = applyIgv ? subTotal * (1 + IGV_RATE) : subTotal;
+    return Math.round(rawTotal * 100) / 100;
+}
+
+export function calculateFacturaDetalleIgv(subTotal: number, applyIgv: boolean) {
+    return Math.round((calculateFacturaDetalleTotal(subTotal, applyIgv) - subTotal) * 100) / 100;
+}
+
+const createFacturaDetalleSchemaBase = z.object({
     viajeID: z.number().min(1, 'Viaje es requerido'),
-    descripcion: z.string().optional().nullable().refine(val => !val || INPUT_VAL.ALPHA_NUMERICO_ESPECIAL.test(val), {
+    descripcion: optionalStringField.refine(val => !val || INPUT_VAL.ALPHA_NUMERICO_ESPECIAL.test(val), {
         message: ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL
     }),
     monedaID: z.number().min(1, 'Moneda es requerida'),
-    subTotal: z.coerce.number().min(0, 'Debe ser mayor o igual a 0'),
+    subTotal: decimalAmountField(0, 'Debe ser mayor o igual a 0'),
     igv: z.boolean(),
-    total: z.coerce.number().min(10, 'Debe ser mayor o igual a 10')
+}).superRefine((data, ctx) => {
+    const total = calculateFacturaDetalleTotal(data.subTotal, data.igv);
+
+    if (total < 10) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['subTotal'],
+            message: 'El total calculado debe ser mayor o igual a 10',
+        });
+    }
 });
 
-export type CreateFacturaDetalleSchema = z.infer<typeof createFacturaDetalleSchema>;
+export const createFacturaDetalleSchema = createFacturaDetalleSchemaBase.transform((data) => ({
+    ...data,
+    total: calculateFacturaDetalleTotal(data.subTotal, data.igv),
+}));
+
+export type CreateFacturaDetalleForm = z.infer<typeof createFacturaDetalleSchema>;
+export type CreateFacturaDetalleFormInput = z.input<typeof createFacturaDetalleSchema>;
+
+export function buildFacturaDetalleDefaultValues(monedaId: number): CreateFacturaDetalleFormInput {
+    return {
+        viajeID: 0,
+        descripcion: '',
+        monedaID: monedaId,
+        subTotal: 0,
+        igv: true,
+    };
+}
 
 const createFacturaPagoSchemaBase = z.object({
     fechaPago: z.string().min(1, 'Fecha de Pago es requerida'),
