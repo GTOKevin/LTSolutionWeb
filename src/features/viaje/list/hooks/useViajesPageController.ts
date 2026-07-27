@@ -13,6 +13,7 @@ import { PERMISSIONS } from '@/shared/constants/permissions';
 import { getErrorMessage, type ApiMutationError } from '@/shared/utils/api-errors';
 import { logger } from '@/shared/utils/logger';
 import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@shared/config/app-routes';
+import { useViajeKanbanColumns } from './useViajeKanbanColumns';
 
 export function useViajesPageController() {
     const navigate = useNavigate();
@@ -121,6 +122,7 @@ export function useViajesPageController() {
         }),
         [data],
     );
+    const kanbanColumns = useViajeKanbanColumns(data?.items, viewMode === 'kanban');
 
     return {
         canViewViajes,
@@ -135,6 +137,7 @@ export function useViajesPageController() {
         data,
         isLoading,
         totals,
+        kanbanColumns,
         deleteDialogOpen,
         reopenDialogOpen,
         viajeToDelete,

@@ -15,6 +15,7 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
         viewMode,
         data,
         isLoading,
+        kanbanColumns,
         canManageViajes,
         canReabrirViajes,
         canViewViajes,
@@ -44,6 +45,7 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
             {viewMode === 'kanban' ? (
                 <ViajeKanbanBoard
                     viajes={data?.items || []}
+                    columns={kanbanColumns}
                     isLoading={isLoading}
                     canManage={canManageViajes}
                     onViajeClick={handleView}

@@ -12,26 +12,18 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Box, CircularProgress, Alert } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
-import {
-    resolveViajeAgendadoId,
-    resolveViajeCompletadoId,
-    resolveViajeDescargandoId,
-    resolveViajeTransitoId,
-    VIAJE_STATUS_CODE,
-} from '@entities/viaje/model/status';
-import { alpha } from '@mui/material/styles';
+import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
 import { useToast } from '@/shared/components/ui/Toast';
 import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
-import { estadoApi } from '@entities/estado/api/estado.api';
-import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
-import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
-import { LegacyKanbanCard, LegacyKanbanColumn } from './legacy/LegacyKanban';
+import { KanbanCard } from '@features/viaje/ui/ViajeKanban/KanbanCard';
+import { KanbanColumn } from '@features/viaje/ui/ViajeKanban/KanbanColumn';
+import type { ViajeKanbanColumnDefinition } from '../model/kanban';
 
 interface KanbanBoardProps {
     viajes: ViajeListItem[];
+    columns: ViajeKanbanColumnDefinition[];
     isLoading: boolean;
     canManage?: boolean;
     onViajeClick: (viaje: ViajeListItem) => void;
@@ -49,6 +41,7 @@ interface PendingStatusChange {
 
 export function ViajeKanbanBoard({
     viajes,
+    columns,
     isLoading,
     canManage = false,
     onViajeClick,
@@ -57,10 +50,6 @@ export function ViajeKanbanBoard({
     onDeleteViaje
 }: KanbanBoardProps) {
     const { showToast } = useToast();
-    const { data: viajeEstados = [] } = useQuery({
-        queryKey: VIAJE_QUERY_KEYS.options.estados(),
-        queryFn: async () => (await estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE)) ?? [],
-    });
 
     const [localViajes, setLocalViajes] = useState<ViajeListItem[]>([]);
     const [activeId, setActiveId] = useState<number | null>(null);
@@ -84,21 +73,6 @@ export function ViajeKanbanBoard({
             coordinateGetter: sortableKeyboardCoordinates,
         })
     );
-
-    const firstViajePerCode: Record<string, number | undefined> = {};
-    for (const viaje of viajes) {
-        if (!viaje.estadoCodigo || firstViajePerCode[viaje.estadoCodigo] !== undefined) {
-            continue;
-        }
-        firstViajePerCode[viaje.estadoCodigo] = viaje.estadoID;
-    }
-
-    const columns = [
-        { id: VIAJE_STATUS_CODE.AGENDADO, title: 'Programado', color: '#94a3b8', bgColor: alpha('#94a3b8', 0.05), estadoId: firstViajePerCode[VIAJE_STATUS_CODE.AGENDADO] ?? resolveViajeAgendadoId(viajeEstados) },
-        { id: VIAJE_STATUS_CODE.TRANSITO, title: 'En Ruta', color: '#2563eb', bgColor: alpha('#2563eb', 0.05), estadoId: firstViajePerCode[VIAJE_STATUS_CODE.TRANSITO] ?? resolveViajeTransitoId(viajeEstados) },
-        { id: VIAJE_STATUS_CODE.DESCARGANDO, title: 'En Descarga', color: '#f59e0b', bgColor: alpha('#f59e0b', 0.05), estadoId: firstViajePerCode[VIAJE_STATUS_CODE.DESCARGANDO] ?? resolveViajeDescargandoId(viajeEstados) },
-        { id: VIAJE_STATUS_CODE.COMPLETADO, title: 'Completado', color: '#388e3c', bgColor: alpha('#388e3c', 0.05), estadoId: firstViajePerCode[VIAJE_STATUS_CODE.COMPLETADO] ?? resolveViajeCompletadoId(viajeEstados) },
-    ];
 
     if (isLoading) {
         return (
@@ -214,7 +188,7 @@ export function ViajeKanbanBoard({
             >
                 <Box sx={{ display: 'flex', height: '100%', minWidth: 'min-content' }}>
                     {columns.map((col) => (
-                        <LegacyKanbanColumn
+                        <KanbanColumn
                             key={col.id}
                             id={col.id}
                             title={col.title}
@@ -232,7 +206,7 @@ export function ViajeKanbanBoard({
 
                 <DragOverlay>
                     {activeViaje ? (
-                        <LegacyKanbanCard viaje={activeViaje} onClick={() => {}} draggable={canManage && !activeViaje.cerrado} />
+                        <KanbanCard viaje={activeViaje} onClick={() => {}} draggable={canManage && !activeViaje.cerrado} />
                     ) : null}
                 </DragOverlay>
             </DndContext>

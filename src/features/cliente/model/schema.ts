@@ -24,3 +24,12 @@ export const createContactoSchema = z.object({
 });
 
 export type CreateContactoSchema = z.infer<typeof createContactoSchema>;
+
+export const createContactoDefaultValues: CreateContactoSchema = {
+    nombreCompleto: '',
+    email: '',
+    telefonoPrincipal: '',
+    telefonoSecundario: '',
+    rol: '',
+    activo: true,
+};

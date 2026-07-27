@@ -3,9 +3,11 @@ import type { SelectItem } from '@/shared/model/types';
 import type { ViajeIncidente as ViajeIncidenteModel } from '@/entities/viaje/model/types';
 import { useState } from 'react';
 import {
-    LegacyViajeIncidenteCreateEdit,
-    LegacyViajeIncidenteList,
-} from './legacy/LegacyViajeIncidente';
+    ViajeIncidenteCreateEdit,
+} from '@features/viaje/ui/ViajeEditar/IncidenteTab/ViajeIncidenteCreateEdit';
+import {
+    ViajeIncidenteList,
+} from '@features/viaje/ui/ViajeEditar/IncidenteTab/ViajeIncidenteList';
 
 interface Props {
     viajeId?: number;
@@ -27,7 +29,7 @@ export function ViajeIncidente({ viajeId, viewOnly, tiposIncidente }: Props) {
     return (
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '5fr 7fr' }, gap: 4, alignItems: 'start' }}>
             {!viewOnly && viajeId && (
-                <LegacyViajeIncidenteCreateEdit
+                <ViajeIncidenteCreateEdit
                     viajeId={viajeId}
                     tiposIncidente={tiposIncidente}
                     incidente={itemToEdit}
@@ -36,7 +38,7 @@ export function ViajeIncidente({ viajeId, viewOnly, tiposIncidente }: Props) {
             )}
 
             {viajeId && (
-                <LegacyViajeIncidenteList
+                <ViajeIncidenteList
                     viajeId={viajeId}
                     viewOnly={viewOnly}
                     tiposIncidente={tiposIncidente}
