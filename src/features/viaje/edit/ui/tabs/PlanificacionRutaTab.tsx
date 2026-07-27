@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import type { Viaje } from '@/entities/viaje/model/types';
-import { ViajePlanRutaLayout } from '@features/viaje/ui/ViajeEditar/RutaTab/ViajePlanRutaLayout';
+import { ViajePlanRutaLayout } from './legacy/LegacyPlanRuta';
 
 interface PlanificacionRutaTabProps {
     viaje: Viaje;

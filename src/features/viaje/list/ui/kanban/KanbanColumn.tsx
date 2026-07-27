@@ -1,8 +1,8 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Box, Typography, Paper, Badge } from '@mui/material';
-import { KanbanCard } from './KanbanCard';
+import { Badge, Box, Paper, Typography } from '@mui/material';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
+import { KanbanCard } from './KanbanCard';
 
 interface KanbanColumnProps {
     id: string;
@@ -17,18 +17,29 @@ interface KanbanColumnProps {
     bgColor: string;
 }
 
-export function KanbanColumn({ id, title, viajes, draggable = true, onCardClick, onEditCard, onViewCard, onDeleteCard, color, bgColor }: KanbanColumnProps) {
+export function KanbanColumn({
+    id,
+    title,
+    viajes,
+    draggable = true,
+    onCardClick,
+    onEditCard,
+    onViewCard,
+    onDeleteCard,
+    color,
+    bgColor,
+}: KanbanColumnProps) {
     const { setNodeRef, isOver } = useDroppable({
         id,
         data: {
             type: 'Column',
-            columnId: id
-        }
+            columnId: id,
+        },
     });
 
     return (
-        <Box 
-            sx={{ 
+        <Box
+            sx={{
                 flex: 1,
                 minWidth: 280,
                 display: 'flex',
@@ -36,65 +47,61 @@ export function KanbanColumn({ id, title, viajes, draggable = true, onCardClick,
                 height: '100%',
                 mr: 2,
                 '&:last-of-type': {
-                    mr: 0
-                }
+                    mr: 0,
+                },
             }}
         >
-            <Paper 
-                elevation={0} 
-                sx={{ 
-                    p: 2, 
+            <Paper
+                elevation={0}
+                sx={{
+                    p: 2,
                     bgcolor: isOver ? 'action.hover' : bgColor,
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     borderRadius: 2,
                     borderTop: 4,
-                    borderColor: color
+                    borderColor: color,
                 }}
             >
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography 
-                        variant="subtitle1" 
-                        fontWeight={700} 
-                        color="text.primary"
-                    >
+                    <Typography variant="subtitle1" fontWeight={700} color="text.primary">
                         {title}
                     </Typography>
-                    <Badge 
-                        badgeContent={viajes.length} 
-                        color="primary" 
+                    <Badge
+                        badgeContent={viajes.length}
+                        color="primary"
                         sx={{
                             '& .MuiBadge-badge': {
                                 backgroundColor: color,
                                 color: '#fff',
-                                fontWeight: 'bold'
-                            }
+                                fontWeight: 'bold',
+                            },
                         }}
                     />
                 </Box>
-                <Box 
+                <Box
                     ref={setNodeRef}
-                    sx={{ 
-                        flexGrow: 1, 
+                    sx={{
+                        flexGrow: 1,
                         overflowY: 'auto',
                         p: 1,
-                        m: -1
+                        m: -1,
                     }}
                 >
-                    <SortableContext 
-                        items={viajes.map(v => v.viajeID)} 
+                    <SortableContext
+                        items={viajes.map((viaje) => viaje.viajeID)}
                         strategy={verticalListSortingStrategy}
                     >
                         {viajes.map((viaje) => {
                             const isEditable = draggable && !viaje.cerrado;
 
                             return (
-                                <KanbanCard 
-                                    key={viaje.viajeID} 
-                                    viaje={viaje} 
+                                <KanbanCard
+                                    key={viaje.viajeID}
+                                    viaje={viaje}
                                     draggable={isEditable}
-                                    onClick={onCardClick} 
+                                    onClick={onCardClick}
                                     onEdit={isEditable ? onEditCard : undefined}
                                     onView={onViewCard}
                                     onDelete={isEditable ? onDeleteCard : undefined}

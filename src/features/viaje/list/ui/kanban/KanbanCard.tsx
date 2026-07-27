@@ -1,7 +1,22 @@
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Card, CardContent, Typography, Chip, Stack, IconButton, Tooltip, Divider, Menu, MenuItem, ListItemIcon, ListItemText, Box } from '@mui/material';
+import {
+    Box,
+    Card,
+    CardContent,
+    Chip,
+    Divider,
+    IconButton,
+    ListItemIcon,
+    ListItemText,
+    Menu,
+    MenuItem,
+    Stack,
+    Tooltip,
+    Typography,
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -12,7 +27,6 @@ import PersonIcon from '@mui/icons-material/Person';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
 import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
-import { useTheme } from '@mui/material/styles';
 
 interface KanbanCardProps {
     viaje: ViajeListItem;
@@ -50,8 +64,8 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
         disabled: !draggable,
         data: {
             type: 'Card',
-            viaje
-        }
+            viaje,
+        },
     });
 
     const style = {
@@ -59,41 +73,41 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
         transition,
         opacity: isDragging ? 0.5 : 1,
         cursor: draggable ? 'grab' : 'default',
-        marginBottom: theme.spacing(2)
+        marginBottom: theme.spacing(2),
     };
 
     const hasActions = Boolean(onEdit || onView || onDelete);
 
     return (
-        <Card 
-            ref={setNodeRef} 
-            style={style} 
-            {...attributes} 
+        <Card
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
             {...listeners}
             onClick={() => onClick(viaje)}
-            sx={{ 
+            sx={{
                 '&:hover': { boxShadow: '0px 4px 8px rgba(0,0,0,0.12)' },
                 boxShadow: '0px 2px 4px rgba(0,0,0,0.08)',
                 borderRadius: 2,
                 borderLeft: 4,
-                borderColor: 
-                    viaje.estadoCodigo === VIAJE_STATUS_CODE.AGENDADO ? "#94a3b8" :
-                    viaje.estadoCodigo === VIAJE_STATUS_CODE.TRANSITO ? '#2563eb' :
-                    viaje.estadoCodigo === VIAJE_STATUS_CODE.DESCARGANDO ? '#f59e0b' :
-                    viaje.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO ? '#388e3c' : 'text.secondary'
+                borderColor:
+                    viaje.estadoCodigo === VIAJE_STATUS_CODE.AGENDADO ? '#94a3b8'
+                        : viaje.estadoCodigo === VIAJE_STATUS_CODE.TRANSITO ? '#2563eb'
+                            : viaje.estadoCodigo === VIAJE_STATUS_CODE.DESCARGANDO ? '#f59e0b'
+                                : viaje.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO ? '#388e3c'
+                                    : 'text.secondary',
             }}
         >
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                {/* Header */}
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1}>
                     <Typography variant="subtitle2" fontWeight="bold" sx={{ color: 'text.primary' }}>
                         {viaje.codigo}
                     </Typography>
-                    {hasActions && (
+                    {hasActions ? (
                         <Box>
-                            <IconButton 
-                                size="small" 
-                                sx={{ p: 0 }} 
+                            <IconButton
+                                size="small"
+                                sx={{ p: 0 }}
                                 onClick={handleClick}
                                 aria-controls={open ? 'viaje-menu' : undefined}
                                 aria-haspopup="true"
@@ -109,38 +123,37 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
                                 MenuListProps={{
                                     'aria-labelledby': 'viaje-button',
                                 }}
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={(event) => event.stopPropagation()}
                             >
-                                {onEdit && (
+                                {onEdit ? (
                                     <MenuItem onClick={handleAction('edit')}>
                                         <ListItemIcon>
                                             <EditIcon fontSize="small" />
                                         </ListItemIcon>
                                         <ListItemText>Modificar</ListItemText>
                                     </MenuItem>
-                                )}
-                                {onView && (
+                                ) : null}
+                                {onView ? (
                                     <MenuItem onClick={handleAction('view')}>
                                         <ListItemIcon>
                                             <VisibilityIcon fontSize="small" />
                                         </ListItemIcon>
                                         <ListItemText>Visualizar</ListItemText>
                                     </MenuItem>
-                                )}
-                                {onDelete && viaje.estadoCodigo === VIAJE_STATUS_CODE.AGENDADO && !viaje.fechaPartida && (
+                                ) : null}
+                                {onDelete && viaje.estadoCodigo === VIAJE_STATUS_CODE.AGENDADO && !viaje.fechaPartida ? (
                                     <MenuItem onClick={handleAction('delete')} sx={{ color: 'error.main' }}>
                                         <ListItemIcon>
                                             <DeleteIcon fontSize="small" color="error" />
                                         </ListItemIcon>
                                         <ListItemText>Eliminar</ListItemText>
                                     </MenuItem>
-                                )}
+                                ) : null}
                             </Menu>
                         </Box>
-                    )}
+                    ) : null}
                 </Stack>
 
-                {/* Ruta */}
                 <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
                     <Typography variant="body2" fontWeight={500} color="text.secondary" noWrap sx={{ maxWidth: '40%' }}>
                         {viaje.origenDescripcion}
@@ -151,14 +164,12 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
                     </Typography>
                 </Stack>
 
-                {/* Cliente */}
-                <Typography variant="caption" display="block" color='primary' fontWeight='bold' mb={1.5} noWrap>
+                <Typography variant="caption" display="block" color="primary" fontWeight="bold" mb={1.5} noWrap>
                     {viaje.clienteRazonSocial}
                 </Typography>
 
                 <Divider sx={{ mb: 1.5 }} />
 
-                {/* Recursos */}
                 <Stack direction="column" spacing={0.5} mb={1.5}>
                     <Stack direction="row" alignItems="center" spacing={1}>
                         <Tooltip title="Tracto">
@@ -168,7 +179,7 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
                             {viaje.tractoPlaca || 'Sin asignar'}
                         </Typography>
                     </Stack>
-                    {viaje.carretaPlaca && (
+                    {viaje.carretaPlaca ? (
                         <Stack direction="row" alignItems="center" spacing={1}>
                             <Tooltip title="Carreta">
                                 <RvHookupIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
@@ -177,7 +188,7 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
                                 {viaje.carretaPlaca}
                             </Typography>
                         </Stack>
-                    )}
+                    ) : null}
                     <Stack direction="row" alignItems="center" spacing={1}>
                         <Tooltip title="Conductor">
                             <PersonIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
@@ -188,25 +199,22 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
                     </Stack>
                 </Stack>
 
-                {/* Badges / Chips */}
                 <Stack direction="row" spacing={1} mb={1}>
-                    {viaje.requiereEscolta && (
-                        <Chip 
-                            size="small" 
-                            label="Escolta" 
-                            sx={{ 
-                                bgcolor: '#fff3e0', 
-                                color: '#ff6f00', 
-                                fontWeight: 'bold', 
+                    {viaje.requiereEscolta ? (
+                        <Chip
+                            size="small"
+                            label="Escolta"
+                            sx={{
+                                bgcolor: '#fff3e0',
+                                color: '#ff6f00',
+                                fontWeight: 'bold',
                                 fontSize: '0.65rem',
-                                height: 20
-                            }} 
+                                height: 20,
+                            }}
                         />
-                    )}
-                    {/* Placeholder para incidentes si aplica a futuro */}
+                    ) : null}
                 </Stack>
 
-                {/* Footer */}
                 <Typography variant="caption" display="block" color="text.disabled" sx={{ borderTop: 1, borderColor: 'divider', pt: 1, mt: 1 }}>
                     Partida: {viaje.fechaPartida ? new Date(viaje.fechaPartida).toLocaleDateString() : 'Pendiente'}
                 </Typography>

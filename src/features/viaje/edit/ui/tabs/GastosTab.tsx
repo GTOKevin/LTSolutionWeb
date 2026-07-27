@@ -1,7 +1,6 @@
 import { Box } from '@mui/material';
 import type { Viaje } from '@/entities/viaje/model/types';
-import { GastosForm } from '@features/viaje/ui/ViajeEditar/GastosTab/GastosForm';
-import { GastosList } from '@features/viaje/ui/ViajeEditar/GastosTab/GastosList';
+import { GastosForm, GastosList } from './legacy/LegacyGastos';
 
 interface GastosTabProps {
     viaje: Viaje;

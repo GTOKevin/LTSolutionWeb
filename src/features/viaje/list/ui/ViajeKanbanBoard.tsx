@@ -17,9 +17,9 @@ import type { ViajeListItem } from '@/entities/viaje/model/types';
 import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
 import { useToast } from '@/shared/components/ui/Toast';
 import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
-import { KanbanCard } from '@features/viaje/ui/ViajeKanban/KanbanCard';
-import { KanbanColumn } from '@features/viaje/ui/ViajeKanban/KanbanColumn';
 import type { ViajeKanbanColumnDefinition } from '../model/kanban';
+import { KanbanCard } from './kanban/KanbanCard';
+import { KanbanColumn } from './kanban/KanbanColumn';
 
 interface KanbanBoardProps {
     viajes: ViajeListItem[];

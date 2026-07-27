@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
 import { IGV_RATE } from '@entities/factura/model/constants';
+import type { Factura } from '@entities/factura/model/types';
 
 export const createFacturaSchema = z.object({
     clienteID: z.number().min(1, 'Cliente es requerido'),
@@ -25,6 +26,32 @@ export const createFacturaSchema = z.object({
 });
 
 export type CreateFacturaSchema = z.infer<typeof createFacturaSchema>;
+
+export function getCreateFacturaDefaultValues(): CreateFacturaSchema {
+    return {
+        clienteID: 0,
+        serie: '',
+        numero: '',
+        fechaEmision: new Date().toISOString().split('T')[0],
+        fechaCompromisoPago: '',
+        diasCredito: null,
+        monedaID: 0,
+        estadoID: 0,
+    };
+}
+
+export function mapFacturaToFormValues(factura: Factura): CreateFacturaSchema {
+    return {
+        clienteID: factura.clienteID,
+        serie: factura.serie,
+        numero: factura.numero,
+        fechaEmision: factura.fechaEmision.split('T')[0],
+        fechaCompromisoPago: factura.fechaCompromisoPago ? factura.fechaCompromisoPago.split('T')[0] : '',
+        diasCredito: factura.diasCredito || null,
+        monedaID: factura.monedaID,
+        estadoID: factura.estadoID,
+    };
+}
 
 const optionalStringField = z.string().optional().nullable();
 
