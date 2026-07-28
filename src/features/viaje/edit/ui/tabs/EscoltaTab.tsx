@@ -1,6 +1,7 @@
 import { Box, Grid } from '@mui/material';
 import type { Viaje } from '@/entities/viaje/model/types';
-import { EscoltasForm, EscoltasList } from './legacy/LegacyEscoltas';
+import { EscoltasForm } from './EscoltasForm';
+import { EscoltasList } from './EscoltasList';
 
 interface EscoltaTabProps {
     viaje: Viaje;

@@ -2,7 +2,8 @@ import { Box, Alert } from '@mui/material';
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeIncidente as ViajeIncidenteModel } from '@/entities/viaje/model/types';
 import { useState } from 'react';
-import { ViajeIncidenteCreateEdit, ViajeIncidenteList } from './legacy/LegacyIncidentes';
+import { ViajeIncidenteCreateEdit } from './ViajeIncidenteCreateEdit';
+import { ViajeIncidenteList } from './ViajeIncidenteList';
 
 interface Props {
     viajeId?: number;

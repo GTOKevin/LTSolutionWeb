@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
+import type { Cliente, ClienteContacto } from '@entities/cliente/model/types';
 
 export const createClienteSchema = z.object({
     ruc: z.string().min(11, 'RUC debe tener 11 dígitos').max(11, 'RUC debe tener 11 dígitos'),
@@ -13,6 +14,30 @@ export const createClienteSchema = z.object({
 });
 
 export type CreateClienteSchema = z.infer<typeof createClienteSchema>;
+
+export const createClienteDefaultValues: CreateClienteSchema = {
+    ruc: '',
+    razonSocial: '',
+    direccionLegal: '',
+    direccionFiscal: '',
+    contactoPrincipal: '',
+    telefono: '',
+    email: '',
+    activo: true,
+};
+
+export function mapClienteToFormValues(cliente: Cliente): CreateClienteSchema {
+    return {
+        ruc: cliente.ruc,
+        razonSocial: cliente.razonSocial,
+        direccionLegal: cliente.direccionLegal || '',
+        direccionFiscal: cliente.direccionFiscal || '',
+        contactoPrincipal: cliente.contactoPrincipal,
+        telefono: cliente.telefono || '',
+        email: cliente.email || '',
+        activo: cliente.activo,
+    };
+}
 
 export const createContactoSchema = z.object({
     nombreCompleto: z.string().regex(INPUT_VAL.LETRAS_ESPACIO, ERROR_MESSAGES.LETRAS_ESPACIO).min(1, 'Nombre es requerido'),
@@ -33,3 +58,14 @@ export const createContactoDefaultValues: CreateContactoSchema = {
     rol: '',
     activo: true,
 };
+
+export function mapContactoToFormValues(contacto: ClienteContacto): CreateContactoSchema {
+    return {
+        nombreCompleto: contacto.nombreCompleto,
+        email: contacto.email || '',
+        telefonoPrincipal: contacto.telefonoPrincipal,
+        telefonoSecundario: contacto.telefonoSecundario || '',
+        rol: contacto.rol || '',
+        activo: contacto.activo,
+    };
+}
