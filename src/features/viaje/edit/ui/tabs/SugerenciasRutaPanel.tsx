@@ -1,4 +1,4 @@
-import { Box, Typography, Button, Card, CardContent, CircularProgress } from '@mui/material';
+import { Alert, Box, Typography, Button, Card, CardContent, CircularProgress } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useViajeRutasSugeridas, useCloneViajeRuta } from '@features/viaje/hooks/useViajeRutas';
 
@@ -7,7 +7,7 @@ interface SugerenciasRutaPanelProps {
 }
 
 export function SugerenciasRutaPanel({ viajeId }: SugerenciasRutaPanelProps) {
-    const { data: sugerencias, isLoading } = useViajeRutasSugeridas(viajeId);
+    const { data: sugerencias, isLoading, isError, refetch, isRefetching } = useViajeRutasSugeridas(viajeId);
     const cloneMutation = useCloneViajeRuta();
 
     if (isLoading) {
@@ -15,6 +15,21 @@ export function SugerenciasRutaPanel({ viajeId }: SugerenciasRutaPanelProps) {
             <Box display="flex" justifyContent="center" p={2}>
                 <CircularProgress size={20} />
             </Box>
+        );
+    }
+
+    if (isError) {
+        return (
+            <Alert
+                severity="warning"
+                action={(
+                    <Button color="inherit" size="small" onClick={() => refetch()} disabled={isRefetching}>
+                        Reintentar
+                    </Button>
+                )}
+            >
+                No se pudieron cargar las rutas sugeridas para este viaje.
+            </Alert>
         );
     }
 

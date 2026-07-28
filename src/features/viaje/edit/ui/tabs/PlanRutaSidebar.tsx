@@ -13,7 +13,7 @@ import { useViajeRutas, useReorderViajeRutas } from '@features/viaje/hooks/useVi
 import { EtapaCard } from './EtapaCard';
 import { SugerenciasRutaPanel } from './SugerenciasRutaPanel';
 import type { ViajeRutaDto } from '@/entities/viaje/model/types';
-import { Box, Typography, Button, CircularProgress, Divider } from '@mui/material';
+import { Alert, Box, Typography, Button, CircularProgress, Divider } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 
 interface PlanRutaSidebarProps {
@@ -23,8 +23,9 @@ interface PlanRutaSidebarProps {
 }
 
 export function PlanRutaSidebar({ viajeId, onClose, isViewOnly }: PlanRutaSidebarProps) {
-    const { data: rutas, isLoading } = useViajeRutas(viajeId);
+    const { data: rutas, isLoading, isError, refetch, isRefetching } = useViajeRutas(viajeId);
     const reorderMutation = useReorderViajeRutas();
+    const hasBlockingError = isError && !rutas;
 
     const etapas = useMemo(() => {
         if (!rutas) return [];
@@ -82,6 +83,17 @@ export function PlanRutaSidebar({ viajeId, onClose, isViewOnly }: PlanRutaSideba
             <Box flex={1} overflow="auto" p={2}>
                 {isLoading ? (
                     <Box display="flex" justifyContent="center" p={4}><CircularProgress size={24} /></Box>
+                ) : hasBlockingError ? (
+                    <Alert
+                        severity="error"
+                        action={(
+                            <Button color="inherit" size="small" onClick={() => refetch()} disabled={isRefetching}>
+                                Reintentar
+                            </Button>
+                        )}
+                    >
+                        No se pudo cargar la planificación de ruta del viaje. Reintente la consulta antes de continuar.
+                    </Alert>
                 ) : (
                     <>
                         {etapas.length === 0 && !isViewOnly && <SugerenciasRutaPanel viajeId={viajeId} />}
@@ -101,7 +113,7 @@ export function PlanRutaSidebar({ viajeId, onClose, isViewOnly }: PlanRutaSideba
                 )}
             </Box>
 
-            {!isViewOnly && (
+            {!isViewOnly && !hasBlockingError && (
                 <>
                     <Divider />
                     <Box p={3} bgcolor="grey.50">

@@ -20,6 +20,7 @@ interface EditRutaDialogProps {
 
 export function EditRutaDialog({ open, onClose, viajeId, ruta }: EditRutaDialogProps) {
     const updateMutation = useUpdateViajeRuta();
+    const isCurrentPrincipal = Boolean(ruta?.esOpcionPrincipal);
 
     const { data: tiposPunto, isLoading: isLoadingTipos } = useQuery({
         queryKey: ['maestro', SECCION_MAESTRO.PUNTO_RUTA],
@@ -109,8 +110,17 @@ export function EditRutaDialog({ open, onClose, viajeId, ruta }: EditRutaDialogP
                         />
 
                         <FormControlLabel
-                            control={<Switch checked={formData.esOpcionPrincipal} onChange={(event) => setFormData({ ...formData, esOpcionPrincipal: event.target.checked })} color="primary" />}
-                            label="Es opción principal (Se trazará en la ruta)"
+                            control={(
+                                <Switch
+                                    checked={formData.esOpcionPrincipal}
+                                    onChange={(event) => setFormData({ ...formData, esOpcionPrincipal: event.target.checked })}
+                                    color="primary"
+                                    disabled={isCurrentPrincipal}
+                                />
+                            )}
+                            label={isCurrentPrincipal
+                                ? 'La parada principal se cambia desde “Hacer Principal” en la etapa'
+                                : 'Marcar como opción principal (reemplazará la actual de la etapa)'}
                         />
                     </Box>
                 </DialogContent>

@@ -16,9 +16,10 @@ interface AddRutaDialogProps {
     onClose: () => void;
     viajeId: number;
     initialData: { lat: number; lng: number; nombreLugar: string } | null;
+    isViewOnly?: boolean;
 }
 
-export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDialogProps) {
+export function AddRutaDialog({ open, onClose, viajeId, initialData, isViewOnly }: AddRutaDialogProps) {
     const createMutation = useCreateViajeRuta();
     const { data: rutas } = useViajeRutas(viajeId);
 
@@ -65,6 +66,7 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
+        if (isViewOnly) return;
 
         if (formData.tipoPuntoId <= 0) {
             setTipoPuntoError('Seleccione un tipo de parada para guardar la nueva etapa.');
@@ -133,8 +135,8 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
                         />
 
                         <FormControlLabel
-                            control={<Switch checked={formData.esOpcionPrincipal} onChange={(event) => setFormData({ ...formData, esOpcionPrincipal: event.target.checked })} color="primary" />}
-                            label="Es opción principal (Se trazará en la ruta)"
+                            control={<Switch checked color="primary" disabled />}
+                            label="Se registrará como opción principal de la nueva etapa"
                         />
 
                         {initialData && (
@@ -151,7 +153,7 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData }: AddRutaDi
                 </DialogContent>
                 <DialogActions sx={{ p: 2 }}>
                     <Button onClick={onClose} color="inherit" disabled={createMutation.isPending}>Cancelar</Button>
-                    <Button type="submit" variant="contained" color="primary" disabled={createMutation.isPending}>
+                    <Button type="submit" variant="contained" color="primary" disabled={createMutation.isPending || isViewOnly}>
                         {createMutation.isPending ? <CircularProgress size={24} /> : 'Guardar Parada'}
                     </Button>
                 </DialogActions>

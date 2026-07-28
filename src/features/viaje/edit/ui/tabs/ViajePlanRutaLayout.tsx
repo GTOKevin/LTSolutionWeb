@@ -22,7 +22,7 @@ export function ViajePlanRutaLayout({ viajeId, onClose, isViewOnly }: ViajePlanR
             }}
         >
             <Box sx={{ flex: 1, position: 'relative', bgcolor: 'grey.100' }}>
-                <PlanRutaMap viajeId={viajeId} />
+                <PlanRutaMap viajeId={viajeId} isViewOnly={isViewOnly} />
             </Box>
             <Box
                 sx={{

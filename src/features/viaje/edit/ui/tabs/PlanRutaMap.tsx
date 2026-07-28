@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
 import { useViajeRutas } from '@features/viaje/hooks/useViajeRutas';
+import type { ViajeRutaDto } from '@/entities/viaje/model/types';
 import { LocationSearch } from './LocationSearch';
 import { AddRutaDialog } from './AddRutaDialog';
 
@@ -21,6 +22,7 @@ L.Icon.Default.mergeOptions({
 
 interface PlanRutaMapProps {
     viajeId: number;
+    isViewOnly?: boolean;
 }
 
 function MapEventsHandler({ onMapClick }: { onMapClick: (lat: number, lng: number) => void }) {
@@ -59,26 +61,49 @@ function RoutingMachine({ waypoints }: { waypoints: L.LatLng[] }) {
     return null;
 }
 
-export function PlanRutaMap({ viajeId }: PlanRutaMapProps) {
+export function PlanRutaMap({ viajeId, isViewOnly }: PlanRutaMapProps) {
     const { data: rutas } = useViajeRutas(viajeId);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number; nombreLugar: string } | null>(null);
 
-    const mainRoutes = (rutas || [])
-        .filter((ruta) => ruta.esOpcionPrincipal && ruta.latitud && ruta.longitud)
-        .sort((a, b) => a.etapaOrden - b.etapaOrden);
+    const rutasConCoordenadas = useMemo(
+        () => (rutas || []).filter((ruta) => ruta.latitud !== null && ruta.longitud !== null),
+        [rutas]
+    );
+
+    const mainRoutes = useMemo(() => {
+        const etapas = new Map<number, ViajeRutaDto[]>();
+
+        rutasConCoordenadas.forEach((ruta) => {
+            if (!etapas.has(ruta.etapaOrden)) {
+                etapas.set(ruta.etapaOrden, []);
+            }
+
+            etapas.get(ruta.etapaOrden)?.push(ruta);
+        });
+
+        return Array.from(etapas.entries())
+            .sort(([ordenA], [ordenB]) => ordenA - ordenB)
+            .map(([, items]) => items.find((item) => item.esOpcionPrincipal) || items[0]);
+    }, [rutasConCoordenadas]);
 
     const waypoints = mainRoutes.map((ruta) => L.latLng(ruta.latitud!, ruta.longitud!));
 
-    const secondaryRoutes = (rutas || [])
-        .filter((ruta) => !ruta.esOpcionPrincipal && ruta.latitud && ruta.longitud);
+    const mainRouteIds = useMemo(
+        () => new Set(mainRoutes.map((ruta) => ruta.viajeControlRutaId)),
+        [mainRoutes]
+    );
+
+    const secondaryRoutes = rutasConCoordenadas.filter((ruta) => !mainRouteIds.has(ruta.viajeControlRutaId));
 
     const handleMapClick = (lat: number, lng: number) => {
+        if (isViewOnly) return;
         setSelectedLocation({ lat, lng, nombreLugar: '' });
         setDialogOpen(true);
     };
 
     const handleSearchSelect = (lat: number, lng: number, name: string) => {
+        if (isViewOnly) return;
         setSelectedLocation({ lat, lng, nombreLugar: name });
         setDialogOpen(true);
     };
@@ -91,8 +116,12 @@ export function PlanRutaMap({ viajeId }: PlanRutaMapProps) {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
-                <LocationSearch onSelectLocation={handleSearchSelect} />
-                <MapEventsHandler onMapClick={handleMapClick} />
+                {!isViewOnly ? (
+                    <>
+                        <LocationSearch onSelectLocation={handleSearchSelect} />
+                        <MapEventsHandler onMapClick={handleMapClick} />
+                    </>
+                ) : null}
                 <RoutingMachine waypoints={waypoints} />
 
                 {secondaryRoutes.map((ruta) => (
@@ -110,7 +139,15 @@ export function PlanRutaMap({ viajeId }: PlanRutaMapProps) {
                 ))}
             </MapContainer>
 
-            <AddRutaDialog open={dialogOpen} onClose={() => setDialogOpen(false)} viajeId={viajeId} initialData={selectedLocation} />
+            {!isViewOnly ? (
+                <AddRutaDialog
+                    open={dialogOpen}
+                    onClose={() => setDialogOpen(false)}
+                    viajeId={viajeId}
+                    initialData={selectedLocation}
+                    isViewOnly={isViewOnly}
+                />
+            ) : null}
         </>
     );
 }
