@@ -1,13 +1,18 @@
 import { Alert, Box, Card, CardContent, Chip, CircularProgress, Divider, Stack, Typography, Grid as Grid2 } from '@mui/material';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { FormProvider, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { FormProvider, useForm, type Resolver } from 'react-hook-form';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
+import type { CreateViajeDto } from '@/entities/viaje/model/types';
 import { useViajeOptions, useViajeIncidenteOptions } from '@features/viaje/options';
+import { mapViajeToFormValues, getCreateViajeDefaultValues } from '@features/viaje/model/form-values';
 import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
+import { viajeSchema } from '@features/viaje/model/schema';
 import { ViajeIncidente } from '@features/viaje/edit';
 import { ViajeCreateEdit } from './ViajeCreateEdit';
 import { ViajeTimeline } from './ViajeTimeline';
+import { useEffect } from 'react';
 
 export function ViajeDetailPageContent() {
     const { id } = useParams<{ id: string }>();
@@ -24,9 +29,17 @@ export function ViajeDetailPageContent() {
 
     const options = useViajeOptions(true);
     const { tiposIncidente } = useViajeIncidenteOptions(true);
-    const methods = useForm({
-        defaultValues: viaje || {}
+    const methods = useForm<CreateViajeDto>({
+        resolver: zodResolver(viajeSchema) as Resolver<CreateViajeDto>,
+        defaultValues: getCreateViajeDefaultValues()
     });
+    const { reset } = methods;
+
+    useEffect(() => {
+        if (viaje) {
+            reset(mapViajeToFormValues(viaje));
+        }
+    }, [viaje, reset]);
 
     if (isLoading) {
         return (

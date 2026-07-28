@@ -1,6 +1,6 @@
 import { Box, Grid } from '@mui/material';
 import type { Viaje } from '@/entities/viaje/model/types';
-import { LegacyPermisosForm, LegacyPermisosList } from './legacy/LegacyPermisosTab';
+import { PermisosForm, PermisosList } from './legacy/LegacyPermisos';
 
 interface PermisosTabProps {
     viaje: Viaje;
@@ -13,11 +13,11 @@ export function PermisosTab({ viaje, isViewOnly }: PermisosTabProps) {
             <Grid container spacing={3}>
                 {!isViewOnly && (
                     <Grid size={{ xs: 12, lg: 3.5 }}>
-                        <LegacyPermisosForm viajeId={viaje.viajeID} />
+                        <PermisosForm viajeId={viaje.viajeID} />
                     </Grid>
                 )}
                 <Grid size={{ xs: 12, lg: isViewOnly ? 12 : 8.5 }}>
-                    <LegacyPermisosList viajeId={viaje.viajeID} isViewOnly={isViewOnly} />
+                    <PermisosList viajeId={viaje.viajeID} isViewOnly={isViewOnly} />
                 </Grid>
             </Grid>
         </Box>

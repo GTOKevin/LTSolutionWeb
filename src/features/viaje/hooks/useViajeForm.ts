@@ -4,9 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { useToast } from '@/shared/components/ui/Toast';
 import { viajeSchema } from '../model/schema';
+import { getCreateViajeDefaultValues, mapViajeToFormValues } from '../model/form-values';
 import { useViajeOptions } from './useViajeOptions';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
-import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
 import type { CreateViajeDto, Viaje } from '@/entities/viaje/model/types';
 import { VIAJE_QUERY_KEYS } from '../model/query-keys';
 import { notifyMutationError, type ApiMutationError } from '@/shared/utils/api-errors';
@@ -64,10 +64,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
 
     const methods = useForm<CreateViajeDto>({
         resolver: zodResolver(viajeSchema) as Resolver<CreateViajeDto>,
-        defaultValues: {
-            estadoID: 0,
-            requiereEscolta: false
-        }
+        defaultValues: getCreateViajeDefaultValues()
     });
 
     const { reset, setValue } = methods;
@@ -148,55 +145,9 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.options.colaboradores() });
 
             if (viaje) {
-                reset({
-                    ...viaje,
-                    clienteID: viaje.clienteID || 0,
-                    colaboradorID: viaje.colaboradorID || 0,
-                    cotizacionID: viaje.cotizacionID ?? undefined,
-                    tractoID: viaje.tractoID || 0,
-                    carretaID: viaje.carretaID || 0,
-                    estadoID: viaje.estadoID || 0,
-                    direccionOrigen: viaje.direccionOrigen ?? undefined,
-                    direccionDestino: viaje.direccionDestino ?? undefined,
-                    fechaCarga: viaje.fechaCarga ? toInputDate(viaje.fechaCarga) : '',
-                    fechaPartida: viaje.fechaPartida ? toInputDate(viaje.fechaPartida) : undefined,
-                    fechaLlegada: viaje.fechaLlegada ? toInputDate(viaje.fechaLlegada) : undefined,
-                    fechaDescarga: viaje.fechaDescarga ? toInputDate(viaje.fechaDescarga) : undefined,
-                    fechaLlegadaBase: viaje.fechaLlegadaBase ? toInputDate(viaje.fechaLlegadaBase) : undefined,
-                    kmInicio: viaje.kmInicio ?? undefined,
-                    kmLlegada: viaje.kmLlegada ?? undefined,
-                    kmLlegadaBase: viaje.kmLlegadaBase ?? undefined,
-                    tipoMedidaID: viaje.tipoMedidaID || 0,
-                    tipoPesoID: viaje.tipoPesoID || 0,  
-                    requiereEscolta: viaje.requiereEscolta ?? false,
-                    largo: viaje.largo ?? undefined,
-                    alto: viaje.alto ?? undefined,
-                    ancho: viaje.ancho ?? undefined,
-                    peso: viaje.peso ?? undefined,
-                    ejesTracto: viaje.ejesTracto || 0,
-                    ejesCarreta: viaje.ejesCarreta || 0
-                });
+                reset(mapViajeToFormValues(viaje));
             } else {
-                reset({
-                    estadoID: 0,
-                    requiereEscolta: false,
-                    fechaCarga: getCurrentDateISO(),
-                    clienteID: 0,
-                    colaboradorID: 0,
-                    tractoID: 0,
-                    carretaID: 0,
-                    ejesTracto: 0,
-                    ejesCarreta: 0,
-                    tipoMedidaID: 0,
-                    tipoPesoID: 0,
-                    largo: 0,
-                    alto: 0,
-                    ancho: 0,
-                    peso: 0,
-                    kmInicio: 0,
-                    kmLlegada: 0,
-                    kmLlegadaBase: 0,
-                });
+                reset(getCreateViajeDefaultValues());
             }
             queueMicrotask(resetUiState);
         }

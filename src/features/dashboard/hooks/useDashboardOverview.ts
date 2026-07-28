@@ -20,7 +20,6 @@ export function useDashboardOverview(initialPeriod: DashboardPeriod = 'week') {
     const query = useQuery({
         queryKey: DASHBOARD_QUERY_KEYS.overview(params),
         queryFn: () => dashboardApi.getOverview(params),
-        placeholderData: previousData => previousData,
     });
 
     return {
