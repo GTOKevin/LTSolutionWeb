@@ -8,6 +8,7 @@ import type { PagedResponse } from '@shared/model/types';
 import {
     createContactoDefaultValues,
     createContactoSchema,
+    mapContactoToFormValues,
     type CreateContactoSchema,
 } from '@features/cliente/model/schema';
 import {
@@ -18,17 +19,6 @@ import {
 
 interface UseClienteContactosControllerArgs {
     clienteId: number;
-}
-
-function mapContactoToFormValues(contacto: ClienteContacto): CreateContactoSchema {
-    return {
-        nombreCompleto: contacto.nombreCompleto,
-        email: contacto.email || '',
-        telefonoPrincipal: contacto.telefonoPrincipal,
-        telefonoSecundario: contacto.telefonoSecundario || '',
-        rol: contacto.rol || '',
-        activo: contacto.activo,
-    };
 }
 
 export function useClienteContactosController({ clienteId }: UseClienteContactosControllerArgs) {

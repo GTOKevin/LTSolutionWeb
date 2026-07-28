@@ -5,7 +5,5 @@ export function useMyProfile() {
     return useQuery({
         queryKey: PROFILE_QUERY_KEYS.me(),
         queryFn: () => profileApi.getMe(),
-        placeholderData: previousData => previousData,
     });
 }
-

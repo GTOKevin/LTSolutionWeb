@@ -24,6 +24,8 @@ interface ProfileViewProps {
 
 export function ProfileView({ data, isLoading, isFetching, isError, onRetry, onOpenChangePassword }: ProfileViewProps) {
     const theme = useTheme();
+    const hasBlockingError = isError && !data;
+    const hasRefetchError = isError && !!data;
 
     const headerTitle = useMemo(() => {
         if (data?.colaborador?.nombreCompleto) return data.colaborador.nombreCompleto;
@@ -58,7 +60,7 @@ export function ProfileView({ data, isLoading, isFetching, isError, onRetry, onO
         );
     }
 
-    if (isError) {
+    if (hasBlockingError) {
         return (
             <Box sx={{ p: { xs: 2, md: 3 } }}>
                 <Alert
@@ -88,6 +90,19 @@ export function ProfileView({ data, isLoading, isFetching, isError, onRetry, onO
     return (
         <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: theme.palette.mode === 'dark' ? '#12161d' : '#f3f4f5' }}>
             <Stack spacing={3}>
+                {hasRefetchError ? (
+                    <Alert
+                        severity="warning"
+                        action={
+                            <Button color="inherit" size="small" onClick={onRetry}>
+                                Reintentar
+                            </Button>
+                        }
+                    >
+                        No se pudo actualizar el perfil. Se muestran los datos cargados previamente.
+                    </Alert>
+                ) : null}
+
                 <Box
                     sx={{
                         display: 'grid',

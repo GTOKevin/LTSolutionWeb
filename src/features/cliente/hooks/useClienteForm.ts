@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createClienteSchema, type CreateClienteSchema } from '../model/schema';
+import {
+    createClienteDefaultValues,
+    createClienteSchema,
+    mapClienteToFormValues,
+    type CreateClienteSchema,
+} from '../model/schema';
 import type { Cliente } from '@entities/cliente/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
 import { useCreateCliente, useUpdateCliente } from './useClienteCrud';
@@ -24,9 +29,7 @@ export function useClienteForm({ open, onClose, onSuccess, clienteToEdit }: UseC
 
     const form = useForm<CreateClienteSchema>({
         resolver: zodResolver(createClienteSchema),
-        defaultValues: {
-            activo: true
-        }
+        defaultValues: createClienteDefaultValues,
     });
 
     const { reset, setError } = form;
@@ -36,29 +39,7 @@ export function useClienteForm({ open, onClose, onSuccess, clienteToEdit }: UseC
 
     useEffect(() => {
         if (open) {
-            if (clienteToEdit) {
-                reset({
-                    ruc: clienteToEdit.ruc,
-                    razonSocial: clienteToEdit.razonSocial,
-                    direccionLegal: clienteToEdit.direccionLegal || '',
-                    direccionFiscal: clienteToEdit.direccionFiscal || '',
-                    contactoPrincipal: clienteToEdit.contactoPrincipal,
-                    telefono: clienteToEdit.telefono || '',
-                    email: clienteToEdit.email || '',
-                    activo: clienteToEdit.activo
-                });
-            } else {
-                reset({
-                    ruc: '',
-                    razonSocial: '',
-                    direccionLegal: '',
-                    direccionFiscal: '',
-                    contactoPrincipal: '',
-                    telefono: '',
-                    email: '',
-                    activo: true
-                });
-            }
+            reset(clienteToEdit ? mapClienteToFormValues(clienteToEdit) : createClienteDefaultValues);
 
             const resetUiTimer = window.setTimeout(() => {
                 setActiveTab(0);
