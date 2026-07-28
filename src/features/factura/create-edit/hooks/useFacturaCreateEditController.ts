@@ -36,7 +36,12 @@ export function useFacturaCreateEditController({
     const navigate = useNavigate();
     const { showToast } = useToast();
 
-    const { data: factura, isLoading: isLoadingFactura } = useFactura(id);
+    const {
+        data: factura,
+        isLoading: isLoadingFactura,
+        isError: isFacturaError,
+        refetch: refetchFactura,
+    } = useFactura(id);
     const createMutation = useCreateFactura();
     const updateMutation = useUpdateFactura();
     const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -70,6 +75,7 @@ export function useFacturaCreateEditController({
 
     const monedaDefaultId = getSelectItemId(monedas, [MONEDA_CODES.PEN]);
     const estadoGeneradoId = resolveFacturaGeneradaId(facturaEstadosResponse);
+    const hasFacturaLoadError = isEdit && !isLoadingFactura && (isFacturaError || !factura);
 
     useEffect(() => {
         if (!isEdit && monedaDefaultId && !form.getValues('monedaID')) {
@@ -85,6 +91,14 @@ export function useFacturaCreateEditController({
 
     const handleFormSubmit: SubmitHandler<CreateFacturaSchema> = async (data) => {
         try {
+            if (isEdit && !factura) {
+                showToast({
+                    message: 'No se pudo cargar la factura a editar. Reintente la consulta antes de guardar.',
+                    severity: 'error',
+                });
+                return;
+            }
+
             const formattedData = {
                 ...data,
                 fechaCompromisoPago: data.fechaCompromisoPago || null,
@@ -152,11 +166,13 @@ export function useFacturaCreateEditController({
         isEdit,
         viewOnly,
         isLoadingFactura,
+        hasFacturaLoadError,
         isSaving,
         estadoGeneradoId,
         facturaCurrencyLabel,
         title,
         subtitle,
+        retryFacturaLoad: () => refetchFactura(),
         navigateBack: () => navigate(APP_PATHS.facturas),
         onSubmit: form.handleSubmit(handleFormSubmit, handleInvalidSubmit),
     };

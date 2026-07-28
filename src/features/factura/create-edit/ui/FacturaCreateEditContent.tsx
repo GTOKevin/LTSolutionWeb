@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Grid } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Grid, Stack } from '@mui/material';
 import { FacturaDetalles } from '../../detalles/ui';
 import type { FacturaCreateEditController } from '../hooks/useFacturaCreateEditController';
 import { FacturaBasicInfoForm } from './FacturaBasicInfoForm';
@@ -18,12 +18,14 @@ export function FacturaCreateEditContent({ controller }: FacturaCreateEditConten
         isEdit,
         viewOnly,
         isLoadingFactura,
+        hasFacturaLoadError,
         isSaving,
         estadoGeneradoId,
         facturaCurrencyLabel,
         title,
         subtitle,
         navigateBack,
+        retryFacturaLoad,
         onSubmit,
     } = controller;
 
@@ -35,6 +37,29 @@ export function FacturaCreateEditContent({ controller }: FacturaCreateEditConten
         );
     }
 
+    if (hasFacturaLoadError) {
+        return (
+            <Box sx={{ maxWidth: 960, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Alert
+                    severity="error"
+                    action={(
+                        <Button color="inherit" size="small" onClick={retryFacturaLoad}>
+                            Reintentar
+                        </Button>
+                    )}
+                    sx={{ borderRadius: 3 }}
+                >
+                    No se pudo cargar la factura solicitada. Reintente la consulta o vuelva al listado antes de continuar.
+                </Alert>
+                <Stack direction="row" justifyContent="flex-end">
+                    <Button variant="outlined" color="inherit" onClick={navigateBack}>
+                        Volver al listado
+                    </Button>
+                </Stack>
+            </Box>
+        );
+    }
+
     return (
         <Box sx={{ maxWidth: 1400, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
             <FacturaCreateEditHeader
@@ -42,7 +67,7 @@ export function FacturaCreateEditContent({ controller }: FacturaCreateEditConten
                 subtitle={subtitle}
                 viewOnly={viewOnly}
                 isSaving={isSaving}
-                canSubmit={!isSaving && (isEdit || Boolean(estadoGeneradoId))}
+                canSubmit={!isSaving && !hasFacturaLoadError && (isEdit || Boolean(estadoGeneradoId))}
                 onBack={navigateBack}
             />
 

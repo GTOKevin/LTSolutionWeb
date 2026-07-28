@@ -59,7 +59,7 @@ export function FacturaBasicInfoForm({
                                     fullWidth
                                     error={!!errors.clienteID}
                                     helperText={errors.clienteID?.message}
-                                    disabled={viewOnly}
+                                    disabled={isEdit || viewOnly}
                                     sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                 >
                                     <MenuItem value={0} disabled>
@@ -92,7 +92,7 @@ export function FacturaBasicInfoForm({
                                     helperText={errors.serie?.message}
                                     inputProps={{ style: { textTransform: 'uppercase' } }}
                                     onChange={(event) => field.onChange(event.target.value.toUpperCase())}
-                                    disabled={viewOnly}
+                                    disabled={isEdit || viewOnly}
                                     sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                 />
                             )}
@@ -190,7 +190,7 @@ export function FacturaBasicInfoForm({
                                     helperText={error?.message}
                                     inputProps={{ min: 0 }}
                                     onChange={(event) => field.onChange(event.target.value === '' ? null : Number(event.target.value))}
-                                    disabled={viewOnly}
+                                    disabled={isEdit || viewOnly}
                                     sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                 />
                             )}
