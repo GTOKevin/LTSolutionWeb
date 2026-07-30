@@ -28,7 +28,7 @@ export function useMisViajeDetailPageController() {
     const canManageViajeKms = usePermission(PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR);
     const [activeTab, setActiveTab] = useState(0);
 
-    const { data: viaje, isLoading } = useQuery({
+    const { data: viaje, isLoading, isError, refetch } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.viajeDetail(viajeId),
         queryFn: () => employeePortalApi.getMyViajeById(viajeId),
         enabled: Number.isFinite(viajeId) && viajeId > 0,
@@ -98,8 +98,10 @@ export function useMisViajeDetailPageController() {
         handleBack,
         handleTabChange,
         isKmsTabActive,
+        isError,
         isLoading,
         onSubmitKms,
+        retryViajeLoad: () => refetch(),
         showKmsTab,
         updateKmsMutation,
         viaje,

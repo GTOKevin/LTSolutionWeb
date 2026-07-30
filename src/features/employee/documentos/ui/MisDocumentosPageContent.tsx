@@ -18,6 +18,7 @@ import {
     Add as AddIcon,
 } from '@mui/icons-material';
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
+import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import { formatDateOnly, formatDateTime } from '@shared/utils/date-utils';
 import { getEstadoColor } from '@entities/employee/lib/status-utils';
 import { getDocumentVigenciaMeta } from '@shared/utils/document-vigencia';
@@ -53,6 +54,7 @@ interface MisDocumentosPageContentProps {
 export function MisDocumentosPageContent({ controller }: MisDocumentosPageContentProps) {
     const isRefreshingDocumentos = controller.isFetchingDocumentos && !controller.isLoadingDocumentos;
     const isRefreshingSolicitudes = controller.isFetchingSolicitudes && !controller.isLoadingSolicitudes;
+    const hasBlockingKpiError = controller.hasBlockingDocumentosError || controller.hasBlockingSolicitudesError;
 
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column', gap: 4, minHeight: '100%', flex: '1 0 auto' }}>
@@ -69,47 +71,64 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                 </Box>
             </Box>
 
-            <Grid container spacing={3}>
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box sx={{ width: 48, height: 48, borderRadius: '50%', bgcolor: 'success.50', color: 'success.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <VerifiedIcon />
+            {hasBlockingKpiError ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {controller.hasBlockingDocumentosError ? (
+                        <FetchErrorState
+                            message="No se pudieron cargar tus documentos del portal del empleado."
+                            onRetry={controller.retryDocumentosLoad}
+                        />
+                    ) : null}
+                    {controller.hasBlockingSolicitudesError ? (
+                        <FetchErrorState
+                            message="No se pudo cargar el historial de solicitudes de actualización."
+                            onRetry={controller.retrySolicitudesLoad}
+                        />
+                    ) : null}
+                </Box>
+            ) : (
+                <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                        <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{ width: 48, height: 48, borderRadius: '50%', bgcolor: 'success.50', color: 'success.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <VerifiedIcon />
+                            </Box>
+                            <Box>
+                                <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>
+                                    {isRefreshingDocumentos ? 'Actualizando vigencia' : 'Vigentes Visibles'}
+                                </Typography>
+                                <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.vigentes}</Typography>
+                            </Box>
                         </Box>
-                        <Box>
-                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>
-                                {isRefreshingDocumentos ? 'Actualizando vigencia' : 'Vigentes Visibles'}
-                            </Typography>
-                            <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.vigentes}</Typography>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                        <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{ width: 48, height: 48, borderRadius: '50%', bgcolor: 'error.50', color: 'error.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <WarningAmberOutlined />
+                            </Box>
+                            <Box>
+                                <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>
+                                    {isRefreshingDocumentos ? 'Actualizando alertas' : 'Por Vencer Visibles'}
+                                </Typography>
+                                <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.nearExpiry}</Typography>
+                            </Box>
                         </Box>
-                    </Box>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                        <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{ width: 48, height: 48, borderRadius: '50%', bgcolor: 'primary.50', color: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <PendingActionsOutlined />
+                            </Box>
+                            <Box>
+                                <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>
+                                    {isRefreshingSolicitudes ? 'Actualizando historial' : 'Pendientes Visibles'}
+                                </Typography>
+                                <Typography variant="h5" fontWeight={800} color="text.primary">{controller.pendingRequestsVisible}</Typography>
+                            </Box>
+                        </Box>
+                    </Grid>
                 </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box sx={{ width: 48, height: 48, borderRadius: '50%', bgcolor: 'error.50', color: 'error.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <WarningAmberOutlined />
-                        </Box>
-                        <Box>
-                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>
-                                {isRefreshingDocumentos ? 'Actualizando alertas' : 'Por Vencer Visibles'}
-                            </Typography>
-                            <Typography variant="h5" fontWeight={800} color="text.primary">{controller.documentStats.nearExpiry}</Typography>
-                        </Box>
-                    </Box>
-                </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box sx={{ width: 48, height: 48, borderRadius: '50%', bgcolor: 'primary.50', color: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <PendingActionsOutlined />
-                        </Box>
-                        <Box>
-                            <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block' }}>
-                                {isRefreshingSolicitudes ? 'Actualizando historial' : 'Pendientes Visibles'}
-                            </Typography>
-                            <Typography variant="h5" fontWeight={800} color="text.primary">{controller.pendingRequestsVisible}</Typography>
-                        </Box>
-                    </Box>
-                </Grid>
-            </Grid>
+            )}
 
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'center', justifyContent: 'space-between' }}>
                 <TextField
@@ -142,11 +161,13 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                 </Box>
             </Box>
 
-            <Typography variant="caption" color="text.secondary" sx={{ mt: -2 }}>
-                {isRefreshingDocumentos || isRefreshingSolicitudes
-                    ? 'Estamos actualizando la consulta del portal empleado.'
-                    : 'La vigencia visible se muestra por documento. El filtro de estado administrativo opera sobre `activo` y los KPI corresponden a la consulta cargada.'}
-            </Typography>
+            {!hasBlockingKpiError ? (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: -2 }}>
+                    {isRefreshingDocumentos || isRefreshingSolicitudes
+                        ? 'Estamos actualizando la consulta del portal empleado.'
+                        : 'La vigencia visible se muestra por documento. El filtro de estado administrativo opera sobre `activo` y los KPI corresponden a la consulta cargada.'}
+                </Typography>
+            ) : null}
 
             <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
                 <Box sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -169,85 +190,96 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                         Actualizando documentos segun los filtros aplicados...
                     </Box>
                 ) : null}
-                <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                    <SharedTable
-                        data={controller.documentos}
-                        isLoading={controller.isLoadingDocumentos}
-                        page={controller.page}
-                        rowsPerPage={controller.rowsPerPage}
-                        onPageChange={controller.handleChangePage}
-                        onRowsPerPageChange={controller.handleChangeRowsPerPage}
-                        columns={documentColumns}
-                        keyExtractor={(item) => item.colaboradorDocumentoId}
-                        emptyMessage="No se encontraron documentos con los filtros seleccionados."
-                        containerSx={portalTableContainerFlatSx}
-                        headerSx={portalTableHeaderFlatSx}
-                        variant="flat"
-                        renderRow={(item) => {
-                            const vigencia = getDocumentVigenciaMeta(item.vigenciaEstado);
+                {controller.hasBlockingDocumentosError ? (
+                    <Box sx={{ p: 3 }}>
+                        <FetchErrorState
+                            message="No se pudieron cargar tus documentos del portal del empleado."
+                            onRetry={controller.retryDocumentosLoad}
+                        />
+                    </Box>
+                ) : (
+                    <>
+                        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                            <SharedTable
+                                data={controller.documentos}
+                                isLoading={controller.isLoadingDocumentos}
+                                page={controller.page}
+                                rowsPerPage={controller.rowsPerPage}
+                                onPageChange={controller.handleChangePage}
+                                onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                                columns={documentColumns}
+                                keyExtractor={(item) => item.colaboradorDocumentoId}
+                                emptyMessage="No se encontraron documentos con los filtros seleccionados."
+                                containerSx={portalTableContainerFlatSx}
+                                headerSx={portalTableHeaderFlatSx}
+                                variant="flat"
+                                renderRow={(item) => {
+                                    const vigencia = getDocumentVigenciaMeta(item.vigenciaEstado);
 
-                            return (
-                                <>
-                                    <TableCell sx={{ py: 2, px: 3 }}>
-                                        <Typography variant="body2" fontWeight={600} color="text.primary">{item.tipoDocumentoNombre}</Typography>
-                                    </TableCell>
-                                    <TableCell sx={{ py: 2, px: 3 }}>
-                                        <Typography variant="body2" color="text.secondary">{item.numeroDocumento || '—'}</Typography>
-                                    </TableCell>
-                                    <TableCell sx={{ py: 2, px: 3 }}>
-                                        <Typography variant="body2" color="text.secondary">{formatDateOnly(item.fechaEmision)}</Typography>
-                                    </TableCell>
-                                    <TableCell sx={{ py: 2, px: 3 }}>
-                                        <Typography variant="body2" color="text.secondary">{formatDateOnly(item.fechaVencimiento)}</Typography>
-                                    </TableCell>
-                                    <TableCell sx={{ py: 2, px: 3 }}>
-                                        <Box sx={{ display: 'inline-flex', px: 1, py: 0.5, borderRadius: 1, bgcolor: vigencia.bgColor, color: vigencia.textColor }}>
-                                            <Typography variant="caption" fontWeight={800} sx={{ textTransform: 'uppercase', fontSize: '10px' }}>
-                                                {vigencia.label}
-                                            </Typography>
-                                        </Box>
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ py: 2, px: 3 }}>
-                                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                                            <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleOpenDocument(item)}>
-                                                <VisibilityOutlined fontSize="small" />
-                                            </Button>
-                                            <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleDownloadDocument(item)}>
-                                                <DownloadIcon fontSize="small" />
-                                            </Button>
-                                            {controller.canRequestDocumentUpdate ? (
-                                                <Button
-                                                    sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-                                                    onClick={() => {
-                                                        controller.setSelectedDocumentoId(item.colaboradorDocumentoId);
-                                                        controller.setDialogOpen(true);
-                                                    }}
-                                                >
-                                                    <SyncOutlined fontSize="small" />
-                                                </Button>
-                                            ) : null}
-                                        </Box>
-                                    </TableCell>
-                                </>
-                            );
-                        }}
-                    />
-                </Box>
-                <MisDocumentosMobileList
-                    isLoading={controller.isLoadingDocumentos}
-                    data={controller.documentos}
-                    page={controller.page}
-                    rowsPerPage={controller.rowsPerPage}
-                    onPageChange={controller.handleChangePage}
-                    onRowsPerPageChange={controller.handleChangeRowsPerPage}
-                    canRequestDocumentUpdate={controller.canRequestDocumentUpdate}
-                    onOpenDocument={controller.handleOpenDocument}
-                    onDownloadDocument={controller.handleDownloadDocument}
-                    onRequestUpdate={(item) => {
-                        controller.setSelectedDocumentoId(item.colaboradorDocumentoId);
-                        controller.setDialogOpen(true);
-                    }}
-                />
+                                    return (
+                                        <>
+                                            <TableCell sx={{ py: 2, px: 3 }}>
+                                                <Typography variant="body2" fontWeight={600} color="text.primary">{item.tipoDocumentoNombre}</Typography>
+                                            </TableCell>
+                                            <TableCell sx={{ py: 2, px: 3 }}>
+                                                <Typography variant="body2" color="text.secondary">{item.numeroDocumento || '—'}</Typography>
+                                            </TableCell>
+                                            <TableCell sx={{ py: 2, px: 3 }}>
+                                                <Typography variant="body2" color="text.secondary">{formatDateOnly(item.fechaEmision)}</Typography>
+                                            </TableCell>
+                                            <TableCell sx={{ py: 2, px: 3 }}>
+                                                <Typography variant="body2" color="text.secondary">{formatDateOnly(item.fechaVencimiento)}</Typography>
+                                            </TableCell>
+                                            <TableCell sx={{ py: 2, px: 3 }}>
+                                                <Box sx={{ display: 'inline-flex', px: 1, py: 0.5, borderRadius: 1, bgcolor: vigencia.bgColor, color: vigencia.textColor }}>
+                                                    <Typography variant="caption" fontWeight={800} sx={{ textTransform: 'uppercase', fontSize: '10px' }}>
+                                                        {vigencia.label}
+                                                    </Typography>
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="right" sx={{ py: 2, px: 3 }}>
+                                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                                                    <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleOpenDocument(item)}>
+                                                        <VisibilityOutlined fontSize="small" />
+                                                    </Button>
+                                                    <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleDownloadDocument(item)}>
+                                                        <DownloadIcon fontSize="small" />
+                                                    </Button>
+                                                    {controller.canRequestDocumentUpdate ? (
+                                                        <Button
+                                                            sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+                                                            onClick={() => {
+                                                                controller.setSelectedDocumentoId(item.colaboradorDocumentoId);
+                                                                controller.setDialogOpen(true);
+                                                            }}
+                                                        >
+                                                            <SyncOutlined fontSize="small" />
+                                                        </Button>
+                                                    ) : null}
+                                                </Box>
+                                            </TableCell>
+                                        </>
+                                    );
+                                }}
+                            />
+                        </Box>
+                        <MisDocumentosMobileList
+                            isLoading={controller.isLoadingDocumentos}
+                            data={controller.documentos}
+                            page={controller.page}
+                            rowsPerPage={controller.rowsPerPage}
+                            onPageChange={controller.handleChangePage}
+                            onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                            canRequestDocumentUpdate={controller.canRequestDocumentUpdate}
+                            onOpenDocument={controller.handleOpenDocument}
+                            onDownloadDocument={controller.handleDownloadDocument}
+                            onRequestUpdate={(item) => {
+                                controller.setSelectedDocumentoId(item.colaboradorDocumentoId);
+                                controller.setDialogOpen(true);
+                            }}
+                        />
+                    </>
+                )}
             </Box>
 
             <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
@@ -259,54 +291,65 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                         Actualizando historial de solicitudes...
                     </Box>
                 ) : null}
-                <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                    <SharedTable
-                        data={controller.solicitudes}
-                        isLoading={controller.isLoadingSolicitudes}
-                        page={controller.requestPage}
-                        rowsPerPage={controller.requestRowsPerPage}
-                        onPageChange={controller.handleRequestPageChange}
-                        onRowsPerPageChange={controller.handleRequestRowsPerPageChange}
-                        columns={requestColumns}
-                        keyExtractor={(item) => item.solicitudId}
-                        emptyMessage="Aún no tienes solicitudes de actualización."
-                        containerSx={portalTableContainerFlatSx}
-                        headerSx={portalTableHeaderFlatSx}
-                        variant="flat"
-                        renderRow={(item) => {
-                            const statusColor = getEstadoColor(item.aprobada);
+                {controller.hasBlockingSolicitudesError ? (
+                    <Box sx={{ p: 3 }}>
+                        <FetchErrorState
+                            message="No se pudo cargar el historial de solicitudes de actualización."
+                            onRetry={controller.retrySolicitudesLoad}
+                        />
+                    </Box>
+                ) : (
+                    <>
+                        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                            <SharedTable
+                                data={controller.solicitudes}
+                                isLoading={controller.isLoadingSolicitudes}
+                                page={controller.requestPage}
+                                rowsPerPage={controller.requestRowsPerPage}
+                                onPageChange={controller.handleRequestPageChange}
+                                onRowsPerPageChange={controller.handleRequestRowsPerPageChange}
+                                columns={requestColumns}
+                                keyExtractor={(item) => item.solicitudId}
+                                emptyMessage="Aún no tienes solicitudes de actualización."
+                                containerSx={portalTableContainerFlatSx}
+                                headerSx={portalTableHeaderFlatSx}
+                                variant="flat"
+                                renderRow={(item) => {
+                                    const statusColor = getEstadoColor(item.aprobada);
 
-                            return (
-                                <>
-                                    <TableCell sx={{ py: 2, px: 3 }}>
-                                        <Typography variant="body2" fontWeight={600} color="text.primary">{item.tipoDocumentoNombre}</Typography>
-                                    </TableCell>
-                                    <TableCell sx={{ py: 2, px: 3 }}>
-                                        <Typography variant="body2" color="text.secondary">{formatDateTime(item.fechaRegistro)}</Typography>
-                                    </TableCell>
-                                    <TableCell sx={{ py: 2, px: 3 }}>
-                                        <Typography variant="body2" color="text.secondary">{item.motivoSolicitud || 'Sin motivo'}</Typography>
-                                    </TableCell>
-                                    <TableCell sx={{ py: 2, px: 3 }}>
-                                        <Box sx={{ display: 'inline-flex', px: 1, py: 0.5, borderRadius: 1, bgcolor: `${statusColor}.50`, color: `${statusColor}.main` }}>
-                                            <Typography variant="caption" fontWeight={800} sx={{ textTransform: 'uppercase', fontSize: '10px' }}>
-                                                {item.estadoRevision}
-                                            </Typography>
-                                        </Box>
-                                    </TableCell>
-                                </>
-                            );
-                        }}
-                    />
-                </Box>
-                <MisDocumentoSolicitudesMobileList
-                    data={controller.solicitudes}
-                    isLoading={controller.isLoadingSolicitudes}
-                    page={controller.requestPage}
-                    rowsPerPage={controller.requestRowsPerPage}
-                    onPageChange={controller.handleRequestPageChange}
-                    onRowsPerPageChange={controller.handleRequestRowsPerPageChange}
-                />
+                                    return (
+                                        <>
+                                            <TableCell sx={{ py: 2, px: 3 }}>
+                                                <Typography variant="body2" fontWeight={600} color="text.primary">{item.tipoDocumentoNombre}</Typography>
+                                            </TableCell>
+                                            <TableCell sx={{ py: 2, px: 3 }}>
+                                                <Typography variant="body2" color="text.secondary">{formatDateTime(item.fechaRegistro)}</Typography>
+                                            </TableCell>
+                                            <TableCell sx={{ py: 2, px: 3 }}>
+                                                <Typography variant="body2" color="text.secondary">{item.motivoSolicitud || 'Sin motivo'}</Typography>
+                                            </TableCell>
+                                            <TableCell sx={{ py: 2, px: 3 }}>
+                                                <Box sx={{ display: 'inline-flex', px: 1, py: 0.5, borderRadius: 1, bgcolor: `${statusColor}.50`, color: `${statusColor}.main` }}>
+                                                    <Typography variant="caption" fontWeight={800} sx={{ textTransform: 'uppercase', fontSize: '10px' }}>
+                                                        {item.estadoRevision}
+                                                    </Typography>
+                                                </Box>
+                                            </TableCell>
+                                        </>
+                                    );
+                                }}
+                            />
+                        </Box>
+                        <MisDocumentoSolicitudesMobileList
+                            data={controller.solicitudes}
+                            isLoading={controller.isLoadingSolicitudes}
+                            page={controller.requestPage}
+                            rowsPerPage={controller.requestRowsPerPage}
+                            onPageChange={controller.handleRequestPageChange}
+                            onRowsPerPageChange={controller.handleRequestRowsPerPageChange}
+                        />
+                    </>
+                )}
             </Box>
 
             <SolicitudActualizacionModal

@@ -2,3 +2,4 @@ export { getViajeEditTabs, createResumenGeneralDataFromViaje } from './model/via
 export { ViajeEditPageContent } from './ui/ViajeEditPageContent';
 export { ViajeEditContent } from './ui/ViajeEditContent';
 export { ViajeIncidente } from './ui/tabs/ViajeIncidente';
+export { ResumenGeneralTab, type ResumenGeneralData } from './ui/tabs/ResumenGeneralTab';

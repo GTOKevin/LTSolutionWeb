@@ -39,7 +39,7 @@ export function useMisLicenciasPageController() {
         size: rowsPerPage,
     }), [filters, page, rowsPerPage]);
 
-    const { data, isFetching, isLoading } = useQuery({
+    const { data, isFetching, isLoading, isError, refetch } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.licencias(queryFilters),
         queryFn: () => employeePortalApi.getMyLicencias(queryFilters),
     });
@@ -82,7 +82,9 @@ export function useMisLicenciasPageController() {
         handleChangePage,
         handleChangeRowsPerPage,
         handleSearch,
+        hasBlockingError: isError && !data,
         hasta,
+        isError,
         isFetching,
         isLoading,
         licenciaStats,
@@ -95,5 +97,6 @@ export function useMisLicenciasPageController() {
         setTipoLicenciaID,
         tipoLicenciaID,
         tiposLicencia,
+        retryLicenciasLoad: () => refetch(),
     };
 }
