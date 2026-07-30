@@ -3,7 +3,11 @@ import { ResumenGeneralTab, ViajeIncidente } from '@features/viaje/edit';
 import { ViajeTimeline } from './ViajeTimeline';
 import { useViajeDetailPageController } from '../hooks/useViajeDetailPageController';
 
-export function ViajeDetailPageContent() {
+interface ViajeDetailPageContentProps {
+    mode?: 'view';
+}
+
+export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContentProps) {
     const {
         viajeId,
         viaje,
@@ -13,7 +17,7 @@ export function ViajeDetailPageContent() {
         tiposIncidente,
         resumenGeneralData,
         onReadOnlyGeneralTabChange,
-    } = useViajeDetailPageController();
+    } = useViajeDetailPageController({ mode });
 
     if (isLoading) {
         return (
