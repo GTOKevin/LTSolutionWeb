@@ -13,6 +13,7 @@ import {
     DownloadForOffline as DownloadForOfflineIcon,
 } from '@mui/icons-material';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
+import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 import { portalTableContainerFlatSx, portalTableHeaderFlatSx } from '@shared/components/ui/employee-portal-shell.styles';
 import { MisPagosKPIs } from './MisPagosKPIs';
@@ -62,115 +63,124 @@ export function MisPagosPageContent({ controller }: MisPagosPageContentProps) {
                 </Button>
             </Box>
 
-            <MisPagosKPIs
-                paymentStats={controller.paymentStats}
-                dataItems={controller.data?.items}
-                onSelectPending={controller.setSelectedPago}
-                canConfirmPayments={controller.canConfirmPayments}
-                isRefreshing={isRefreshing}
-            />
-
-            <MisPagosFilters
-                tipoPagoID={controller.tipoPagoID}
-                monedaID={controller.monedaID}
-                desde={controller.desde}
-                hasta={controller.hasta}
-                tiposPago={controller.tiposPago}
-                monedas={controller.monedas}
-                onTipoPagoChange={controller.setTipoPagoID}
-                onMonedaChange={controller.setMonedaID}
-                onDesdeChange={controller.setDesde}
-                onHastaChange={controller.setHasta}
-                onSearch={controller.handleSearch}
-            />
-
-            {isRefreshing ? (
-                <Box sx={{ px: 2.5, py: 1.5, borderRadius: 3, bgcolor: 'action.hover', color: 'text.secondary', fontWeight: 600 }}>
-                    Actualizando resultados segun los filtros aplicados...
-                </Box>
-            ) : null}
-
-            <Box sx={{ bgcolor: 'background.paper', borderRadius: 4, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-                {isMobile ? (
-                    <MisPagosMobileList
-                        data={controller.data}
-                        isLoading={controller.isLoading}
-                        isRefreshing={isRefreshing}
-                        page={controller.page}
-                        rowsPerPage={controller.rowsPerPage}
-                        onPageChange={controller.handleChangePage}
-                        onRowsPerPageChange={controller.handleChangeRowsPerPage}
+            {controller.hasBlockingError ? (
+                <FetchErrorState
+                    message="No se pudieron cargar tus pagos del portal del empleado."
+                    onRetry={controller.retryPagosLoad}
+                />
+            ) : (
+                <>
+                    <MisPagosKPIs
+                        paymentStats={controller.paymentStats}
+                        dataItems={controller.data?.items}
+                        onSelectPending={controller.setSelectedPago}
                         canConfirmPayments={controller.canConfirmPayments}
-                        actionsDisabled={isRefreshing}
-                        onConfirmPayment={controller.setSelectedPago}
-                        onExportPayment={controller.handleExportPayment}
-                        formatMoney={formatPagoMoney}
+                        isRefreshing={isRefreshing}
                     />
-                ) : (
-                    <SharedTable
-                        data={controller.data}
-                        isLoading={controller.isLoading}
-                        page={controller.page}
-                        rowsPerPage={controller.rowsPerPage}
-                        onPageChange={controller.handleChangePage}
-                        onRowsPerPageChange={controller.handleChangeRowsPerPage}
-                        columns={columns}
-                        keyExtractor={(item) => item.colaboradorPagoId}
-                        emptyMessage="No se encontraron pagos con los filtros seleccionados."
-                        containerSx={portalTableContainerFlatSx}
-                        headerSx={portalTableHeaderFlatSx}
-                        variant="flat"
-                        renderRow={(item) => {
-                            const isPending = item.confirmadoPago == null;
-                            return (
-                                <>
-                                    <TableCell sx={{ py: 2.5 }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <Box sx={{ w: 40, h: 40, borderRadius: 2, bgcolor: isPending ? 'primary.50' : 'success.50', color: isPending ? 'primary.main' : 'success.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                {item.tipoPagoNombre.includes('Bono') ? <RedeemIcon /> : <WorkIcon />}
-                                            </Box>
-                                            <Typography variant="body2" fontWeight={700}>{item.tipoPagoNombre}</Typography>
-                                        </Box>
-                                    </TableCell>
-                                    <TableCell sx={{ py: 2.5, fontWeight: 800 }}>{formatPagoMoney(item)}</TableCell>
-                                    <TableCell sx={{ py: 2.5, color: 'text.secondary' }}>
-                                        {formatDateOnly(item.fechaInicio)} - {formatDateOnly(item.fechaCierre)}
-                                    </TableCell>
-                                    <TableCell sx={{ py: 2.5, color: 'text.secondary' }}>{formatDateOnly(item.fechaPago)}</TableCell>
-                                    <TableCell sx={{ py: 2.5 }}>
-                                        {isPending ? (
-                                            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5, borderRadius: 99, bgcolor: 'error.100', color: 'error.dark', border: '1px solid', borderColor: 'error.light' }}>
-                                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'error.main', animation: 'pulse 2s infinite' }} />
-                                                <Typography variant="caption" fontWeight={800}>Pendiente</Typography>
-                                            </Box>
-                                        ) : (
-                                            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5, borderRadius: 99, bgcolor: 'success.50', color: 'success.dark', border: '1px solid', borderColor: 'success.light' }}>
-                                                <CheckCircleIcon sx={{ fontSize: 14 }} />
-                                                <Typography variant="caption" fontWeight={800}>Confirmado</Typography>
-                                            </Box>
-                                        )}
-                                    </TableCell>
-                                    <TableCell sx={{ py: 2.5, textAlign: 'right' }}>
-                                        {isPending && controller.canConfirmPayments ? (
-                                            <Button
-                                                onClick={() => controller.setSelectedPago(item)}
-                                                disabled={isRefreshing}
-                                                sx={{ fontWeight: 900, letterSpacing: '0.1em', color: 'primary.main', '&:hover': { textDecoration: 'underline', textUnderlineOffset: 4, bgcolor: 'transparent' } }}
-                                            >
-                                                CONFIRMAR PAGO
-                                            </Button>
-                                        ) : (
-                                            <Button disabled={isRefreshing} onClick={() => controller.handleExportPayment(item)} sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { bgcolor: 'action.selected', color: 'text.primary' } }}>
-                                                <DownloadForOfflineIcon />
-                                            </Button>
-                                        )}
-                                    </TableCell>
-                                </>
-                            );
-                        }}
+
+                    <MisPagosFilters
+                        tipoPagoID={controller.tipoPagoID}
+                        monedaID={controller.monedaID}
+                        desde={controller.desde}
+                        hasta={controller.hasta}
+                        tiposPago={controller.tiposPago}
+                        monedas={controller.monedas}
+                        onTipoPagoChange={controller.setTipoPagoID}
+                        onMonedaChange={controller.setMonedaID}
+                        onDesdeChange={controller.setDesde}
+                        onHastaChange={controller.setHasta}
+                        onSearch={controller.handleSearch}
                     />
-                )}
-            </Box>
+
+                    {isRefreshing ? (
+                        <Box sx={{ px: 2.5, py: 1.5, borderRadius: 3, bgcolor: 'action.hover', color: 'text.secondary', fontWeight: 600 }}>
+                            Actualizando resultados segun los filtros aplicados...
+                        </Box>
+                    ) : null}
+
+                    <Box sx={{ bgcolor: 'background.paper', borderRadius: 4, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                        {isMobile ? (
+                            <MisPagosMobileList
+                                data={controller.data}
+                                isLoading={controller.isLoading}
+                                isRefreshing={isRefreshing}
+                                page={controller.page}
+                                rowsPerPage={controller.rowsPerPage}
+                                onPageChange={controller.handleChangePage}
+                                onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                                canConfirmPayments={controller.canConfirmPayments}
+                                actionsDisabled={isRefreshing}
+                                onConfirmPayment={controller.setSelectedPago}
+                                onExportPayment={controller.handleExportPayment}
+                                formatMoney={formatPagoMoney}
+                            />
+                        ) : (
+                            <SharedTable
+                                data={controller.data}
+                                isLoading={controller.isLoading}
+                                page={controller.page}
+                                rowsPerPage={controller.rowsPerPage}
+                                onPageChange={controller.handleChangePage}
+                                onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                                columns={columns}
+                                keyExtractor={(item) => item.colaboradorPagoId}
+                                emptyMessage="No se encontraron pagos con los filtros seleccionados."
+                                containerSx={portalTableContainerFlatSx}
+                                headerSx={portalTableHeaderFlatSx}
+                                variant="flat"
+                                renderRow={(item) => {
+                                    const isPending = item.confirmadoPago == null;
+                                    return (
+                                        <>
+                                            <TableCell sx={{ py: 2.5 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                    <Box sx={{ w: 40, h: 40, borderRadius: 2, bgcolor: isPending ? 'primary.50' : 'success.50', color: isPending ? 'primary.main' : 'success.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        {item.tipoPagoNombre.includes('Bono') ? <RedeemIcon /> : <WorkIcon />}
+                                                    </Box>
+                                                    <Typography variant="body2" fontWeight={700}>{item.tipoPagoNombre}</Typography>
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell sx={{ py: 2.5, fontWeight: 800 }}>{formatPagoMoney(item)}</TableCell>
+                                            <TableCell sx={{ py: 2.5, color: 'text.secondary' }}>
+                                                {formatDateOnly(item.fechaInicio)} - {formatDateOnly(item.fechaCierre)}
+                                            </TableCell>
+                                            <TableCell sx={{ py: 2.5, color: 'text.secondary' }}>{formatDateOnly(item.fechaPago)}</TableCell>
+                                            <TableCell sx={{ py: 2.5 }}>
+                                                {isPending ? (
+                                                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5, borderRadius: 99, bgcolor: 'error.100', color: 'error.dark', border: '1px solid', borderColor: 'error.light' }}>
+                                                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'error.main', animation: 'pulse 2s infinite' }} />
+                                                        <Typography variant="caption" fontWeight={800}>Pendiente</Typography>
+                                                    </Box>
+                                                ) : (
+                                                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5, borderRadius: 99, bgcolor: 'success.50', color: 'success.dark', border: '1px solid', borderColor: 'success.light' }}>
+                                                        <CheckCircleIcon sx={{ fontSize: 14 }} />
+                                                        <Typography variant="caption" fontWeight={800}>Confirmado</Typography>
+                                                    </Box>
+                                                )}
+                                            </TableCell>
+                                            <TableCell sx={{ py: 2.5, textAlign: 'right' }}>
+                                                {isPending && controller.canConfirmPayments ? (
+                                                    <Button
+                                                        onClick={() => controller.setSelectedPago(item)}
+                                                        disabled={isRefreshing}
+                                                        sx={{ fontWeight: 900, letterSpacing: '0.1em', color: 'primary.main', '&:hover': { textDecoration: 'underline', textUnderlineOffset: 4, bgcolor: 'transparent' } }}
+                                                    >
+                                                        CONFIRMAR PAGO
+                                                    </Button>
+                                                ) : (
+                                                    <Button disabled={isRefreshing} onClick={() => controller.handleExportPayment(item)} sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { bgcolor: 'action.selected', color: 'text.primary' } }}>
+                                                        <DownloadForOfflineIcon />
+                                                    </Button>
+                                                )}
+                                            </TableCell>
+                                        </>
+                                    );
+                                }}
+                            />
+                        )}
+                    </Box>
+                </>
+            )}
 
             <ConfirmDialog
                 open={Boolean(controller.selectedPago)}

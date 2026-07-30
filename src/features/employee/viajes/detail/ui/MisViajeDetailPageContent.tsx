@@ -16,6 +16,7 @@ import {
     Typography,
 } from '@mui/material';
 import { Controller } from 'react-hook-form';
+import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import type { useMisViajeDetailPageController } from '../hooks/useMisViajeDetailPageController';
 
 const styles = {
@@ -86,6 +87,17 @@ export function MisViajeDetailPageContent({ controller }: MisViajeDetailPageCont
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 8 }}>
                 <CircularProgress />
+            </Box>
+        );
+    }
+
+    if (controller.isError && !viaje) {
+        return (
+            <Box sx={{ p: 4 }}>
+                <FetchErrorState
+                    message="No se pudo cargar el viaje del portal del empleado."
+                    onRetry={controller.retryViajeLoad}
+                />
             </Box>
         );
     }

@@ -40,7 +40,13 @@ export function useMisDocumentosPageController() {
         size: rowsPerPage,
     }), [filters, page, rowsPerPage]);
 
-    const { data: documentos, isFetching: isFetchingDocumentos, isLoading: isLoadingDocumentos } = useQuery({
+    const {
+        data: documentos,
+        isFetching: isFetchingDocumentos,
+        isLoading: isLoadingDocumentos,
+        isError: isDocumentosError,
+        refetch: refetchDocumentos,
+    } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.documentos(queryFilters),
         queryFn: () => employeePortalApi.getMyDocumentos(queryFilters),
     });
@@ -57,7 +63,13 @@ export function useMisDocumentosPageController() {
         size: requestRowsPerPage,
     }), [requestPage, requestRowsPerPage]);
 
-    const { data: solicitudes, isFetching: isFetchingSolicitudes, isLoading: isLoadingSolicitudes } = useQuery({
+    const {
+        data: solicitudes,
+        isFetching: isFetchingSolicitudes,
+        isLoading: isLoadingSolicitudes,
+        isError: isSolicitudesError,
+        refetch: refetchSolicitudes,
+    } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.solicitudes(requestFilters),
         queryFn: () => employeePortalApi.getMyDocumentoSolicitudes(requestFilters),
     });
@@ -148,6 +160,8 @@ export function useMisDocumentosPageController() {
         documentStats,
         documentos,
         documentosEnriquecidos,
+        hasBlockingDocumentosError: isDocumentosError && !documentos,
+        hasBlockingSolicitudesError: isSolicitudesError && !solicitudes,
         handleChangePage,
         handleChangeRowsPerPage,
         handleDownloadDocument,
@@ -157,8 +171,10 @@ export function useMisDocumentosPageController() {
         handleSearch,
         isFetchingDocumentos,
         isFetchingSolicitudes,
+        isDocumentosError,
         isLoadingDocumentos,
         isLoadingSolicitudes,
+        isSolicitudesError,
         page,
         pendingRequestsVisible,
         previewTitle,
@@ -175,5 +191,7 @@ export function useMisDocumentosPageController() {
         solicitudes,
         tipoDocumentoID,
         tiposDocumento,
+        retryDocumentosLoad: () => refetchDocumentos(),
+        retrySolicitudesLoad: () => refetchSolicitudes(),
     };
 }

@@ -94,7 +94,7 @@ export function useMisPagosPageController() {
         size: rowsPerPage,
     }), [filters, page, rowsPerPage]);
 
-    const { data, isFetching, isLoading } = useQuery({
+    const { data, isFetching, isLoading, isError, refetch } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.pagos(queryFilters),
         queryFn: () => employeePortalApi.getMyPagos(queryFilters),
     });
@@ -191,6 +191,8 @@ export function useMisPagosPageController() {
         handleExportPayment,
         handleExportReport,
         handleSearch,
+        hasBlockingError: isError && !data,
+        isError,
         isFetching,
         isLoading,
         monedaID,
@@ -206,5 +208,6 @@ export function useMisPagosPageController() {
         setTipoPagoID,
         tipoPagoID,
         tiposPago,
+        retryPagosLoad: () => refetch(),
     };
 }

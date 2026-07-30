@@ -18,6 +18,7 @@ import {
     Info as InfoIcon,
 } from '@mui/icons-material';
 import { SolicitarLicenciaModal } from './SolicitarLicenciaModal';
+import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 import { portalTableContainerFlatSx, portalTableHeaderFlatSx } from '@shared/components/ui/employee-portal-shell.styles';
 import { MisLicenciasMobileList } from './MisLicenciasMobileList';
@@ -79,6 +80,13 @@ export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentP
                 ) : null}
             </Box>
 
+            {controller.hasBlockingError ? (
+                <FetchErrorState
+                    message="No se pudieron cargar tus licencias del portal del empleado."
+                    onRetry={controller.retryLicenciasLoad}
+                />
+            ) : (
+                <>
             <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 4 }}>
                     <Box sx={{ bgcolor: 'background.paper', p: 4, borderRadius: 3, border: '1px solid', borderColor: 'divider', borderLeft: '4px solid', borderLeftColor: 'primary.main' }}>
@@ -272,6 +280,9 @@ export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentP
                     />
                 )}
             </Box>
+
+                </>
+            )}
 
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, p: 3, bgcolor: 'info.50', borderRadius: 3, border: '1px solid', borderColor: 'info.100' }}>
                 <Box sx={{ bgcolor: 'info.main', color: 'info.contrastText', p: 0.5, borderRadius: 1, display: 'flex' }}>
