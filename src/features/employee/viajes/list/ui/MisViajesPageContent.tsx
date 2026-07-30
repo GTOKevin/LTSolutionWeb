@@ -1,4 +1,5 @@
 import { Box, Chip, Pagination, Stack, Typography } from '@mui/material';
+import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import { MobileListShell } from '@shared/components/ui/MobileListShell';
 import { formatDateOnly } from '@shared/utils/date-utils';
 import type { MiViajeListItemDto } from '@entities/employee/model/types';
@@ -30,12 +31,14 @@ export function MisViajesPageContent({ controller }: MisViajesPageContentProps) 
                         Gestión operativa de rutas y despachos asignados.
                     </Typography>
                 </Box>
-                <MisViajesKPIs
-                    total={controller.totals.totalVisible}
-                    abiertos={controller.totals.abiertos}
-                    cerrados={controller.totals.cerrados}
-                    isRefreshing={isRefreshing}
-                />
+                {!controller.hasBlockingError ? (
+                    <MisViajesKPIs
+                        total={controller.totals.totalVisible}
+                        abiertos={controller.totals.abiertos}
+                        cerrados={controller.totals.cerrados}
+                        isRefreshing={isRefreshing}
+                    />
+                ) : null}
             </Box>
 
             <MisViajesFilters
@@ -48,87 +51,96 @@ export function MisViajesPageContent({ controller }: MisViajesPageContentProps) 
                 onSearch={controller.handleSearch}
             />
 
-            {isRefreshing ? (
-                <Box sx={{ px: 2.5, py: 1.5, borderRadius: 3, bgcolor: 'action.hover', color: 'text.secondary', fontWeight: 600 }}>
-                    Actualizando viajes segun los filtros aplicados...
-                </Box>
-            ) : null}
-
-            <MisViajesGrid
-                items={controller.data?.items ?? []}
-                onNavigate={controller.handleNavigate}
-            />
-
-            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                <MobileListShell
-                    items={controller.data?.items ?? []}
-                    total={controller.data?.total ?? 0}
-                    page={controller.page}
-                    rowsPerPage={controller.rowsPerPage}
-                    onPageChange={controller.handleChangePage}
-                    onRowsPerPageChange={controller.handleChangeRowsPerPage}
-                    keyExtractor={(item) => item.viajeId}
-                    emptyMessage="No tienes viajes registrados con los filtros seleccionados."
-                    onView={(item) => controller.handleNavigate(item.viajeId)}
-                    getCardStyle={(item, theme) => ({
-                        borderRadius: 4,
-                        borderColor: item.cerrado ? theme.palette.success.light : theme.palette.warning.light,
-                    })}
-                    renderHeader={(item) => (
-                        <Stack spacing={0.5}>
-                            <Typography variant="subtitle2" fontWeight={700}>
-                                {item.codigo}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                                {formatDateOnly(item.fechaCarga)}
-                            </Typography>
-                        </Stack>
-                    )}
-                    renderBody={(item) => (
-                        <Stack spacing={1}>
-                            <Typography variant="body2" fontWeight={700}>{item.clienteRazonSocial}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                {item.origenDescripcion}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                {item.destinoDescripcion}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Unidad: {item.tractoPlaca} {item.carretaPlaca ? `/ ${item.carretaPlaca}` : ''}
-                            </Typography>
-                            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                                <Chip label={item.estadoNombre} size="small" variant="outlined" />
-                                <Chip label={item.cerrado ? 'Cerrado' : 'En curso'} size="small" color={buildStatusColor(item)} />
-                            </Stack>
-                        </Stack>
-                    )}
+            {controller.hasBlockingError ? (
+                <FetchErrorState
+                    message="No se pudieron cargar tus viajes del portal del empleado."
+                    onRetry={controller.retryViajesLoad}
                 />
-            </Box>
+            ) : (
+                <>
+                    {isRefreshing ? (
+                        <Box sx={{ px: 2.5, py: 1.5, borderRadius: 3, bgcolor: 'action.hover', color: 'text.secondary', fontWeight: 600 }}>
+                            Actualizando viajes segun los filtros aplicados...
+                        </Box>
+                    ) : null}
 
-            {controller.totals.total === 0 && !controller.isLoading ? (
-                <Box sx={{ py: 8, textAlign: 'center' }}>
-                    <Typography variant="body1" color="text.secondary">
-                        No tienes viajes registrados con los filtros seleccionados.
-                    </Typography>
-                </Box>
-            ) : null}
-
-            {controller.totals.total > 0 ? (
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'space-between', alignItems: 'center', mt: 2, px: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                        {isRefreshing
-                            ? 'Actualizando resultados de la consulta...'
-                            : `Mostrando ${(controller.data?.items ?? []).length} de ${controller.totals.total} registros encontrados`}
-                    </Typography>
-                    <Pagination
-                        count={Math.ceil(controller.totals.total / controller.rowsPerPage)}
-                        page={controller.page + 1}
-                        onChange={(_, newPage) => controller.handleChangePage(_, newPage - 1)}
-                        color="primary"
-                        shape="rounded"
+                    <MisViajesGrid
+                        items={controller.data?.items ?? []}
+                        onNavigate={controller.handleNavigate}
                     />
-                </Box>
-            ) : null}
+
+                    <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                        <MobileListShell
+                            items={controller.data?.items ?? []}
+                            total={controller.data?.total ?? 0}
+                            page={controller.page}
+                            rowsPerPage={controller.rowsPerPage}
+                            onPageChange={controller.handleChangePage}
+                            onRowsPerPageChange={controller.handleChangeRowsPerPage}
+                            keyExtractor={(item) => item.viajeId}
+                            emptyMessage="No tienes viajes registrados con los filtros seleccionados."
+                            onView={(item) => controller.handleNavigate(item.viajeId)}
+                            getCardStyle={(item, theme) => ({
+                                borderRadius: 4,
+                                borderColor: item.cerrado ? theme.palette.success.light : theme.palette.warning.light,
+                            })}
+                            renderHeader={(item) => (
+                                <Stack spacing={0.5}>
+                                    <Typography variant="subtitle2" fontWeight={700}>
+                                        {item.codigo}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                        {formatDateOnly(item.fechaCarga)}
+                                    </Typography>
+                                </Stack>
+                            )}
+                            renderBody={(item) => (
+                                <Stack spacing={1}>
+                                    <Typography variant="body2" fontWeight={700}>{item.clienteRazonSocial}</Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {item.origenDescripcion}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {item.destinoDescripcion}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Unidad: {item.tractoPlaca} {item.carretaPlaca ? `/ ${item.carretaPlaca}` : ''}
+                                    </Typography>
+                                    <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                                        <Chip label={item.estadoNombre} size="small" variant="outlined" />
+                                        <Chip label={item.cerrado ? 'Cerrado' : 'En curso'} size="small" color={buildStatusColor(item)} />
+                                    </Stack>
+                                </Stack>
+                            )}
+                        />
+                    </Box>
+
+                    {controller.totals.total === 0 && !controller.isLoading ? (
+                        <Box sx={{ py: 8, textAlign: 'center' }}>
+                            <Typography variant="body1" color="text.secondary">
+                                No tienes viajes registrados con los filtros seleccionados.
+                            </Typography>
+                        </Box>
+                    ) : null}
+
+                    {controller.totals.total > 0 ? (
+                        <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'space-between', alignItems: 'center', mt: 2, px: 2 }}>
+                            <Typography variant="body2" color="text.secondary">
+                                {isRefreshing
+                                    ? 'Actualizando resultados de la consulta...'
+                                    : `Mostrando ${(controller.data?.items ?? []).length} de ${controller.totals.total} registros encontrados`}
+                            </Typography>
+                            <Pagination
+                                count={Math.ceil(controller.totals.total / controller.rowsPerPage)}
+                                page={controller.page + 1}
+                                onChange={(_, newPage) => controller.handleChangePage(_, newPage - 1)}
+                                color="primary"
+                                shape="rounded"
+                            />
+                        </Box>
+                    ) : null}
+                </>
+            )}
         </Box>
     );
 }

@@ -32,7 +32,7 @@ export function useMisViajesPageController() {
         size: rowsPerPage,
     }), [filters, page, rowsPerPage]);
 
-    const { data, isFetching, isLoading } = useQuery({
+    const { data, isFetching, isLoading, isError, refetch } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.viajes(queryFilters),
         queryFn: () => employeePortalApi.getMyViajes(queryFilters),
     });
@@ -78,9 +78,12 @@ export function useMisViajesPageController() {
         handleChangeRowsPerPage,
         handleNavigate,
         handleSearch,
+        hasBlockingError: isError && !data,
+        isError,
         isFetching,
         isLoading,
         page,
+        retryViajesLoad: () => refetch(),
         rowsPerPage,
         search,
         setDesde,
