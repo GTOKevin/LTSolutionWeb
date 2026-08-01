@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@shared/config/app-routes';
@@ -14,12 +14,26 @@ import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
 import { useDeleteFactura, useUpdateFactura } from '@/features/factura/hooks/useFacturaCrud';
 import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
+import { getFirstDayOfCurrentMonthISOMinus, getLastDayOfCurrentMonthISO } from '@/shared/utils/date-utils';
+
+type FacturaFilterDraft = Pick<FacturaFilters, 'search' | 'estadoID' | 'fechaInicio' | 'fechaFin'>;
+
+const defaultFacturaFilterDraft: FacturaFilterDraft = {
+    search: '',
+    fechaInicio: getFirstDayOfCurrentMonthISOMinus(3),
+    fechaFin: getLastDayOfCurrentMonthISO(),
+};
 
 export function useFacturasPageController() {
     const navigate = useNavigate();
     const canViewFacturas = usePermission(PERMISSIONS.FACTURAS.VER);
     const canManageFacturas = usePermission(PERMISSIONS.FACTURAS.GESTIONAR);
-    const [filters, setFilters] = useState<FacturaFilters>({ page: 1, size: 10, search: '' });
+    const [filters, setFilters] = useState<FacturaFilters>({
+        page: 1,
+        size: 10,
+        ...defaultFacturaFilterDraft,
+    });
+    const [draftFilters, setDraftFilters] = useState<FacturaFilterDraft>(defaultFacturaFilterDraft);
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [pagosListModalOpen, setPagosListModalOpen] = useState(false);
     const [selectedFactura, setSelectedFactura] = useState<Factura | null>(null);
@@ -45,6 +59,44 @@ export function useFacturasPageController() {
     const facturaGeneradaId = resolveFacturaGeneradaId(facturaEstados);
     const facturaEmitidaId = resolveFacturaEmitidaId(facturaEstados);
     const facturaEntregadaId = resolveFacturaEntregadaId(facturaEstados);
+
+    const handleEstadoDraftChange = useCallback((value: string) => {
+        setDraftFilters((prev) => ({
+            ...prev,
+            estadoID: value === 'todos' ? undefined : Number(value),
+        }));
+    }, []);
+
+    const handleFechaInicioDraftChange = useCallback((value: string) => {
+        setDraftFilters((prev) => ({
+            ...prev,
+            fechaInicio: value,
+            fechaFin: prev.fechaFin && prev.fechaFin < value ? value : prev.fechaFin,
+        }));
+    }, []);
+
+    const handleFechaFinDraftChange = useCallback((value: string) => {
+        setDraftFilters((prev) => ({
+            ...prev,
+            fechaFin: value,
+            fechaInicio: prev.fechaInicio && prev.fechaInicio > value ? value : prev.fechaInicio,
+        }));
+    }, []);
+
+    const handleSearchDraftChange = useCallback((value: string) => {
+        setDraftFilters((prev) => ({
+            ...prev,
+            search: value,
+        }));
+    }, []);
+
+    const handleApplyFilters = useCallback(() => {
+        setFilters((prev) => ({
+            ...prev,
+            ...draftFilters,
+            page: 1,
+        }));
+    }, [draftFilters]);
 
     const handleCreateClick = () => {
         navigate(buildAppCreatePath(APP_PATHS.facturas));
@@ -89,15 +141,21 @@ export function useFacturasPageController() {
         canManageFacturas,
         data,
         deleteMutation,
+        draftFilters,
         facturaEmitidaId,
         facturaEntregadaId,
         facturaEstados,
         facturaGeneradaId,
         filters,
+        handleApplyFilters,
         handleCreateClick,
         handleDeleteClick,
         handleEditClick,
+        handleEstadoDraftChange,
+        handleFechaFinDraftChange,
+        handleFechaInicioDraftChange,
         handlePaymentClick,
+        handleSearchDraftChange,
         handleUpdateStatus,
         handleViewClick,
         handleViewPaymentsClick,

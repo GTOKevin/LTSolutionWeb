@@ -54,7 +54,6 @@ export function ViajeEditPageContent() {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.lists() });
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.detail(viajeId) });
             showToast({ entity: 'Viaje', action: 'update' });
-            navigate(APP_PATHS.viajes);
         },
         onError: () => {
             showToast({ entity: 'Viaje', action: 'update', isError: true });
@@ -122,15 +121,14 @@ export function ViajeEditPageContent() {
             onTabChange={(_, newValue) => setActiveTab(newValue)}
             tabs={tabs}
             onBack={() => navigate(APP_PATHS.viajes)}
-            onSave={handleSave}
-            isSaving={updateMutation.isPending}
-            isViewOnly={isViewOnly}
         >
             <ViajeEditContent
                 activeTab={activeTab}
                 viaje={viaje}
                 formData={formData}
                 onFormDataChange={(changes) => setFormData((prev) => ({ ...prev, ...changes }))}
+                onSaveResumen={handleSave}
+                isSavingResumen={updateMutation.isPending}
                 isViewOnly={isViewOnly}
                 viajeId={viajeId}
                 tiposIncidente={tiposIncidente || []}

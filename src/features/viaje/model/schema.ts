@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ALPHA_ESPECIAL_ERROR_MSG, ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
-import { addDaysToDateISO, addMonthsToDateISO } from '@/shared/utils/date-utils';
+import { getViajeFechaCargaLimits } from './form-values';
 
 const positiveRequiredNumber = (field: string) =>
     z.number()
@@ -39,9 +39,9 @@ export const viajeEscoltaSchema = z.object({
     tercero: z.boolean().optional(),
     flotaID: z.number().optional(),
     colaboradorID: z.number().optional(),
-    nombreConductor: z.string().regex(INPUT_VAL.LETRAS_ESPACIO, ERROR_MESSAGES.LETRAS_ESPACIO).optional(),
-    empresa: z.string().regex(INPUT_VAL.ALPHA_NUMERICO_ESPACIOS, ERROR_MESSAGES.ALPHA_NUMERICO_ESPACIOS).optional(),
-    placa: z.string().regex(INPUT_VAL.PLACA_PERU_REGEX, ERROR_MESSAGES.PLACA_INVALIDA).optional()
+    nombreConductor: optionalRegexText(INPUT_VAL.LETRAS_ESPACIO, ERROR_MESSAGES.LETRAS_ESPACIO),
+    empresa: optionalRegexText(INPUT_VAL.ALPHA_NUMERICO_ESPACIOS, ERROR_MESSAGES.ALPHA_NUMERICO_ESPACIOS),
+    placa: optionalRegexText(INPUT_VAL.PLACA_PERU_REGEX, ERROR_MESSAGES.PLACA_INVALIDA)
 }).superRefine((data, ctx) => {
     if (data.tercero) {
         if (!data.nombreConductor?.trim()) {
@@ -176,8 +176,7 @@ export const viajeSchema = z.object({
     ejesTracto: optionalNumber(0),
     ejesCarreta: optionalNumber(0)
 }).superRefine((data, ctx) => {
-    const fechaMinima = addDaysToDateISO(7);
-    const fechaMaxima = addMonthsToDateISO(2);
+    const { min: fechaMinima, max: fechaMaxima } = getViajeFechaCargaLimits();
 
     if (data.fechaCarga < fechaMinima) {
         ctx.addIssue({
@@ -202,6 +201,7 @@ export const viajeWizardSchema = viajeSchema.extend({
 
 export type ViajeFormData = z.infer<typeof viajeSchema>;
 export type ViajeWizardFormData = z.infer<typeof viajeWizardSchema>;
+export type ViajeEscoltaMode = 'propio' | 'tercero';
 export type ViajeEscoltaFormData = z.infer<typeof viajeEscoltaSchema>;
 export type ViajeGastoFormData = z.infer<typeof viajeGastoSchema>;
 export type ViajeGastoFormInput = z.input<typeof viajeGastoSchema>;
@@ -209,3 +209,14 @@ export type ViajeGuiaFormData = z.infer<typeof viajeGuiaSchema>;
 export type ViajeIncidenteFormData = z.infer<typeof viajeIncidenteSchema>;
 export type ViajeMercaderiaFormData = z.infer<typeof viajeMercaderiaSchema>;
 export type ViajePermisoFormData = z.infer<typeof viajePermisoSchema>;
+
+export function createViajeEscoltaDefaultValues(mode: ViajeEscoltaMode = 'propio'): ViajeEscoltaFormData {
+    return {
+        tercero: mode === 'tercero',
+        flotaID: 0,
+        colaboradorID: 0,
+        empresa: '',
+        nombreConductor: '',
+        placa: '',
+    };
+}

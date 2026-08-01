@@ -27,5 +27,6 @@ export const {
 } = createViajeSubresourceHooks<CreateViajeEscoltaDto>(
     viajeEscoltaApi,
     'Escolta',
-    VIAJE_QUERY_KEYS.escoltas
+    VIAJE_QUERY_KEYS.escoltas,
+    (viajeId) => [VIAJE_QUERY_KEYS.options.escolta(viajeId)]
 );

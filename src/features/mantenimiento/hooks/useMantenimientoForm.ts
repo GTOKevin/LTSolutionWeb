@@ -16,11 +16,12 @@ import { useCrudFormPageState } from '@shared/hooks/useCrudFormPageState';
 interface UseMantenimientoFormProps {
     mantenimientoToEdit?: Mantenimiento | null;
     onSuccess: (id: number) => void;
+    onCreateSuccess?: (id: number) => void;
     onClose: () => void;
     open: boolean;
 }
 
-export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, open }: UseMantenimientoFormProps) {
+export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onCreateSuccess, onClose, open }: UseMantenimientoFormProps) {
     const [confirmationOpen, setConfirmationOpen] = useState(false);
     const [pendingData, setPendingData] = useState<CreateMantenimientoSchema | null>(null);
     const {
@@ -40,6 +41,8 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onClose, 
         onClose,
         detailsTabIndex: 1,
         keepOpenAfterCreate: false,
+        createSuccessBehavior: onCreateSuccess ? 'delegate' : 'close',
+        onCreateSuccess,
     });
 
     // --- Queries ---

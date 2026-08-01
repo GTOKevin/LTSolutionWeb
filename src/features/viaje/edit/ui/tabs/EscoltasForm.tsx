@@ -2,7 +2,12 @@ import { Box, Button, Typography, TextField, Paper, alpha, useTheme, Tabs, Tab }
 import { AddModerator as AddModeratorIcon, Sync as SyncIcon } from '@mui/icons-material';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { viajeEscoltaSchema, type ViajeEscoltaFormData } from '@/features/viaje/model/schema';
+import {
+    createViajeEscoltaDefaultValues,
+    viajeEscoltaSchema,
+    type ViajeEscoltaFormData,
+    type ViajeEscoltaMode,
+} from '@/features/viaje/model/schema';
 import { useCreateViajeEscolta } from '@/features/viaje/hooks/useViajeEscoltas';
 import { useViajeEscoltaOptions } from '@/features/viaje/options/hooks/useViajeScopedOptions';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
@@ -14,46 +19,27 @@ interface EscoltasFormProps {
 export function EscoltasForm({ viajeId }: EscoltasFormProps) {
     const theme = useTheme();
     const createMutation = useCreateViajeEscolta();
-    const { flotasEscolta, colaboradores } = useViajeEscoltaOptions(true);
+    const { flotasEscolta, colaboradores } = useViajeEscoltaOptions(viajeId, true);
 
-    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ViajeEscoltaFormData>({
+    const { control, handleSubmit, reset, formState: { errors } } = useForm<ViajeEscoltaFormData>({
         resolver: zodResolver(viajeEscoltaSchema),
-        defaultValues: {
-            tercero: false,
-            flotaID: 0,
-            colaboradorID: 0,
-            empresa: '',
-            nombreConductor: '',
-        },
+        defaultValues: createViajeEscoltaDefaultValues(),
     });
 
     const isTercero = useWatch({ control, name: 'tercero', defaultValue: false });
 
-    const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-        const isTerceroMode = newValue === 1;
-        setValue('tercero', isTerceroMode);
+    const resetFormForMode = (mode: ViajeEscoltaMode) => {
+        reset(createViajeEscoltaDefaultValues(mode));
+    };
 
-        if (!isTerceroMode) {
-            setValue('flotaID', 0);
-            setValue('colaboradorID', 0);
-        } else {
-            setValue('empresa', '');
-            setValue('placa', '');
-            setValue('nombreConductor', '');
-        }
+    const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+        resetFormForMode(newValue === 1 ? 'tercero' : 'propio');
     };
 
     const onSubmit = (data: ViajeEscoltaFormData) => {
         createMutation.mutate({ viajeId, data }, {
             onSuccess: () => {
-                reset({
-                    tercero: isTercero,
-                    flotaID: 0,
-                    colaboradorID: 0,
-                    empresa: '',
-                    nombreConductor: '',
-                    placa: '',
-                });
+                resetFormForMode(isTercero ? 'tercero' : 'propio');
             },
         });
     };

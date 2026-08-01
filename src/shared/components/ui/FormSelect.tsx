@@ -1,4 +1,5 @@
 import { TextField, MenuItem, type TextFieldProps } from '@mui/material';
+import type { ChangeEvent } from 'react';
 import { type UseFormRegisterReturn } from 'react-hook-form';
 import type { SelectItem } from '@/shared/model/types';
 
@@ -28,6 +29,11 @@ export const FormSelect = ({
     onChange,
     ...props
 }: Props) => {
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+        registration?.onChange(event);
+        onChange?.(event);
+    };
+
     return (
         <TextField
             select
@@ -40,8 +46,8 @@ export const FormSelect = ({
             disabled={disabled}
             error={error}
             helperText={helperText}
-            onChange={onChange}
             {...registration}
+            onChange={handleChange}
             {...props}
         >
             <MenuItem value={0} disabled>

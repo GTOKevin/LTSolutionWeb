@@ -5,13 +5,13 @@ import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
 import { TextField } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
-import { addDaysToDateISO, addMonthsToDateISO } from '@/shared/utils/date-utils';
+import { getViajeFechaCargaLimits } from '@/features/viaje/model/form-values';
 
 interface Props {
     options: {
         clientes?: SelectItem[];
         estados?: SelectItem[];
-        allowedEstadoIds?: number[];
+        viajeEstadoAgendadoId?: number;
         flotaDisponibilidad?: {
             totalTractos: number;
             tractosLibres: number;
@@ -22,11 +22,9 @@ interface Props {
 
 export function Step1DatosBase({ options }: Props) {
     const { register, formState: { errors } } = useFormContext();
-    const { clientes, estados, allowedEstadoIds, flotaDisponibilidad } = options;
-    const fechaMinima = addDaysToDateISO(7);
-    const fechaMaxima = addMonthsToDateISO(2);
-
-    const allowedEstados = estados?.filter((estado) => allowedEstadoIds?.includes(estado.id)) || [];
+    const { clientes, estados, viajeEstadoAgendadoId, flotaDisponibilidad } = options;
+    const { min: fechaMinima, max: fechaMaxima } = getViajeFechaCargaLimits();
+    const estadoAgendadoLabel = estados?.find((estado) => estado.id === viajeEstadoAgendadoId)?.text ?? 'Agendado';
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -63,13 +61,13 @@ export function Step1DatosBase({ options }: Props) {
                         <Typography variant="overline" fontWeight={700} color="text.secondary" sx={{ letterSpacing: 1, display: 'block', mb: 1 }}>
                             Status Inicial
                         </Typography>
-                        <FormSelect
-                            label=""
-                            registration={register('estadoID', { valueAsNumber: true })}
-                            options={allowedEstados}
-                            defaultValue={0}
+                        <input type="hidden" {...register('estadoID', { valueAsNumber: true })} />
+                        <TextField
+                            fullWidth
+                            value={estadoAgendadoLabel}
+                            disabled
                             error={!!errors.estadoID}
-                            helperText={errors.estadoID?.message as string}
+                            helperText={(errors.estadoID?.message as string) || 'El estado inicial se registra automáticamente como Agendado.'}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                         />
                     </Grid>
@@ -80,7 +78,6 @@ export function Step1DatosBase({ options }: Props) {
                         <FormDatePicker
                             label=""
                             registration={register('fechaCarga')}
-                            defaultValue={fechaMinima}
                             inputProps={{ min: fechaMinima, max: fechaMaxima }}
                             error={!!errors.fechaCarga}
                             helperText={(errors.fechaCarga?.message as string) || `Seleccione una fecha entre ${fechaMinima} y ${fechaMaxima}.`}

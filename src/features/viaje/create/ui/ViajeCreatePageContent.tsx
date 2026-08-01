@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FormProvider } from 'react-hook-form';
 import { APP_PATHS } from '@shared/config/app-routes';
@@ -11,18 +10,12 @@ import { WizardSidebar } from './WizardSidebar';
 export function ViajeCreatePageContent() {
     const navigate = useNavigate();
     const options = useViajeOptions(true);
-    const controller = useViajeWizardController();
-    const { methods, activeStep, steps, handleNext, handleBack, handleSubmit, onSubmit, mutation, getValues, setValue } = controller;
-
-    useEffect(() => {
-        if (!getValues('tipoMedidaID') && options.defaultTipoMedidaId) {
-            setValue('tipoMedidaID', options.defaultTipoMedidaId);
-        }
-
-        if (!getValues('tipoPesoID') && options.defaultTipoPesoId) {
-            setValue('tipoPesoID', options.defaultTipoPesoId);
-        }
-    }, [getValues, options.defaultTipoMedidaId, options.defaultTipoPesoId, setValue]);
+    const controller = useViajeWizardController({
+        defaultTipoMedidaId: options.defaultTipoMedidaId,
+        defaultTipoPesoId: options.defaultTipoPesoId,
+        defaultEstadoId: options.viajeEstadoAgendadoId,
+    });
+    const { methods, activeStep, steps, handleNext, handleBack, handleSubmit, onSubmit, mutation } = controller;
 
     return (
         <FormProvider {...methods}>

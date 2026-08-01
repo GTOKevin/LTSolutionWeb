@@ -1,7 +1,7 @@
 import {
     Box, Typography, TextField,
     FormControlLabel, Switch,
-    Grid, Divider
+    Grid, Divider, Button, Chip, CircularProgress
 } from '@mui/material';
 import type { Viaje } from '@/entities/viaje/model/types';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -31,6 +31,8 @@ interface ResumenGeneralTabProps {
     viaje: Viaje;
     formData: ResumenGeneralData;
     onChange: (data: Partial<ResumenGeneralData>) => void;
+    onSave?: () => void;
+    isSaving?: boolean;
     isViewOnly?: boolean;
 }
 
@@ -49,7 +51,7 @@ const getUbigeoDescripcion = (ubigeo?: Viaje['origen']) =>
 const getDisplayValue = (value: string | null | undefined, fallback: string) =>
     value?.trim() ? value : fallback;
 
-export function ResumenGeneralTab({ viaje, formData, onChange, isViewOnly }: ResumenGeneralTabProps) {
+export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving = false, isViewOnly }: ResumenGeneralTabProps) {
     const handleNumberChange = (field: keyof ResumenGeneralData) => (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         onChange({ [field]: val === '' ? '' : Number(val) });
@@ -191,6 +193,31 @@ export function ResumenGeneralTab({ viaje, formData, onChange, isViewOnly }: Res
                         </Box>
 
                         <Grid container spacing={2}>
+                            <Grid size={{ xs: 12 }}>
+                                <Box sx={{ position: 'relative' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                                        Estado del Viaje
+                                    </Typography>
+                                    <Box
+                                        sx={{
+                                            width: '100%',
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                            borderRadius: 2,
+                                            px: 1.5,
+                                            py: 1.5,
+                                            bgcolor: 'background.paper',
+                                        }}
+                                    >
+                                        <Chip
+                                            label={viaje.estado?.nombre || 'Sin estado'}
+                                            color="info"
+                                            size="small"
+                                            sx={{ fontWeight: 600 }}
+                                        />
+                                    </Box>
+                                </Box>
+                            </Grid>
                             <Grid size={{ xs: 12 }}>
                                 <Box sx={{ position: 'relative' }}>
                                     <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
@@ -419,6 +446,14 @@ export function ResumenGeneralTab({ viaje, formData, onChange, isViewOnly }: Res
                     </Box>
                 </Box>
             </Box>
+
+            {!isViewOnly ? (
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button variant="contained" color="primary" onClick={onSave} disabled={isSaving}>
+                        {isSaving ? <CircularProgress size={24} color="inherit" /> : 'Guardar Cambios'}
+                    </Button>
+                </Box>
+            ) : null}
         </Box>
     );
 }

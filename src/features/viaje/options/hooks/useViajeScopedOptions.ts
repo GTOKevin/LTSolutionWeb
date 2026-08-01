@@ -1,4 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
+import { viajeEscoltaApi } from '@/entities/viaje/api/viaje-escolta.api';
 import { useViajeCatalogOptions } from './useViajeCatalogOptions';
+import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
 import { useViajeOperationalOptions } from './useViajeOperationalOptions';
 import { useViajeResourceOptions } from './useViajeResourceOptions';
 
@@ -36,11 +39,15 @@ export function useViajeGastoOptions(enabled: boolean = true) {
     };
 }
 
-export function useViajeEscoltaOptions(enabled: boolean = true) {
-    const resources = useViajeResourceOptions(enabled);
+export function useViajeEscoltaOptions(viajeId?: number, enabled: boolean = true) {
+    const { data } = useQuery({
+        queryKey: VIAJE_QUERY_KEYS.options.escolta(viajeId ?? 0),
+        queryFn: async () => (viajeId ? await viajeEscoltaApi.getOptions(viajeId) : { flotasEscolta: [], colaboradores: [] }),
+        enabled: enabled && !!viajeId,
+    });
 
     return {
-        flotasEscolta: resources.flotasEscolta,
-        colaboradores: resources.colaboradores,
+        flotasEscolta: data?.flotasEscolta ?? [],
+        colaboradores: data?.colaboradores ?? [],
     };
 }

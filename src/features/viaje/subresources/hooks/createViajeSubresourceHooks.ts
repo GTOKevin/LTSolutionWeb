@@ -1,3 +1,4 @@
+import type { QueryKey } from '@tanstack/react-query';
 import { createGenericCrudHooks } from '@/shared/hooks/useGenericCrud';
 
 interface CrudApi<TDto, TCreateResult = unknown, TUpdateResult = unknown, TDeleteResult = unknown> {
@@ -9,7 +10,8 @@ interface CrudApi<TDto, TCreateResult = unknown, TUpdateResult = unknown, TDelet
 export function createViajeSubresourceHooks<TDto, TCreateResult = unknown, TUpdateResult = unknown, TDeleteResult = unknown>(
     api: CrudApi<TDto, TCreateResult, TUpdateResult, TDeleteResult>,
     entityName: string,
-    queryKeyFactory: (viajeId: number) => readonly unknown[],
+    queryKeyFactory: (viajeId: number) => QueryKey,
+    additionalQueryKeysFactory?: (viajeId: number) => QueryKey[],
 ) {
     const genericApi = {
         create: (args: { viajeId: number; data: TDto }) => api.create(args.viajeId, args.data),
@@ -20,6 +22,11 @@ export function createViajeSubresourceHooks<TDto, TCreateResult = unknown, TUpda
     return createGenericCrudHooks(
         genericApi,
         entityName,
-        (args: { viajeId: number }) => [queryKeyFactory(args.viajeId)],
+        (args: { viajeId: number }) => {
+            const baseKeys: QueryKey[] = [queryKeyFactory(args.viajeId)];
+            const additionalKeys = additionalQueryKeysFactory?.(args.viajeId) ?? [];
+
+            return [...baseKeys, ...additionalKeys];
+        },
     );
 }

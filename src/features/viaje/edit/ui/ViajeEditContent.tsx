@@ -18,6 +18,8 @@ interface ViajeEditContentProps {
     viaje: Viaje;
     formData: ResumenGeneralData;
     onFormDataChange: (changes: Partial<ResumenGeneralData>) => void;
+    onSaveResumen: () => void;
+    isSavingResumen: boolean;
     isViewOnly: boolean;
     viajeId: number;
     tiposIncidente: SelectItem[];
@@ -28,6 +30,8 @@ export function ViajeEditContent({
     viaje,
     formData,
     onFormDataChange,
+    onSaveResumen,
+    isSavingResumen,
     isViewOnly,
     viajeId,
     tiposIncidente,
@@ -35,7 +39,14 @@ export function ViajeEditContent({
     return (
         <>
             <TabPanel value={activeTab} index={0}>
-                <ResumenGeneralTab viaje={viaje} formData={formData} onChange={onFormDataChange} isViewOnly={isViewOnly} />
+                <ResumenGeneralTab
+                    viaje={viaje}
+                    formData={formData}
+                    onChange={onFormDataChange}
+                    onSave={onSaveResumen}
+                    isSaving={isSavingResumen}
+                    isViewOnly={isViewOnly}
+                />
             </TabPanel>
             <TabPanel value={activeTab} index={1}>
                 <PlanificacionRutaTab viaje={viaje} isViewOnly={isViewOnly} />
