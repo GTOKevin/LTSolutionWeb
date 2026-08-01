@@ -23,6 +23,7 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
     const form = useForm<TipoMaestroSchema>({
         resolver: zodResolver(tipoMaestroSchema),
         defaultValues: {
+            tipoMaestroID: 0,
             nombre: '',
             codigo: '',
             seccion: '',
@@ -30,7 +31,9 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
         }
     });
 
-    const { reset, setError } = form;
+    const { reset, setError, setValue, watch, formState } = form;
+    const selectedSeccion = watch('seccion');
+    const currentTipoMaestroId = watch('tipoMaestroID');
 
     const createMutation = useCreateTipoMaestro();
     const updateMutation = useUpdateTipoMaestro();
@@ -42,10 +45,20 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
         staleTime: 1000 * 60 * 5 // 5 minutes
     });
 
+    const normalizedSeccion = selectedSeccion?.trim() ?? '';
+
+    const { data: seccionResumen } = useQuery({
+        queryKey: ['tipo-maestro-section-hints', normalizedSeccion],
+        queryFn: () => tipoMaestroApi.getSeccionResumen(normalizedSeccion),
+        enabled: open && !isEdit && normalizedSeccion.length > 0,
+        staleTime: 1000 * 60 * 2
+    });
+
     useEffect(() => {
         if (open) {
             if (maestroToEdit) {
                 reset({
+                    tipoMaestroID: maestroToEdit.tipoMaestroID,
                     nombre: maestroToEdit.nombre,
                     codigo: maestroToEdit.codigo || '',
                     seccion: maestroToEdit.seccion || '',
@@ -53,6 +66,7 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
                 });
             } else {
                 reset({
+                    tipoMaestroID: 0,
                     nombre: '',
                     codigo: '',
                     seccion: '',
@@ -69,6 +83,22 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
             };
         }
     }, [open, maestroToEdit, reset]);
+
+    useEffect(() => {
+        if (!open || isEdit) {
+            return;
+        }
+
+        const suggestedId = seccionResumen?.siguienteIdSugerido;
+        if (!suggestedId) {
+            return;
+        }
+
+        const shouldSeedSuggestedId = !formState.dirtyFields.tipoMaestroID && (!currentTipoMaestroId || currentTipoMaestroId <= 0);
+        if (shouldSeedSuggestedId) {
+            setValue('tipoMaestroID', suggestedId, { shouldDirty: false, shouldValidate: true });
+        }
+    }, [currentTipoMaestroId, formState.dirtyFields.tipoMaestroID, isEdit, open, seccionResumen?.siguienteIdSugerido, setValue]);
 
     const onSubmit = (data: TipoMaestroSchema) => {
         if (isEdit && maestroToEdit) {
@@ -111,6 +141,7 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
         errorMessage,
         setErrorMessage,
         secciones,
+        seccionResumen,
         onSubmit,
         isEdit,
         isSubmitting: createMutation.isPending || updateMutation.isPending

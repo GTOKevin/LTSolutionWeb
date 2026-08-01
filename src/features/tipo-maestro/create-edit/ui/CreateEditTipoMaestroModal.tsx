@@ -11,7 +11,9 @@ import {
     Switch,
     IconButton,
     Autocomplete,
-    Alert
+    Alert,
+    Box,
+    Chip
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Controller } from 'react-hook-form';
@@ -41,7 +43,8 @@ export function CreateEditTipoMaestroModal({
         secciones,
         onSubmit,
         isEdit,
-        isSubmitting
+        isSubmitting,
+        seccionResumen
     } = useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit });
 
     const {
@@ -91,6 +94,41 @@ export function CreateEditTipoMaestroModal({
 
                         <Grid size={{xs:12}}>
                             <Controller
+                                name="tipoMaestroID"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        value={field.value || ''}
+                                        onChange={(event) => {
+                                            const nextValue = event.target.value;
+                                            field.onChange(nextValue === '' ? 0 : Number(nextValue));
+                                        }}
+                                        label="ID Maestro *"
+                                        fullWidth
+                                        type="number"
+                                        error={!!errors.tipoMaestroID}
+                                        helperText={
+                                            errors.tipoMaestroID?.message
+                                            || (isEdit
+                                                ? 'El ID del maestro se define en la creación y no se edita.'
+                                                : 'El ID es manual. Puedes ajustar el valor sugerido antes de guardar.')
+                                        }
+                                        disabled={viewOnly || isEdit}
+                                        slotProps={{
+                                            htmlInput: {
+                                                min: 1,
+                                                step: 1,
+                                                inputMode: 'numeric'
+                                            }
+                                        }}
+                                    />
+                                )}
+                            />
+                        </Grid>
+
+                        <Grid size={{xs:12}}>
+                            <Controller
                                 name="seccion"
                                 control={control}
                                 render={({ field: { onChange, value, ref, ...field } }) => (
@@ -118,6 +156,28 @@ export function CreateEditTipoMaestroModal({
                                 )}
                             />
                         </Grid>
+
+                        {!viewOnly && !isEdit && seccionResumen?.seccion ? (
+                            <Grid size={{ xs: 12 }}>
+                                <Alert severity="info" sx={{ alignItems: 'flex-start' }}>
+                                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
+                                        Referencia de IDs para la sección {seccionResumen.seccion}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {seccionResumen.siguienteIdSugerido
+                                            ? `Siguiente ID sugerido por backend: ${seccionResumen.siguienteIdSugerido}`
+                                            : 'Aún no hay IDs registrados para esta sección.'}
+                                    </Typography>
+                                    {seccionResumen.ultimosIds.length > 0 ? (
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1.5 }}>
+                                            {seccionResumen.ultimosIds.map((id) => (
+                                                <Chip key={id} label={`ID ${id}`} size="small" variant="outlined" />
+                                            ))}
+                                        </Box>
+                                    ) : null}
+                                </Alert>
+                            </Grid>
+                        ) : null}
 
                         <Grid size={{xs:12}}>
                             <Controller
