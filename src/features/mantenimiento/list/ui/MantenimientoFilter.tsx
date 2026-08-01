@@ -19,21 +19,15 @@ import {
 import { useState, useEffect } from 'react';
 import type { SelectItem } from '@/shared/model/types';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
+import { INITIAL_FILTERS, type MantenimientoFiltersState } from '../model/types';
 
 interface MantenimientoFilterProps {
     onSearch: (query: string) => void;
-    onFilter: (filters: MantenimientoFilters) => void;
+    onFilter: (filters: MantenimientoFiltersState) => void;
     onClear: () => void;
     flotas: SelectItem[];
     estados: SelectItem[];
-    initialFilters: MantenimientoFilters;
-}
-
-export interface MantenimientoFilters {
-    flotaID: number;
-    estadoID: number;
-    desde: string;
-    hasta: string;
+    initialFilters: MantenimientoFiltersState;
 }
 
 export function MantenimientoFilter({
@@ -58,11 +52,15 @@ export function MantenimientoFilter({
     }, [searchTerm, onSearch]);
 
     // --- Filters State (Manual) ---
-    const [draftFilters, setDraftFilters] = useState<MantenimientoFilters>(initialFilters);
+    const [draftFilters, setDraftFilters] = useState<MantenimientoFiltersState>(initialFilters);
 
-    const handleFilterChange = (field: keyof MantenimientoFilters, value: string | number) => {
+    useEffect(() => {
+        setDraftFilters(initialFilters);
+    }, [initialFilters]);
+
+    const handleFilterChange = (field: keyof MantenimientoFiltersState, value: string | number) => {
         setDraftFilters(prev => {
-            const newFilters: MantenimientoFilters = { ...prev };
+            const newFilters: MantenimientoFiltersState = { ...prev };
 
             switch (field) {
                 case 'flotaID':
@@ -96,12 +94,7 @@ export function MantenimientoFilter({
 
     const handleClear = () => {
         setSearchTerm('');
-        setDraftFilters({
-            flotaID: 0,
-            estadoID: 0,
-            desde: '',
-            hasta: ''
-        });
+        setDraftFilters(INITIAL_FILTERS);
         onClear();
     };
 

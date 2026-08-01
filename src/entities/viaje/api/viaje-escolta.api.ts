@@ -1,5 +1,5 @@
 import { httpClient as http } from '@/shared/api/http';
-import type { CreateViajeEscoltaDto, PagedViajeEscoltas } from '../model/types';
+import type { CreateViajeEscoltaDto, PagedViajeEscoltas, ViajeEscoltaOptionsDto } from '../model/types';
 import type { PagedFilters } from '@/shared/model/types';
 
 export const viajeEscoltaApi = {
@@ -8,6 +8,11 @@ export const viajeEscoltaApi = {
         params.append('page', filters.page.toString());
         params.append('size', filters.size.toString());
         const response = await http.get<PagedViajeEscoltas>(`/viajeescolta/byviaje/${viajeId}?${params.toString()}`);
+        return response.data;
+    },
+
+    getOptions: async (viajeId: number) => {
+        const response = await http.get<ViajeEscoltaOptionsDto>(`/viajeescolta/options/${viajeId}`);
         return response.data;
     },
 

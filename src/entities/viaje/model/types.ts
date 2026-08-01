@@ -1,5 +1,5 @@
 import type { TipoMaestro } from '@/shared/model/maestro.types';
-import type { PagedFilters, PagedResponse } from '@/shared/model/types';
+import type { PagedFilters, PagedResponse, SelectItem } from '@/shared/model/types';
 
 export interface ViajeListReportDto {
     cliente: string;
@@ -511,6 +511,10 @@ export interface PagedViajes extends PagedResponse<ViajeListItem> {
     totalCompletados: number;
 }
 export type PagedViajeEscoltas = PagedResponse<ViajeEscolta>;
+export interface ViajeEscoltaOptionsDto {
+    flotasEscolta: SelectItem[];
+    colaboradores: SelectItem[];
+}
 export interface ViajeGastoCurrencyTotal {
     code: string;
     symbol: string;

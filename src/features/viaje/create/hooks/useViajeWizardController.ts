@@ -1,43 +1,65 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm, type Resolver, type SubmitHandler } from 'react-hook-form';
+import { useForm, type DefaultValues, type Resolver, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import type { CreateViajeDto } from '@/entities/viaje/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
 import { notifyMutationError, type ApiMutationError } from '@/shared/utils/api-errors';
-import { addDaysToDateISO, toInputDate } from '@/shared/utils/date-utils';
+import { toInputDate } from '@/shared/utils/date-utils';
 import { APP_PATHS, buildAppDetailPath } from '@shared/config/app-routes';
+import { getCreateViajeDefaultValues } from '../../model/form-values';
 import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
 import { viajeWizardSchema, type ViajeWizardFormData } from '../../model/schema';
 import { getViajeWizardStepFields, VIAJE_WIZARD_STEPS } from '../model/wizard-config';
 
-export function useViajeWizardController() {
+interface ViajeWizardControllerOptions {
+    defaultTipoMedidaId?: number;
+    defaultTipoPesoId?: number;
+    defaultEstadoId?: number;
+}
+
+export function useViajeWizardController(options: ViajeWizardControllerOptions = {}) {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { showToast } = useToast();
     const [activeStep, setActiveStep] = useState(0);
+    const defaultValues: DefaultValues<ViajeWizardFormData> = {
+        ...getCreateViajeDefaultValues(options.defaultEstadoId),
+        cotizacionID: undefined,
+        carretaID: 0,
+        tipoMedidaID: options.defaultTipoMedidaId ?? 0,
+        tipoPesoID: options.defaultTipoPesoId ?? 0,
+        mercaderias: [],
+    };
 
     const methods = useForm<ViajeWizardFormData>({
         resolver: zodResolver(viajeWizardSchema) as Resolver<ViajeWizardFormData>,
-        defaultValues: {
-            clienteID: 0,
-            estadoID: 0,
-            tractoID: 0,
-            carretaID: 0,
-            colaboradorID: 0,
-            origenID: 0,
-            destinoID: 0,
-            fechaCarga: addDaysToDateISO(7),
-            tipoMedidaID: 0,
-            tipoPesoID: 0,
-            ejesTracto: 0,
-            mercaderias: [],
-        },
+        defaultValues,
     });
 
     const { handleSubmit, trigger, getValues, setValue } = methods;
+
+    useEffect(() => {
+        if (!getValues('tipoMedidaID') && options.defaultTipoMedidaId) {
+            setValue('tipoMedidaID', options.defaultTipoMedidaId);
+        }
+
+        if (!getValues('tipoPesoID') && options.defaultTipoPesoId) {
+            setValue('tipoPesoID', options.defaultTipoPesoId);
+        }
+
+        if (!getValues('estadoID') && options.defaultEstadoId) {
+            setValue('estadoID', options.defaultEstadoId, { shouldValidate: true });
+        }
+    }, [
+        getValues,
+        options.defaultEstadoId,
+        options.defaultTipoMedidaId,
+        options.defaultTipoPesoId,
+        setValue,
+    ]);
 
     const mutation = useMutation<number | void, ApiMutationError, CreateViajeDto>({
         mutationFn: async (data: CreateViajeDto) => {

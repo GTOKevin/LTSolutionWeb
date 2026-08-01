@@ -14,15 +14,13 @@ import { EtapaCard } from './EtapaCard';
 import { SugerenciasRutaPanel } from './SugerenciasRutaPanel';
 import type { ViajeRutaDto } from '@/entities/viaje/model/types';
 import { Alert, Box, Typography, Button, CircularProgress, Divider } from '@mui/material';
-import SaveIcon from '@mui/icons-material/Save';
 
 interface PlanRutaSidebarProps {
     viajeId: number;
-    onClose?: () => void;
     isViewOnly?: boolean;
 }
 
-export function PlanRutaSidebar({ viajeId, onClose, isViewOnly }: PlanRutaSidebarProps) {
+export function PlanRutaSidebar({ viajeId, isViewOnly }: PlanRutaSidebarProps) {
     const { data: rutas, isLoading, isError, refetch, isRefetching } = useViajeRutas(viajeId);
     const reorderMutation = useReorderViajeRutas();
     const hasBlockingError = isError && !rutas;
@@ -112,17 +110,6 @@ export function PlanRutaSidebar({ viajeId, onClose, isViewOnly }: PlanRutaSideba
                     </>
                 )}
             </Box>
-
-            {!isViewOnly && !hasBlockingError && (
-                <>
-                    <Divider />
-                    <Box p={3} bgcolor="grey.50">
-                        <Button variant="contained" color="primary" fullWidth size="large" startIcon={<SaveIcon />} onClick={onClose} sx={{ py: 1.5, borderRadius: 2 }}>
-                            Confirmar Ruta
-                        </Button>
-                    </Box>
-                </>
-            )}
         </>
     );
 }

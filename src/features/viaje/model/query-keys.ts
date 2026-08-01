@@ -30,5 +30,6 @@ export const VIAJE_QUERY_KEYS = {
         monedas: () => ['maestro-select-pago'] as const,
         estados: () => ['maestro-select-estado'] as const,
         flotaDisponibilidad: () => ['flota', 'disponibilidad'] as const,
+        escolta: (viajeId: number) => ['viaje-escolta-options', viajeId] as const,
     }
 } as const;

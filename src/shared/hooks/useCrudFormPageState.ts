@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
 
+type CreateSuccessBehavior = 'keep_open' | 'close' | 'delegate';
+
 interface UseCrudFormPageStateOptions {
     entityId?: number | null;
     onSuccess: (id: number) => void;
@@ -7,6 +9,8 @@ interface UseCrudFormPageStateOptions {
     initialTab?: number;
     detailsTabIndex?: number;
     keepOpenAfterCreate?: boolean;
+    createSuccessBehavior?: CreateSuccessBehavior;
+    onCreateSuccess?: (id: number) => void;
 }
 
 export function useCrudFormPageState({
@@ -16,10 +20,13 @@ export function useCrudFormPageState({
     initialTab = 0,
     detailsTabIndex = 1,
     keepOpenAfterCreate = true,
+    createSuccessBehavior,
+    onCreateSuccess,
 }: UseCrudFormPageStateOptions) {
     const [activeTab, setActiveTab] = useState(initialTab);
     const [createdId, setCreatedId] = useState<number | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const resolvedCreateSuccessBehavior = createSuccessBehavior ?? (keepOpenAfterCreate ? 'keep_open' : 'close');
 
     const isEdit = typeof entityId === 'number' && entityId > 0;
     const effectiveId = entityId ?? createdId;
@@ -40,14 +47,21 @@ export function useCrudFormPageState({
     const handleMutationSuccess = useCallback((id: number) => {
         onSuccess(id);
 
-        if (!isEdit && !createdId && keepOpenAfterCreate) {
-            setCreatedId(id);
-            setActiveTab(detailsTabIndex);
-            return;
+        if (!isEdit && !createdId) {
+            if (resolvedCreateSuccessBehavior === 'keep_open') {
+                setCreatedId(id);
+                setActiveTab(detailsTabIndex);
+                return;
+            }
+
+            if (resolvedCreateSuccessBehavior === 'delegate') {
+                onCreateSuccess?.(id);
+                return;
+            }
         }
 
         onClose();
-    }, [createdId, detailsTabIndex, isEdit, keepOpenAfterCreate, onClose, onSuccess]);
+    }, [createdId, detailsTabIndex, isEdit, onClose, onCreateSuccess, onSuccess, resolvedCreateSuccessBehavior]);
 
     return {
         activeTab,

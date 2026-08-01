@@ -18,7 +18,7 @@ import {
 import { useState } from 'react';
 import type { ViajeFilters } from '@entities/viaje/model/types';
 import { useViajeListFilterOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
-import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
+import { getFirstDayOfCurrentMonthISOMinus, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
 
 interface Props {
     onSearch: (filters: ViajeFilters) => void;
@@ -32,7 +32,7 @@ export function ViajesFilters({ onSearch }: Props) {
     const [filters, setFilters] = useState<ViajeFilters>({
         page: 1,
         size: 10,
-        fechaInicio: getFirstDayOfCurrentMonthISO(),
+        fechaInicio: getFirstDayOfCurrentMonthISOMinus(3),
         fechaFin: getLastDayOfCurrentMonthISO(),
         clienteID: 0,
         colaboradorID: 0,

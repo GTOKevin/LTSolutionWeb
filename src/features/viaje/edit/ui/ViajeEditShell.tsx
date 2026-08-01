@@ -1,4 +1,4 @@
-import { Box, Button, Chip, CircularProgress, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Button, Chip, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import type { ReactNode, SyntheticEvent } from 'react';
 
 interface ViajeEditShellTab {
@@ -13,9 +13,6 @@ interface ViajeEditShellProps {
     onTabChange: (_event: SyntheticEvent, value: number) => void;
     tabs: ViajeEditShellTab[];
     onBack: () => void;
-    onSave?: () => void;
-    isSaving?: boolean;
-    isViewOnly?: boolean;
     children: ReactNode;
 }
 
@@ -26,9 +23,6 @@ export function ViajeEditShell({
     onTabChange,
     tabs,
     onBack,
-    onSave,
-    isSaving = false,
-    isViewOnly = false,
     children,
 }: ViajeEditShellProps) {
     return (
@@ -52,14 +46,9 @@ export function ViajeEditShell({
 
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                     <Chip label={statusLabel || ''} color="info" size="small" sx={{ fontWeight: 600, mr: 2 }} />
-                    <Button onClick={onBack} variant="outlined" color="inherit" disabled={isSaving}>
+                    <Button onClick={onBack} variant="outlined" color="inherit">
                         Volver
                     </Button>
-                    {!isViewOnly && onSave ? (
-                        <Button variant="contained" color="primary" onClick={onSave} disabled={isSaving}>
-                            {isSaving ? <CircularProgress size={24} color="inherit" /> : 'Guardar Cambios'}
-                        </Button>
-                    ) : null}
                 </Box>
             </Stack>
 

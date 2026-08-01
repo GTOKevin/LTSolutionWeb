@@ -54,7 +54,7 @@ export function FacturaCreateEditHeader({
             </Box>
             <Box sx={{ display: 'flex', gap: 2 }}>
                 <Button onClick={onBack} color="inherit">
-                    {viewOnly ? 'Cerrar' : 'Cancelar'}
+                    Regresar
                 </Button>
                 {!viewOnly ? (
                     <Button

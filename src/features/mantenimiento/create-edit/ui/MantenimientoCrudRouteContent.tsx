@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { APP_PATHS } from '@shared/config/app-routes';
+import { APP_PATHS, buildAppDetailPath } from '@shared/config/app-routes';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
 import { useMantenimientoForm } from '@features/mantenimiento/hooks/useMantenimientoForm';
 import { CrudTabbedPageShell } from '@shared/components/ui/CrudTabbedPageShell';
@@ -61,6 +61,7 @@ export function MantenimientoCrudRouteContent({ mode }: MantenimientoCrudRouteCo
     } = useMantenimientoForm({
         mantenimientoToEdit: mantenimiento ?? null,
         onSuccess: () => undefined,
+        onCreateSuccess: (createdMantenimientoId) => navigate(buildAppDetailPath(APP_PATHS.mantenimientos, createdMantenimientoId)),
         onClose: () => navigate(APP_PATHS.mantenimientos),
         open: true,
     });

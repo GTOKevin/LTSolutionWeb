@@ -4,18 +4,19 @@ import {
     Button,
     useTheme,
     alpha,
-    InputBase,
-    Select,
+    TextField,
     MenuItem,
     useMediaQuery,
 } from '@mui/material';
 import {
     AddCircle as AddCircleIcon,
     Info as InfoIcon,
+    Search as SearchIcon,
 } from '@mui/icons-material';
 import { FacturaPagoForm, FacturaPagosModal } from '@/features/factura/pagos';
 import { FacturaTable } from './FacturaTable';
 import { FacturaMobileList } from './FacturaMobileList';
+import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
 import { formatDecimalAmount } from '@/shared/utils/format-utils';
 import type { useFacturasPageController } from '../hooks/useFacturasPageController';
 
@@ -131,54 +132,81 @@ export function FacturasPageContent({ controller }: FacturasPageContentProps) {
                         <Typography variant="caption" fontWeight="bold" textTransform="uppercase" letterSpacing={1} color="text.secondary">
                             Filtros Avanzados
                         </Typography>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, minmax(0, 1fr))' }, gap: 2, alignItems: 'end' }}>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                <Typography variant="caption" fontWeight={600} color="text.primary" sx={{ ml: 0.5 }}>Estado</Typography>
-                                <Select
-                                    value={controller.filters.estadoID ? controller.filters.estadoID.toString() : 'todos'}
-                                    onChange={(event) => controller.setFilters((prev) => ({
-                                        ...prev,
-                                        estadoID: event.target.value === 'todos' ? undefined : Number(event.target.value),
-                                        page: 1,
-                                    }))}
+                                <TextField
+                                    select
+                                    label="Estado"
+                                    value={controller.draftFilters.estadoID ? controller.draftFilters.estadoID.toString() : 'todos'}
+                                    onChange={(event) => controller.handleEstadoDraftChange(event.target.value)}
                                     size="small"
-                                    sx={{ bgcolor: 'background.paper', borderRadius: 2, '& fieldset': { border: 'none' } }}
+                                    fullWidth
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            bgcolor: 'background.paper',
+                                            borderRadius: 2,
+                                        },
+                                    }}
                                 >
                                     <MenuItem value="todos">Todos los estados</MenuItem>
                                     {controller.facturaGeneradaId ? <MenuItem value={controller.facturaGeneradaId.toString()}>{getEstadoLabel(controller.facturaGeneradaId, 'Generado')}</MenuItem> : null}
                                     {controller.facturaEmitidaId ? <MenuItem value={controller.facturaEmitidaId.toString()}>{getEstadoLabel(controller.facturaEmitidaId, 'Emitido')}</MenuItem> : null}
                                     {controller.facturaEntregadaId ? <MenuItem value={controller.facturaEntregadaId.toString()}>{getEstadoLabel(controller.facturaEntregadaId, 'Entregado')}</MenuItem> : null}
-                                </Select>
+                                </TextField>
                             </Box>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                <Typography variant="caption" fontWeight={600} color="text.primary" sx={{ ml: 0.5 }}>Fecha Inicio</Typography>
-                                <Box sx={{ position: 'relative' }}>
-                                    <InputBase
-                                        type="date"
-                                        value={controller.filters.fechaInicio || ''}
-                                        onChange={(event) => controller.setFilters((prev) => ({ ...prev, fechaInicio: event.target.value, page: 1 }))}
-                                        sx={{ width: '100%', bgcolor: 'background.paper', borderRadius: 2, py: 1, pl: 2, pr: 2, fontSize: '0.875rem' }}
-                                    />
-                                </Box>
+                                <FormDatePicker
+                                    label="Fecha Inicio"
+                                    value={controller.draftFilters.fechaInicio || ''}
+                                    onChange={(event) => controller.handleFechaInicioDraftChange(event.target.value)}
+                                    inputProps={{ max: controller.draftFilters.fechaFin || undefined }}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            bgcolor: 'background.paper',
+                                            borderRadius: 2,
+                                        },
+                                    }}
+                                />
                             </Box>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                <Typography variant="caption" fontWeight={600} color="text.primary" sx={{ ml: 0.5 }}>Fecha Fin</Typography>
-                                <Box sx={{ position: 'relative' }}>
-                                    <InputBase
-                                        type="date"
-                                        value={controller.filters.fechaFin || ''}
-                                        onChange={(event) => controller.setFilters((prev) => ({ ...prev, fechaFin: event.target.value, page: 1 }))}
-                                        sx={{ width: '100%', bgcolor: 'background.paper', borderRadius: 2, py: 1, pl: 2, pr: 2, fontSize: '0.875rem' }}
-                                    />
-                                </Box>
+                                <FormDatePicker
+                                    label="Fecha Fin"
+                                    value={controller.draftFilters.fechaFin || ''}
+                                    onChange={(event) => controller.handleFechaFinDraftChange(event.target.value)}
+                                    inputProps={{ min: controller.draftFilters.fechaInicio || undefined }}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            bgcolor: 'background.paper',
+                                            borderRadius: 2,
+                                        },
+                                    }}
+                                />
                             </Box>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, gridColumn: { xs: 'span 1', md: 'span 3' } }}>
-                                <Typography variant="caption" fontWeight={600} color="text.primary" sx={{ ml: 0.5 }}>Cliente / Factura</Typography>
-                                <InputBase
+                            <Box sx={{ display: 'flex', alignItems: 'stretch' }}>
+                                <Button
+                                    variant="contained"
+                                    startIcon={<SearchIcon />}
+                                    onClick={controller.handleApplyFilters}
+                                    fullWidth
+                                    sx={{ borderRadius: 2, fontWeight: 600 }}
+                                >
+                                    Buscar
+                                </Button>
+                            </Box>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, gridColumn: { xs: 'span 1', md: 'span 4' } }}>
+                                <TextField
+                                    label="Cliente / Factura"
                                     placeholder="Buscar por serie-numero o cliente..."
-                                    value={controller.filters.search}
-                                    onChange={(event) => controller.setFilters((prev) => ({ ...prev, search: event.target.value, page: 1 }))}
-                                    sx={{ width: '100%', bgcolor: 'background.paper', borderRadius: 2, py: 1, px: 2, fontSize: '0.875rem' }}
+                                    value={controller.draftFilters.search || ''}
+                                    onChange={(event) => controller.handleSearchDraftChange(event.target.value)}
+                                    size="small"
+                                    fullWidth
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            bgcolor: 'background.paper',
+                                            borderRadius: 2,
+                                        },
+                                    }}
                                 />
                             </Box>
                         </Box>

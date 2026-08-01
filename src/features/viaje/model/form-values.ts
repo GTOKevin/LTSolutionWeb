@@ -1,9 +1,16 @@
 import type { CreateViajeDto, Viaje } from '@/entities/viaje/model/types';
-import { getCurrentDateISO, toInputDate } from '@/shared/utils/date-utils';
+import { addMonthsToDateISO, getCurrentDateISO, removeDaysToDateISO, toInputDate } from '@/shared/utils/date-utils';
 
-export function getCreateViajeDefaultValues(): CreateViajeDto {
+export function getViajeFechaCargaLimits() {
     return {
-        estadoID: 0,
+        min: removeDaysToDateISO(3),
+        max: addMonthsToDateISO(2),
+    };
+}
+
+export function getCreateViajeDefaultValues(defaultEstadoId: number = 0): CreateViajeDto {
+    return {
+        estadoID: defaultEstadoId,
         requiereEscolta: false,
         fechaCarga: getCurrentDateISO(),
         clienteID: 0,
