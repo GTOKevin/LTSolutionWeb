@@ -26,9 +26,11 @@ export function useViajeWizardController(options: ViajeWizardControllerOptions =
     const { showToast } = useToast();
     const [activeStep, setActiveStep] = useState(0);
     const defaultValues: DefaultValues<ViajeWizardFormData> = {
-        ...getCreateViajeDefaultValues(),
+        ...getCreateViajeDefaultValues(options.defaultEstadoId),
         cotizacionID: undefined,
         carretaID: 0,
+        tipoMedidaID: options.defaultTipoMedidaId ?? 0,
+        tipoPesoID: options.defaultTipoPesoId ?? 0,
         mercaderias: [],
     };
 

@@ -21,10 +21,13 @@ interface Props {
 }
 
 export function Step1DatosBase({ options }: Props) {
-    const { register, formState: { errors } } = useFormContext();
+    const { register, watch, formState: { errors } } = useFormContext();
     const { clientes, estados, viajeEstadoAgendadoId, flotaDisponibilidad } = options;
     const { min: fechaMinima, max: fechaMaxima } = getViajeFechaCargaLimits();
-    const estadoAgendadoLabel = estados?.find((estado) => estado.id === viajeEstadoAgendadoId)?.text ?? 'Agendado';
+    const estadoId = watch('estadoID');
+    const hasResolvedEstado = typeof estadoId === 'number' && estadoId > 0;
+    const estadoAgendadoLabel = estados?.find((estado) => estado.id === estadoId)?.text
+        ?? (hasResolvedEstado && estadoId === viajeEstadoAgendadoId ? 'Agendado' : '');
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -67,7 +70,11 @@ export function Step1DatosBase({ options }: Props) {
                             value={estadoAgendadoLabel}
                             disabled
                             error={!!errors.estadoID}
-                            helperText={(errors.estadoID?.message as string) || 'El estado inicial se registra automáticamente como Agendado.'}
+                            helperText={(errors.estadoID?.message as string) || (
+                                hasResolvedEstado
+                                    ? 'El estado inicial se registra automáticamente como Agendado.'
+                                    : 'Resolviendo el estado inicial del viaje...'
+                            )}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                         />
                     </Grid>
