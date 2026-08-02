@@ -1,5 +1,6 @@
-import { alpha, Box, Button, IconButton, Typography, useTheme } from '@mui/material';
+import { alpha, Box, Button, IconButton, Typography, useTheme, Chip } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import type { Factura } from '@/entities/factura/model/types';
 
 interface FacturaCreateEditHeaderProps {
     title: string;
@@ -7,6 +8,7 @@ interface FacturaCreateEditHeaderProps {
     viewOnly: boolean;
     isSaving: boolean;
     canSubmit: boolean;
+    factura?: Factura;
     onBack: () => void;
 }
 
@@ -16,6 +18,7 @@ export function FacturaCreateEditHeader({
     viewOnly,
     isSaving,
     canSubmit,
+    factura,
     onBack,
 }: FacturaCreateEditHeaderProps) {
     const theme = useTheme();
@@ -40,9 +43,27 @@ export function FacturaCreateEditHeader({
                     <ArrowBackIcon />
                 </IconButton>
                 <Box>
-                    <Typography variant="h5" fontWeight="bold" color="text.primary">
-                        {title}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography variant="h5" fontWeight="bold" color="text.primary">
+                            {title}
+                        </Typography>
+                        {factura?.esVencida && (
+                            <Chip 
+                                label="Factura Vencida" 
+                                color="error" 
+                                size="small" 
+                                variant="outlined" 
+                            />
+                        )}
+                        {factura?.esCompromisoVencido && !factura?.esVencida && (
+                            <Chip 
+                                label="Compromiso expirado" 
+                                color="warning" 
+                                size="small" 
+                                variant="outlined" 
+                            />
+                        )}
+                    </Box>
                     <Typography
                         variant="caption"
                         color="text.secondary"

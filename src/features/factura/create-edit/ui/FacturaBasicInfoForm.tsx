@@ -1,7 +1,7 @@
 import type { FormEventHandler } from 'react';
 import { Controller, type UseFormReturn } from 'react-hook-form';
-import { Box, Grid, MenuItem, Paper, TextField, Typography, useTheme } from '@mui/material';
-import { Receipt as ReceiptIcon } from '@mui/icons-material';
+import { Box, Grid, MenuItem, Paper, TextField, Typography, useTheme, Tooltip } from '@mui/material';
+import { Receipt as ReceiptIcon, InfoOutlined as InfoOutlinedIcon } from '@mui/icons-material';
 import { FormDatePicker } from '@shared/components/ui/FormDatePicker';
 import type { SelectItem } from '@shared/model/types';
 import type { CreateFacturaSchema } from '../../model/schema';
@@ -174,8 +174,11 @@ export function FacturaBasicInfoForm({
                     </Grid>
 
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                        <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>
                             Días de Crédito
+                            <Tooltip title="Acuerdo promedio conversado con el cliente. La fecha de compromiso de pago se calcula automáticamente sumando estos días a la Fecha de Emisión." placement="top">
+                                <InfoOutlinedIcon sx={{ fontSize: 16, ml: 0.5, color: 'text.secondary' }} />
+                            </Tooltip>
                         </Typography>
                         <Controller
                             name="diasCredito"
@@ -198,11 +201,14 @@ export function FacturaBasicInfoForm({
                     </Grid>
 
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                        <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>
-                            Fecha Compromiso
+                        <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>
+                            Fecha Vencimiento
+                            <Tooltip title="Tope máximo de espera para el pago. Por defecto: 1 mes desde la emisión." placement="top">
+                                <InfoOutlinedIcon sx={{ fontSize: 16, ml: 0.5, color: 'text.secondary' }} />
+                            </Tooltip>
                         </Typography>
                         <Controller
-                            name="fechaCompromisoPago"
+                            name="fechaVencimiento"
                             control={control}
                             render={({ field }) => (
                                 <FormDatePicker
@@ -211,7 +217,7 @@ export function FacturaBasicInfoForm({
                                     disabled={viewOnly}
                                     value={field.value}
                                     onChange={field.onChange}
-                                    error={!!errors.fechaCompromisoPago}
+                                    error={!!errors.fechaVencimiento}
                                     fullWidth
                                     sx={{ bgcolor: 'background.default', borderRadius: 2 }}
                                 />

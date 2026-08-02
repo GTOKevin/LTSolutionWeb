@@ -89,6 +89,26 @@ export function useFacturaCreateEditController({
         }
     }, [estadoGeneradoId, form, isEdit]);
 
+    const fechaEmision = form.watch('fechaEmision');
+    const diasCredito = form.watch('diasCredito');
+
+    useEffect(() => {
+        if (!isEdit && fechaEmision) {
+            const emisionDate = new Date(fechaEmision);
+            // new Date("YYYY-MM-DD") is treated as UTC at midnight.
+            if (!isNaN(emisionDate.getTime())) {
+                const vencimientoDate = new Date(emisionDate);
+                vencimientoDate.setUTCMonth(vencimientoDate.getUTCMonth() + 1);
+                form.setValue('fechaVencimiento', vencimientoDate.toISOString().split('T')[0], { shouldValidate: true });
+
+                const compromisoDate = new Date(emisionDate);
+                const dias = typeof diasCredito === 'number' && diasCredito > 0 ? diasCredito : 30;
+                compromisoDate.setUTCDate(compromisoDate.getUTCDate() + dias);
+                form.setValue('fechaCompromisoPago', compromisoDate.toISOString().split('T')[0], { shouldValidate: true });
+            }
+        }
+    }, [fechaEmision, diasCredito, isEdit, form]);
+
     const handleFormSubmit: SubmitHandler<CreateFacturaSchema> = async (data) => {
         try {
             if (isEdit && !factura) {

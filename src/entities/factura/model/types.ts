@@ -51,6 +51,8 @@ export interface Factura {
     saldoPendiente: number;
     estadoID: number;
     activo: boolean;
+    esVencida?: boolean;
+    esCompromisoVencido?: boolean;
     cliente?: Cliente;
     moneda?: Moneda;
     estado?: Estado;

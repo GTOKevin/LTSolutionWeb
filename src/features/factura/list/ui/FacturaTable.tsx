@@ -47,6 +47,7 @@ export function FacturaTable({
         { id: 'fechas', label: 'Fechas' },
         { id: 'montos', label: 'Montos' },
         { id: 'estado', label: 'Estado' },
+        { id: 'estadoPago', label: 'Est. Pago' },
         { id: 'acciones', label: 'Acciones', align: 'right' }
     ], []);
 
@@ -81,7 +82,12 @@ export function FacturaTable({
                             <Typography variant="body2">
                                 <strong>Emisión:</strong> {formatDateLong(item.fechaEmision)}
                             </Typography>
-                            <Typography variant="body2" color={new Date(item.fechaVencimiento) < new Date() ? 'error.main' : 'text.secondary'}>
+                            {item.fechaCompromisoPago && (
+                                <Typography variant="body2" color={new Date(item.fechaCompromisoPago) < new Date() && item.saldoPendiente > 0 ? 'warning.main' : 'text.secondary'}>
+                                    <strong>Compromiso:</strong> {formatDateLong(item.fechaCompromisoPago)}
+                                </Typography>
+                            )}
+                            <Typography variant="body2" color={new Date(item.fechaVencimiento) < new Date() && item.saldoPendiente > 0 ? 'error.main' : 'text.secondary'}>
                                 <strong>Vence:</strong> {formatDateLong(item.fechaVencimiento)}
                             </Typography>
                         </Box>
@@ -103,6 +109,39 @@ export function FacturaTable({
                             size="small" 
                             variant="filled"
                         />
+                    </TableCell>
+                    <TableCell>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
+                            {item.saldoPendiente <= 0 ? (
+                                <Chip 
+                                    label="Pagado" 
+                                    color="success" 
+                                    size="small" 
+                                    variant="outlined" 
+                                />
+                            ) : item.esVencida ? (
+                                <Chip 
+                                    label="Vencida" 
+                                    color="error" 
+                                    size="small" 
+                                    variant="outlined" 
+                                />
+                            ) : item.esCompromisoVencido ? (
+                                <Chip 
+                                    label="Compromiso expirado" 
+                                    color="warning" 
+                                    size="small" 
+                                    variant="outlined" 
+                                />
+                            ) : (
+                                <Chip 
+                                    label="Pendiente" 
+                                    color="info" 
+                                    size="small" 
+                                    variant="outlined" 
+                                />
+                            )}
+                        </Box>
                     </TableCell>
                     <TableCell align="right">
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>

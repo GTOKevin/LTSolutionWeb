@@ -10,7 +10,7 @@ export interface LoginResponse {
 }
 
 export interface RefreshTokenRequest {
-    token: string;
+    token?: string;
     refreshToken?: string;
 }
 

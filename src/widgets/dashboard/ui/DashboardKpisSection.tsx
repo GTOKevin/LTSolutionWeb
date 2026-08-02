@@ -29,8 +29,9 @@ export function DashboardKpisSection({
 }: DashboardKpisSectionProps) {
     const theme = useTheme();
     const visibleFacturasVencidas = canViewFacturas ? data.alertasCriticas.facturasVencidas : 0;
+    const visibleCompromisosVencidos = canViewFacturas ? data.alertasCriticas.compromisosVencidos : 0;
     const visibleDocumentosVencidos = canViewColaboradores || canViewFlota ? data.alertasCriticas.documentosVencidos : 0;
-    const visibleCriticalAlerts = visibleFacturasVencidas + visibleDocumentosVencidos;
+    const visibleCriticalAlerts = visibleFacturasVencidas + visibleDocumentosVencidos + visibleCompromisosVencidos;
 
     return (
         <Box
@@ -93,16 +94,28 @@ export function DashboardKpisSection({
                     <Typography sx={{ fontSize: { xs: '2rem', md: '2.5rem' }, fontWeight: 700, lineHeight: 1, color: theme.palette.error.main }}>
                         {visibleCriticalAlerts.toString().padStart(2, '0')}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        {[
-                            canViewFacturas ? `${visibleFacturasVencidas} facturas vencidas` : null,
-                            canViewColaboradores || canViewFlota
-                                ? `${visibleDocumentosVencidos} documentos/licencias vencidos`
-                                : null,
-                        ]
-                            .filter(Boolean)
-                            .join(' y ') || 'Sin alertas visibles para tus módulos.'}
-                    </Typography>
+                    <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        {canViewFacturas && visibleFacturasVencidas > 0 && (
+                            <Typography variant="body2" color="error.main">
+                                • {visibleFacturasVencidas} facturas vencidas
+                            </Typography>
+                        )}
+                        {canViewFacturas && visibleCompromisosVencidos > 0 && (
+                            <Typography variant="body2" color="warning.main">
+                                • {visibleCompromisosVencidos} compromisos atrasados
+                            </Typography>
+                        )}
+                        {(canViewColaboradores || canViewFlota) && visibleDocumentosVencidos > 0 && (
+                            <Typography variant="body2" color="text.secondary">
+                                • {visibleDocumentosVencidos} documentos/licencias vencidos
+                            </Typography>
+                        )}
+                        {visibleCriticalAlerts === 0 && (
+                            <Typography variant="body2" color="text.secondary">
+                                Sin alertas visibles para tus módulos.
+                            </Typography>
+                        )}
+                    </Box>
                 </DashboardMetricCard>
             )}
 

@@ -19,6 +19,7 @@ export const createFacturaSchema = z.object({
             message: ERROR_MESSAGES.FACTURA_NUMERO_INVALIDO
         }),
     fechaEmision: z.string().min(1, 'Fecha de Emisión es requerida'),
+    fechaVencimiento: z.string().optional().nullable(),
     fechaCompromisoPago: z.string().optional().nullable(),
     diasCredito: z.coerce.number().optional().nullable(),
     monedaID: z.number().min(1, 'Moneda es requerida'),
@@ -33,6 +34,7 @@ export function getCreateFacturaDefaultValues(): CreateFacturaSchema {
         serie: '',
         numero: '',
         fechaEmision: new Date().toISOString().split('T')[0],
+        fechaVencimiento: '',
         fechaCompromisoPago: '',
         diasCredito: null,
         monedaID: 0,
@@ -46,6 +48,7 @@ export function mapFacturaToFormValues(factura: Factura): CreateFacturaSchema {
         serie: factura.serie,
         numero: factura.numero,
         fechaEmision: factura.fechaEmision.split('T')[0],
+        fechaVencimiento: factura.fechaVencimiento ? factura.fechaVencimiento.split('T')[0] : '',
         fechaCompromisoPago: factura.fechaCompromisoPago ? factura.fechaCompromisoPago.split('T')[0] : '',
         diasCredito: factura.diasCredito || null,
         monedaID: factura.monedaID,

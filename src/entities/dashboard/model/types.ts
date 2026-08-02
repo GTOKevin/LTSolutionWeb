@@ -15,6 +15,7 @@ export interface DashboardFacturacionMensualItem {
 export interface DashboardAlertasCriticas {
     total: number;
     facturasVencidas: number;
+    compromisosVencidos: number;
     documentosVencidos: number;
 }
 
@@ -42,6 +43,7 @@ export interface DashboardEstadoFacturacionPorMoneda {
     pagadoMonto: number;
     pendienteMonto: number;
     vencidoMonto: number;
+    compromisoVencidoMonto: number;
 }
 
 export interface DashboardEstadoFacturacion {
@@ -49,9 +51,11 @@ export interface DashboardEstadoFacturacion {
     pagadas: number;
     pendientes: number;
     vencidas: number;
+    compromisosVencidos: number;
     pagadoPct: number;
     pendientePct: number;
     vencidoPct: number;
+    compromisoVencidoPct: number;
     totalesPorMoneda: DashboardEstadoFacturacionPorMoneda[];
 }
 
