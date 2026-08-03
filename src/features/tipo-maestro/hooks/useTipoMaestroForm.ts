@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { tipoMaestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { tipoMaestroSchema, type TipoMaestroSchema } from '../model/schema';
 import type { TipoMaestro } from '@entities/tipo-maestro/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
+import { useDebounce } from '@shared/hooks/useDebounce';
 import { useCreateTipoMaestro, useUpdateTipoMaestro } from './useTipoMaestroCrud';
 
 interface UseTipoMaestroFormProps {
@@ -31,9 +32,15 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
         }
     });
 
-    const { reset, setError, setValue, watch, formState } = form;
-    const selectedSeccion = watch('seccion');
-    const currentTipoMaestroId = watch('tipoMaestroID');
+    const { reset, setError, setValue, formState } = form;
+    const selectedSeccion = useWatch({
+        control: form.control,
+        name: 'seccion',
+    });
+    const currentTipoMaestroId = useWatch({
+        control: form.control,
+        name: 'tipoMaestroID',
+    });
 
     const createMutation = useCreateTipoMaestro();
     const updateMutation = useUpdateTipoMaestro();
@@ -46,11 +53,12 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
     });
 
     const normalizedSeccion = selectedSeccion?.trim() ?? '';
+    const debouncedSeccion = useDebounce(open && !isEdit ? normalizedSeccion : '', 300);
 
     const { data: seccionResumen } = useQuery({
-        queryKey: ['tipo-maestro-section-hints', normalizedSeccion],
-        queryFn: () => tipoMaestroApi.getSeccionResumen(normalizedSeccion),
-        enabled: open && !isEdit && normalizedSeccion.length > 0,
+        queryKey: ['tipo-maestro-section-hints', debouncedSeccion],
+        queryFn: () => tipoMaestroApi.getSeccionResumen(debouncedSeccion),
+        enabled: open && !isEdit && debouncedSeccion.length >= 2,
         staleTime: 1000 * 60 * 2
     });
 

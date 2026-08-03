@@ -2,6 +2,11 @@ import type { SelectItem } from '@shared/model/types';
 import type { Factura } from './types';
 import { matchesCatalogCandidate } from '@entities/master-data/lib/catalog-utils';
 
+export interface FacturaPaymentStatusMeta {
+    label: string;
+    color: 'default' | 'error' | 'info' | 'success' | 'warning';
+}
+
 export const FACTURA_STATUS_CODE = {
     GENERADO: 'GEN',
     EMITIDO: 'EMI',
@@ -75,4 +80,20 @@ export function getFacturaStatusColor(factura: Factura | null | undefined) {
     }
 
     return 'default';
+}
+
+export function getFacturaPaymentStatusMeta(factura: Factura | null | undefined): FacturaPaymentStatusMeta {
+    if ((factura?.saldoPendiente ?? 0) <= 0) {
+        return { label: 'Pagado', color: 'success' };
+    }
+
+    if (factura?.esVencida) {
+        return { label: 'Vencida', color: 'error' };
+    }
+
+    if (factura?.esCompromisoVencido) {
+        return { label: 'Compromiso expirado', color: 'warning' };
+    }
+
+    return { label: 'Pendiente', color: 'info' };
 }

@@ -5,7 +5,7 @@ import type { PagedResponse, SelectItem } from '@/shared/model/types';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
-import { getFacturaStatusColor } from '@/entities/factura/model/status';
+import { getFacturaPaymentStatusMeta, getFacturaStatusColor } from '@/entities/factura/model/status';
 import { FacturaActionMenu } from './FacturaActionMenu';
 
 interface FacturaTableProps {
@@ -41,6 +41,18 @@ export function FacturaTable({
     canDownloadReports = false,
     statusCatalog = [],
 }: FacturaTableProps) {
+    const getDateColor = (factura: Factura, field: 'compromiso' | 'vencimiento') => {
+        if (field === 'compromiso' && factura.esCompromisoVencido) {
+            return 'warning.main';
+        }
+
+        if (field === 'vencimiento' && factura.esVencida) {
+            return 'error.main';
+        }
+
+        return 'text.secondary';
+    };
+
     const columns: Column[] = React.useMemo(() => [
         { id: 'factura', label: 'Factura' },
         { id: 'cliente', label: 'Cliente' },
@@ -62,7 +74,10 @@ export function FacturaTable({
             columns={columns}
             keyExtractor={(item) => item.facturaID}
             emptyMessage="No se encontraron facturas"
-            renderRow={(item) => (
+            renderRow={(item) => {
+                const paymentStatus = getFacturaPaymentStatusMeta(item);
+
+                return (
                 <>
                     <TableCell>
                         <Typography variant="body2" fontWeight="bold" fontFamily="monospace">
@@ -83,11 +98,11 @@ export function FacturaTable({
                                 <strong>Emisión:</strong> {formatDateLong(item.fechaEmision)}
                             </Typography>
                             {item.fechaCompromisoPago && (
-                                <Typography variant="body2" color={new Date(item.fechaCompromisoPago) < new Date() && item.saldoPendiente > 0 ? 'warning.main' : 'text.secondary'}>
+                                <Typography variant="body2" color={getDateColor(item, 'compromiso')}>
                                     <strong>Compromiso:</strong> {formatDateLong(item.fechaCompromisoPago)}
                                 </Typography>
                             )}
-                            <Typography variant="body2" color={new Date(item.fechaVencimiento) < new Date() && item.saldoPendiente > 0 ? 'error.main' : 'text.secondary'}>
+                            <Typography variant="body2" color={getDateColor(item, 'vencimiento')}>
                                 <strong>Vence:</strong> {formatDateLong(item.fechaVencimiento)}
                             </Typography>
                         </Box>
@@ -112,35 +127,12 @@ export function FacturaTable({
                     </TableCell>
                     <TableCell>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
-                            {item.saldoPendiente <= 0 ? (
-                                <Chip 
-                                    label="Pagado" 
-                                    color="success" 
-                                    size="small" 
-                                    variant="outlined" 
-                                />
-                            ) : item.esVencida ? (
-                                <Chip 
-                                    label="Vencida" 
-                                    color="error" 
-                                    size="small" 
-                                    variant="outlined" 
-                                />
-                            ) : item.esCompromisoVencido ? (
-                                <Chip 
-                                    label="Compromiso expirado" 
-                                    color="warning" 
-                                    size="small" 
-                                    variant="outlined" 
-                                />
-                            ) : (
-                                <Chip 
-                                    label="Pendiente" 
-                                    color="info" 
-                                    size="small" 
-                                    variant="outlined" 
-                                />
-                            )}
+                            <Chip
+                                label={paymentStatus.label}
+                                color={paymentStatus.color}
+                                size="small"
+                                variant="outlined"
+                            />
                         </Box>
                     </TableCell>
                     <TableCell align="right">
@@ -161,7 +153,8 @@ export function FacturaTable({
                         </Box>
                     </TableCell>
                 </>
-            )}
+                );
+            }}
         />
     );
 }

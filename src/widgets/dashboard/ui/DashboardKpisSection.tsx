@@ -31,7 +31,7 @@ export function DashboardKpisSection({
     const visibleFacturasVencidas = canViewFacturas ? data.alertasCriticas.facturasVencidas : 0;
     const visibleCompromisosVencidos = canViewFacturas ? data.alertasCriticas.compromisosVencidos : 0;
     const visibleDocumentosVencidos = canViewColaboradores || canViewFlota ? data.alertasCriticas.documentosVencidos : 0;
-    const visibleCriticalAlerts = visibleFacturasVencidas + visibleDocumentosVencidos + visibleCompromisosVencidos;
+    const visibleCriticalAlerts = visibleFacturasVencidas + visibleDocumentosVencidos;
 
     return (
         <Box

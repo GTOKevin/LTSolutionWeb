@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
-import { useForm, type Resolver, type SubmitErrorHandler, type SubmitHandler } from 'react-hook-form';
+import { useForm, useWatch, type Resolver, type SubmitErrorHandler, type SubmitHandler } from 'react-hook-form';
 import { APP_PATHS, buildAppDetailPath } from '@shared/config/app-routes';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
 import { monedaApi } from '@entities/moneda/api/moneda.api';
@@ -89,8 +89,10 @@ export function useFacturaCreateEditController({
         }
     }, [estadoGeneradoId, form, isEdit]);
 
-    const fechaEmision = form.watch('fechaEmision');
-    const diasCredito = form.watch('diasCredito');
+    const fechaEmision = useWatch({
+        control: form.control,
+        name: 'fechaEmision',
+    });
 
     useEffect(() => {
         if (!isEdit && fechaEmision) {
@@ -100,14 +102,9 @@ export function useFacturaCreateEditController({
                 const vencimientoDate = new Date(emisionDate);
                 vencimientoDate.setUTCMonth(vencimientoDate.getUTCMonth() + 1);
                 form.setValue('fechaVencimiento', vencimientoDate.toISOString().split('T')[0], { shouldValidate: true });
-
-                const compromisoDate = new Date(emisionDate);
-                const dias = typeof diasCredito === 'number' && diasCredito > 0 ? diasCredito : 30;
-                compromisoDate.setUTCDate(compromisoDate.getUTCDate() + dias);
-                form.setValue('fechaCompromisoPago', compromisoDate.toISOString().split('T')[0], { shouldValidate: true });
             }
         }
-    }, [fechaEmision, diasCredito, isEdit, form]);
+    }, [fechaEmision, isEdit, form]);
 
     const handleFormSubmit: SubmitHandler<CreateFacturaSchema> = async (data) => {
         try {
@@ -119,18 +116,13 @@ export function useFacturaCreateEditController({
                 return;
             }
 
-            const formattedData = {
-                ...data,
-                fechaCompromisoPago: data.fechaCompromisoPago || null,
-            };
-
             if (isEdit && factura) {
                 await updateMutation.mutateAsync({
                     id: factura.facturaID,
                     data: {
-                        fechaCompromisoPago: formattedData.fechaCompromisoPago,
-                        monedaID: formattedData.monedaID,
-                        estadoID: formattedData.estadoID,
+                        fechaCompromisoPago: factura.fechaCompromisoPago ?? null,
+                        monedaID: data.monedaID,
+                        estadoID: data.estadoID,
                         activo: true,
                     },
                 });
@@ -139,8 +131,9 @@ export function useFacturaCreateEditController({
             }
 
             const newId = await createMutation.mutateAsync({
-                ...formattedData,
-                estadoID: estadoGeneradoId ?? formattedData.estadoID,
+                ...data,
+                fechaCompromisoPago: null,
+                estadoID: estadoGeneradoId ?? data.estadoID,
                 detalles: [],
                 pagos: [],
             });

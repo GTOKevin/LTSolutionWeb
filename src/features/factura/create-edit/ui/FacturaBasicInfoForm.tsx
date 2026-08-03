@@ -214,7 +214,7 @@ export function FacturaBasicInfoForm({
                                 <FormDatePicker
                                     label=""
                                     size="medium"
-                                    disabled={viewOnly}
+                                    disabled={isEdit || viewOnly}
                                     value={field.value}
                                     onChange={field.onChange}
                                     error={!!errors.fechaVencimiento}

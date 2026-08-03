@@ -4,7 +4,7 @@ import type { PagedResponse, SelectItem } from '@/shared/model/types';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
-import { getFacturaStatusColor } from '@/entities/factura/model/status';
+import { getFacturaPaymentStatusMeta, getFacturaStatusColor } from '@/entities/factura/model/status';
 import { FacturaActionMenu } from './FacturaActionMenu';
 
 interface FacturaMobileListProps {
@@ -40,12 +40,21 @@ export function FacturaMobileList({
     canDownloadReports = false,
     statusCatalog = [],
 }: FacturaMobileListProps) {
+    const getDateColor = (factura: Factura, field: 'compromiso' | 'vencimiento') => {
+        if (field === 'compromiso' && factura.esCompromisoVencido) {
+            return 'warning.main';
+        }
+
+        if (field === 'vencimiento' && factura.esVencida) {
+            return 'error.main';
+        }
+
+        return 'text.primary';
+    };
 
     if (isLoading) {
         return <Box sx={{ p: 4, textAlign: 'center' }}>Cargando Facturas...</Box>;
     }
-
-
 
     return (
         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
@@ -91,7 +100,10 @@ export function FacturaMobileList({
                         </Box>
                     </Box>
                 )}
-                renderBody={(row) => (
+                renderBody={(row) => {
+                    const paymentStatus = getFacturaPaymentStatusMeta(row);
+
+                    return (
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1 }}>
                         <Box>
                             <Typography variant="caption" color="text.secondary" display="block">
@@ -119,16 +131,35 @@ export function FacturaMobileList({
                         </Box>
                         <Box>
                             <Typography variant="caption" color="text.secondary" display="block">
+                                Estado de Pago
+                            </Typography>
+                            <Chip
+                                label={paymentStatus.label}
+                                color={paymentStatus.color}
+                                size="small"
+                                variant="outlined"
+                            />
+                        </Box>
+                        <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                                Compromiso
+                            </Typography>
+                            <Typography variant="body2" color={getDateColor(row, 'compromiso')}>
+                                {row.fechaCompromisoPago ? formatDateLong(row.fechaCompromisoPago) : '-'}
+                            </Typography>
+                        </Box>
+                        <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
                                 Vencimiento
                             </Typography>
-                            <Typography variant="body2" color={new Date(row.fechaVencimiento) < new Date() ? 'error.main' : 'text.primary'}>
+                            <Typography variant="body2" color={getDateColor(row, 'vencimiento')}>
                                 {formatDateLong(row.fechaVencimiento)}
                             </Typography>
                         </Box>
                     </Box>
-                )}
+                    );
+                }}
             />
         </Box>
-
     );
 }

@@ -10,7 +10,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
     configureAuthHttpClient();
-    const { isAuthenticated, hasSessionHint, hasHydrated, setAuth, logout, user } = useAuthStore();
+    const { isAuthenticated, hasHydrated, setAuth, logout } = useAuthStore();
     const [isInitialized, setIsInitialized] = useState(false);
     const initialized = useRef(false);
 
@@ -28,20 +28,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 return;
             }
 
-            if (hasSessionHint || user) {
-                try {
-                    const res = await authApi.refreshToken();
-                    setAuth(res.token);
-                } catch {
-                    logout();
-                }
+            try {
+                const res = await authApi.refreshToken();
+                setAuth(res.token);
+            } catch {
+                logout();
             }
 
             setIsInitialized(true);
         };
 
         initAuth();
-    }, [hasHydrated, hasSessionHint, isAuthenticated, logout, setAuth, user]);
+    }, [hasHydrated, isAuthenticated, logout, setAuth]);
 
     if (!isInitialized) {
         return (
