@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
-import { useForm, useWatch, type Resolver, type SubmitErrorHandler, type SubmitHandler } from 'react-hook-form';
+import { useForm, type Resolver, type SubmitErrorHandler, type SubmitHandler } from 'react-hook-form';
 import { APP_PATHS, buildAppDetailPath } from '@shared/config/app-routes';
 import { clienteApi } from '@entities/cliente/api/cliente.api';
 import { monedaApi } from '@entities/moneda/api/moneda.api';
@@ -14,6 +14,8 @@ import {
     createFacturaSchema,
     getCreateFacturaDefaultValues,
     mapFacturaToFormValues,
+    buildCreateFacturaPayload,
+    buildUpdateFacturaPayload,
     type CreateFacturaSchema,
 } from '../../model/schema';
 import { useCreateFactura, useFactura, useUpdateFactura } from '../../hooks/useFacturaCrud';
@@ -89,23 +91,6 @@ export function useFacturaCreateEditController({
         }
     }, [estadoGeneradoId, form, isEdit]);
 
-    const fechaEmision = useWatch({
-        control: form.control,
-        name: 'fechaEmision',
-    });
-
-    useEffect(() => {
-        if (!isEdit && fechaEmision) {
-            const emisionDate = new Date(fechaEmision);
-            // new Date("YYYY-MM-DD") is treated as UTC at midnight.
-            if (!isNaN(emisionDate.getTime())) {
-                const vencimientoDate = new Date(emisionDate);
-                vencimientoDate.setUTCMonth(vencimientoDate.getUTCMonth() + 1);
-                form.setValue('fechaVencimiento', vencimientoDate.toISOString().split('T')[0], { shouldValidate: true });
-            }
-        }
-    }, [fechaEmision, isEdit, form]);
-
     const handleFormSubmit: SubmitHandler<CreateFacturaSchema> = async (data) => {
         try {
             if (isEdit && !factura) {
@@ -119,24 +104,15 @@ export function useFacturaCreateEditController({
             if (isEdit && factura) {
                 await updateMutation.mutateAsync({
                     id: factura.facturaID,
-                    data: {
-                        fechaCompromisoPago: factura.fechaCompromisoPago ?? null,
-                        monedaID: data.monedaID,
-                        estadoID: data.estadoID,
-                        activo: true,
-                    },
+                    data: buildUpdateFacturaPayload(data),
                 });
                 navigate(APP_PATHS.facturas);
                 return;
             }
 
-            const newId = await createMutation.mutateAsync({
-                ...data,
-                fechaCompromisoPago: null,
-                estadoID: estadoGeneradoId ?? data.estadoID,
-                detalles: [],
-                pagos: [],
-            });
+            const newId = await createMutation.mutateAsync(
+                buildCreateFacturaPayload(data, estadoGeneradoId ?? data.estadoID)
+            );
             navigate(buildAppDetailPath(APP_PATHS.facturas, newId));
         } catch (error) {
             const message =

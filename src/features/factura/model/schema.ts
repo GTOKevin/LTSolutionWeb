@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
 import { IGV_RATE } from '@entities/factura/model/constants';
-import type { Factura } from '@entities/factura/model/types';
+import type { CreateFacturaDto, Factura, UpdateFacturaDto } from '@entities/factura/model/types';
+import { addMonthsToDateISO, getCurrentDateISO, parseDateOnly, toInputDate } from '@shared/utils/date-utils';
+
+const FACTURA_VENCIMIENTO_DEFAULT_MONTHS = 1;
 
 export const createFacturaSchema = z.object({
     clienteID: z.number().min(1, 'Cliente es requerido'),
@@ -33,8 +36,8 @@ export function getCreateFacturaDefaultValues(): CreateFacturaSchema {
         clienteID: 0,
         serie: '',
         numero: '',
-        fechaEmision: new Date().toISOString().split('T')[0],
-        fechaVencimiento: '',
+        fechaEmision: getCurrentDateISO(),
+        fechaVencimiento: getFacturaDefaultFechaVencimiento(),
         fechaCompromisoPago: '',
         diasCredito: null,
         monedaID: 0,
@@ -53,6 +56,47 @@ export function mapFacturaToFormValues(factura: Factura): CreateFacturaSchema {
         diasCredito: factura.diasCredito || null,
         monedaID: factura.monedaID,
         estadoID: factura.estadoID,
+    };
+}
+
+export function getFacturaDefaultFechaVencimiento(baseDate?: string | null) {
+    const parsedBaseDate = baseDate ? parseDateOnly(baseDate) : null;
+    return addMonthsToDateISO(FACTURA_VENCIMIENTO_DEFAULT_MONTHS, parsedBaseDate ?? new Date());
+}
+
+export function resolveFacturaFechaVencimiento(value?: string | null) {
+    const defaultFechaVencimiento = getFacturaDefaultFechaVencimiento();
+    const inputDate = value ? parseDateOnly(value) : null;
+    const defaultDate = parseDateOnly(defaultFechaVencimiento);
+
+    if (!inputDate || !defaultDate || inputDate < defaultDate) {
+        return defaultFechaVencimiento;
+    }
+
+    return toInputDate(inputDate);
+}
+
+export function buildCreateFacturaPayload(
+    values: CreateFacturaSchema,
+    estadoID: number
+): CreateFacturaDto {
+    return {
+        ...values,
+        fechaVencimiento: resolveFacturaFechaVencimiento(values.fechaVencimiento),
+        fechaCompromisoPago: null,
+        estadoID,
+        detalles: [],
+        pagos: [],
+    };
+}
+
+export function buildUpdateFacturaPayload(values: CreateFacturaSchema): UpdateFacturaDto {
+    return {
+        fechaEmision: values.fechaEmision,
+        fechaVencimiento: resolveFacturaFechaVencimiento(values.fechaVencimiento),
+        fechaCompromisoPago: null,
+        diasCredito: values.diasCredito ?? null,
+        estadoID: values.estadoID,
     };
 }
 

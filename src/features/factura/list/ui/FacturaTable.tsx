@@ -5,7 +5,7 @@ import type { PagedResponse, SelectItem } from '@/shared/model/types';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
-import { getFacturaPaymentStatusMeta, getFacturaStatusColor } from '@/entities/factura/model/status';
+import { getFacturaDateColor, getFacturaPaymentStatusMeta, getFacturaStatusColor } from '@/entities/factura/model/status';
 import { FacturaActionMenu } from './FacturaActionMenu';
 
 interface FacturaTableProps {
@@ -41,18 +41,6 @@ export function FacturaTable({
     canDownloadReports = false,
     statusCatalog = [],
 }: FacturaTableProps) {
-    const getDateColor = (factura: Factura, field: 'compromiso' | 'vencimiento') => {
-        if (field === 'compromiso' && factura.esCompromisoVencido) {
-            return 'warning.main';
-        }
-
-        if (field === 'vencimiento' && factura.esVencida) {
-            return 'error.main';
-        }
-
-        return 'text.secondary';
-    };
-
     const columns: Column[] = React.useMemo(() => [
         { id: 'factura', label: 'Factura' },
         { id: 'cliente', label: 'Cliente' },
@@ -98,11 +86,11 @@ export function FacturaTable({
                                 <strong>Emisión:</strong> {formatDateLong(item.fechaEmision)}
                             </Typography>
                             {item.fechaCompromisoPago && (
-                                <Typography variant="body2" color={getDateColor(item, 'compromiso')}>
+                                <Typography variant="body2" color={getFacturaDateColor(item, 'compromiso')}>
                                     <strong>Compromiso:</strong> {formatDateLong(item.fechaCompromisoPago)}
                                 </Typography>
                             )}
-                            <Typography variant="body2" color={getDateColor(item, 'vencimiento')}>
+                            <Typography variant="body2" color={getFacturaDateColor(item, 'vencimiento')}>
                                 <strong>Vence:</strong> {formatDateLong(item.fechaVencimiento)}
                             </Typography>
                         </Box>

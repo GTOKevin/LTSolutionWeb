@@ -7,6 +7,8 @@ export interface FacturaPaymentStatusMeta {
     color: 'default' | 'error' | 'info' | 'success' | 'warning';
 }
 
+export type FacturaDateField = 'compromiso' | 'vencimiento';
+
 export const FACTURA_STATUS_CODE = {
     GENERADO: 'GEN',
     EMITIDO: 'EMI',
@@ -100,4 +102,20 @@ export function getFacturaPaymentStatusMeta(factura: Factura | null | undefined)
     }
 
     return { label: 'Pendiente', color: 'info' };
+}
+
+export function getFacturaDateColor(
+    factura: Factura | null | undefined,
+    field: FacturaDateField,
+    defaultColor: 'text.primary' | 'text.secondary' = 'text.secondary'
+) {
+    if (field === 'compromiso' && factura?.esCompromisoVencido) {
+        return 'warning.main';
+    }
+
+    if (field === 'vencimiento' && factura?.esVencida) {
+        return 'error.main';
+    }
+
+    return defaultColor;
 }

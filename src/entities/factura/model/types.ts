@@ -135,8 +135,9 @@ export interface CreateFacturaDto {
 }
 
 export interface UpdateFacturaDto {
+    fechaEmision?: string | null;
+    fechaVencimiento?: string | null;
     fechaCompromisoPago?: string | null;
-    monedaID: number;
+    diasCredito?: number | null;
     estadoID: number;
-    activo: boolean;
 }

@@ -4,7 +4,7 @@ import type { PagedResponse, SelectItem } from '@/shared/model/types';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
-import { getFacturaPaymentStatusMeta, getFacturaStatusColor } from '@/entities/factura/model/status';
+import { getFacturaDateColor, getFacturaPaymentStatusMeta, getFacturaStatusColor } from '@/entities/factura/model/status';
 import { FacturaActionMenu } from './FacturaActionMenu';
 
 interface FacturaMobileListProps {
@@ -40,18 +40,6 @@ export function FacturaMobileList({
     canDownloadReports = false,
     statusCatalog = [],
 }: FacturaMobileListProps) {
-    const getDateColor = (factura: Factura, field: 'compromiso' | 'vencimiento') => {
-        if (field === 'compromiso' && factura.esCompromisoVencido) {
-            return 'warning.main';
-        }
-
-        if (field === 'vencimiento' && factura.esVencida) {
-            return 'error.main';
-        }
-
-        return 'text.primary';
-    };
-
     if (isLoading) {
         return <Box sx={{ p: 4, textAlign: 'center' }}>Cargando Facturas...</Box>;
     }
@@ -144,7 +132,7 @@ export function FacturaMobileList({
                             <Typography variant="caption" color="text.secondary" display="block">
                                 Compromiso
                             </Typography>
-                            <Typography variant="body2" color={getDateColor(row, 'compromiso')}>
+                            <Typography variant="body2" color={getFacturaDateColor(row, 'compromiso', 'text.primary')}>
                                 {row.fechaCompromisoPago ? formatDateLong(row.fechaCompromisoPago) : '-'}
                             </Typography>
                         </Box>
@@ -152,7 +140,7 @@ export function FacturaMobileList({
                             <Typography variant="caption" color="text.secondary" display="block">
                                 Vencimiento
                             </Typography>
-                            <Typography variant="body2" color={getDateColor(row, 'vencimiento')}>
+                            <Typography variant="body2" color={getFacturaDateColor(row, 'vencimiento', 'text.primary')}>
                                 {formatDateLong(row.fechaVencimiento)}
                             </Typography>
                         </Box>

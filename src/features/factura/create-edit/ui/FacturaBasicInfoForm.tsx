@@ -203,7 +203,7 @@ export function FacturaBasicInfoForm({
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>
                             Fecha Vencimiento
-                            <Tooltip title="Tope máximo de espera para el pago. Por defecto: 1 mes desde la emisión." placement="top">
+                            <Tooltip title="Tope máximo de espera para el pago. Si ingresa una fecha menor al mínimo permitido, se tomará por defecto la fecha actual + 1 mes." placement="top">
                                 <InfoOutlinedIcon sx={{ fontSize: 16, ml: 0.5, color: 'text.secondary' }} />
                             </Tooltip>
                         </Typography>

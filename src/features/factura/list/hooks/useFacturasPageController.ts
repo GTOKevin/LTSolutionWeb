@@ -128,10 +128,11 @@ export function useFacturasPageController() {
         await updateMutation.mutateAsync({
             id: factura.facturaID,
             data: {
-                fechaCompromisoPago: factura.fechaCompromisoPago,
-                monedaID: factura.monedaID,
+                fechaEmision: factura.fechaEmision,
+                fechaVencimiento: factura.fechaVencimiento,
+                fechaCompromisoPago: null,
+                diasCredito: factura.diasCredito ?? null,
                 estadoID: newStatusId,
-                activo: factura.activo,
             },
         });
     };
