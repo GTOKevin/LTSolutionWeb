@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
 import { IGV_RATE } from '@entities/factura/model/constants';
-import type { Factura } from '@entities/factura/model/types';
+import type { CreateFacturaDto, Factura, UpdateFacturaDto } from '@entities/factura/model/types';
+import { addMonthsToDateISO, getCurrentDateISO, parseDateOnly, toInputDate } from '@shared/utils/date-utils';
+
+const FACTURA_VENCIMIENTO_DEFAULT_MONTHS = 1;
 
 export const createFacturaSchema = z.object({
     clienteID: z.number().min(1, 'Cliente es requerido'),
@@ -19,6 +22,7 @@ export const createFacturaSchema = z.object({
             message: ERROR_MESSAGES.FACTURA_NUMERO_INVALIDO
         }),
     fechaEmision: z.string().min(1, 'Fecha de Emisión es requerida'),
+    fechaVencimiento: z.string().optional().nullable(),
     fechaCompromisoPago: z.string().optional().nullable(),
     diasCredito: z.coerce.number().optional().nullable(),
     monedaID: z.number().min(1, 'Moneda es requerida'),
@@ -32,7 +36,8 @@ export function getCreateFacturaDefaultValues(): CreateFacturaSchema {
         clienteID: 0,
         serie: '',
         numero: '',
-        fechaEmision: new Date().toISOString().split('T')[0],
+        fechaEmision: getCurrentDateISO(),
+        fechaVencimiento: getFacturaDefaultFechaVencimiento(),
         fechaCompromisoPago: '',
         diasCredito: null,
         monedaID: 0,
@@ -46,10 +51,52 @@ export function mapFacturaToFormValues(factura: Factura): CreateFacturaSchema {
         serie: factura.serie,
         numero: factura.numero,
         fechaEmision: factura.fechaEmision.split('T')[0],
+        fechaVencimiento: factura.fechaVencimiento ? factura.fechaVencimiento.split('T')[0] : '',
         fechaCompromisoPago: factura.fechaCompromisoPago ? factura.fechaCompromisoPago.split('T')[0] : '',
         diasCredito: factura.diasCredito || null,
         monedaID: factura.monedaID,
         estadoID: factura.estadoID,
+    };
+}
+
+export function getFacturaDefaultFechaVencimiento(baseDate?: string | null) {
+    const parsedBaseDate = baseDate ? parseDateOnly(baseDate) : null;
+    return addMonthsToDateISO(FACTURA_VENCIMIENTO_DEFAULT_MONTHS, parsedBaseDate ?? new Date());
+}
+
+export function resolveFacturaFechaVencimiento(value?: string | null) {
+    const defaultFechaVencimiento = getFacturaDefaultFechaVencimiento();
+    const inputDate = value ? parseDateOnly(value) : null;
+    const defaultDate = parseDateOnly(defaultFechaVencimiento);
+
+    if (!inputDate || !defaultDate || inputDate < defaultDate) {
+        return defaultFechaVencimiento;
+    }
+
+    return toInputDate(inputDate);
+}
+
+export function buildCreateFacturaPayload(
+    values: CreateFacturaSchema,
+    estadoID: number
+): CreateFacturaDto {
+    return {
+        ...values,
+        fechaVencimiento: resolveFacturaFechaVencimiento(values.fechaVencimiento),
+        fechaCompromisoPago: null,
+        estadoID,
+        detalles: [],
+        pagos: [],
+    };
+}
+
+export function buildUpdateFacturaPayload(values: CreateFacturaSchema): UpdateFacturaDto {
+    return {
+        fechaEmision: values.fechaEmision,
+        fechaVencimiento: resolveFacturaFechaVencimiento(values.fechaVencimiento),
+        fechaCompromisoPago: null,
+        diasCredito: values.diasCredito ?? null,
+        estadoID: values.estadoID,
     };
 }
 
@@ -67,13 +114,27 @@ const decimalAmountField = (minimum: number, message: string) => z.preprocess(
     z.number().min(minimum, message)
 );
 
+export function roundFacturaDetalleAmount(value: number, precision: number = 2) {
+    const factor = 10 ** precision;
+    return Math.round((value + Number.EPSILON) * factor) / factor;
+}
+
 export function calculateFacturaDetalleTotal(subTotal: number, applyIgv: boolean) {
     const rawTotal = applyIgv ? subTotal * (1 + IGV_RATE) : subTotal;
-    return Math.round(rawTotal * 100) / 100;
+    return roundFacturaDetalleAmount(rawTotal);
 }
 
 export function calculateFacturaDetalleIgv(subTotal: number, applyIgv: boolean) {
-    return Math.round((calculateFacturaDetalleTotal(subTotal, applyIgv) - subTotal) * 100) / 100;
+    return roundFacturaDetalleAmount(calculateFacturaDetalleTotal(subTotal, applyIgv) - subTotal);
+}
+
+export function calculateFacturaDetalleSubtotalFromTotal(total: number, applyIgv: boolean) {
+    if (!Number.isFinite(total) || total <= 0) {
+        return 0;
+    }
+
+    const rawSubtotal = applyIgv ? total / (1 + IGV_RATE) : total;
+    return roundFacturaDetalleAmount(rawSubtotal, 6);
 }
 
 const createFacturaDetalleSchemaBase = z.object({
@@ -83,7 +144,7 @@ const createFacturaDetalleSchemaBase = z.object({
     }),
     monedaID: z.number().min(1, 'Moneda es requerida'),
     subTotal: decimalAmountField(0, 'Debe ser mayor o igual a 0'),
-    igv: z.boolean(),
+    igv: z.literal(true),
 }).superRefine((data, ctx) => {
     const total = calculateFacturaDetalleTotal(data.subTotal, data.igv);
 

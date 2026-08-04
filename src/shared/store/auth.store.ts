@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthState>()(
                     token,
                     user: user || null,
                     isAuthenticated: true,
-                    isSessionExpired: false
+                    isSessionExpired: false,
                 });
             },
             
@@ -49,7 +49,7 @@ export const useAuthStore = create<AuthState>()(
                     token: null,
                     user: null,
                     isAuthenticated: false,
-                    isSessionExpired: false
+                    isSessionExpired: false,
                 });
             },
 
@@ -66,8 +66,8 @@ export const useAuthStore = create<AuthState>()(
         {
             name: 'auth-storage',
             partialize: (state) => ({ 
-                user: state.user 
-            }), // Only persist user info, NOT tokens
+                user: state.user,
+            }), // Persist minimal user context, NOT tokens
             onRehydrateStorage: () => (state) => {
                 state?.setHasHydrated(true);
             },

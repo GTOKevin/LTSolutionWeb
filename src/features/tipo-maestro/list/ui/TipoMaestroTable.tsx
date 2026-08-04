@@ -31,6 +31,7 @@ export function TipoMaestroTable({
     const theme = useTheme();
 
     const columns: Column[] = React.useMemo(() => [
+        { id: 'tipoMaestroID', label: 'ID' },
         { id: 'nombre', label: 'Nombre' },
         { id: 'seccion', label: 'Sección' },
         { id: 'codigo', label: 'Código' },
@@ -51,13 +52,15 @@ export function TipoMaestroTable({
             renderRow={(item) => (
                 <>
                     <TableCell>
+                        <Typography variant="body2" color="text.secondary" fontFamily="monospace" fontWeight={700}>
+                            {item.tipoMaestroID}
+                        </Typography>
+                    </TableCell>
+                    <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Box>
                                 <Typography variant="body2" fontWeight="bold" color="text.primary">
                                     {item.nombre}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                    ID: {item.tipoMaestroID}
                                 </Typography>
                             </Box>
                         </Box>

@@ -2,6 +2,13 @@ import type { SelectItem } from '@shared/model/types';
 import type { Factura } from './types';
 import { matchesCatalogCandidate } from '@entities/master-data/lib/catalog-utils';
 
+export interface FacturaPaymentStatusMeta {
+    label: string;
+    color: 'default' | 'error' | 'info' | 'success' | 'warning';
+}
+
+export type FacturaDateField = 'compromiso' | 'vencimiento';
+
 export const FACTURA_STATUS_CODE = {
     GENERADO: 'GEN',
     EMITIDO: 'EMI',
@@ -75,4 +82,40 @@ export function getFacturaStatusColor(factura: Factura | null | undefined) {
     }
 
     return 'default';
+}
+
+export function getFacturaPaymentStatusMeta(factura: Factura | null | undefined): FacturaPaymentStatusMeta {
+    if (isFacturaAnulada(factura)) {
+        return { label: 'Anulada', color: 'default' };
+    }
+
+    if ((factura?.saldoPendiente ?? 0) <= 0 && (isFacturaStatus(factura, FACTURA_STATUS.ENTREGADO) || isFacturaStatus(factura, FACTURA_STATUS.EMITIDO))) {
+        return { label: 'Pagado', color: 'success' };
+    }
+
+    if (factura?.esVencida) {
+        return { label: 'Vencida', color: 'error' };
+    }
+
+    if (factura?.esCompromisoVencido) {
+        return { label: 'Compromiso expirado', color: 'warning' };
+    }
+
+    return { label: 'Pendiente', color: 'info' };
+}
+
+export function getFacturaDateColor(
+    factura: Factura | null | undefined,
+    field: FacturaDateField,
+    defaultColor: 'text.primary' | 'text.secondary' = 'text.secondary'
+) {
+    if (field === 'compromiso' && factura?.esCompromisoVencido) {
+        return 'warning.main';
+    }
+
+    if (field === 'vencimiento' && factura?.esVencida) {
+        return 'error.main';
+    }
+
+    return defaultColor;
 }

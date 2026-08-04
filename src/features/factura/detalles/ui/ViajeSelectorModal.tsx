@@ -1,5 +1,6 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import {
+    Alert,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -14,7 +15,6 @@ import {
     Typography,
     CircularProgress,
     IconButton,
-    Backdrop,
     TableContainer,
     Paper,
     Tooltip,
@@ -30,59 +30,38 @@ import {
     RvHookup as RvHookupIcon
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
-import { viajeApi } from '@/entities/viaje/api/viaje.api';
-import type { Viaje, ViajeListItem } from '@/entities/viaje/model/types';
-import { useToast } from '@/shared/components/ui/Toast';
+import { facturaApi } from '@/entities/factura/api/factura.api';
+import type { FacturaDetalleViajeOption } from '@/entities/factura/model/types';
 import { getErrorMessage } from '@/shared/utils/api-errors';
-import { logger } from '@/shared/utils/logger';
 
 interface ViajeSelectorModalProps {
     open: boolean;
     onClose: () => void;
     clienteId: number;
-    onSelect: (viaje: Viaje) => void;
+    onSelect: (viaje: FacturaDetalleViajeOption) => void;
 }
 
 export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: ViajeSelectorModalProps) {
     const [isSelecting, setIsSelecting] = useState(false);
-    const { showToast } = useToast();
 
-    const { data, isLoading, refetch } = useQuery({
-        queryKey: ['viajes', 'selector', clienteId],
-        queryFn: () => viajeApi.getAll({ 
-            page: 1, 
-            size: 100, 
-            clienteID: clienteId
+    const { data, error, isError, isLoading, isFetching, refetch } = useQuery({
+        queryKey: ['factura', 'detalle-viajes', clienteId],
+        queryFn: () => facturaApi.getDetalleViajes({
+            clienteId,
+            limit: 100
         }),
         enabled: open && !!clienteId
     });
 
-    useEffect(() => {
-        if (open && clienteId) {
-            refetch();
-        }
-    }, [open, clienteId, refetch]);
-
     const viajesDisponibles = useMemo(() => {
-        if (!data?.items) return [];
-        return data.items.filter(v => v.cerrado && !v.facturado);
+        return data ?? [];
     }, [data]);
 
-    const handleSelect = async (viajeId: number) => {
+    const handleSelect = async (viaje: FacturaDetalleViajeOption) => {
         setIsSelecting(true);
-        try {
-            const fullViaje = await viajeApi.getById(viajeId);
-            if (fullViaje) {
-                onSelect(fullViaje);
-                onClose();
-            }
-        } catch (error) {
-            const message = getErrorMessage(error, 'No se pudo cargar el viaje seleccionado.');
-            logger.error('Error cargando viaje completo:', error);
-            showToast({ message, severity: 'error' });
-        } finally {
-            setIsSelecting(false);
-        }
+        onSelect(viaje);
+        onClose();
+        setIsSelecting(false);
     };
 
     return (
@@ -98,6 +77,18 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
                     <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                         <CircularProgress />
                     </Box>
+                ) : isError ? (
+                    <Alert
+                        severity="error"
+                        action={(
+                            <Button color="inherit" size="small" onClick={() => void refetch()} disabled={isFetching}>
+                                Reintentar
+                            </Button>
+                        )}
+                        sx={{ borderRadius: 2 }}
+                    >
+                        {getErrorMessage(error, 'No se pudieron cargar los viajes disponibles para facturar.')}
+                    </Alert>
                 ) : (
                     <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
                         <Table size="small" stickyHeader>
@@ -120,7 +111,7 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    viajesDisponibles.map((viaje: ViajeListItem) => (
+                                    viajesDisponibles.map((viaje: FacturaDetalleViajeOption) => (
                                         <TableRow 
                                             key={viaje.viajeID}
                                             hover
@@ -130,11 +121,6 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
                                                 <Typography variant="body2" fontWeight="bold" color="primary">
                                                     {viaje.codigo}
                                                 </Typography>
-                                                {viaje.guias && (
-                                                    <Typography variant="caption" color="text.secondary" display="block">
-                                                        Guías: {viaje.guias}
-                                                    </Typography>
-                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -179,7 +165,7 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
                                                     <span>
                                                         <IconButton 
                                                             color="primary" 
-                                                            onClick={() => handleSelect(viaje.viajeID)}
+                                                            onClick={() => handleSelect(viaje)}
                                                             disabled={isSelecting}
                                                             sx={{ 
                                                                 bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
@@ -204,14 +190,6 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
             <DialogActions sx={{ p: 2, bgcolor: 'background.default' }}>
                 <Button onClick={onClose} disabled={isSelecting}>Cancelar</Button>
             </DialogActions>
-            
-            <Backdrop
-                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1, display: 'flex', flexDirection: 'column', gap: 2 }}
-                open={isSelecting}
-            >
-                <CircularProgress color="inherit" />
-                <Typography variant="h6">Obteniendo detalles del viaje...</Typography>
-            </Backdrop>
         </Dialog>
     );
 }

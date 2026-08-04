@@ -1,7 +1,6 @@
 import type { PagedFilters, PagedResponse } from '@/shared/model/types';
 import type { Cliente } from '@/entities/cliente/model/types';
 import type { Moneda } from '@/entities/moneda/model/types';
-import type { Viaje } from '@/entities/viaje/model/types';
 import type { Estado } from '@/shared/model/estado.types';
 import type { TipoMaestro } from '@/shared/model/maestro.types';
 
@@ -15,8 +14,19 @@ export interface FacturaDetalle {
     subTotal: number;
     igv: number;
     total: number;
-    viaje?: Viaje;
+    viaje?: import('@/entities/viaje/model/types').Viaje;
     moneda?: Moneda;
+}
+
+export interface FacturaDetalleViajeOption {
+    viajeID: number;
+    codigo: string;
+    tractoPlaca: string;
+    carretaPlaca?: string | null;
+    origenDescripcion: string;
+    destinoDescripcion: string;
+    mercaderiaDescripcion: string;
+    descripcionDetalleSugerida: string;
 }
 
 export interface FacturaPago {
@@ -51,6 +61,8 @@ export interface Factura {
     saldoPendiente: number;
     estadoID: number;
     activo: boolean;
+    esVencida?: boolean;
+    esCompromisoVencido?: boolean;
     cliente?: Cliente;
     moneda?: Moneda;
     estado?: Estado;
@@ -123,8 +135,9 @@ export interface CreateFacturaDto {
 }
 
 export interface UpdateFacturaDto {
+    fechaEmision?: string | null;
+    fechaVencimiento?: string | null;
     fechaCompromisoPago?: string | null;
-    monedaID: number;
+    diasCredito?: number | null;
     estadoID: number;
-    activo: boolean;
 }

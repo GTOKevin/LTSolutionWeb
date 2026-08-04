@@ -2,6 +2,9 @@ import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
 import { z } from 'zod';
 
 export const tipoMaestroSchema = z.object({
+    tipoMaestroID: z.number()
+        .int('El ID debe ser un número entero')
+        .positive('El ID debe ser mayor a 0'),
     nombre: z.string()
         .min(1, 'El nombre es requerido')
         .max(100, 'El nombre no puede exceder los 100 caracteres')

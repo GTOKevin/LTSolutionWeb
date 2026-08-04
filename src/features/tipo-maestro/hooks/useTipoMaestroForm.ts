@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { tipoMaestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { tipoMaestroSchema, type TipoMaestroSchema } from '../model/schema';
 import type { TipoMaestro } from '@entities/tipo-maestro/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
+import { useDebounce } from '@shared/hooks/useDebounce';
 import { useCreateTipoMaestro, useUpdateTipoMaestro } from './useTipoMaestroCrud';
 
 interface UseTipoMaestroFormProps {
@@ -23,6 +24,7 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
     const form = useForm<TipoMaestroSchema>({
         resolver: zodResolver(tipoMaestroSchema),
         defaultValues: {
+            tipoMaestroID: 0,
             nombre: '',
             codigo: '',
             seccion: '',
@@ -30,7 +32,15 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
         }
     });
 
-    const { reset, setError } = form;
+    const { reset, setError, setValue, formState } = form;
+    const selectedSeccion = useWatch({
+        control: form.control,
+        name: 'seccion',
+    });
+    const currentTipoMaestroId = useWatch({
+        control: form.control,
+        name: 'tipoMaestroID',
+    });
 
     const createMutation = useCreateTipoMaestro();
     const updateMutation = useUpdateTipoMaestro();
@@ -42,10 +52,21 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
         staleTime: 1000 * 60 * 5 // 5 minutes
     });
 
+    const normalizedSeccion = selectedSeccion?.trim() ?? '';
+    const debouncedSeccion = useDebounce(open && !isEdit ? normalizedSeccion : '', 300);
+
+    const { data: seccionResumen } = useQuery({
+        queryKey: ['tipo-maestro-section-hints', debouncedSeccion],
+        queryFn: () => tipoMaestroApi.getSeccionResumen(debouncedSeccion),
+        enabled: open && !isEdit && debouncedSeccion.length >= 2,
+        staleTime: 1000 * 60 * 2
+    });
+
     useEffect(() => {
         if (open) {
             if (maestroToEdit) {
                 reset({
+                    tipoMaestroID: maestroToEdit.tipoMaestroID,
                     nombre: maestroToEdit.nombre,
                     codigo: maestroToEdit.codigo || '',
                     seccion: maestroToEdit.seccion || '',
@@ -53,6 +74,7 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
                 });
             } else {
                 reset({
+                    tipoMaestroID: 0,
                     nombre: '',
                     codigo: '',
                     seccion: '',
@@ -69,6 +91,22 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
             };
         }
     }, [open, maestroToEdit, reset]);
+
+    useEffect(() => {
+        if (!open || isEdit) {
+            return;
+        }
+
+        const suggestedId = seccionResumen?.siguienteIdSugerido;
+        if (!suggestedId) {
+            return;
+        }
+
+        const shouldSeedSuggestedId = !formState.dirtyFields.tipoMaestroID && (!currentTipoMaestroId || currentTipoMaestroId <= 0);
+        if (shouldSeedSuggestedId) {
+            setValue('tipoMaestroID', suggestedId, { shouldDirty: false, shouldValidate: true });
+        }
+    }, [currentTipoMaestroId, formState.dirtyFields.tipoMaestroID, isEdit, open, seccionResumen?.siguienteIdSugerido, setValue]);
 
     const onSubmit = (data: TipoMaestroSchema) => {
         if (isEdit && maestroToEdit) {
@@ -111,6 +149,7 @@ export function useTipoMaestroForm({ open, onClose, onSuccess, maestroToEdit }: 
         errorMessage,
         setErrorMessage,
         secciones,
+        seccionResumen,
         onSubmit,
         isEdit,
         isSubmitting: createMutation.isPending || updateMutation.isPending

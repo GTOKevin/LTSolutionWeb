@@ -14,6 +14,8 @@ import {
     createFacturaSchema,
     getCreateFacturaDefaultValues,
     mapFacturaToFormValues,
+    buildCreateFacturaPayload,
+    buildUpdateFacturaPayload,
     type CreateFacturaSchema,
 } from '../../model/schema';
 import { useCreateFactura, useFactura, useUpdateFactura } from '../../hooks/useFacturaCrud';
@@ -99,31 +101,18 @@ export function useFacturaCreateEditController({
                 return;
             }
 
-            const formattedData = {
-                ...data,
-                fechaCompromisoPago: data.fechaCompromisoPago || null,
-            };
-
             if (isEdit && factura) {
                 await updateMutation.mutateAsync({
                     id: factura.facturaID,
-                    data: {
-                        fechaCompromisoPago: formattedData.fechaCompromisoPago,
-                        monedaID: formattedData.monedaID,
-                        estadoID: formattedData.estadoID,
-                        activo: true,
-                    },
+                    data: buildUpdateFacturaPayload(data),
                 });
                 navigate(APP_PATHS.facturas);
                 return;
             }
 
-            const newId = await createMutation.mutateAsync({
-                ...formattedData,
-                estadoID: estadoGeneradoId ?? formattedData.estadoID,
-                detalles: [],
-                pagos: [],
-            });
+            const newId = await createMutation.mutateAsync(
+                buildCreateFacturaPayload(data, estadoGeneradoId ?? data.estadoID)
+            );
             navigate(buildAppDetailPath(APP_PATHS.facturas, newId));
         } catch (error) {
             const message =

@@ -5,3 +5,9 @@ export interface TipoMaestro {
     seccion?: string;
     activo: boolean;
 }
+
+export interface TipoMaestroSeccionResumen {
+    seccion: string;
+    ultimosIds: number[];
+    siguienteIdSugerido?: number | null;
+}

@@ -68,6 +68,7 @@ export function FacturaCreateEditContent({ controller }: FacturaCreateEditConten
                 viewOnly={viewOnly}
                 isSaving={isSaving}
                 canSubmit={!isSaving && !hasFacturaLoadError && (isEdit || Boolean(estadoGeneradoId))}
+                factura={factura}
                 onBack={navigateBack}
             />
 

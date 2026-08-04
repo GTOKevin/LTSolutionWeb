@@ -15,5 +15,5 @@ export const {
 } = createGenericCrudHooks(
     genericApi,
     'Maestro',
-    () => [['tipo-maestros'], ['secciones-maestro']]
+    () => [['tipo-maestros'], ['secciones-maestro'], ['tipo-maestro-section-hints']]
 );

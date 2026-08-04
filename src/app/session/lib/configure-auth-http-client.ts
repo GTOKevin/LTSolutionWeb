@@ -1,4 +1,4 @@
-import { AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import { authApi } from '@entities/auth/api/auth.api';
 import { httpClient } from '@shared/api/http';
 import { useAuthStore } from '@shared/store/auth.store';
@@ -16,6 +16,26 @@ interface FailedRequest {
 let isConfigured = false;
 let isRefreshing = false;
 let failedQueue: FailedRequest[] = [];
+
+function buildApiEnvelopeError(
+    message: string,
+    errorData: ApiError,
+    response: AxiosResponse
+) {
+    const status = errorData.status ?? (response.status >= 400 ? response.status : 400);
+
+    return new AxiosError<ApiError>(
+        message,
+        String(status),
+        response.config,
+        response.request,
+        {
+            ...response,
+            data: errorData,
+            status,
+        }
+    );
+}
 
 function processQueue(error: unknown, token: string | null = null) {
     failedQueue.forEach((promise) => {
@@ -53,12 +73,18 @@ export function configureAuthHttpClient() {
     httpClient.interceptors.response.use(
         (response) => {
             if (response.data && typeof response.data === 'object' && 'success' in response.data) {
-                const apiResponse = response.data as { success: boolean; data?: unknown; message?: string };
+                const apiResponse = response.data as ApiError & { success: boolean; data?: unknown };
 
                 if (apiResponse.success) {
                     response.data = apiResponse.data;
                 } else {
-                    return Promise.reject(new Error(apiResponse.message || 'API Error'));
+                    return Promise.reject(
+                        buildApiEnvelopeError(
+                            apiResponse.message || apiResponse.detail || 'API Error',
+                            apiResponse,
+                            response
+                        )
+                    );
                 }
             }
 
@@ -92,7 +118,7 @@ export function configureAuthHttpClient() {
             const { token, setAuth, setSessionExpired } = useAuthStore.getState();
 
             try {
-                const response = await authApi.refreshToken({ token: token || '' });
+                const response = await authApi.refreshToken(token ? { token } : {});
 
                 setAuth(response.token);
                 processQueue(null, response.token);

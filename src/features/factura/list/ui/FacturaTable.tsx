@@ -5,7 +5,7 @@ import type { PagedResponse, SelectItem } from '@/shared/model/types';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
-import { getFacturaStatusColor } from '@/entities/factura/model/status';
+import { getFacturaDateColor, getFacturaPaymentStatusMeta, getFacturaStatusColor } from '@/entities/factura/model/status';
 import { FacturaActionMenu } from './FacturaActionMenu';
 
 interface FacturaTableProps {
@@ -47,6 +47,7 @@ export function FacturaTable({
         { id: 'fechas', label: 'Fechas' },
         { id: 'montos', label: 'Montos' },
         { id: 'estado', label: 'Estado' },
+        { id: 'estadoPago', label: 'Est. Pago' },
         { id: 'acciones', label: 'Acciones', align: 'right' }
     ], []);
 
@@ -61,7 +62,10 @@ export function FacturaTable({
             columns={columns}
             keyExtractor={(item) => item.facturaID}
             emptyMessage="No se encontraron facturas"
-            renderRow={(item) => (
+            renderRow={(item) => {
+                const paymentStatus = getFacturaPaymentStatusMeta(item);
+
+                return (
                 <>
                     <TableCell>
                         <Typography variant="body2" fontWeight="bold" fontFamily="monospace">
@@ -81,7 +85,12 @@ export function FacturaTable({
                             <Typography variant="body2">
                                 <strong>Emisión:</strong> {formatDateLong(item.fechaEmision)}
                             </Typography>
-                            <Typography variant="body2" color={new Date(item.fechaVencimiento) < new Date() ? 'error.main' : 'text.secondary'}>
+                            {item.fechaCompromisoPago && (
+                                <Typography variant="body2" color={getFacturaDateColor(item, 'compromiso')}>
+                                    <strong>Compromiso:</strong> {formatDateLong(item.fechaCompromisoPago)}
+                                </Typography>
+                            )}
+                            <Typography variant="body2" color={getFacturaDateColor(item, 'vencimiento')}>
                                 <strong>Vence:</strong> {formatDateLong(item.fechaVencimiento)}
                             </Typography>
                         </Box>
@@ -104,6 +113,16 @@ export function FacturaTable({
                             variant="filled"
                         />
                     </TableCell>
+                    <TableCell>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
+                            <Chip
+                                label={paymentStatus.label}
+                                color={paymentStatus.color}
+                                size="small"
+                                variant="outlined"
+                            />
+                        </Box>
+                    </TableCell>
                     <TableCell align="right">
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                             {(onView || onEdit || onDelete || onPayment || onViewPayments || onUpdateStatus || canDownloadReports) && (
@@ -122,7 +141,8 @@ export function FacturaTable({
                         </Box>
                     </TableCell>
                 </>
-            )}
+                );
+            }}
         />
     );
 }
