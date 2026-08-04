@@ -31,7 +31,7 @@ export function DashboardKpisSection({
     const visibleFacturasVencidas = canViewFacturas ? data.alertasCriticas.facturasVencidas : 0;
     const visibleCompromisosVencidos = canViewFacturas ? data.alertasCriticas.compromisosVencidos : 0;
     const visibleDocumentosVencidos = canViewColaboradores || canViewFlota ? data.alertasCriticas.documentosVencidos : 0;
-    const visibleCriticalAlerts = visibleFacturasVencidas + visibleDocumentosVencidos;
+    const visibleCriticalAlerts = visibleFacturasVencidas + visibleCompromisosVencidos + visibleDocumentosVencidos;
 
     return (
         <Box
@@ -102,7 +102,7 @@ export function DashboardKpisSection({
                         )}
                         {canViewFacturas && visibleCompromisosVencidos > 0 && (
                             <Typography variant="body2" color="warning.main">
-                                • {visibleCompromisosVencidos} compromisos atrasados
+                                • {visibleCompromisosVencidos} compromisos de pago atrasados
                             </Typography>
                         )}
                         {(canViewColaboradores || canViewFlota) && visibleDocumentosVencidos > 0 && (

@@ -1,5 +1,6 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import {
+    Alert,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -31,6 +32,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { facturaApi } from '@/entities/factura/api/factura.api';
 import type { FacturaDetalleViajeOption } from '@/entities/factura/model/types';
+import { getErrorMessage } from '@/shared/utils/api-errors';
 
 interface ViajeSelectorModalProps {
     open: boolean;
@@ -42,7 +44,7 @@ interface ViajeSelectorModalProps {
 export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: ViajeSelectorModalProps) {
     const [isSelecting, setIsSelecting] = useState(false);
 
-    const { data, isLoading, refetch } = useQuery({
+    const { data, error, isError, isLoading, isFetching, refetch } = useQuery({
         queryKey: ['factura', 'detalle-viajes', clienteId],
         queryFn: () => facturaApi.getDetalleViajes({
             clienteId,
@@ -50,12 +52,6 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
         }),
         enabled: open && !!clienteId
     });
-
-    useEffect(() => {
-        if (open && clienteId) {
-            refetch();
-        }
-    }, [open, clienteId, refetch]);
 
     const viajesDisponibles = useMemo(() => {
         return data ?? [];
@@ -81,6 +77,18 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
                     <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                         <CircularProgress />
                     </Box>
+                ) : isError ? (
+                    <Alert
+                        severity="error"
+                        action={(
+                            <Button color="inherit" size="small" onClick={() => void refetch()} disabled={isFetching}>
+                                Reintentar
+                            </Button>
+                        )}
+                        sx={{ borderRadius: 2 }}
+                    >
+                        {getErrorMessage(error, 'No se pudieron cargar los viajes disponibles para facturar.')}
+                    </Alert>
                 ) : (
                     <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
                         <Table size="small" stickyHeader>

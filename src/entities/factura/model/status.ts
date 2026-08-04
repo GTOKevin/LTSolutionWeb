@@ -83,7 +83,11 @@ export function getFacturaStatusColor(factura: Factura | null | undefined) {
 }
 
 export function getFacturaPaymentStatusMeta(factura: Factura | null | undefined): FacturaPaymentStatusMeta {
-    if ((factura?.saldoPendiente ?? 0) <= 0) {
+    if (isFacturaAnulada(factura)) {
+        return { label: 'Anulada', color: 'default' };
+    }
+
+    if ((factura?.saldoPendiente ?? 0) <= 0 && (isFacturaStatus(factura, FACTURA_STATUS.ENTREGADO) || isFacturaStatus(factura, FACTURA_STATUS.EMITIDO))) {
         return { label: 'Pagado', color: 'success' };
     }
 
