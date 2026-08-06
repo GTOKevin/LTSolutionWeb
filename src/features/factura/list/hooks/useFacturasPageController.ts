@@ -24,6 +24,13 @@ const defaultFacturaFilterDraft: FacturaFilterDraft = {
     fechaFin: getLastDayOfCurrentMonthISO(),
 };
 
+function areFacturaDraftFiltersEqual(current: FacturaFilterDraft, next: FacturaFilterDraft) {
+    return current.search === next.search
+        && current.estadoID === next.estadoID
+        && current.fechaInicio === next.fechaInicio
+        && current.fechaFin === next.fechaFin;
+}
+
 export function useFacturasPageController() {
     const navigate = useNavigate();
     const canViewFacturas = usePermission(PERMISSIONS.FACTURAS.VER);
@@ -38,7 +45,7 @@ export function useFacturasPageController() {
     const [pagosListModalOpen, setPagosListModalOpen] = useState(false);
     const [selectedFactura, setSelectedFactura] = useState<Factura | null>(null);
 
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ['facturas', filters],
         queryFn: () => facturaApi.getAll(filters),
     });
@@ -90,13 +97,63 @@ export function useFacturasPageController() {
         }));
     }, []);
 
-    const handleApplyFilters = useCallback(() => {
-        setFilters((prev) => ({
-            ...prev,
-            ...draftFilters,
-            page: 1,
-        }));
-    }, [draftFilters]);
+    const handleApplyFilters = useCallback(async () => {
+        const currentAppliedFilters: FacturaFilterDraft = {
+            search: filters.search ?? '',
+            estadoID: filters.estadoID,
+            fechaInicio: filters.fechaInicio,
+            fechaFin: filters.fechaFin,
+        };
+
+        if (!areFacturaDraftFiltersEqual(currentAppliedFilters, draftFilters)) {
+            setFilters((prev) => ({
+                ...prev,
+                ...draftFilters,
+                page: 1,
+            }));
+            return;
+        }
+
+        if (filters.page !== 1) {
+            setFilters((prev) => ({
+                ...prev,
+                page: 1,
+            }));
+            return;
+        }
+
+        await refetch();
+    }, [draftFilters, filters, refetch]);
+
+    const handleResetFilters = useCallback(async () => {
+        setDraftFilters(defaultFacturaFilterDraft);
+
+        const currentAppliedFilters: FacturaFilterDraft = {
+            search: filters.search ?? '',
+            estadoID: filters.estadoID,
+            fechaInicio: filters.fechaInicio,
+            fechaFin: filters.fechaFin,
+        };
+
+        if (!areFacturaDraftFiltersEqual(currentAppliedFilters, defaultFacturaFilterDraft)) {
+            setFilters((prev) => ({
+                ...prev,
+                ...defaultFacturaFilterDraft,
+                page: 1,
+            }));
+            return;
+        }
+
+        if (filters.page !== 1) {
+            setFilters((prev) => ({
+                ...prev,
+                page: 1,
+            }));
+            return;
+        }
+
+        await refetch();
+    }, [filters, refetch]);
 
     const handleCreateClick = () => {
         navigate(buildAppCreatePath(APP_PATHS.facturas));
@@ -156,10 +213,12 @@ export function useFacturasPageController() {
         handleFechaFinDraftChange,
         handleFechaInicioDraftChange,
         handlePaymentClick,
+        handleResetFilters,
         handleSearchDraftChange,
         handleUpdateStatus,
         handleViewClick,
         handleViewPaymentsClick,
+        isFetching,
         isLoading,
         pagosListModalOpen,
         paymentModalOpen,

@@ -2,6 +2,7 @@ export const APP_PATHS = {
     root: '/',
     login: '/login',
     forgotPassword: '/forgot-password',
+    resetPassword: '/reset-password',
     appRoot: '/app',
     dashboard: '/app/dashboard',
     profile: '/app/perfil',

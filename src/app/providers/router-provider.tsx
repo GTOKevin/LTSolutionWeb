@@ -26,6 +26,7 @@ const FlotaEditarPage = lazy(() => import('@pages/flotas/editar').then(module =>
 const FlotaVerPage = lazy(() => import('@pages/flotas/ver').then(module => ({ default: module.FlotaVerPage })));
 const HealthCheckPage = lazy(() => import('@pages/health-check').then(module => ({ default: module.HealthCheckPage })));
 const ForgotPasswordPage = lazy(() => import('@pages/forgot-password').then(module => ({ default: module.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import('@pages/reset-password').then(module => ({ default: module.ResetPasswordPage })));
 const ColaboradoresPage = lazy(() => import('@pages/colaboradores').then(module => ({ default: module.ColaboradoresPage })));
 const ColaboradorNuevoPage = lazy(() => import('@pages/colaboradores/nuevo').then(module => ({ default: module.ColaboradorNuevoPage })));
 const ColaboradorEditarPage = lazy(() => import('@pages/colaboradores/editar').then(module => ({ default: module.ColaboradorEditarPage })));
@@ -168,6 +169,15 @@ export function RouterProvider() {
                         element={
                             <PublicRoute>
                                 <ForgotPasswordPage />
+                            </PublicRoute>
+                        }
+                    />
+
+                    <Route
+                        path={APP_PATHS.resetPassword}
+                        element={
+                            <PublicRoute>
+                                <ResetPasswordPage />
                             </PublicRoute>
                         }
                     />

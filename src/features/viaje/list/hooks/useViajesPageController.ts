@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { viajeApi } from '@entities/viaje/api/viaje.api';
 import type { ViajeFilters as ViajeFiltersType, ViajeListItem } from '@entities/viaje/model/types';
 import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
-import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
 import { useToast } from '@/shared/components/ui/Toast';
 import { useViajeDetailReports } from '../../reports/hooks/useViajeDetailReports';
 import { useViajeListReports } from '../../reports/hooks/useViajeListReports';
@@ -14,6 +13,12 @@ import { getErrorMessage, type ApiMutationError } from '@/shared/utils/api-error
 import { logger } from '@/shared/utils/logger';
 import { APP_PATHS, buildAppCreatePath, buildAppDetailPath, buildAppViewPath } from '@shared/config/app-routes';
 import { useViajeKanbanColumns } from './useViajeKanbanColumns';
+import {
+    areViajeListFiltersEqual,
+    createDefaultViajeListDraftFilters,
+    normalizeViajeListFilters,
+    type ViajeListDraftFilters,
+} from '../model/filters';
 
 export function useViajesPageController() {
     const navigate = useNavigate();
@@ -24,29 +29,29 @@ export function useViajesPageController() {
     const canReabrirViajes = usePermission(PERMISSIONS.VIAJES.REABRIR);
     const listReports = useViajeListReports();
     const detailReports = useViajeDetailReports();
+    const defaultDraftFilters = useMemo(() => createDefaultViajeListDraftFilters(), []);
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [filters, setFilters] = useState<ViajeFiltersType>({
-        page: 1,
-        size: 10,
-        fechaInicio: getFirstDayOfCurrentMonthISO(),
-        fechaFin: getLastDayOfCurrentMonthISO(),
-    });
+    const [draftFilters, setDraftFilters] = useState<ViajeListDraftFilters>(defaultDraftFilters);
+    const [appliedFilters, setAppliedFilters] = useState<Omit<ViajeFiltersType, 'page' | 'size'>>(
+        () => normalizeViajeListFilters(defaultDraftFilters),
+    );
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [viajeToDelete, setViajeToDelete] = useState<ViajeListItem | null>(null);
     const [reopenDialogOpen, setReopenDialogOpen] = useState(false);
     const [viajeToReopen, setViajeToReopen] = useState<ViajeListItem | null>(null);
     const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
 
-    const { data, isLoading } = useQuery({
-        queryKey: VIAJE_QUERY_KEYS.listPage(page, rowsPerPage, filters),
-        queryFn: () =>
-            viajeApi.getAll({
-                ...filters,
-                page: page + 1,
-                size: rowsPerPage,
-            }),
+    const queryFilters = useMemo<ViajeFiltersType>(() => ({
+        ...appliedFilters,
+        page: page + 1,
+        size: rowsPerPage,
+    }), [appliedFilters, page, rowsPerPage]);
+
+    const { data, isLoading, isFetching, refetch } = useQuery({
+        queryKey: VIAJE_QUERY_KEYS.listPage(page, rowsPerPage, queryFilters),
+        queryFn: () => viajeApi.getAll(queryFilters),
     });
 
     const refreshLists = useCallback(() => {
@@ -114,6 +119,48 @@ export function useViajesPageController() {
         setPage(0);
     }, []);
 
+    const handleDraftFilterChange = useCallback(<K extends keyof ViajeListDraftFilters>(field: K, value: ViajeListDraftFilters[K]) => {
+        setDraftFilters((prev) => ({ ...prev, [field]: value }));
+    }, []);
+
+    const handleSearch = useCallback(async () => {
+        const nextAppliedFilters = normalizeViajeListFilters(draftFilters);
+        const filtersChanged = !areViajeListFiltersEqual(appliedFilters, nextAppliedFilters);
+
+        if (filtersChanged) {
+            setAppliedFilters(nextAppliedFilters);
+            setPage(0);
+            return;
+        }
+
+        if (page !== 0) {
+            setPage(0);
+            return;
+        }
+
+        await refetch();
+    }, [appliedFilters, draftFilters, page, refetch]);
+
+    const handleResetFilters = useCallback(async () => {
+        setDraftFilters(defaultDraftFilters);
+
+        const nextAppliedFilters = normalizeViajeListFilters(defaultDraftFilters);
+        const filtersChanged = !areViajeListFiltersEqual(appliedFilters, nextAppliedFilters);
+
+        if (filtersChanged) {
+            setAppliedFilters(nextAppliedFilters);
+            setPage(0);
+            return;
+        }
+
+        if (page !== 0) {
+            setPage(0);
+            return;
+        }
+
+        await refetch();
+    }, [appliedFilters, defaultDraftFilters, page, refetch]);
+
     const totals = useMemo(
         () => ({
             agendados: data?.totalAgendados?.toString() || '0',
@@ -130,11 +177,13 @@ export function useViajesPageController() {
         canReabrirViajes,
         page,
         rowsPerPage,
-        filters,
-        setFilters,
+        draftFilters,
+        filters: queryFilters,
+        appliedFilters,
         viewMode,
         setViewMode,
         data,
+        isFetching,
         isLoading,
         totals,
         kanbanColumns,
@@ -152,6 +201,9 @@ export function useViajesPageController() {
         handleReopen,
         handleChangePage,
         handleChangeRowsPerPage,
+        handleDraftFilterChange,
+        handleSearch,
+        handleResetFilters,
         handleExportListExcel: listReports.handleExportListExcel,
         handleExportListPdf: listReports.handleExportListPdf,
         handleExportExcel: detailReports.handleExportExcel,

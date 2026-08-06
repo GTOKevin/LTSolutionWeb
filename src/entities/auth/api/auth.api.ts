@@ -6,6 +6,7 @@ import type {
     LoginRequest,
     LoginResponse,
     RefreshTokenRequest,
+    ResetPasswordRequest,
 } from '../model/types';
 
 export const authApi = {
@@ -24,8 +25,16 @@ export const authApi = {
         await httpClient.put('/auth/change-password', request);
     },
 
+    logout: async (): Promise<void> => {
+        await httpClient.post('/auth/logout');
+    },
+
     forgotPassword: async (request: ForgotPasswordRequest): Promise<ForgotPasswordResponse> => {
         const response = await httpClient.post<ForgotPasswordResponse>('/auth/forgot-password', request);
         return response.data;
+    },
+
+    resetPassword: async (request: ResetPasswordRequest): Promise<void> => {
+        await httpClient.post('/auth/reset-password', request);
     },
 };
