@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
     Dialog,
     DialogTitle,
@@ -14,6 +15,7 @@ import { Warning as WarningIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { useAuthStore } from '@shared/store/auth.store';
+import { resetSessionClientState } from '@app/session/lib/reset-session-client-state';
 
 function SessionExpiredDialog({ onLogout }: { onLogout: () => void }) {
     const [countdown, setCountdown] = useState(5);
@@ -84,13 +86,14 @@ function SessionExpiredDialog({ onLogout }: { onLogout: () => void }) {
 }
 
 export function SessionExpiredModal() {
-    const { isSessionExpired, logout } = useAuthStore();
+    const queryClient = useQueryClient();
+    const isSessionExpired = useAuthStore((state) => state.isSessionExpired);
     const navigate = useNavigate();
 
     const handleLogout = useCallback(() => {
-        logout();
+        resetSessionClientState(queryClient);
         navigate(APP_PATHS.login, { replace: true });
-    }, [logout, navigate]);
+    }, [navigate, queryClient]);
 
     if (!isSessionExpired) return null;
 

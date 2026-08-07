@@ -308,7 +308,7 @@ export function ChangePasswordModal({ open, onClose, usuarioId, usuarioNombre, o
 
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                                 <StrengthItem label="8+ caracteres" checked={strength.hasLength} />
-                                <StrengthItem label="Mayúscula" checked={strength.hasUpper} />
+                                <StrengthItem label="Una letra" checked={strength.hasLetter} />
                                 <StrengthItem label="Un símbolo" checked={strength.hasSymbol} />
                             </Box>
                         </Box>
