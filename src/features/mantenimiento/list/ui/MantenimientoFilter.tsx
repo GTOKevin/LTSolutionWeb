@@ -1,102 +1,46 @@
 import {
     Box,
-    Grid,
-    TextField,
-    MenuItem,
     Button,
-    InputAdornment,
-    Paper,
     Divider,
+    Grid,
+    InputAdornment,
+    MenuItem,
+    Paper,
+    TextField,
+    Tooltip,
     Typography,
     useTheme,
     alpha
 } from '@mui/material';
 import { 
-    Search as SearchIcon, 
+    CleaningServices as CleaningServicesIcon,
     FilterList as FilterListIcon,
-    Clear as ClearIcon
+    Search as SearchIcon,
 } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
 import type { SelectItem } from '@/shared/model/types';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
-import { INITIAL_FILTERS, type MantenimientoFiltersState } from '../model/types';
+import type { MantenimientoListDraftState } from '../model/types';
 
 interface MantenimientoFilterProps {
-    onSearch: (query: string) => void;
-    onFilter: (filters: MantenimientoFiltersState) => void;
+    draftState: MantenimientoListDraftState;
+    onDraftChange: <K extends keyof MantenimientoListDraftState>(field: K, value: MantenimientoListDraftState[K]) => void;
+    onSearch: () => void;
     onClear: () => void;
     flotas: SelectItem[];
     estados: SelectItem[];
-    initialFilters: MantenimientoFiltersState;
+    isSearching?: boolean;
 }
 
 export function MantenimientoFilter({
+    draftState,
+    onDraftChange,
     onSearch,
-    onFilter,
     onClear,
     flotas,
     estados,
-    initialFilters
+    isSearching = false,
 }: MantenimientoFilterProps) {
     const theme = useTheme();
-    
-    // --- Search State (Debounced) ---
-    const [searchTerm, setSearchTerm] = useState('');
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            onSearch(searchTerm);
-        }, 1000);
-
-        return () => clearTimeout(timer);
-    }, [searchTerm, onSearch]);
-
-    // --- Filters State (Manual) ---
-    const [draftFilters, setDraftFilters] = useState<MantenimientoFiltersState>(initialFilters);
-
-    useEffect(() => {
-        setDraftFilters(initialFilters);
-    }, [initialFilters]);
-
-    const handleFilterChange = (field: keyof MantenimientoFiltersState, value: string | number) => {
-        setDraftFilters(prev => {
-            const newFilters: MantenimientoFiltersState = { ...prev };
-
-            switch (field) {
-                case 'flotaID':
-                    newFilters.flotaID = Number(value);
-                    break;
-                case 'estadoID':
-                    newFilters.estadoID = Number(value);
-                    break;
-                case 'desde':
-                    newFilters.desde = String(value);
-                    break;
-                case 'hasta':
-                    newFilters.hasta = String(value);
-                    break;
-            }
-            
-            if (field === 'desde' && newFilters.hasta && value > newFilters.hasta) {
-                newFilters.hasta = String(value);
-            }
-            if (field === 'hasta' && newFilters.desde && value < newFilters.desde) {
-                newFilters.desde = String(value);
-            }
-            
-            return newFilters;
-        });
-    };
-
-    const handleApplyFilters = () => {
-        onFilter(draftFilters);
-    };
-
-    const handleClear = () => {
-        setSearchTerm('');
-        setDraftFilters(INITIAL_FILTERS);
-        onClear();
-    };
 
     return (
         <Paper 
@@ -118,8 +62,8 @@ export function MantenimientoFilter({
                     <TextField
                         fullWidth
                         placeholder="Buscar por ID, vehículo, motivo..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(handleSanitizeSearchInput(e.target.value))}
+                        value={draftState.search}
+                        onChange={(e) => onDraftChange('search', handleSanitizeSearchInput(e.target.value))}
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">
@@ -147,8 +91,8 @@ export function MantenimientoFilter({
                                 label="Vehículo"
                                 size="small"
                                 fullWidth
-                                value={draftFilters.flotaID}
-                                onChange={(e) => handleFilterChange('flotaID', Number(e.target.value))}
+                                value={draftState.flotaID}
+                                onChange={(e) => onDraftChange('flotaID', Number(e.target.value))}
                             >
                                 <MenuItem value={0}>Todos</MenuItem>
                                 {flotas.map((item) => (
@@ -162,8 +106,8 @@ export function MantenimientoFilter({
                                 label="Estado"
                                 size="small"
                                 fullWidth
-                                value={draftFilters.estadoID}
-                                onChange={(e) => handleFilterChange('estadoID', Number(e.target.value))}
+                                value={draftState.estadoID}
+                                onChange={(e) => onDraftChange('estadoID', Number(e.target.value))}
                             >
                                 <MenuItem value={0}>Todos</MenuItem>
                                 {estados.map((item) => (
@@ -177,10 +121,10 @@ export function MantenimientoFilter({
                                 type="date"
                                 size="small"
                                 fullWidth
-                                value={draftFilters.desde}
-                                onChange={(e) => handleFilterChange('desde', e.target.value)}
+                                value={draftState.desde}
+                                onChange={(e) => onDraftChange('desde', e.target.value)}
                                 InputLabelProps={{ shrink: true }}
-                                inputProps={{ max: draftFilters.hasta || undefined }}
+                                inputProps={{ max: draftState.hasta || undefined }}
                             />
                         </Grid>
                         <Grid size={{ xs: 12, md: 2 }}>
@@ -189,29 +133,32 @@ export function MantenimientoFilter({
                                 type="date"
                                 size="small"
                                 fullWidth
-                                value={draftFilters.hasta}
-                                onChange={(e) => handleFilterChange('hasta', e.target.value)}
+                                value={draftState.hasta}
+                                onChange={(e) => onDraftChange('hasta', e.target.value)}
                                 InputLabelProps={{ shrink: true }}
-                                inputProps={{ min: draftFilters.desde || undefined }}
+                                inputProps={{ min: draftState.desde || undefined }}
                             />
                         </Grid>
                         <Grid size={{ xs: 12, md: 2 }} sx={{ display: 'flex', gap: 1 }}>
                             <Button 
                                 variant="contained" 
-                                onClick={handleApplyFilters}
+                                onClick={onSearch}
+                                disabled={isSearching}
                                 fullWidth
                                 sx={{ height: 40 }}
                             >
-                                Buscar
+                                {isSearching ? 'Buscando...' : 'Buscar'}
                             </Button>
-                            <Button 
-                                variant="outlined" 
-                                color="inherit"
-                                onClick={handleClear}
-                                sx={{ minWidth: 40, px: 1 }}
-                            >
-                                <ClearIcon />
-                            </Button>
+                            <Tooltip title="Restablecer filtros al estado inicial">
+                                <Button
+                                    variant="contained"
+                                    color="info"
+                                    onClick={onClear}
+                                    sx={{ minWidth: 40, height: 40, px: 1 }}
+                                >
+                                    <CleaningServicesIcon />
+                                </Button>
+                            </Tooltip>
                         </Grid>
                     </Grid>
                 </Box>

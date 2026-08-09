@@ -32,6 +32,7 @@ import { useAuthStore } from '@shared/store/auth.store';
 import { useState, useMemo, useEffect, useRef, type MouseEvent } from 'react';
 import { hasPermission as hasUserPermission } from '@shared/lib/permissions/hasPermission';
 import { APP_PATHS } from '@shared/config/app-routes';
+import { useLogout } from '@features/auth/logout';
 
 export const DRAWER_WIDTH = 280;
 
@@ -53,7 +54,8 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
     const navigate = useNavigate();
     const location = useLocation();
     const { sidebarOpen, setSidebarOpen } = useLayoutStore();
-    const { user, logout } = useAuthStore();
+    const { user } = useAuthStore();
+    const logoutMutation = useLogout();
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [pendingNavigation, setPendingNavigation] = useState<{ path: string; label: string } | null>(null);
@@ -167,8 +169,7 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
 
     const handleLogout = () => {
         handleMenuClose();
-        logout();
-        navigate(APP_PATHS.login);
+        logoutMutation.mutate();
     };
 
     const handleOpenChangePassword = () => {
@@ -452,7 +453,7 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
                         <ListItemText>Cambiar contraseña</ListItemText>
                     </MuiMenuItem>
                     <Divider />
-                    <MuiMenuItem onClick={handleLogout} sx={{ color: theme.palette.error.main }}>
+                    <MuiMenuItem onClick={handleLogout} disabled={logoutMutation.isPending} sx={{ color: theme.palette.error.main }}>
                         <ListItemIcon>
                             <Logout fontSize="small" sx={{ color: theme.palette.error.main }} />
                         </ListItemIcon>

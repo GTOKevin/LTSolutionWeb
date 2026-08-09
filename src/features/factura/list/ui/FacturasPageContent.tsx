@@ -2,6 +2,7 @@ import {
     Box,
     Typography,
     Button,
+    Tooltip,
     useTheme,
     alpha,
     TextField,
@@ -10,6 +11,7 @@ import {
 } from '@mui/material';
 import {
     AddCircle as AddCircleIcon,
+    CleaningServices as CleaningServicesIcon,
     Info as InfoIcon,
     Search as SearchIcon,
 } from '@mui/icons-material';
@@ -183,15 +185,28 @@ export function FacturasPageContent({ controller }: FacturasPageContentProps) {
                                 />
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'stretch' }}>
-                                <Button
-                                    variant="contained"
-                                    startIcon={<SearchIcon />}
-                                    onClick={controller.handleApplyFilters}
-                                    fullWidth
-                                    sx={{ borderRadius: 2, fontWeight: 600 }}
-                                >
-                                    Buscar
-                                </Button>
+                                <Box sx={{ display: 'flex', width: '100%', gap: 1 }}>
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<SearchIcon />}
+                                        onClick={controller.handleApplyFilters}
+                                        disabled={controller.isFetching}
+                                        fullWidth
+                                        sx={{ borderRadius: 2, fontWeight: 600 }}
+                                    >
+                                        {controller.isFetching ? 'Buscando...' : 'Buscar'}
+                                    </Button>
+                                    <Tooltip title="Restablecer filtros al estado inicial">
+                                        <Button
+                                            variant="contained"
+                                            color="info"
+                                            onClick={controller.handleResetFilters}
+                                            sx={{ minWidth: 40, height: 40, px: 1 }}
+                                        >
+                                            <CleaningServicesIcon />
+                                        </Button>
+                                    </Tooltip>
+                                </Box>
                             </Box>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, gridColumn: { xs: 'span 1', md: 'span 4' } }}>
                                 <TextField

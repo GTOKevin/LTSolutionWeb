@@ -26,7 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { loginSchema, type LoginFormData } from '../model/schema';
@@ -42,6 +42,9 @@ export function LoginForm() {
     const [themeAnchorEl, setThemeAnchorEl] = useState<null | HTMLElement>(null);
     const themeMenuOpen = Boolean(themeAnchorEl);
     const [showPassword, setShowPassword] = useState(false);
+    const [searchParams] = useSearchParams();
+    const resetStatus = searchParams.get('reset');
+    const resetMessage = searchParams.get('message');
 
     // Use theme colors directly
     const colors = {
@@ -167,6 +170,18 @@ export function LoginForm() {
                 </Box>
 
                 {/* Error Feedback */}
+                {resetStatus === 'success' && resetMessage && (
+                    <Alert
+                        severity="success"
+                        sx={{
+                            mb: 3,
+                            borderRadius: 2,
+                        }}
+                    >
+                        {resetMessage}
+                    </Alert>
+                )}
+
                 {loginErrorMessage && (
                     <Alert 
                         severity="error" 

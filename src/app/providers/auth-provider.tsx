@@ -1,8 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@shared/store/auth.store';
 import { authApi } from '@entities/auth/api/auth.api';
 import { Box, CircularProgress } from '@mui/material';
 import { configureAuthHttpClient } from '@app/session/lib/configure-auth-http-client';
+import { resetSessionClientState } from '@app/session/lib/reset-session-client-state';
 
 interface AuthProviderProps {
     children: React.ReactNode;
@@ -10,7 +12,8 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
     configureAuthHttpClient();
-    const { isAuthenticated, hasHydrated, setAuth, logout } = useAuthStore();
+    const queryClient = useQueryClient();
+    const { isAuthenticated, hasHydrated, setAuth } = useAuthStore();
     const [isInitialized, setIsInitialized] = useState(false);
     const initialized = useRef(false);
 
@@ -32,14 +35,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 const res = await authApi.refreshToken();
                 setAuth(res.token);
             } catch {
-                logout();
+                try {
+                    await authApi.logout();
+                } catch {
+                    // The local session still needs to be cleared even if cookie cleanup fails.
+                }
+                resetSessionClientState(queryClient);
             }
 
             setIsInitialized(true);
         };
 
         initAuth();
-    }, [hasHydrated, isAuthenticated, logout, setAuth]);
+    }, [hasHydrated, isAuthenticated, queryClient, setAuth]);
 
     if (!isInitialized) {
         return (

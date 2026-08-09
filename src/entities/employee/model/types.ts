@@ -1,4 +1,11 @@
 import type { PagedResponse } from '@shared/model/types';
+import type {
+    CreateViajeGuiaDto,
+    CreateViajeIncidenteDto,
+    ViajeGuia,
+    ViajeIncidente,
+    ViajePermiso,
+} from '@entities/viaje/model/types';
 
 export interface MiPagoDto {
     colaboradorPagoId: number;
@@ -144,6 +151,11 @@ export interface UpdateMiViajeKmsDto {
     kmLlegadaBase: number | null;
 }
 
+export interface UpdateMiViajeStatusDto {
+    estadoId: number;
+    fechaLlegada: string | null;
+}
+
 export interface MiViajeFilters {
     estadoID?: number;
     desde?: string;
@@ -158,3 +170,8 @@ export type MiLicenciasResponse = PagedResponse<MiLicenciaDto>;
 export type MiDocumentosResponse = PagedResponse<MiDocumentoDto>;
 export type MiDocumentoSolicitudesResponse = PagedResponse<DocumentoActualizacionSolicitudDto>;
 export type MiViajesResponse = PagedResponse<MiViajeListItemDto>;
+export type MiViajePermisosResponse = PagedResponse<ViajePermiso>;
+export type MiViajeIncidentesResponse = PagedResponse<ViajeIncidente>;
+export type MiViajeGuiasResponse = PagedResponse<ViajeGuia>;
+export type CreateMiViajeIncidenteDto = CreateViajeIncidenteDto;
+export type CreateMiViajeGuiaDto = CreateViajeGuiaDto;

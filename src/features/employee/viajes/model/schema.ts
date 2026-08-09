@@ -14,8 +14,15 @@ export const updateMisViajesKmsSchema = z.object({
     kmLlegadaBase: nullableNumber,
 });
 
+export const updateMisViajeStatusSchema = z.object({
+    estadoId: z.number().min(1, 'El estado es requerido'),
+    fechaLlegada: z.string().nullable(),
+});
+
 export type UpdateMisViajesKmsForm = z.infer<typeof updateMisViajesKmsSchema>;
 export type UpdateMisViajesKmsFormInput = z.input<typeof updateMisViajesKmsSchema>;
+export type UpdateMisViajeStatusForm = z.infer<typeof updateMisViajeStatusSchema>;
+export type UpdateMisViajeStatusFormInput = z.input<typeof updateMisViajeStatusSchema>;
 
 export function getUpdateMisViajesKmsDefaultValues(
     values?: Partial<UpdateMisViajesKmsForm>,
@@ -24,5 +31,14 @@ export function getUpdateMisViajesKmsDefaultValues(
         kmInicio: values?.kmInicio ?? null,
         kmLlegada: values?.kmLlegada ?? null,
         kmLlegadaBase: values?.kmLlegadaBase ?? null,
+    };
+}
+
+export function getUpdateMisViajeStatusDefaultValues(
+    values?: Partial<UpdateMisViajeStatusForm>,
+): UpdateMisViajeStatusFormInput {
+    return {
+        estadoId: values?.estadoId ?? 0,
+        fechaLlegada: values?.fechaLlegada ?? null,
     };
 }

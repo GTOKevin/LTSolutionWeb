@@ -12,7 +12,15 @@ export function ViajesPage() {
             agendados={controller.totals.agendados}
             enTransito={controller.totals.enTransito}
             completados={controller.totals.completados}
-            filters={<ViajesFilters onSearch={controller.setFilters} />}
+            filters={
+                <ViajesFilters
+                    filters={controller.draftFilters}
+                    onFilterChange={controller.handleDraftFilterChange}
+                    onSearch={controller.handleSearch}
+                    onReset={controller.handleResetFilters}
+                    isSearching={controller.isFetching}
+                />
+            }
             viewMode={controller.viewMode}
             onViewModeChange={controller.setViewMode}
             canExport={controller.canViewViajes}

@@ -207,12 +207,13 @@ export function MantenimientosPageContent({ controller }: MantenimientosPageCont
 
                 {showFilters && (
                     <MantenimientoFilter
+                        draftState={controller.draftState}
+                        onDraftChange={controller.handleDraftChange}
                         onSearch={controller.handleSearch}
-                        onFilter={controller.handleFilter}
                         onClear={controller.handleClear}
                         flotas={controller.listaFlotas}
                         estados={controller.listaEstados}
-                        initialFilters={controller.initialFilters}
+                        isSearching={controller.isFetching}
                     />
                 )}
 

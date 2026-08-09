@@ -1,62 +1,38 @@
 import {
     Box,
     Button,
-    TextField,
+    Grid,
+    Tooltip,
     MenuItem,
     Paper,
+    TextField,
     Typography,
     IconButton,
     useTheme,
     alpha,
     Collapse,
-    Grid
 } from '@mui/material';
 import {
+    CleaningServices as CleaningServicesIcon,
     FilterList,
     Search as SearchIcon
 } from '@mui/icons-material';
 import { useState } from 'react';
-import type { ViajeFilters } from '@entities/viaje/model/types';
 import { useViajeListFilterOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
-import { getFirstDayOfCurrentMonthISOMinus, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
+import type { ViajeListDraftFilters } from '../model/filters';
 
 interface Props {
-    onSearch: (filters: ViajeFilters) => void;
+    filters: ViajeListDraftFilters;
+    onFilterChange: <K extends keyof ViajeListDraftFilters>(field: K, value: ViajeListDraftFilters[K]) => void;
+    onSearch: () => void;
+    onReset: () => void;
+    isSearching?: boolean;
 }
 
-export function ViajesFilters({ onSearch }: Props) {
+export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSearching = false }: Props) {
     const theme = useTheme();
     const [showFilters, setShowFilters] = useState(true);
     const { clientes, tractos, carretas, colaboradores, estados } = useViajeListFilterOptions();
-
-    const [filters, setFilters] = useState<ViajeFilters>({
-        page: 1,
-        size: 10,
-        fechaInicio: getFirstDayOfCurrentMonthISOMinus(3),
-        fechaFin: getLastDayOfCurrentMonthISO(),
-        clienteID: 0,
-        colaboradorID: 0,
-        tractoID: 0,
-        carretaID: 0,
-        estadoID: 0
-    });
-
-    const handleChange = <K extends keyof ViajeFilters>(field: K, value: ViajeFilters[K]) => {
-        setFilters(prev => ({ ...prev, [field]: value }));
-    };
-
-    const handleSearch = () => {
-        onSearch({
-            ...filters,
-            clienteID: filters.clienteID === 0 ? undefined : filters.clienteID,
-            colaboradorID: filters.colaboradorID === 0 ? undefined : filters.colaboradorID,
-            tractoID: filters.tractoID === 0 ? undefined : filters.tractoID,
-            carretaID: filters.carretaID === 0 ? undefined : filters.carretaID,
-            estadoID: filters.estadoID === 0 ? undefined : filters.estadoID,
-            fechaInicio: filters.fechaInicio || undefined,
-            fechaFin: filters.fechaFin || undefined
-        });
-    };
 
     return (
         <Paper
@@ -92,7 +68,7 @@ export function ViajesFilters({ onSearch }: Props) {
                             fullWidth
                             size="small"
                             value={filters.fechaInicio}
-                            onChange={(e) => handleChange('fechaInicio', e.target.value)}
+                            onChange={(e) => onFilterChange('fechaInicio', e.target.value)}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                             InputLabelProps={{ shrink: true }}
                         />
@@ -106,7 +82,7 @@ export function ViajesFilters({ onSearch }: Props) {
                             fullWidth
                             size="small"
                             value={filters.fechaFin}
-                            onChange={(e) => handleChange('fechaFin', e.target.value)}
+                            onChange={(e) => onFilterChange('fechaFin', e.target.value)}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                             InputLabelProps={{ shrink: true }}
                         />
@@ -120,7 +96,7 @@ export function ViajesFilters({ onSearch }: Props) {
                             fullWidth
                             size="small"
                             value={filters.clienteID}
-                            onChange={(e) => handleChange('clienteID', Number(e.target.value))}
+                            onChange={(e) => onFilterChange('clienteID', Number(e.target.value))}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                         >
                             <MenuItem value={0}>Todos</MenuItem>
@@ -136,7 +112,7 @@ export function ViajesFilters({ onSearch }: Props) {
                             fullWidth
                             size="small"
                             value={filters.colaboradorID}
-                            onChange={(e) => handleChange('colaboradorID', Number(e.target.value))}
+                            onChange={(e) => onFilterChange('colaboradorID', Number(e.target.value))}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                         >
                             <MenuItem value={0}>Todos</MenuItem>
@@ -152,7 +128,7 @@ export function ViajesFilters({ onSearch }: Props) {
                             fullWidth
                             size="small"
                             value={filters.tractoID}
-                            onChange={(e) => handleChange('tractoID', Number(e.target.value))}
+                            onChange={(e) => onFilterChange('tractoID', Number(e.target.value))}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                         >
                             <MenuItem value={0}>Todos</MenuItem>
@@ -168,7 +144,7 @@ export function ViajesFilters({ onSearch }: Props) {
                             fullWidth
                             size="small"
                             value={filters.carretaID}
-                            onChange={(e) => handleChange('carretaID', Number(e.target.value))}
+                            onChange={(e) => onFilterChange('carretaID', Number(e.target.value))}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                         >
                             <MenuItem value={0}>Todas</MenuItem>
@@ -184,24 +160,35 @@ export function ViajesFilters({ onSearch }: Props) {
                             fullWidth
                             size="small"
                             value={filters.estadoID}
-                            onChange={(e) => handleChange('estadoID', Number(e.target.value))}
+                            onChange={(e) => onFilterChange('estadoID', Number(e.target.value))}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                         >
                             <MenuItem value={0}>Todos</MenuItem>
                             {estados?.map(e => <MenuItem key={e.id} value={e.id}>{e.text}</MenuItem>)}
                         </TextField>
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Button
                             variant="contained"
                             color="primary"
                             startIcon={<SearchIcon />}
-                            onClick={handleSearch}
+                            onClick={onSearch}
+                            disabled={isSearching}
                             fullWidth
                             sx={{ borderRadius: 2, py: 1 }}
                         >
-                            Buscar
+                            {isSearching ? 'Buscando...' : 'Buscar'}
                         </Button>
+                        <Tooltip title="Restablecer filtros al estado inicial">
+                            <Button
+                                variant="contained"
+                                color="info"
+                                onClick={onReset}
+                                sx={{ minWidth: 40, height: 40, px: 1 }}
+                            >
+                                <CleaningServicesIcon />
+                            </Button>
+                        </Tooltip>
                     </Grid>
                 </Grid>
             </Collapse>

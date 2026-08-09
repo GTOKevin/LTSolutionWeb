@@ -216,7 +216,7 @@ export function ForgotPasswordPage() {
                                     Recuperar Contraseña
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 340, mx: 'auto' }}>
-                                    Ingresa tu correo electrónico asociado. Te enviaremos un enlace seguro para restablecer tu acceso al sistema HAZMAT.
+                                    Ingresa tu correo electrónico asociado. Te enviaremos un enlace seguro para restablecer tu acceso al sistema HAZMAT. El enlace estará activo por 15 minutos.
                                 </Typography>
                             </Box>
                         </Stack>

@@ -5,8 +5,14 @@ import { flotaApi } from '@entities/flota/api/flota.api';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import { ESTADO_SECCIONES } from '@entities/master-data/model/constants';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
-import { INITIAL_FILTERS } from '../model/types';
-import type { MantenimientoFiltersState } from '../model/types';
+import {
+    areMantenimientoFiltersEqual,
+    INITIAL_FILTERS,
+    INITIAL_MANTENIMIENTO_DRAFT_STATE,
+    INITIAL_SEARCH,
+    type MantenimientoFiltersState,
+    type MantenimientoListDraftState,
+} from '../model/types';
 import { useDeleteMantenimiento } from '../../hooks/useMantenimientoCrud';
 import { useMutation } from '@tanstack/react-query';
 import { useToast } from '@/shared/components/ui/Toast';
@@ -28,7 +34,8 @@ export function useMantenimientos() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     
     // --- Search & Filters ---
-    const [searchQuery, setSearchQuery] = useState('');
+    const [draftState, setDraftState] = useState<MantenimientoListDraftState>(INITIAL_MANTENIMIENTO_DRAFT_STATE);
+    const [appliedSearch, setAppliedSearch] = useState(INITIAL_SEARCH);
     const [appliedFilters, setAppliedFilters] = useState<MantenimientoFiltersState>(INITIAL_FILTERS);
 
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -50,12 +57,12 @@ export function useMantenimientos() {
 
     // Main Query
     // Refetch only when page, rowsPerPage, searchQuery, or appliedFilters change
-    const { data, isLoading } = useQuery({
-        queryKey: ['mantenimientos', page, rowsPerPage, searchQuery, appliedFilters],
+    const { data, isLoading, isFetching, refetch } = useQuery({
+        queryKey: ['mantenimientos', page, rowsPerPage, appliedSearch, appliedFilters],
         queryFn: () => mantenimientoApi.getAll({
             page: page + 1,
             size: rowsPerPage,
-            search: searchQuery || undefined,
+            search: appliedSearch || undefined,
             flotaID: appliedFilters.flotaID || undefined,
             estadoID: appliedFilters.estadoID || undefined,
             desde: appliedFilters.desde || undefined,
@@ -83,32 +90,72 @@ export function useMantenimientos() {
 
     // --- Handlers ---
     
-    /**
-     * Actualiza el término de búsqueda y reinicia la paginación.
-     * @param query - Nuevo texto a buscar.
-     */
-    const handleSearch = useCallback((query: string) => {
-        setSearchQuery(query);
-        setPage(0);
+    const handleDraftChange = useCallback(<K extends keyof MantenimientoListDraftState>(field: K, value: MantenimientoListDraftState[K]) => {
+        setDraftState((prev) => {
+            const nextState = { ...prev, [field]: value };
+
+            if (field === 'desde' && nextState.hasta && String(value) > nextState.hasta) {
+                nextState.hasta = String(value);
+            }
+
+            if (field === 'hasta' && nextState.desde && String(value) < nextState.desde) {
+                nextState.desde = String(value);
+            }
+
+            return nextState;
+        });
     }, []);
 
-    /**
-     * Aplica nuevos filtros avanzados y reinicia la paginación.
-     * @param filters - Objeto con los nuevos filtros (fechas, flota, estado).
-     */
-    const handleFilter = useCallback((filters: MantenimientoFiltersState) => {
-        setAppliedFilters(filters);
-        setPage(0);
-    }, []);
+    const handleSearch = useCallback(async () => {
+        const nextAppliedSearch = draftState.search.trim();
+        const nextAppliedFilters: MantenimientoFiltersState = {
+            flotaID: draftState.flotaID,
+            estadoID: draftState.estadoID,
+            desde: draftState.desde,
+            hasta: draftState.hasta,
+        };
+
+        const filtersChanged = !areMantenimientoFiltersEqual(appliedFilters, nextAppliedFilters);
+        const searchChanged = appliedSearch !== nextAppliedSearch;
+
+        if (filtersChanged || searchChanged) {
+            setAppliedFilters(nextAppliedFilters);
+            setAppliedSearch(nextAppliedSearch);
+            setPage(0);
+            return;
+        }
+
+        if (page !== 0) {
+            setPage(0);
+            return;
+        }
+
+        await refetch();
+    }, [appliedFilters, appliedSearch, draftState, page, refetch]);
 
     /**
      * Limpia todos los filtros y búsquedas, restableciendo el estado inicial.
      */
-    const handleClear = useCallback(() => {
-        setSearchQuery('');
-        setAppliedFilters(INITIAL_FILTERS);
-        setPage(0);
-    }, []);
+    const handleClear = useCallback(async () => {
+        setDraftState(INITIAL_MANTENIMIENTO_DRAFT_STATE);
+
+        const filtersChanged = !areMantenimientoFiltersEqual(appliedFilters, INITIAL_FILTERS);
+        const searchChanged = appliedSearch !== INITIAL_SEARCH;
+
+        if (filtersChanged || searchChanged) {
+            setAppliedFilters(INITIAL_FILTERS);
+            setAppliedSearch(INITIAL_SEARCH);
+            setPage(0);
+            return;
+        }
+
+        if (page !== 0) {
+            setPage(0);
+            return;
+        }
+
+        await refetch();
+    }, [appliedFilters, appliedSearch, page, refetch]);
 
     const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
@@ -153,10 +200,12 @@ export function useMantenimientos() {
     return {
         // State
         data,
+        draftState,
         isLoading,
+        isFetching,
         page,
         rowsPerPage,
-        searchQuery,
+        searchQuery: appliedSearch,
         appliedFilters,
         initialFilters: INITIAL_FILTERS,
 
@@ -176,7 +225,7 @@ export function useMantenimientos() {
 
         // Actions
         handleSearch,
-        handleFilter,
+        handleDraftChange,
         handleClear,
         handleChangePage,
         handleChangeRowsPerPage,
