@@ -15,9 +15,20 @@ import {
 interface MisViajesGridProps {
     items: MiViajeListItemDto[];
     onNavigate: (id: number) => void;
+    canManageViajes: boolean;
+    canQuickUpdate: (item: MiViajeListItemDto) => boolean;
+    getQuickActionLabel: (item: MiViajeListItemDto) => string | null;
+    onQuickUpdate: (id: number) => void;
 }
 
-export function MisViajesGrid({ items, onNavigate }: MisViajesGridProps) {
+export function MisViajesGrid({
+    items,
+    onNavigate,
+    canManageViajes,
+    canQuickUpdate,
+    getQuickActionLabel,
+    onQuickUpdate,
+}: MisViajesGridProps) {
     const buildStatusColor = (item: MiViajeListItemDto) => {
         if (item.cerrado || isViajeCompletado(item)) return 'success.main';
         if (isViajeTransito(item) || isViajeDescargando(item)) return 'warning.main';
@@ -108,24 +119,42 @@ export function MisViajesGrid({ items, onNavigate }: MisViajesGridProps) {
                             </Box>
                         </Box>
 
-                        <Button 
-                            fullWidth 
-                            variant="outlined" 
-                            sx={{ 
-                                ml: 1, 
-                                width: 'calc(100% - 8px)', 
-                                py: 1.5, 
-                                borderRadius: 3, 
-                                fontWeight: 800, 
-                                letterSpacing: '0.1em', 
-                                borderWidth: '1px !important', 
-                                borderColor: 'divider',
-                                color: 'primary.main',
-                                '&:hover': { bgcolor: 'primary.main', color: 'primary.contrastText', borderColor: 'primary.main' }
-                            }}
-                        >
-                            VER DETALLES
-                        </Button>
+                        <Box sx={{ ml: 1, width: 'calc(100% - 8px)', display: 'flex', gap: 1.5 }}>
+                            {canManageViajes && canQuickUpdate(item) ? (
+                                <Button
+                                    variant="contained"
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        onQuickUpdate(item.viajeId);
+                                    }}
+                                    sx={{
+                                        py: 1.5,
+                                        borderRadius: 3,
+                                        fontWeight: 800,
+                                        flex: 1,
+                                    }}
+                                >
+                                    {getQuickActionLabel(item)}
+                                </Button>
+                            ) : null}
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                sx={{
+                                    py: 1.5,
+                                    borderRadius: 3,
+                                    fontWeight: 800,
+                                    letterSpacing: '0.1em',
+                                    borderWidth: '1px !important',
+                                    borderColor: 'divider',
+                                    color: 'primary.main',
+                                    flex: 1,
+                                    '&:hover': { bgcolor: 'primary.main', color: 'primary.contrastText', borderColor: 'primary.main' }
+                                }}
+                            >
+                                VER DETALLES
+                            </Button>
+                        </Box>
                     </Box>
                 </Box>
             ))}

@@ -2,15 +2,34 @@ import { formatDateCustom, formatDateTime, getCurrentDateISO, getCurrentTimeISO 
 
 export const employeeViajeDetailStyles = {
     heroHeader: {
-        backgroundColor: 'rgba(248, 249, 250, 0.8)',
-        backdropFilter: 'blur(20px)',
+        background: 'linear-gradient(180deg, rgba(248, 249, 250, 0.96) 0%, rgba(248, 249, 250, 0.88) 100%)',
+        backdropFilter: 'blur(16px)',
     },
     card: {
         backgroundColor: '#ffffff',
-        borderRadius: 3,
+        borderRadius: 4,
         p: 3,
         boxShadow: 'none',
         border: '1px solid rgba(192, 199, 212, 0.5)',
+    },
+    mutedCard: {
+        backgroundColor: 'rgba(248, 250, 252, 0.95)',
+        borderRadius: 3,
+        p: 2.5,
+        border: '1px solid rgba(203, 213, 225, 0.65)',
+    },
+    heroStat: {
+        backgroundColor: 'rgba(255, 255, 255, 0.92)',
+        borderRadius: 3,
+        border: '1px solid rgba(203, 213, 225, 0.8)',
+        p: 2,
+        minWidth: 0,
+    },
+    softPanel: {
+        borderRadius: 3,
+        border: '1px solid rgba(203, 213, 225, 0.65)',
+        backgroundColor: 'rgba(248, 250, 252, 0.82)',
+        p: 2.5,
     },
 } as const;
 
@@ -63,6 +82,43 @@ function resolveDateOnlyUtcTime(value: string) {
 export interface EmployeeViajePermisoStatus {
     label: string;
     color: 'success' | 'warning' | 'error';
+}
+
+export type EmployeeViajeTone = 'success' | 'warning' | 'error' | 'info' | 'neutral';
+
+export function resolveEmployeeViajeToneColors(tone: EmployeeViajeTone) {
+    switch (tone) {
+        case 'success':
+            return {
+                bg: 'success.light',
+                text: 'success.dark',
+                border: 'success.main',
+            };
+        case 'warning':
+            return {
+                bg: 'warning.light',
+                text: 'warning.dark',
+                border: 'warning.main',
+            };
+        case 'error':
+            return {
+                bg: 'error.light',
+                text: 'error.dark',
+                border: 'error.main',
+            };
+        case 'info':
+            return {
+                bg: 'info.light',
+                text: 'info.dark',
+                border: 'info.main',
+            };
+        default:
+            return {
+                bg: 'grey.200',
+                text: 'text.primary',
+                border: 'divider',
+            };
+    }
 }
 
 export function resolveEmployeeViajePermisoStatus(fechaVencimiento?: string | null): EmployeeViajePermisoStatus {

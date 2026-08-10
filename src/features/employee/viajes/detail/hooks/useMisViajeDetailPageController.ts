@@ -10,15 +10,6 @@ import type {
     CreateMiViajeIncidenteDto,
     UpdateMiViajeKmsDto,
 } from '@entities/employee/model/types';
-import {
-    isViajeAgendado,
-    isViajeCompletado,
-    isViajeDescargando,
-    isViajeTransito,
-    resolveViajeCompletadoId,
-    resolveViajeDescargandoId,
-    resolveViajeTransitoId,
-} from '@entities/viaje/model/status';
 import { usePermission } from '@shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { useLayoutStore } from '@shared/store/layout.store';
@@ -35,6 +26,10 @@ import {
     type UpdateMisViajesKmsForm,
     type UpdateMisViajesKmsFormInput,
 } from '../../model/schema';
+import {
+    isEmployeeViajeWorkflowBlocked,
+    resolveEmployeeViajeNextEstadoId,
+} from '../../model/workflow';
 
 export function useMisViajeDetailPageController() {
     const { id } = useParams<{ id: string }>();
@@ -175,29 +170,9 @@ export function useMisViajeDetailPageController() {
         });
     };
 
-    const getNextEstadoId = () => {
-        if (!viaje) {
-            return null;
-        }
-
-        if (isViajeAgendado(viaje)) {
-            return resolveViajeTransitoId(estados);
-        }
-
-        if (isViajeTransito(viaje)) {
-            return resolveViajeDescargandoId(estados);
-        }
-
-        if (isViajeDescargando(viaje)) {
-            return resolveViajeCompletadoId(estados);
-        }
-
-        return null;
-    };
-
-    const nextEstadoId = getNextEstadoId();
+    const nextEstadoId = resolveEmployeeViajeNextEstadoId(viaje, estados);
     const nextEstado = estados?.find((item) => item.id === nextEstadoId) ?? null;
-    const isClosedForWorkflow = Boolean(viaje?.cerrado || viaje?.facturado || isViajeCompletado(viaje));
+    const isClosedForWorkflow = isEmployeeViajeWorkflowBlocked(viaje);
 
     const submitNextEstado = (fechaLlegada?: string | null) => {
         if (!nextEstadoId) {

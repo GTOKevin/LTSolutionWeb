@@ -118,7 +118,7 @@ export const viajeIncidenteSchema = z.object({
     descripcion: z.string().min(1, 'Requerido').regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL),
     ubigeoID: z.number().min(1, 'La ubicación es requerida'),
     lugar: z.string().min(1, 'Requerido').regex(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL),
-    rutaFoto: z.string().min(1, 'La foto es requerida')
+    rutasFoto: z.array(z.string().min(1)).min(1, 'Debe registrar al menos una imagen')
 });
 
 export const viajeMercaderiaSchema = z.object({

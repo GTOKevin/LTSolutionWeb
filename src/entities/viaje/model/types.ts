@@ -30,6 +30,7 @@ export interface ViajeIncidenteDetailDto {
     lugar: string;
     descripcion: string;
     rutaFoto?: string;
+    rutasFoto: string[];
 }
 
 export interface ViajeIncidenteReportDto {
@@ -185,6 +186,7 @@ export interface ViajeIncidente {
     ubigeoID: number;
     lugar: string | null;
     rutaFoto: string | null;
+    rutasFoto: string[];
     tipoIncidente?: {
         tipoMaestroID: number;
         descripcion: string;
@@ -402,6 +404,7 @@ export interface CreateViajeIncidenteDto {
     ubigeoID: number;
     lugar?: string;
     rutaFoto?: string;
+    rutasFoto?: string[];
 }
 
 export interface CreateViajePermisoDto {

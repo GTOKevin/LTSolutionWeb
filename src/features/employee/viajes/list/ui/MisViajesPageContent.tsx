@@ -6,6 +6,7 @@ import type { MiViajeListItemDto } from '@entities/employee/model/types';
 import { MisViajesFilters } from '../../ui/MisViajesFilters';
 import { MisViajesGrid } from '../../ui/MisViajesGrid';
 import { MisViajesKPIs } from '../../ui/MisViajesKPIs';
+import { MisViajeQuickStatusDialog } from './MisViajeQuickStatusDialog';
 import type { useMisViajesPageController } from '../hooks/useMisViajesPageController';
 
 function buildStatusColor(item: MiViajeListItemDto): 'default' | 'success' | 'warning' {
@@ -67,6 +68,10 @@ export function MisViajesPageContent({ controller }: MisViajesPageContentProps) 
                     <MisViajesGrid
                         items={controller.data?.items ?? []}
                         onNavigate={controller.handleNavigate}
+                        canManageViajes={controller.canManageViajes}
+                        canQuickUpdate={(item) => controller.canManageViajes && !controller.isViajeWorkflowBlocked(item)}
+                        getQuickActionLabel={controller.getQuickActionLabel}
+                        onQuickUpdate={controller.handleOpenQuickStatus}
                     />
 
                     <Box sx={{ display: { xs: 'block', md: 'none' } }}>
@@ -80,6 +85,9 @@ export function MisViajesPageContent({ controller }: MisViajesPageContentProps) 
                             keyExtractor={(item) => item.viajeId}
                             emptyMessage="No tienes viajes registrados con los filtros seleccionados."
                             onView={(item) => controller.handleNavigate(item.viajeId)}
+                            onPrimaryAction={(item) => controller.handleOpenQuickStatus(item.viajeId)}
+                            canPrimaryAction={(item) => controller.canManageViajes && !controller.isViajeWorkflowBlocked(item)}
+                            getPrimaryActionLabel={(item) => controller.getQuickActionLabel(item) ?? 'Actualizar flujo'}
                             getCardStyle={(item, theme) => ({
                                 borderRadius: 4,
                                 borderColor: item.cerrado ? theme.palette.success.light : theme.palette.warning.light,
@@ -141,6 +149,21 @@ export function MisViajesPageContent({ controller }: MisViajesPageContentProps) 
                     ) : null}
                 </>
             )}
+
+            <MisViajeQuickStatusDialog
+                open={controller.quickStatusDialogOpen}
+                viaje={controller.selectedViajeDetail}
+                actionLabel={controller.quickStatusActionLabel}
+                nextEstadoNombre={controller.quickStatusNextEstadoNombre}
+                canEditFechaLlegada={controller.quickStatusCanEditFechaLlegada}
+                fechaLlegada={controller.quickStatusFechaLlegada}
+                onFechaLlegadaChange={controller.setQuickStatusFechaLlegada}
+                onClose={controller.handleCloseQuickStatus}
+                onSaveFechaLlegada={controller.handleSaveFechaLlegada}
+                onAdvance={controller.handleAdvanceWorkflow}
+                isLoading={controller.isQuickStatusLoading}
+                isSaving={controller.isQuickStatusPending}
+            />
         </Box>
     );
 }
