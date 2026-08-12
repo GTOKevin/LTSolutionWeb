@@ -31,7 +31,7 @@ const getIncidenteFormDefaults = (incidente?: ViajeIncidente | null): ViajeIncid
     descripcion: incidente?.descripcion || '',
     ubigeoID: incidente?.ubigeoID ?? 0,
     lugar: incidente?.lugar || '',
-    rutasFoto: incidente?.rutasFoto?.length ? incidente.rutasFoto : incidente?.rutaFoto ? [incidente.rutaFoto] : [''],
+    rutasFoto: incidente?.rutasFoto?.length ? incidente.rutasFoto : [''],
 });
 
 const getIncidenteDateTimeDefaults = (incidente?: ViajeIncidente | null) => ({
