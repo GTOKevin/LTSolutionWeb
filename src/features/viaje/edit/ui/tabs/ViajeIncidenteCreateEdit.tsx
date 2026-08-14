@@ -8,9 +8,10 @@ import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { ViajeIncidente } from '@/entities/viaje/model/types';
+import { buildIncidenteImagesPayload } from '@/entities/viaje/model/incidente-images';
 import type { SelectItem } from '@/shared/model/types';
 import { UbigeoSelect } from '@/shared/components/ui/UbigeoSelect';
-import { ImageUpload } from '@/shared/components/ui/ImageUpload';
+import { MultiImageUploadField } from '@/shared/components/ui/MultiImageUploadField';
 import { useCreateViajeIncidente, useUpdateViajeIncidente } from '@/features/viaje/hooks/useViajeIncidentes';
 import { viajeIncidenteSchema, type ViajeIncidenteFormData } from '@/features/viaje/model/schema';
 import { getCurrentDateISO, getCurrentTimeISO, toInputDate, toInputTime, combineDateTime } from '@/shared/utils/date-utils';
@@ -30,7 +31,7 @@ const getIncidenteFormDefaults = (incidente?: ViajeIncidente | null): ViajeIncid
     descripcion: incidente?.descripcion || '',
     ubigeoID: incidente?.ubigeoID ?? 0,
     lugar: incidente?.lugar || '',
-    rutaFoto: incidente?.rutaFoto || '',
+    rutasFoto: incidente?.rutasFoto?.length ? incidente.rutasFoto : [''],
 });
 
 const getIncidenteDateTimeDefaults = (incidente?: ViajeIncidente | null) => ({
@@ -57,7 +58,7 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
             descripcion: '',
             ubigeoID: 0,
             lugar: '',
-            rutaFoto: '',
+            rutasFoto: [''],
         },
     });
 
@@ -91,15 +92,20 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
     const onSubmit = async (data: ViajeIncidenteFormData) => {
         if (!viajeId) return;
 
+        const payload = {
+            ...data,
+            ...buildIncidenteImagesPayload(data.rutasFoto),
+        };
+
         try {
             if (isEditing && incidente) {
                 await updateMutation.mutateAsync({
                     id: incidente.viajeIncidenteID,
-                    data,
+                    data: payload,
                     viajeId,
                 });
             } else {
-                await createMutation.mutateAsync({ viajeId, data });
+                await createMutation.mutateAsync({ viajeId, data: payload });
             }
 
             setDate(getCurrentDateISO());
@@ -261,15 +267,21 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
                             Evidencia Fotográfica
                         </Typography>
                         <Controller
-                            name="rutaFoto"
+                            name="rutasFoto"
                             control={control}
                             render={({ field }) => (
-                                <ImageUpload value={field.value || undefined} onChange={(base64) => field.onChange(base64)} helperText="JPG o PNG (Max 5MB)" />
+                                <MultiImageUploadField
+                                    values={field.value}
+                                    onChange={(values) => field.onChange(values)}
+                                    helperText="JPG o PNG (Max 5MB)"
+                                    folder="incidentes"
+                                    layout="slots"
+                                />
                             )}
                         />
-                        {errors.rutaFoto && (
+                        {errors.rutasFoto && (
                             <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
-                                {errors.rutaFoto.message}
+                                {errors.rutasFoto.message}
                             </Typography>
                         )}
                     </Box>

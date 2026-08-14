@@ -1,8 +1,10 @@
+import { ReportProblemOutlined as ReportProblemOutlinedIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
-import { ImageUpload } from '@shared/components/ui/ImageUpload';
+import { MultiImageUploadField } from '@shared/components/ui/MultiImageUploadField';
 import { UbigeoSelect } from '@shared/components/ui/UbigeoSelect';
+import { getIncidenteImageRoutes } from '@entities/viaje/model/incidente-images';
 import { buildInternalFileUrl } from '@shared/config/env';
 import type { useMisViajeDetailPageController } from '../../hooks/useMisViajeDetailPageController';
 import {
@@ -18,7 +20,10 @@ import {
     employeeViajeDetailStyles,
     formatEmployeeViajeDateTimeLabel,
 } from '../../model/view-helpers';
-import { DocumentPreviewCard } from '../shared/DocumentPreviewCard';
+import { EvidenceGallery } from '@shared/components/ui/EvidenceGallery';
+import { DetailSectionHeader } from '../shared/DetailSectionHeader';
+import { EmptyStateCard } from '../shared/EmptyStateCard';
+import { OperationalStatusBadge } from '../shared/OperationalStatusBadge';
 
 interface MisViajeIncidentesSectionProps {
     controller: ReturnType<typeof useMisViajeDetailPageController>;
@@ -50,9 +55,16 @@ export function MisViajeIncidentesSection({ controller }: MisViajeIncidentesSect
         <>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'repeat(12, 1fr)' }, gap: 3 }}>
                 <Box sx={{ ...employeeViajeDetailStyles.card, gridColumn: { xs: 'span 1', xl: 'span 5' } }}>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom>
-                        Registrar incidente
-                    </Typography>
+                    <DetailSectionHeader
+                        eyebrow="Registro"
+                        title="Registrar incidente"
+                        description="Documenta eventos operativos y adjunta evidencias para el historial del viaje."
+                        aside={
+                            canEdit
+                                ? <OperationalStatusBadge label="Editable" tone="success" />
+                                : <OperationalStatusBadge label="Bloqueado" tone="warning" />
+                        }
+                    />
 
                     {controller.isWorkflowBlocked ? (
                         <Alert severity="warning" sx={{ mb: 2 }}>
@@ -151,16 +163,18 @@ export function MisViajeIncidentesSection({ controller }: MisViajeIncidentesSect
                             rows={4}
                         />
 
-                        <ImageUpload
-                            value={formValues.rutaFoto || undefined}
-                            onChange={(value) => {
+                        <MultiImageUploadField
+                            values={formValues.rutasFoto}
+                            onChange={(values) => {
                                 setFormValues((current) => ({
                                     ...current,
-                                    rutaFoto: value ?? '',
+                                    rutasFoto: values,
                                 }));
                             }}
                             helperText="Adjunta evidencia del incidente"
                             disabled={!canEdit || controller.createIncidenteMutation.isPending}
+                            folder="incidentes"
+                            layout="slots"
                         />
 
                         <Button
@@ -172,7 +186,7 @@ export function MisViajeIncidentesSection({ controller }: MisViajeIncidentesSect
                                 || formValues.ubigeoID <= 0
                                 || !formValues.descripcion.trim()
                                 || !formValues.lugar.trim()
-                                || !formValues.rutaFoto
+                                || formValues.rutasFoto.every((value) => !value.trim())
                             }
                             onClick={handleSubmit}
                         >
@@ -182,32 +196,45 @@ export function MisViajeIncidentesSection({ controller }: MisViajeIncidentesSect
                 </Box>
 
                 <Box sx={{ ...employeeViajeDetailStyles.card, gridColumn: { xs: 'span 1', xl: 'span 7' } }}>
-                    <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ letterSpacing: '0.1em', display: 'block', mb: 3, textTransform: 'uppercase' }}>
-                        Incidentes registrados
-                    </Typography>
+                    <DetailSectionHeader
+                        eyebrow="Historial"
+                        title="Incidentes registrados"
+                        description="Consulta el detalle operativo de cada incidente y navega entre sus evidencias."
+                        aside={<OperationalStatusBadge label={`${controller.incidentes.length} registros`} tone="info" />}
+                    />
 
                     <Stack spacing={2}>
                         {controller.incidentes.length === 0 ? (
-                            <Typography variant="body2" color="text.secondary">
-                                No hay incidentes registrados para este viaje.
-                            </Typography>
+                            <EmptyStateCard
+                                icon={<ReportProblemOutlinedIcon fontSize="large" />}
+                                title="Aún no se registraron incidentes"
+                                description="Cuando ocurra una novedad operativa, podrás documentarla aquí junto con sus evidencias."
+                            />
                         ) : (
                             controller.incidentes.map((item) => {
-                                const evidenciaUrl = item.rutaFoto ? buildInternalFileUrl(item.rutaFoto) : null;
+                                const evidenceRoutes = getIncidenteImageRoutes(item).filter(Boolean);
+                                const evidenceUrls = evidenceRoutes
+                                    .map((route) => buildInternalFileUrl(route))
+                                    .filter((url): url is string => Boolean(url));
                                 const tipo = controller.tiposIncidente.find(
                                     (option) => option.id === item.tipoIncidenteID,
                                 )?.text
                                     ?? item.tipoIncidente?.descripcion
                                     ?? 'Sin tipo';
+                                const evidenceItems = evidenceUrls.map((url, index) => ({
+                                    url,
+                                    alt: `Evidencia del incidente ${tipo} ${index + 1}`,
+                                }));
 
                                 return (
-                                    <Box key={item.viajeIncidenteID} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                                    <Box key={item.viajeIncidenteID} sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
                                         <Stack spacing={1.5}>
                                             <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={1}>
-                                                <Typography variant="subtitle2" fontWeight="bold">
-                                                    {tipo}
-                                                </Typography>
-                                                <Typography variant="caption" color="text.secondary">
+                                                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                                                    <OperationalStatusBadge label={tipo} tone="warning" />
+                                                    <OperationalStatusBadge label={`${evidenceRoutes.length} evidencias`} tone="neutral" />
+                                                </Stack>
+                                                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
                                                     {formatEmployeeViajeDateTimeLabel(item.fechaHora)}
                                                 </Typography>
                                             </Stack>
@@ -220,14 +247,20 @@ export function MisViajeIncidentesSection({ controller }: MisViajeIncidentesSect
                                                 {item.descripcion}
                                             </Typography>
 
-                                            {evidenciaUrl ? (
-                                                <DocumentPreviewCard
-                                                    previewUrl={evidenciaUrl}
-                                                    alt={`Evidencia del incidente ${tipo}`}
-                                                    onPreview={() => {
+                                            {evidenceRoutes.length > 0 ? (
+                                                <EvidenceGallery
+                                                    items={evidenceItems}
+                                                    onPreview={(index) => {
+                                                        const evidenciaUrl = evidenceUrls[index] ?? null;
+                                                        if (!evidenciaUrl) {
+                                                            return;
+                                                        }
+
                                                         setPreview({
                                                             previewUrl: evidenciaUrl,
-                                                            title: `Evidencia del incidente ${tipo}`,
+                                                            previewUrls: evidenceUrls,
+                                                            currentIndex: index,
+                                                            title: `Evidencias del incidente ${tipo}`,
                                                         });
                                                     }}
                                                 />
@@ -245,6 +278,8 @@ export function MisViajeIncidentesSection({ controller }: MisViajeIncidentesSect
                 open={!!preview.previewUrl}
                 onClose={handleClosePreview}
                 previewUrl={preview.previewUrl}
+                previewUrls={preview.previewUrls}
+                initialIndex={preview.currentIndex}
                 title={preview.title}
             />
         </>

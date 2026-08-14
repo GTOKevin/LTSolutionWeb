@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import type { ViajeIncidenteReportDto } from '@/entities/viaje/model/types';
+import { getIncidenteImageRoutes } from '@/entities/viaje/model/incidente-images';
 import { themePalette } from '@/shared/config/theme/palette';
 import { buildInternalFileUrl } from '@/shared/config/env';
 
@@ -183,15 +184,19 @@ export const ViajeIncidentePdf = ({ data }: Props) => {
                             </View>
 
                             {(() => {
-                                const imageUrl = buildInternalFileUrl(incidente.rutaFoto);
-                                return imageUrl ? (
-                                    <View style={styles.imageContainer}>
-                                        <Image 
-                                            src={imageUrl} 
-                                            style={styles.image}
-                                        />
-                                    </View>
-                                ) : null;
+                                const imageRoutes = getIncidenteImageRoutes(incidente);
+
+                                return imageRoutes.map((route, imageIndex) => {
+                                    const imageUrl = buildInternalFileUrl(route);
+                                    return imageUrl ? (
+                                        <View key={`${incidente.fechaHora}-${imageIndex}`} style={styles.imageContainer}>
+                                            <Image
+                                                src={imageUrl}
+                                                style={styles.image}
+                                            />
+                                        </View>
+                                    ) : null;
+                                });
                             })()}
                         </View>
                     ))

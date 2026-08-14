@@ -44,7 +44,9 @@ export interface MiLicenciaDto {
     aceptado: boolean | null;
     usuarioAceptaId: number | null;
     fechaAceptacion: string | null;
+    comentarioRevision: string | null;
     estadoRevision: string;
+    rutasFoto: string[];
 }
 
 export type MiLicenciaEstadoRevision = 'pendiente' | 'aprobada' | 'rechazada';
@@ -63,6 +65,7 @@ export interface CreateMiLicenciaRequestDto {
     descripcion?: string;
     fechaInicial: string;
     fechaFinal?: string;
+    rutasFoto?: string[];
 }
 
 export interface MiDocumentoDto {

@@ -1,15 +1,17 @@
 import { ZoomIn as ZoomInIcon } from '@mui/icons-material';
-import { Box } from '@mui/material';
+import { Box, Button } from '@mui/material';
 
 interface DocumentPreviewCardProps {
     previewUrl: string;
     alt: string;
+    buttonLabel?: string;
     onPreview: () => void;
 }
 
 export function DocumentPreviewCard({
     previewUrl,
     alt,
+    buttonLabel = 'Abrir vista previa',
     onPreview,
 }: DocumentPreviewCardProps) {
     return (
@@ -52,7 +54,9 @@ export function DocumentPreviewCard({
                     <ZoomInIcon sx={{ color: 'common.white', fontSize: 20 }} />
                 </Box>
             </Box>
-
+            <Button size="small" variant="outlined" onClick={onPreview}>
+                {buttonLabel}
+            </Button>
         </Box>
     );
 }

@@ -19,7 +19,11 @@ import { Controller, useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@shared/components/ui/Toast';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
-import type { CreateDocumentoActualizacionSolicitudDto, MiDocumentoDto } from '@entities/employee/model/types';
+import type {
+    CreateDocumentoActualizacionSolicitudDto,
+    DocumentoActualizacionSolicitudDto,
+    MiDocumentoDto,
+} from '@entities/employee/model/types';
 import { useEffect } from 'react';
 import {
     createSolicitudActualizacionSchema,
@@ -36,9 +40,12 @@ interface SolicitudActualizacionModalProps {
     onClose: () => void;
     documentos: MiDocumentoDto[];
     initialDocumentoId?: number;
+    solicitud?: DocumentoActualizacionSolicitudDto | null;
+    onUpdate?: (id: number, payload: CreateDocumentoActualizacionSolicitudDto) => void;
+    isUpdating?: boolean;
 }
 
-export function SolicitudActualizacionModal({ open, onClose, documentos, initialDocumentoId }: SolicitudActualizacionModalProps) {
+export function SolicitudActualizacionModal({ open, onClose, documentos, initialDocumentoId, solicitud, onUpdate, isUpdating = false }: SolicitudActualizacionModalProps) {
     const queryClient = useQueryClient();
     const { showToast } = useToast();
 
@@ -48,10 +55,24 @@ export function SolicitudActualizacionModal({ open, onClose, documentos, initial
     });
 
     useEffect(() => {
-        if (open) {
-            form.reset(getCreateSolicitudActualizacionDefaultValues(initialDocumentoId));
+        if (!open) {
+            return;
         }
-    }, [open, initialDocumentoId, form]);
+
+        if (solicitud) {
+            form.reset({
+                colaboradorDocumentoID: solicitud.colaboradorDocumentoId,
+                numeroDocumentoPropuesto: solicitud.numeroDocumentoPropuesto ?? '',
+                rutaArchivoPropuesta: solicitud.rutaArchivoPropuesta ?? '',
+                fechaEmisionPropuesta: solicitud.fechaEmisionPropuesta ?? '',
+                fechaVencimientoPropuesta: solicitud.fechaVencimientoPropuesta ?? '',
+                motivoSolicitud: solicitud.motivoSolicitud ?? '',
+            });
+            return;
+        }
+
+        form.reset(getCreateSolicitudActualizacionDefaultValues(initialDocumentoId));
+    }, [open, initialDocumentoId, solicitud, form]);
 
     const createMutation = useMutation({
         mutationFn: (payload: CreateDocumentoActualizacionSolicitudDto) => employeePortalApi.createDocumentoSolicitud(payload),
@@ -82,7 +103,7 @@ export function SolicitudActualizacionModal({ open, onClose, documentos, initial
                         <EditDocumentIcon />
                     </Box>
                     <Box>
-                        <Typography variant="h6" fontWeight="bold" color="text.primary" sx={{ letterSpacing: '-0.02em' }}>Solicitar Actualización Documental</Typography>
+                        <Typography variant="h6" fontWeight="bold" color="text.primary" sx={{ letterSpacing: '-0.02em' }}>{solicitud ? 'Editar Solicitud de Actualización' : 'Solicitar Actualización Documental'}</Typography>
                         <Typography variant="body2" color="text.secondary">Complete los campos para renovar el registro logístico.</Typography>
                     </Box>
                 </Box>
@@ -102,6 +123,7 @@ export function SolicitudActualizacionModal({ open, onClose, documentos, initial
                                         {...field}
                                         select
                                         fullWidth
+                                        disabled={Boolean(solicitud)}
                                         error={Boolean(fieldState.error)}
                                         helperText={fieldState.error?.message}
                                         sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'action.hover', borderRadius: 2 } }}
@@ -226,21 +248,29 @@ export function SolicitudActualizacionModal({ open, onClose, documentos, initial
                 </Button>
                 <Button
                     variant="contained"
-                    disabled={createMutation.isPending}
+                    disabled={createMutation.isPending || isUpdating}
                     onClick={form.handleSubmit((values) => {
-                        createMutation.mutate({
+                        const payload: CreateDocumentoActualizacionSolicitudDto = {
                             colaboradorDocumentoID: values.colaboradorDocumentoID,
                             numeroDocumentoPropuesto: values.numeroDocumentoPropuesto || undefined,
                             rutaArchivoPropuesta: values.rutaArchivoPropuesta || undefined,
                             fechaEmisionPropuesta: values.fechaEmisionPropuesta || undefined,
                             fechaVencimientoPropuesta: values.fechaVencimientoPropuesta || undefined,
                             motivoSolicitud: values.motivoSolicitud || undefined,
-                        });
+                        };
+
+                        if (solicitud) {
+                            onUpdate?.(solicitud.solicitudId, payload);
+                        } else {
+                            createMutation.mutate(payload);
+                        }
                     })}
                     endIcon={<SendIcon />}
                     sx={{ px: 4, py: 1.5, borderRadius: 2, fontWeight: 'bold', boxShadow: '0 8px 16px rgba(0,93,168,0.2)' }}
                 >
-                    {createMutation.isPending ? 'Enviando...' : 'Enviar Solicitud'}
+                    {createMutation.isPending || isUpdating
+                        ? (solicitud ? 'Guardando...' : 'Enviando...')
+                        : (solicitud ? 'Guardar Cambios' : 'Enviar Solicitud')}
                 </Button>
             </DialogActions>
         </Dialog>

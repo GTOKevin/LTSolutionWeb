@@ -1,12 +1,33 @@
-import { Info as InfoIcon, Save as SaveIcon } from '@mui/icons-material';
-import { Box, Button, Divider, InputAdornment, TextField, Typography } from '@mui/material';
+import {
+    Info as InfoIcon,
+    Save as SaveIcon,
+    SpeedOutlined as SpeedOutlinedIcon,
+    TimelineOutlined as TimelineOutlinedIcon,
+} from '@mui/icons-material';
+import { Box, Button, Divider, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { Controller } from 'react-hook-form';
 import type { useMisViajeDetailPageController } from '../../hooks/useMisViajeDetailPageController';
 import { employeeViajeDetailStyles } from '../../model/view-helpers';
+import { DetailSectionHeader } from '../shared/DetailSectionHeader';
+import { OperationalStatusBadge } from '../shared/OperationalStatusBadge';
 import { SummaryItem } from '../shared/SummaryItem';
 
 interface MisViajeKmsSectionProps {
     controller: ReturnType<typeof useMisViajeDetailPageController>;
+}
+
+function resolveKmCompletionLabel(values: Array<number | null | undefined>) {
+    const completed = values.filter((value) => value !== null && value !== undefined).length;
+
+    if (completed === 0) {
+        return 'Pendiente';
+    }
+
+    if (completed < values.length) {
+        return 'Parcial';
+    }
+
+    return 'Completo';
 }
 
 export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
@@ -17,34 +38,82 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
         return null;
     }
 
+    const kmStatus = resolveKmCompletionLabel([viaje.kmInicio, viaje.kmLlegada, viaje.kmLlegadaBase]);
+
     return (
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 4 }}>
-            <Box sx={{ width: { xs: '100%', lg: '33%' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <Box sx={{ ...employeeViajeDetailStyles.card }}>
-                    <Typography variant="overline" fontWeight="bold" color="text.secondary" sx={{ letterSpacing: '0.1em', display: 'block', mb: 3 }}>
-                        Contexto del viaje
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'repeat(12, 1fr)' }, gap: 3 }}>
+            <Box sx={{ gridColumn: { xs: 'span 1', xl: 'span 4' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Box sx={employeeViajeDetailStyles.card}>
+                    <DetailSectionHeader
+                        eyebrow="Contexto del viaje"
+                        title="Base de captura"
+                        description="Consulta el contexto operativo antes de registrar el kilometraje."
+                    />
+                    <Stack spacing={2.5}>
                         <SummaryItem label="Ruta" value={`${viaje.origenDescripcion} -> ${viaje.destinoDescripcion}`} />
                         <SummaryItem label="Cliente" value={viaje.clienteRazonSocial} />
-                        <SummaryItem label="Tracto" value={viaje.tractoPlaca || 'Sin informacion'} />
-                        <SummaryItem label="Carreta" value={viaje.carretaPlaca || 'Sin informacion'} />
-                    </Box>
+                        <SummaryItem label="Tracto" value={viaje.tractoPlaca || 'Sin información'} />
+                        <SummaryItem label="Carreta" value={viaje.carretaPlaca || 'Sin información'} />
+                    </Stack>
+                </Box>
+
+                <Box sx={employeeViajeDetailStyles.card}>
+                    <DetailSectionHeader
+                        eyebrow="Consistencia"
+                        title="Estado del registro"
+                        description="Te ayuda a saber si ya completaste la captura principal del viaje."
+                        aside={
+                            <OperationalStatusBadge
+                                label={kmStatus}
+                                tone={kmStatus === 'Completo' ? 'success' : kmStatus === 'Parcial' ? 'warning' : 'neutral'}
+                            />
+                        }
+                    />
+
+                    <Stack spacing={2}>
+                        <Box sx={employeeViajeDetailStyles.softPanel}>
+                            <Stack direction="row" spacing={1.5}>
+                                <SpeedOutlinedIcon color="primary" />
+                                <Box>
+                                    <Typography variant="subtitle2" fontWeight={800}>
+                                        Cierre operativo
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Una vez cerrado el viaje, la edición de kilometraje queda bloqueada para evitar inconsistencias.
+                                    </Typography>
+                                </Box>
+                            </Stack>
+                        </Box>
+
+                        <Box sx={employeeViajeDetailStyles.softPanel}>
+                            <Stack direction="row" spacing={1.5}>
+                                <TimelineOutlinedIcon color="primary" />
+                                <Box>
+                                    <Typography variant="subtitle2" fontWeight={800}>
+                                        Referencia actual
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Inicio: {viaje.kmInicio ?? 'Sin registrar'} / Destino: {viaje.kmLlegada ?? 'Sin registrar'} / Base: {viaje.kmLlegadaBase ?? 'Sin registrar'}
+                                    </Typography>
+                                </Box>
+                            </Stack>
+                        </Box>
+                    </Stack>
                 </Box>
             </Box>
 
-            <Box sx={{ width: { xs: '100%', lg: '67%' } }}>
+            <Box sx={{ gridColumn: { xs: 'span 1', xl: 'span 8' } }}>
                 <Box sx={{ ...employeeViajeDetailStyles.card, height: '100%' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
-                        <Box>
-                            <Typography variant="h5" fontWeight="bold" gutterBottom>
-                                Registro de Kilometraje
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Introduzca los valores actuales para actualizar la hoja de ruta.
-                            </Typography>
-                        </Box>
-                    </Box>
+                    <DetailSectionHeader
+                        eyebrow="Captura de kilometraje"
+                        title="Actualizar hoja de ruta"
+                        description="Registra los kilómetros clave del viaje para mantener consistencia en el seguimiento."
+                        aside={
+                            controller.canManageViajeKms && !isCerrado
+                                ? <OperationalStatusBadge label="Editable" tone="success" />
+                                : <OperationalStatusBadge label="Bloqueado" tone="warning" />
+                        }
+                    />
 
                     <Box component="form" onSubmit={controller.kmsForm.handleSubmit(controller.onSubmitKms)} sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 4 }}>
@@ -63,7 +132,7 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                                             placeholder="0"
                                             disabled={!controller.canManageViajeKms || isCerrado}
                                             error={!!controller.kmsForm.formState.errors.kmInicio}
-                                            helperText={controller.kmsForm.formState.errors.kmInicio?.message}
+                                            helperText={controller.kmsForm.formState.errors.kmInicio?.message ?? 'Registro de salida del viaje'}
                                             InputProps={{
                                                 endAdornment: (
                                                     <InputAdornment position="end">
@@ -73,10 +142,10 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                                                     </InputAdornment>
                                                 ),
                                                 sx: {
-                                                    fontSize: '1.5rem',
+                                                    fontSize: '1.35rem',
                                                     fontWeight: 'bold',
                                                     bgcolor: 'action.hover',
-                                                    borderRadius: 2,
+                                                    borderRadius: 2.5,
                                                     '& fieldset': { border: 'none' },
                                                 },
                                             }}
@@ -99,7 +168,7 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                                             placeholder="0"
                                             disabled={!controller.canManageViajeKms || isCerrado}
                                             error={!!controller.kmsForm.formState.errors.kmLlegada}
-                                            helperText={controller.kmsForm.formState.errors.kmLlegada?.message}
+                                            helperText={controller.kmsForm.formState.errors.kmLlegada?.message ?? 'Registro al llegar al destino'}
                                             InputProps={{
                                                 endAdornment: (
                                                     <InputAdornment position="end">
@@ -109,10 +178,10 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                                                     </InputAdornment>
                                                 ),
                                                 sx: {
-                                                    fontSize: '1.5rem',
+                                                    fontSize: '1.35rem',
                                                     fontWeight: 'bold',
                                                     bgcolor: 'action.hover',
-                                                    borderRadius: 2,
+                                                    borderRadius: 2.5,
                                                     '& fieldset': { border: 'none' },
                                                 },
                                             }}
@@ -124,7 +193,7 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
 
                         <Box>
                             <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ letterSpacing: '0.1em', display: 'block', mb: 1 }}>
-                                KM REGRESO A BASE (FINAL)
+                                KM REGRESO A BASE
                             </Typography>
                             <Controller
                                 name="kmLlegadaBase"
@@ -137,7 +206,7 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                                         placeholder="0"
                                         disabled={!controller.canManageViajeKms || isCerrado}
                                         error={!!controller.kmsForm.formState.errors.kmLlegadaBase}
-                                        helperText={controller.kmsForm.formState.errors.kmLlegadaBase?.message}
+                                        helperText={controller.kmsForm.formState.errors.kmLlegadaBase?.message ?? 'Último kilometraje del ciclo completo'}
                                         InputProps={{
                                             endAdornment: (
                                                 <InputAdornment position="end">
@@ -147,10 +216,10 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                                                 </InputAdornment>
                                             ),
                                             sx: {
-                                                fontSize: '2rem',
+                                                fontSize: '1.6rem',
                                                 fontWeight: 'bold',
                                                 bgcolor: 'action.hover',
-                                                borderRadius: 2,
+                                                borderRadius: 2.5,
                                                 '& fieldset': { border: 'none' },
                                             },
                                         }}
@@ -165,7 +234,7 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'warning.main' }}>
                                 <InfoIcon fontSize="small" />
                                 <Typography variant="body2">
-                                    Los campos se bloquearán una vez guardado el cierre de viaje.
+                                    Los campos se bloquearán una vez guardado el cierre del viaje.
                                 </Typography>
                             </Box>
                             <Button
@@ -173,9 +242,9 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                                 variant="contained"
                                 disabled={!controller.canManageViajeKms || isCerrado || controller.updateKmsMutation.isPending}
                                 startIcon={<SaveIcon />}
-                                sx={{ px: 4, py: 1.5, borderRadius: 2, fontWeight: 'bold', fontSize: '1rem' }}
+                                sx={{ px: 4, py: 1.5, borderRadius: 2.5, fontWeight: 'bold', fontSize: '1rem' }}
                             >
-                                Guardar Kilometraje
+                                Guardar kilometraje
                             </Button>
                         </Box>
                     </Box>

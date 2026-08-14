@@ -19,7 +19,8 @@ import {
     TableView as ExcelIcon,
     PictureAsPdf as PdfIcon,
     LockOpen as LockOpenIcon,
-    Payments as PaymentsIcon
+    Payments as PaymentsIcon,
+    DoubleArrow as DoubleArrowIcon
 } from '@mui/icons-material';
 import { useState, type ReactNode } from 'react';
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
@@ -48,6 +49,8 @@ interface MobileListShellProps<T> {
     onExportPdf?: (item: T) => void;
     onReopen?: (item: T) => void;
     onPayment?: (item: T) => void;
+    onPrimaryAction?: (item: T) => void;
+    primaryActionIcon?: ReactNode;
     
     // Conditionals for actions (optional, returns boolean if action should be shown for specific item)
     canEdit?: (item: T) => boolean;
@@ -56,6 +59,8 @@ interface MobileListShellProps<T> {
     canExportPdf?: (item: T) => boolean;
     canReopen?: (item: T) => boolean;
     canPayment?: (item: T) => boolean;
+    canPrimaryAction?: (item: T) => boolean;
+    getPrimaryActionLabel?: (item: T) => string;
     
     // Styling
     getCardStyle?: (item: T, theme: Theme) => SxProps<Theme>;
@@ -81,12 +86,16 @@ export function MobileListShell<T>({
     onExportPdf,
     onReopen,
     onPayment,
+    onPrimaryAction,
+    primaryActionIcon = <DoubleArrowIcon fontSize="small" color="primary" sx={{ mr: 1.5 }} />,
     canEdit = () => true,
     canDelete = () => true,
     canExportExcel = () => true,
     canExportPdf = () => true,
     canReopen = () => false,
     canPayment = () => false,
+    canPrimaryAction = () => false,
+    getPrimaryActionLabel = () => 'Avanzar flujo',
     getCardStyle
 }: MobileListShellProps<T>) {
     const theme = useTheme();
@@ -103,7 +112,7 @@ export function MobileListShell<T>({
         setSelectedItem(null);
     };
 
-    const handleAction = (action: 'edit' | 'delete' | 'preview' | 'view' | 'excel' | 'pdf' | 'reopen' | 'payment') => {
+    const handleAction = (action: 'edit' | 'delete' | 'preview' | 'view' | 'excel' | 'pdf' | 'reopen' | 'payment' | 'primary') => {
         if (!selectedItem) return;
 
         switch (action) {
@@ -131,6 +140,9 @@ export function MobileListShell<T>({
             case 'payment':
                 onPayment?.(selectedItem);
                 break;
+            case 'primary':
+                onPrimaryAction?.(selectedItem);
+                break;
         }
         handleMenuClose();
     };
@@ -144,7 +156,7 @@ export function MobileListShell<T>({
             <Stack spacing={2} sx={{ mb: 2 }}>
                 {items.map((item) => {
                     const customStyle = getCardStyle ? getCardStyle(item, theme) : {};
-                    const hasReadActions = onPreview || onView || onExportExcel || onExportPdf || onReopen || onPayment;
+                    const hasReadActions = onPreview || onView || onExportExcel || onExportPdf || onReopen || onPayment || onPrimaryAction;
                     const hasWriteActions = !viewOnly && (onEdit || onDelete);
                     const hasActions = Boolean(hasReadActions || hasWriteActions);
                     
@@ -244,6 +256,13 @@ export function MobileListShell<T>({
                     <MenuItem onClick={() => handleAction('payment')}>
                         <PaymentsIcon fontSize="small" color="success" sx={{ mr: 1.5 }} />
                         Registrar Pago
+                    </MenuItem>
+                )}
+
+                {onPrimaryAction && selectedItem && canPrimaryAction(selectedItem) && (
+                    <MenuItem onClick={() => handleAction('primary')}>
+                        {primaryActionIcon}
+                        {getPrimaryActionLabel(selectedItem)}
                     </MenuItem>
                 )}
                 

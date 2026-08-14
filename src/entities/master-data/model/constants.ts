@@ -24,6 +24,20 @@ export const TIPO_MAESTRO_SECTIONS = {
     COMBUSTIBLE: 'COMBUSTIBLE',
 } as const;
 
+/**
+ * Códigos del catálogo maestro de licencias (seccion `LICENCIA`).
+ *
+ * El catálogo de `TipoMaestro` filtra por `codigo` (columna del maestro, no es el `id`):
+ * - `EMPLEADOS = '1'` identifica los tipos de licencia que el Usuario/Colaborador puede
+ *   auto-solicitar desde el portal empleado. Es un contrato intencional con el catálogo
+ *   backend/DB (los demás códigos quedan reservados a la gestión admin de licencias).
+ *
+ * Si en el futuro el backend expone este conjunto por contrato/query, reemplazar aquí.
+ */
+export const LICENCIA_CODIGO = {
+    EMPLEADOS: '1'
+} as const;
+
 export const MONEDA_CODES = {
     PEN: 'PEN',
     USD: 'USD',

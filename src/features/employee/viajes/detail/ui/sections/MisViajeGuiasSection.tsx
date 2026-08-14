@@ -1,3 +1,4 @@
+import { DescriptionOutlined as DescriptionOutlinedIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
@@ -14,7 +15,10 @@ import {
     type EmployeeViajeDocumentPreviewState,
 } from '../../model/preview';
 import { employeeViajeDetailStyles } from '../../model/view-helpers';
+import { DetailSectionHeader } from '../shared/DetailSectionHeader';
 import { DocumentPreviewCard } from '../shared/DocumentPreviewCard';
+import { EmptyStateCard } from '../shared/EmptyStateCard';
+import { OperationalStatusBadge } from '../shared/OperationalStatusBadge';
 
 interface MisViajeGuiasSectionProps {
     controller: ReturnType<typeof useMisViajeDetailPageController>;
@@ -46,9 +50,16 @@ export function MisViajeGuiasSection({ controller }: MisViajeGuiasSectionProps) 
         <>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'repeat(12, 1fr)' }, gap: 3 }}>
                 <Box sx={{ ...employeeViajeDetailStyles.card, gridColumn: { xs: 'span 1', xl: 'span 5' } }}>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom>
-                        Registrar guía de remisión
-                    </Typography>
+                    <DetailSectionHeader
+                        eyebrow="Registro"
+                        title="Registrar guía de remisión"
+                        description="Adjunta la guía asociada al traslado para mantener el expediente operativo actualizado."
+                        aside={
+                            canEdit
+                                ? <OperationalStatusBadge label="Editable" tone="success" />
+                                : <OperationalStatusBadge label="Bloqueado" tone="warning" />
+                        }
+                    />
 
                     {controller.isWorkflowBlocked ? (
                         <Alert severity="warning" sx={{ mb: 2 }}>
@@ -131,15 +142,20 @@ export function MisViajeGuiasSection({ controller }: MisViajeGuiasSectionProps) 
                 </Box>
 
                 <Box sx={{ ...employeeViajeDetailStyles.card, gridColumn: { xs: 'span 1', xl: 'span 7' } }}>
-                    <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ letterSpacing: '0.1em', display: 'block', mb: 3, textTransform: 'uppercase' }}>
-                        Guías registradas
-                    </Typography>
+                    <DetailSectionHeader
+                        eyebrow="Historial"
+                        title="Guías registradas"
+                        description="Revisa rápidamente las guías anexadas al viaje y abre su vista previa cuando la necesites."
+                        aside={<OperationalStatusBadge label={`${controller.guias.length} registros`} tone="info" />}
+                    />
 
                     <Stack spacing={2}>
                         {controller.guias.length === 0 ? (
-                            <Typography variant="body2" color="text.secondary">
-                                No hay guías registradas para este viaje.
-                            </Typography>
+                            <EmptyStateCard
+                                icon={<DescriptionOutlinedIcon fontSize="large" />}
+                                title="Aún no hay guías registradas"
+                                description="Cuando se adjunten guías de remisión, aparecerán aquí con acceso rápido a su documento."
+                            />
                         ) : (
                             controller.guias.map((item) => {
                                 const archivoUrl = item.rutaArchivo ? buildInternalFileUrl(item.rutaArchivo) : null;
@@ -150,14 +166,17 @@ export function MisViajeGuiasSection({ controller }: MisViajeGuiasSectionProps) 
                                     ?? 'Sin tipo';
 
                                 return (
-                                    <Box key={item.viajeGuiaID} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                                    <Box key={item.viajeGuiaID} sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
                                         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={1}>
                                             <Box>
+                                                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 1 }}>
+                                                    <OperationalStatusBadge label={tipo} tone="info" />
+                                                </Stack>
                                                 <Typography variant="subtitle2" fontWeight="bold">
                                                     {item.serie} - {item.numero}
                                                 </Typography>
                                                 <Typography variant="body2" color="text.secondary">
-                                                    {tipo}
+                                                    Documento adjunto para el viaje
                                                 </Typography>
                                             </Box>
 
@@ -168,6 +187,8 @@ export function MisViajeGuiasSection({ controller }: MisViajeGuiasSectionProps) 
                                                     onPreview={() => {
                                                         setPreview({
                                                             previewUrl: archivoUrl,
+                                                            previewUrls: [archivoUrl],
+                                                            currentIndex: 0,
                                                             title: `Guía ${item.serie} - ${item.numero}`,
                                                         });
                                                     }}
@@ -186,6 +207,8 @@ export function MisViajeGuiasSection({ controller }: MisViajeGuiasSectionProps) 
                 open={!!preview.previewUrl}
                 onClose={handleClosePreview}
                 previewUrl={preview.previewUrl}
+                previewUrls={preview.previewUrls}
+                initialIndex={preview.currentIndex}
                 title={preview.title}
             />
         </>

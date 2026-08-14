@@ -25,7 +25,7 @@ export function AddRutaDialog({ open, onClose, viajeId, initialData, isViewOnly 
 
     const { data: tiposPunto, isLoading: isLoadingTipos, isError: hasTiposPuntoError } = useQuery({
         queryKey: ['maestro', SECCION_MAESTRO.PUNTO_RUTA],
-        queryFn: () => maestroApi.getSelect('', SECCION_MAESTRO.PUNTO_RUTA, 50),
+        queryFn: () => maestroApi.getSelect('', SECCION_MAESTRO.PUNTO_RUTA, undefined, 50),
         enabled: open,
     });
 

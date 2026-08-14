@@ -3,6 +3,8 @@ import {
     Download as DownloadIcon,
     SyncOutlined,
     VisibilityOutlined,
+    EditOutlined,
+    DeleteOutline,
 } from '@mui/icons-material';
 import { MobileListShell } from '@shared/components/ui/MobileListShell';
 import { formatDateOnly, formatDateTime } from '@shared/utils/date-utils';
@@ -33,6 +35,10 @@ interface MisDocumentoSolicitudesMobileListProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onEdit?: (item: DocumentoActualizacionSolicitudDto) => void;
+    onDelete?: (item: DocumentoActualizacionSolicitudDto) => void;
+    canEdit?: (item: DocumentoActualizacionSolicitudDto) => boolean;
+    canDelete?: (item: DocumentoActualizacionSolicitudDto) => boolean;
 }
 
 export function MisDocumentosMobileList({
@@ -145,6 +151,10 @@ export function MisDocumentoSolicitudesMobileList({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
+    onEdit,
+    onDelete,
+    canEdit,
+    canDelete,
 }: MisDocumentoSolicitudesMobileListProps) {
     if (isLoading) {
         return <Box sx={{ display: { xs: 'block', md: 'none' }, p: 4, textAlign: 'center' }}>Cargando solicitudes...</Box>;
@@ -178,6 +188,33 @@ export function MisDocumentoSolicitudesMobileList({
                     <Typography variant="body2" color="text.secondary">
                         Estado: {item.estadoRevision}
                     </Typography>
+                    {onEdit && canEdit?.(item) || onDelete && canDelete?.(item) ? (
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', pt: 0.5 }}>
+                            {onEdit && canEdit?.(item) ? (
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    startIcon={<EditOutlined />}
+                                    onClick={() => onEdit(item)}
+                                    sx={{ borderRadius: 2 }}
+                                >
+                                    Editar
+                                </Button>
+                            ) : null}
+                            {onDelete && canDelete?.(item) ? (
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    color="error"
+                                    startIcon={<DeleteOutline />}
+                                    onClick={() => onDelete(item)}
+                                    sx={{ borderRadius: 2 }}
+                                >
+                                    Eliminar
+                                </Button>
+                            ) : null}
+                        </Box>
+                    ) : null}
                 </Stack>
             )}
         />

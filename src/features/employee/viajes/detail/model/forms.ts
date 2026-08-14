@@ -1,4 +1,5 @@
 import type { CreateMiViajeGuiaDto, CreateMiViajeIncidenteDto } from '@entities/employee/model/types';
+import { buildIncidenteImagesPayload } from '@entities/viaje/model/incidente-images';
 import { getCurrentEmployeeViajeDateInput, getCurrentEmployeeViajeTimeInput } from './view-helpers';
 
 export interface EmployeeViajeIncidenteFormValues {
@@ -8,7 +9,7 @@ export interface EmployeeViajeIncidenteFormValues {
     hora: string;
     lugar: string;
     descripcion: string;
-    rutaFoto: string;
+    rutasFoto: string[];
 }
 
 export interface EmployeeViajeGuiaFormValues {
@@ -26,7 +27,7 @@ export function getCreateMisViajeIncidenteDefaultValues(): EmployeeViajeIncident
         hora: getCurrentEmployeeViajeTimeInput(),
         lugar: '',
         descripcion: '',
-        rutaFoto: '',
+        rutasFoto: [''],
     };
 }
 
@@ -48,7 +49,7 @@ export function buildCreateMisViajeIncidentePayload(
         fechaHora: `${values.fecha}T${values.hora}:00`,
         lugar: values.lugar.trim(),
         descripcion: values.descripcion.trim(),
-        rutaFoto: values.rutaFoto || undefined,
+        ...buildIncidenteImagesPayload(values.rutasFoto),
     };
 }
 

@@ -2,14 +2,17 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { useToast } from '@shared/components/ui/Toast';
 import { usePermission } from '@shared/lib/hooks/usePermission';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
 import type {
+    CreateDocumentoActualizacionSolicitudDto,
+    DocumentoActualizacionSolicitudDto,
     MiDocumentoDto,
     MiDocumentoFilters,
     MiDocumentoSolicitudesFilters,
 } from '@entities/employee/model/types';
 import { isPreviewableImageUrl } from '@shared/utils/file-utils';
+import { getErrorMessage } from '@shared/utils/api-errors';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { tipoDocumentoApi } from '@/entities/tipo-documento/api/tipo-documento.api';
 import { isDocumentNearExpiry, isDocumentVigente } from '@shared/utils/document-vigencia';
@@ -29,6 +32,9 @@ export function useMisDocumentosPageController() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [previewTitle, setPreviewTitle] = useState('Vista previa');
     const [selectedDocumentoId, setSelectedDocumentoId] = useState<number | undefined>(undefined);
+    const [editandoSolicitud, setEditandoSolicitud] = useState<DocumentoActualizacionSolicitudDto | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<DocumentoActualizacionSolicitudDto | null>(null);
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         setPageTitle('Mis Documentos');
@@ -89,6 +95,32 @@ export function useMisDocumentosPageController() {
             nearExpiry,
         };
     }, [documentos]);
+
+    const updateSolicitudMutation = useMutation({
+        mutationFn: (payload: { id: number; body: CreateDocumentoActualizacionSolicitudDto }) =>
+            employeePortalApi.updateDocumentoSolicitud(payload.id, payload.body),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.all });
+            setEditandoSolicitud(null);
+            setDialogOpen(false);
+            showToast({ message: 'Solicitud actualizada correctamente.', severity: 'success' });
+        },
+        onError: (error: unknown) => {
+            showToast({ message: getErrorMessage(error, 'No se pudo actualizar la solicitud.'), severity: 'error' });
+        },
+    });
+
+    const deleteSolicitudMutation = useMutation({
+        mutationFn: (id: number) => employeePortalApi.deleteDocumentoSolicitud(id),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.all });
+            setDeleteTarget(null);
+            showToast({ message: 'Solicitud eliminada correctamente.', severity: 'success' });
+        },
+        onError: (error: unknown) => {
+            showToast({ message: getErrorMessage(error, 'No se pudo eliminar la solicitud.'), severity: 'error' });
+        },
+    });
 
     const handleChangePage = (_: unknown, nextPage: number) => {
         setPage(nextPage);
@@ -153,22 +185,61 @@ export function useMisDocumentosPageController() {
         window.open(item.rutaArchivo, '_blank', 'noopener,noreferrer');
     };
 
+    const canEditSolicitud = (item: DocumentoActualizacionSolicitudDto) => item.aprobada == null || item.aprobada === false;
+
+    const canDeleteSolicitud = (item: DocumentoActualizacionSolicitudDto) => item.aprobada == null;
+
+    const handleOpenCreateSolicitud = (documentoId?: number) => {
+        setEditandoSolicitud(null);
+        setSelectedDocumentoId(documentoId);
+        setDialogOpen(true);
+    };
+
+    const handleEditSolicitud = (item: DocumentoActualizacionSolicitudDto) => {
+        setEditandoSolicitud(item);
+        setDialogOpen(true);
+    };
+
+    const handleDeleteSolicitud = (item: DocumentoActualizacionSolicitudDto) => {
+        setDeleteTarget(item);
+    };
+
+    const handleUpdateSolicitud = (id: number, body: CreateDocumentoActualizacionSolicitudDto) => {
+        updateSolicitudMutation.mutate({ id, body });
+    };
+
+    const confirmDeleteSolicitud = () => {
+        if (deleteTarget) {
+            deleteSolicitudMutation.mutate(deleteTarget.solicitudId);
+        }
+    };
+
     return {
         activo,
+        canDeleteSolicitud,
+        canEditSolicitud,
         canRequestDocumentUpdate,
+        confirmDeleteSolicitud,
+        deleteSolicitudMutation,
+        deleteTarget,
         dialogOpen,
         documentStats,
         documentos,
         documentosEnriquecidos,
+        editandoSolicitud,
         hasBlockingDocumentosError: isDocumentosError && !documentos,
         hasBlockingSolicitudesError: isSolicitudesError && !solicitudes,
         handleChangePage,
         handleChangeRowsPerPage,
+        handleDeleteSolicitud,
         handleDownloadDocument,
+        handleEditSolicitud,
+        handleOpenCreateSolicitud,
         handleOpenDocument,
         handleRequestPageChange,
         handleRequestRowsPerPageChange,
         handleSearch,
+        handleUpdateSolicitud,
         isFetchingDocumentos,
         isFetchingSolicitudes,
         isDocumentosError,
@@ -184,6 +255,7 @@ export function useMisDocumentosPageController() {
         rowsPerPage,
         selectedDocumentoId,
         setActivo,
+        setDeleteTarget,
         setDialogOpen,
         setPreviewUrl,
         setSelectedDocumentoId,
@@ -191,6 +263,7 @@ export function useMisDocumentosPageController() {
         solicitudes,
         tipoDocumentoID,
         tiposDocumento,
+        updateSolicitudMutation,
         retryDocumentosLoad: () => refetchDocumentos(),
         retrySolicitudesLoad: () => refetchSolicitudes(),
     };

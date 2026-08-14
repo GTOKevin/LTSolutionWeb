@@ -21,6 +21,7 @@ import { useState } from 'react';
 import { pdf } from '@react-pdf/renderer';
 import type { ViajeIncidente } from '@/entities/viaje/model/types';
 import { viajeIncidenteApi } from '@/entities/viaje/api/viaje-incidente.api';
+import { getIncidenteImageRoutes } from '@/entities/viaje/model/incidente-images';
 import { ViajeIncidentePdf } from '@features/viaje/reports/ui/ViajeIncidentePdf';
 import type { SelectItem } from '@/shared/model/types';
 import { useViajeIncidentes, useDeleteViajeIncidente } from '@/features/viaje/hooks/useViajeIncidentes';
@@ -41,7 +42,15 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
     const deleteMutation = useDeleteViajeIncidente();
     const incidentes = data?.items ?? [];
 
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [previewState, setPreviewState] = useState<{
+        previewUrl: string | null;
+        previewUrls: string[];
+        currentIndex: number;
+    }>({
+        previewUrl: null,
+        previewUrls: [],
+        currentIndex: 0,
+    });
     const [isExportingPdf, setIsExportingPdf] = useState(false);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -74,15 +83,22 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
         handleMenuClose();
     };
 
-    const handlePreview = (path: string) => {
-        const fullUrl = buildInternalFileUrl(path);
-        setPreviewUrl(fullUrl || null);
+    const handlePreview = (paths: string[], currentIndex: number) => {
+        const previewUrls = paths
+            .map((path) => buildInternalFileUrl(path))
+            .filter((url): url is string => Boolean(url));
+
+        setPreviewState({
+            previewUrl: previewUrls[currentIndex] ?? previewUrls[0] ?? null,
+            previewUrls,
+            currentIndex,
+        });
     };
 
     const handleDownload = (path: string) => {
         const url = buildInternalFileUrl(path);
         if (url) {
-            window.open(url, '_blank');
+            window.open(url, '_blank', 'noopener,noreferrer');
         }
     };
 
@@ -187,7 +203,9 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
                     incidentes.map((item) => {
                         const tipoText = tiposIncidente.find((tipo) => tipo.id === item.tipoIncidenteID)?.text || item.tipoIncidente?.descripcion || 'Otro';
                         const severity = getIncidenteSeverity(tipoText);
-                        const hasImage = !!item.rutaFoto;
+                        const imageRoutes = getIncidenteImageRoutes(item).filter(Boolean);
+                        const hasImage = imageRoutes.length > 0;
+                        const firstRoute = imageRoutes[0];
 
                         return (
                             <Box
@@ -251,48 +269,60 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
                                     </Typography>
 
                                     {hasImage && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, pt: 1 }}>
-                                            <Box
-                                                onClick={() => handlePreview(item.rutaFoto!)}
-                                                sx={{
-                                                    width: 48,
-                                                    height: 48,
-                                                    borderRadius: 2,
-                                                    border: '2px solid white',
-                                                    overflow: 'hidden',
-                                                    bgcolor: 'grey.100',
-                                                    cursor: 'zoom-in',
-                                                    boxShadow: 1,
-                                                    position: 'relative',
-                                                    '&:hover .zoom-icon': { opacity: 1 },
-                                                }}
-                                            >
-                                                <img
-                                                    src={buildInternalFileUrl(item.rutaFoto!)}
-                                                    alt="Evidencia"
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                />
-                                                <Box className="zoom-icon" sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s' }}>
-                                                    <ZoomInIcon sx={{ color: 'white', fontSize: 20 }} />
-                                                </Box>
-                                            </Box>
-                                            <Button
-                                                size="small"
-                                                onClick={() => handleDownload(item.rutaFoto!)}
-                                                startIcon={<DownloadIcon sx={{ fontSize: 16 }} />}
-                                                sx={{
-                                                    ml: 'auto',
-                                                    bgcolor: 'primary.main',
-                                                    color: 'white',
-                                                    fontWeight: 700,
-                                                    fontSize: '0.7rem',
-                                                    borderRadius: 2,
-                                                    px: 2,
-                                                    '&:hover': { bgcolor: 'primary.dark' },
-                                                }}
-                                            >
-                                                Descargar Evidencia
-                                            </Button>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, pt: 1, flexWrap: 'wrap' }}>
+                                            {imageRoutes.map((route, index) => {
+                                                const imageUrl = buildInternalFileUrl(route);
+                                                if (!imageUrl) {
+                                                    return null;
+                                                }
+
+                                                return (
+                                                    <Box
+                                                        key={`${item.viajeIncidenteID}-${route}-${index}`}
+                                                        onClick={() => handlePreview(imageRoutes, index)}
+                                                        sx={{
+                                                            width: 48,
+                                                            height: 48,
+                                                            borderRadius: 2,
+                                                            border: '2px solid white',
+                                                            overflow: 'hidden',
+                                                            bgcolor: 'grey.100',
+                                                            cursor: 'zoom-in',
+                                                            boxShadow: 1,
+                                                            position: 'relative',
+                                                            '&:hover .zoom-icon': { opacity: 1 },
+                                                        }}
+                                                    >
+                                                        <img
+                                                            src={imageUrl}
+                                                            alt={`Evidencia ${index + 1}`}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                        />
+                                                        <Box className="zoom-icon" sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s' }}>
+                                                            <ZoomInIcon sx={{ color: 'white', fontSize: 20 }} />
+                                                        </Box>
+                                                    </Box>
+                                                );
+                                            })}
+                                            {firstRoute && (
+                                                <Button
+                                                    size="small"
+                                                    onClick={() => handleDownload(firstRoute)}
+                                                    startIcon={<DownloadIcon sx={{ fontSize: 16 }} />}
+                                                    sx={{
+                                                        ml: 'auto',
+                                                        bgcolor: 'primary.main',
+                                                        color: 'white',
+                                                        fontWeight: 700,
+                                                        fontSize: '0.7rem',
+                                                        borderRadius: 2,
+                                                        px: 2,
+                                                        '&:hover': { bgcolor: 'primary.dark' },
+                                                    }}
+                                                >
+                                                    Descargar Evidencias
+                                                </Button>
+                                            )}
                                         </Box>
                                     )}
                                 </Box>
@@ -318,7 +348,13 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
                 </MenuItem>
             </Menu>
 
-            <DocumentPreviewDialog open={!!previewUrl} onClose={() => setPreviewUrl(null)} previewUrl={previewUrl} />
+            <DocumentPreviewDialog
+                open={!!previewState.previewUrl}
+                onClose={() => setPreviewState({ previewUrl: null, previewUrls: [], currentIndex: 0 })}
+                previewUrl={previewState.previewUrl}
+                previewUrls={previewState.previewUrls}
+                initialIndex={previewState.currentIndex}
+            />
         </Box>
     );
 }

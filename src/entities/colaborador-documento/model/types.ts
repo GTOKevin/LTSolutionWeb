@@ -33,3 +33,38 @@ export interface ColaboradorDocumentoParams {
     page?: number;
     size?: number;
 }
+
+export interface ColaboradorDocumentoSolicitud {
+    solicitudId: number;
+    colaboradorDocumentoId: number;
+    colaboradorId: number;
+    colaboradorNombre: string;
+    tipoDocumentoId: number;
+    tipoDocumentoNombre: string;
+    numeroDocumentoActual?: string | null;
+    fechaEmisionActual?: string | null;
+    fechaVencimientoActual?: string | null;
+    numeroDocumentoPropuesto?: string | null;
+    rutaArchivoPropuesta?: string | null;
+    fechaEmisionPropuesta?: string | null;
+    fechaVencimientoPropuesta?: string | null;
+    motivoSolicitud?: string | null;
+    aprobada: boolean | null;
+    comentarioRevision?: string | null;
+    fechaRegistro: string;
+    fechaRevision?: string | null;
+    estadoRevision: string;
+}
+
+export interface ReviewDocumentoActualizacionSolicitudDto {
+    comentarioRevision?: string;
+}
+
+export interface ColaboradorDocumentoSolicitudesParams {
+    colaboradorID?: number;
+    tipoDocumentoID?: number;
+    aprobada?: boolean;
+    search?: string;
+    page: number;
+    size: number;
+}

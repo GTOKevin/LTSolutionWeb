@@ -16,11 +16,14 @@ import {
     Verified as VerifiedIcon,
     ChevronRight as ChevronRightIcon,
     Add as AddIcon,
+    EditOutlined,
+    DeleteOutline,
 } from '@mui/icons-material';
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
 import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { formatDateOnly, formatDateTime } from '@shared/utils/date-utils';
-import { getEstadoColor } from '@entities/employee/lib/status-utils';
+import { getEstadoColor } from '@shared/utils/status-utils';
 import { getDocumentVigenciaMeta } from '@shared/utils/document-vigencia';
 import { SolicitudActualizacionModal } from './SolicitudActualizacionModal';
 import {
@@ -45,6 +48,7 @@ const requestColumns: Column[] = [
     { id: 'fecha', label: 'Fecha Solicitud' },
     { id: 'motivo', label: 'Motivo' },
     { id: 'estado', label: 'Estado Revisión' },
+    { id: 'acciones', label: 'Acciones', align: 'right' },
 ];
 
 interface MisDocumentosPageContentProps {
@@ -177,7 +181,7 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             variant="contained"
                             size="small"
                             startIcon={<AddIcon />}
-                            onClick={() => { controller.setSelectedDocumentoId(undefined); controller.setDialogOpen(true); }}
+                            onClick={() => controller.handleOpenCreateSolicitud()}
                             disabled={isRefreshingDocumentos}
                             sx={{ borderRadius: 2, boxShadow: 'none' }}
                         >
@@ -248,10 +252,7 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                                                     {controller.canRequestDocumentUpdate ? (
                                                         <Button
                                                             sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-                                                            onClick={() => {
-                                                                controller.setSelectedDocumentoId(item.colaboradorDocumentoId);
-                                                                controller.setDialogOpen(true);
-                                                            }}
+                                                            onClick={() => controller.handleOpenCreateSolicitud(item.colaboradorDocumentoId)}
                                                         >
                                                             <SyncOutlined fontSize="small" />
                                                         </Button>
@@ -274,8 +275,7 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             onOpenDocument={controller.handleOpenDocument}
                             onDownloadDocument={controller.handleDownloadDocument}
                             onRequestUpdate={(item) => {
-                                controller.setSelectedDocumentoId(item.colaboradorDocumentoId);
-                                controller.setDialogOpen(true);
+                                controller.handleOpenCreateSolicitud(item.colaboradorDocumentoId);
                             }}
                         />
                     </>
@@ -335,6 +335,24 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                                                     </Typography>
                                                 </Box>
                                             </TableCell>
+                                            <TableCell align="right" sx={{ py: 2, px: 3 }}>
+                                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                                                    {controller.canRequestDocumentUpdate ? (
+                                                        <>
+                                                            {controller.canEditSolicitud(item) ? (
+                                                                <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleEditSolicitud(item)}>
+                                                                    <EditOutlined fontSize="small" />
+                                                                </Button>
+                                                            ) : null}
+                                                            {controller.canDeleteSolicitud(item) ? (
+                                                                <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleDeleteSolicitud(item)}>
+                                                                    <DeleteOutline fontSize="small" />
+                                                                </Button>
+                                                            ) : null}
+                                                        </>
+                                                    ) : null}
+                                                </Box>
+                                            </TableCell>
                                         </>
                                     );
                                 }}
@@ -347,6 +365,10 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             rowsPerPage={controller.requestRowsPerPage}
                             onPageChange={controller.handleRequestPageChange}
                             onRowsPerPageChange={controller.handleRequestRowsPerPageChange}
+                            onEdit={controller.handleEditSolicitud}
+                            onDelete={controller.handleDeleteSolicitud}
+                            canEdit={controller.canEditSolicitud}
+                            canDelete={controller.canDeleteSolicitud}
                         />
                     </>
                 )}
@@ -357,6 +379,21 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                 onClose={() => controller.setDialogOpen(false)}
                 documentos={controller.documentosEnriquecidos}
                 initialDocumentoId={controller.selectedDocumentoId}
+                solicitud={controller.editandoSolicitud}
+                onUpdate={controller.handleUpdateSolicitud}
+                isUpdating={controller.updateSolicitudMutation.isPending}
+            />
+
+            <ConfirmDialog
+                open={Boolean(controller.deleteTarget)}
+                title="Eliminar solicitud"
+                content={controller.deleteTarget ? `¿Seguro que deseas eliminar la solicitud de actualización del documento ${controller.deleteTarget.tipoDocumentoNombre}? Esta acción no se puede deshacer.` : ''}
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                severity="error"
+                isLoading={controller.deleteSolicitudMutation.isPending}
+                onConfirm={controller.confirmDeleteSolicitud}
+                onClose={() => controller.setDeleteTarget(null)}
             />
 
             <DocumentPreviewDialog

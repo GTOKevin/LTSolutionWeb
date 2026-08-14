@@ -103,6 +103,14 @@ export const employeePortalApi = {
         return data;
     },
 
+    updateMyLicencia: async (id: number, payload: CreateMiLicenciaRequestDto) => {
+        await httpClient.put(`/employee/licenses/${id}`, payload);
+    },
+
+    cancelMyLicencia: async (id: number) => {
+        await httpClient.delete(`/employee/licenses/${id}`);
+    },
+
     getMyDocumentos: async (params: MiDocumentoFilters) => {
         const { data } = await httpClient.get<MiDocumentosResponse>('/employee/documents', { params });
         return data;
@@ -116,5 +124,13 @@ export const employeePortalApi = {
     createDocumentoSolicitud: async (payload: CreateDocumentoActualizacionSolicitudDto) => {
         const { data } = await httpClient.post<number>('/employee/documents/requests', payload);
         return data;
+    },
+
+    updateDocumentoSolicitud: async (id: number, payload: CreateDocumentoActualizacionSolicitudDto) => {
+        await httpClient.put(`/employee/documents/requests/${id}`, payload);
+    },
+
+    deleteDocumentoSolicitud: async (id: number) => {
+        await httpClient.delete(`/employee/documents/requests/${id}`);
     },
 };

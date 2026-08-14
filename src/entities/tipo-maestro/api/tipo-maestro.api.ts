@@ -12,8 +12,8 @@ export const tipoMaestroApi = {
         const { data } = await httpClient.get<TipoMaestro>(`/TipoMaestro/${id}`);
         return data;
     },
-    getSelect: async (search?: string, seccion?: string, limit: number = 20) => {
-        const { data } = await httpClient.get<SelectItem[]>('/TipoMaestro/select', { params: { search, seccion, limit } });
+    getSelect: async (search?: string, seccion?: string, codigo?: string, limit: number = 20) => {
+        const { data } = await httpClient.get<SelectItem[]>('/TipoMaestro/select', { params: { search, seccion, codigo, limit } });
         return data;
     },
     create: (data: TipoMaestro) =>

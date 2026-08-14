@@ -1,16 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
-import type { MiLicenciaEstadoRevision, MiLicenciaFilters } from '@entities/employee/model/types';
+import type { MiLicenciaDto, MiLicenciaEstadoRevision, MiLicenciaFilters, CreateMiLicenciaRequestDto } from '@entities/employee/model/types';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import { usePermission } from '@shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
+import { useToast } from '@shared/components/ui/Toast';
+import { getErrorMessage } from '@shared/utils/api-errors';
+import { logger } from '@shared/utils/logger';
 
 export function useMisLicenciasPageController() {
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
+    const { showToast } = useToast();
+    const queryClient = useQueryClient();
     const canSolicitarLicencia = usePermission(PERMISSIONS.EMPLOYEE.LICENCIAS.SOLICITAR);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -23,6 +28,9 @@ export function useMisLicenciasPageController() {
         hasta: getLastDayOfCurrentMonthISO(),
     });
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [cancelTarget, setCancelTarget] = useState<MiLicenciaDto | null>(null);
+    const [editTarget, setEditTarget] = useState<MiLicenciaDto | null>(null);
+    const [detailTarget, setDetailTarget] = useState<MiLicenciaDto | null>(null);
 
     useEffect(() => {
         setPageTitle('Mis Licencias');
@@ -42,6 +50,37 @@ export function useMisLicenciasPageController() {
     const { data, isFetching, isLoading, isError, refetch } = useQuery({
         queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.licencias(queryFilters),
         queryFn: () => employeePortalApi.getMyLicencias(queryFilters),
+    });
+
+    const cancelMutation = useMutation({
+        mutationFn: (id: number) => employeePortalApi.cancelMyLicencia(id),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['employee-portal', 'licencias'] });
+            await queryClient.invalidateQueries({ queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.all });
+            showToast({ message: 'Licencia cancelada correctamente.', severity: 'success' });
+            setCancelTarget(null);
+        },
+        onError: (error: unknown) => {
+            const message = getErrorMessage(error, 'No se pudo cancelar la licencia.');
+            logger.error('Error al cancelar la licencia propia.', error);
+            showToast({ message, severity: 'error' });
+        },
+    });
+
+    const editMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: number; payload: CreateMiLicenciaRequestDto }) =>
+            employeePortalApi.updateMyLicencia(id, payload),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['employee-portal', 'licencias'] });
+            await queryClient.invalidateQueries({ queryKey: EMPLOYEE_PORTAL_QUERY_KEYS.all });
+            showToast({ message: 'Solicitud de licencia actualizada correctamente.', severity: 'success' });
+            setEditTarget(null);
+        },
+        onError: (error: unknown) => {
+            const message = getErrorMessage(error, 'No se pudo actualizar la licencia.');
+            logger.error('Error al actualizar la licencia propia.', error);
+            showToast({ message, severity: 'error' });
+        },
     });
 
     const licenciaStats = useMemo(() => {
@@ -73,14 +112,70 @@ export function useMisLicenciasPageController() {
         setPage(0);
     };
 
+    const handleOpenCancel = (licencia: MiLicenciaDto) => {
+        setCancelTarget(licencia);
+    };
+
+    const handleCloseCancel = () => {
+        if (cancelMutation.isPending) {
+            return;
+        }
+        setCancelTarget(null);
+    };
+
+    const handleConfirmCancel = () => {
+        if (!cancelTarget) {
+            return;
+        }
+        cancelMutation.mutate(cancelTarget.colaboradorLicenciaId);
+    };
+
+    const canCancel = (licencia: MiLicenciaDto) => licencia.aceptado === null;
+
+    const canEdit = (licencia: MiLicenciaDto) => licencia.aceptado === null;
+
+    const handleOpenEdit = (licencia: MiLicenciaDto) => {
+        setEditTarget(licencia);
+    };
+
+    const handleCloseEdit = () => {
+        if (editMutation.isPending) {
+            return;
+        }
+        setEditTarget(null);
+    };
+
+    const handleOpenDetail = (licencia: MiLicenciaDto) => {
+        setDetailTarget(licencia);
+    };
+
+    const handleCloseDetail = () => {
+        setDetailTarget(null);
+    };
+
     return {
         canSolicitarLicencia,
+        canCancel,
+        canEdit,
+        cancelPending: cancelMutation.isPending,
+        cancelTarget,
         data,
         desde,
+        detailTarget,
         dialogOpen,
+        editMutation,
+        editPending: editMutation.isPending,
+        editTarget,
         estadoRevision,
         handleChangePage,
         handleChangeRowsPerPage,
+        handleCloseCancel,
+        handleCloseDetail,
+        handleCloseEdit,
+        handleConfirmCancel,
+        handleOpenCancel,
+        handleOpenDetail,
+        handleOpenEdit,
         handleSearch,
         hasBlockingError: isError && !data,
         hasta,
