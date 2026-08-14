@@ -59,7 +59,12 @@ export function useMisViajesPageController() {
 
     const { data: selectedViajeDetail, isLoading: isQuickStatusLoading } = useQuery({
         queryKey: selectedViajeId ? EMPLOYEE_PORTAL_QUERY_KEYS.viajeDetail(selectedViajeId) : ['employee-portal', 'viaje', 'quick-status-empty'],
-        queryFn: () => employeePortalApi.getMyViajeById(selectedViajeId!),
+        queryFn: () => {
+            if (selectedViajeId === null) {
+                throw new Error('No hay un viaje seleccionado para consultar su detalle.');
+            }
+            return employeePortalApi.getMyViajeById(selectedViajeId);
+        },
         enabled: quickStatusDialogOpen && selectedViajeId !== null,
     });
 

@@ -20,7 +20,7 @@ import { Controller, useForm, type UseFormSetError } from 'react-hook-form';
 import { formatDateOnly, formatDateTime } from '@shared/utils/date-utils';
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
 import { buildInternalFileUrl } from '@/shared/config/env';
-import { EvidenceGallery } from '@features/employee/viajes/detail/ui/shared/EvidenceGallery';
+import { EvidenceGallery } from '@shared/components/ui/EvidenceGallery';
 import {
     getReviewLicenciaDefaultValues,
     reviewLicenciaSchema,

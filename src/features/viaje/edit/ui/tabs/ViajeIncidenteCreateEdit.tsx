@@ -275,6 +275,7 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
                                     onChange={(values) => field.onChange(values)}
                                     helperText="JPG o PNG (Max 5MB)"
                                     folder="incidentes"
+                                    layout="slots"
                                 />
                             )}
                         />

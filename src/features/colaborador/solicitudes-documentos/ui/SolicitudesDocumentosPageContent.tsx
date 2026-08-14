@@ -22,7 +22,7 @@ import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 import { MobileListShell } from '@shared/components/ui/MobileListShell';
 import type { ColaboradorDocumentoSolicitud } from '@entities/colaborador-documento/model/types';
-import { getEstadoColor } from '@entities/employee/lib/status-utils';
+import { getEstadoColor } from '@shared/utils/status-utils';
 import { formatDateLong, formatDateTime } from '@shared/utils/date-utils';
 import { RevisarSolicitudModal } from './RevisarSolicitudModal';
 import type { EstadoRevisionFilter, useSolicitudesDocumentosPageController } from '../hooks/useSolicitudesDocumentosPageController';

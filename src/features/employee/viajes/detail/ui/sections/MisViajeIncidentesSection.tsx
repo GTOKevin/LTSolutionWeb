@@ -20,8 +20,8 @@ import {
     employeeViajeDetailStyles,
     formatEmployeeViajeDateTimeLabel,
 } from '../../model/view-helpers';
+import { EvidenceGallery } from '@shared/components/ui/EvidenceGallery';
 import { DetailSectionHeader } from '../shared/DetailSectionHeader';
-import { EvidenceGallery } from '../shared/EvidenceGallery';
 import { EmptyStateCard } from '../shared/EmptyStateCard';
 import { OperationalStatusBadge } from '../shared/OperationalStatusBadge';
 
@@ -174,6 +174,7 @@ export function MisViajeIncidentesSection({ controller }: MisViajeIncidentesSect
                             helperText="Adjunta evidencia del incidente"
                             disabled={!canEdit || controller.createIncidenteMutation.isPending}
                             folder="incidentes"
+                            layout="slots"
                         />
 
                         <Button

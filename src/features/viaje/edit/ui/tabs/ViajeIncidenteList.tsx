@@ -98,7 +98,7 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
     const handleDownload = (path: string) => {
         const url = buildInternalFileUrl(path);
         if (url) {
-            window.open(url, '_blank');
+            window.open(url, '_blank', 'noopener,noreferrer');
         }
     };
 
@@ -205,6 +205,7 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
                         const severity = getIncidenteSeverity(tipoText);
                         const imageRoutes = getIncidenteImageRoutes(item).filter(Boolean);
                         const hasImage = imageRoutes.length > 0;
+                        const firstRoute = imageRoutes[0];
 
                         return (
                             <Box
@@ -303,23 +304,25 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
                                                     </Box>
                                                 );
                                             })}
-                                            <Button
-                                                size="small"
-                                                onClick={() => handleDownload(imageRoutes[0]!)}
-                                                startIcon={<DownloadIcon sx={{ fontSize: 16 }} />}
-                                                sx={{
-                                                    ml: 'auto',
-                                                    bgcolor: 'primary.main',
-                                                    color: 'white',
-                                                    fontWeight: 700,
-                                                    fontSize: '0.7rem',
-                                                    borderRadius: 2,
-                                                    px: 2,
-                                                    '&:hover': { bgcolor: 'primary.dark' },
-                                                }}
-                                            >
-                                                Descargar Evidencias
-                                            </Button>
+                                            {firstRoute && (
+                                                <Button
+                                                    size="small"
+                                                    onClick={() => handleDownload(firstRoute)}
+                                                    startIcon={<DownloadIcon sx={{ fontSize: 16 }} />}
+                                                    sx={{
+                                                        ml: 'auto',
+                                                        bgcolor: 'primary.main',
+                                                        color: 'white',
+                                                        fontWeight: 700,
+                                                        fontSize: '0.7rem',
+                                                        borderRadius: 2,
+                                                        px: 2,
+                                                        '&:hover': { bgcolor: 'primary.dark' },
+                                                    }}
+                                                >
+                                                    Descargar Evidencias
+                                                </Button>
+                                            )}
                                         </Box>
                                     )}
                                 </Box>

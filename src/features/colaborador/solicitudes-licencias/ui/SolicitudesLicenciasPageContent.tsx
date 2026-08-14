@@ -21,7 +21,7 @@ import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 import { MobileListShell } from '@shared/components/ui/MobileListShell';
 import type { LicenciaSolicitudDto } from '@entities/licencia/model/types';
-import { getEstadoColor } from '@entities/employee/lib/status-utils';
+import { getEstadoColor } from '@shared/utils/status-utils';
 import { formatDateOnly, formatDateTime } from '@shared/utils/date-utils';
 import { RevisarSolicitudLicenciaModal } from './RevisarSolicitudLicenciaModal';
 import type { EstadoRevisionFilter, useSolicitudesLicenciasPageController } from '../hooks/useSolicitudesLicenciasPageController';

@@ -23,7 +23,7 @@ import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDial
 import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { formatDateOnly, formatDateTime } from '@shared/utils/date-utils';
-import { getEstadoColor } from '@entities/employee/lib/status-utils';
+import { getEstadoColor } from '@shared/utils/status-utils';
 import { getDocumentVigenciaMeta } from '@shared/utils/document-vigencia';
 import { SolicitudActualizacionModal } from './SolicitudActualizacionModal';
 import {

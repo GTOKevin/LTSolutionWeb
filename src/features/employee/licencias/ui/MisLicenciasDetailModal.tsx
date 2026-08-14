@@ -4,7 +4,7 @@ import { EventNote as EventNoteIcon } from '@mui/icons-material';
 import { formatDateOnly } from '@shared/utils/date-utils';
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
 import { buildInternalFileUrl } from '@/shared/config/env';
-import { EvidenceGallery } from '@features/employee/viajes/detail/ui/shared/EvidenceGallery';
+import { EvidenceGallery } from '@shared/components/ui/EvidenceGallery';
 import type { MiLicenciaDto } from '@entities/employee/model/types';
 
 interface MisLicenciasDetailModalProps {

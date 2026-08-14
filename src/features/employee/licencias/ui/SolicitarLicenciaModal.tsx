@@ -31,7 +31,7 @@ import {
 } from '../model/schema';
 import { getErrorMessage } from '@shared/utils/api-errors';
 import { handleBackendErrors } from '@shared/utils/form-validation';
-import { MultiFileUploadField } from '@shared/components/ui/MultiFileUploadField';
+import { MultiImageUploadField } from '@shared/components/ui/MultiImageUploadField';
 import { buildRutasArchivo } from '@shared/utils/file-utils';
 
 interface SolicitarLicenciaModalProps {
@@ -209,7 +209,7 @@ export function SolicitarLicenciaModal({ open, onClose, editing, editPending = f
                             control={form.control}
                             name="rutasFoto"
                             render={({ field }) => (
-                                <MultiFileUploadField
+                                <MultiImageUploadField
                                     values={field.value ?? []}
                                     onChange={field.onChange}
                                     folder="licencias"
