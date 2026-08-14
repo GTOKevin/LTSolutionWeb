@@ -17,29 +17,37 @@ import { Controller, useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@shared/components/ui/Toast';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
-import type { CreateMiLicenciaRequestDto } from '@entities/employee/model/types';
+import type { CreateMiLicenciaRequestDto, MiLicenciaDto } from '@entities/employee/model/types';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
-import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
+import { LICENCIA_CODIGO, SECCION_MAESTRO } from '@entities/master-data/model/constants';
 import { usePermission } from '@shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import {
     createLicenciaSolicitudSchema,
     getCreateLicenciaSolicitudDefaultValues,
+    getUpdateLicenciaSolicitudDefaultValues,
     type CreateLicenciaSolicitudForm,
     type CreateLicenciaSolicitudFormInput,
 } from '../model/schema';
 import { getErrorMessage } from '@shared/utils/api-errors';
 import { handleBackendErrors } from '@shared/utils/form-validation';
+import { MultiFileUploadField } from '@shared/components/ui/MultiFileUploadField';
+import { buildRutasArchivo } from '@shared/utils/file-utils';
 
 interface SolicitarLicenciaModalProps {
     open: boolean;
     onClose: () => void;
+    editing?: MiLicenciaDto | null;
+    editPending?: boolean;
+    onEditSubmit?: (id: number, payload: CreateMiLicenciaRequestDto) => void;
 }
 
-export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModalProps) {
+export function SolicitarLicenciaModal({ open, onClose, editing, editPending = false, onEditSubmit }: SolicitarLicenciaModalProps) {
     const queryClient = useQueryClient();
     const { showToast } = useToast();
     const canSolicitarLicencia = usePermission(PERMISSIONS.EMPLOYEE.LICENCIAS.SOLICITAR);
+    const isEditing = Boolean(editing);
+    const dialogVisible = open || isEditing;
 
     const form = useForm<CreateLicenciaSolicitudFormInput, unknown, CreateLicenciaSolicitudForm>({
         resolver: zodResolver(createLicenciaSolicitudSchema),
@@ -47,14 +55,18 @@ export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModal
     });
 
     useEffect(() => {
-        if (open && canSolicitarLicencia) {
-            form.reset(getCreateLicenciaSolicitudDefaultValues());
+        if (dialogVisible && canSolicitarLicencia) {
+            form.reset(
+                editing
+                    ? getUpdateLicenciaSolicitudDefaultValues(editing)
+                    : getCreateLicenciaSolicitudDefaultValues(),
+            );
         }
-    }, [canSolicitarLicencia, open, form]);
+    }, [canSolicitarLicencia, dialogVisible, editing, form]);
 
     const { data: tiposLicencia } = useQuery({
         queryKey: ['employee-portal', 'tipos-licencia'],
-        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.LICENCIA),
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.LICENCIA, LICENCIA_CODIGO.EMPLEADOS),
     });
 
     const createMutation = useMutation({
@@ -73,23 +85,29 @@ export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModal
     });
 
     const handleClose = () => {
-        if (!createMutation.isPending) {
+        if (!createMutation.isPending && !editPending) {
             onClose();
         }
     };
 
     return (
         <Dialog
-            open={open && canSolicitarLicencia}
+            open={dialogVisible && canSolicitarLicencia}
             onClose={handleClose}
             fullWidth
-            maxWidth="sm"
+            maxWidth="md"
             PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}
         >
             <DialogTitle sx={{ px: 4, py: 3, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
-                    <Typography variant="h5" fontWeight="bold" color="text.primary" sx={{ letterSpacing: '-0.02em' }}>Nueva Solicitud</Typography>
-                    <Typography variant="body2" color="text.secondary">Complete los datos basicos de su solicitud para iniciar la revision interna.</Typography>
+                    <Typography variant="h5" fontWeight="bold" color="text.primary" sx={{ letterSpacing: '-0.02em' }}>
+                        {isEditing ? 'Editar Solicitud' : 'Nueva Solicitud'}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        {isEditing
+                            ? 'Modifique los datos de su solicitud pendiente para continuar la revisión interna.'
+                            : 'Complete los datos basicos de su solicitud para iniciar la revision interna.'}
+                    </Typography>
                 </Box>
             </DialogTitle>
             <DialogContent sx={{ p: 4 }}>
@@ -119,7 +137,7 @@ export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModal
                             )}
                         />
                     </Box>
-                    
+
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
                         <Box>
                             <Typography variant="overline" fontWeight="bold" color="text.primary" sx={{ display: 'block', mb: 1, letterSpacing: '0.1em' }}>
@@ -182,6 +200,25 @@ export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModal
                             )}
                         />
                     </Box>
+
+                    <Box>
+                        <Typography variant="overline" fontWeight="bold" color="text.primary" sx={{ display: 'block', mb: 1, letterSpacing: '0.1em' }}>
+                            IMÁGENES ADJUNTAS (OPCIONAL)
+                        </Typography>
+                        <Controller
+                            control={form.control}
+                            name="rutasFoto"
+                            render={({ field }) => (
+                                <MultiFileUploadField
+                                    values={field.value ?? []}
+                                    onChange={field.onChange}
+                                    folder="licencias"
+                                    helperText="Adjunte imágenes que sustenten su solicitud. Se subirán automáticamente al seleccionarlas."
+                                    disabled={createMutation.isPending || editPending}
+                                />
+                            )}
+                        />
+                    </Box>
                 </Stack>
             </DialogContent>
             <DialogActions sx={{ px: 4, py: 3, bgcolor: 'action.hover', borderTop: '1px solid', borderColor: 'divider', gap: 2 }}>
@@ -190,19 +227,25 @@ export function SolicitarLicenciaModal({ open, onClose }: SolicitarLicenciaModal
                 </Button>
                 <Button
                     variant="contained"
-                    disabled={createMutation.isPending || !canSolicitarLicencia}
+                    disabled={createMutation.isPending || editPending || !canSolicitarLicencia}
                     onClick={form.handleSubmit((values) => {
-                        createMutation.mutate({
+                        const payload: CreateMiLicenciaRequestDto = {
                             tipoLicenciaID: values.tipoLicenciaID,
                             descripcion: values.descripcion || undefined,
                             fechaInicial: values.fechaInicial,
                             fechaFinal: values.fechaFinal || undefined,
-                        });
+                            rutasFoto: buildRutasArchivo(values.rutasFoto ?? []),
+                        };
+                        if (isEditing && editing && onEditSubmit) {
+                            onEditSubmit(editing.colaboradorLicenciaId, payload);
+                            return;
+                        }
+                        createMutation.mutate(payload);
                     })}
                     endIcon={<SendIcon />}
                     sx={{ px: 4, py: 1.5, borderRadius: 2, fontWeight: 'bold', boxShadow: '0 8px 16px rgba(0,93,168,0.2)' }}
                 >
-                    {createMutation.isPending ? 'Enviando...' : 'Enviar solicitud'}
+                    {editPending ? 'Actualizando...' : createMutation.isPending ? 'Enviando...' : isEditing ? 'Guardar cambios' : 'Enviar solicitud'}
                 </Button>
             </DialogActions>
         </Dialog>

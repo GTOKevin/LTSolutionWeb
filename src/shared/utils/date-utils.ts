@@ -10,18 +10,20 @@ const MONTH_NAMES = [
  */
 export const parseDateOnly = (dateString: string): Date | null => {
     if (!dateString) return null;
-    const [year, month, day] = dateString.split('-').map(Number);
+    const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
     if (!year || !month || !day) return null;
     return new Date(year, month - 1, day);
 };
 
 /**
  * Formats a DateOnly string (YYYY-MM-DD) to "DD/MM/YYYY"
+ * Tolerates full ISO datetime strings (YYYY-MM-DDTHH:mm:ss) by using only the date part.
  * @example "2025-12-01" -> "01/12/2025"
+ * @example "2025-12-01T22:52:59.002658" -> "01/12/2025"
  */
 export const formatDateShort = (dateString: string): string => {
     if (!dateString) return '';
-    const [year, month, day] = dateString.split('-');
+    const [year, month, day] = dateString.split('T')[0].split('-');
     return `${day}/${month}/${year}`;
 };
 

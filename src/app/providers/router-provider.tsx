@@ -31,6 +31,8 @@ const ColaboradoresPage = lazy(() => import('@pages/colaboradores').then(module 
 const ColaboradorNuevoPage = lazy(() => import('@pages/colaboradores/nuevo').then(module => ({ default: module.ColaboradorNuevoPage })));
 const ColaboradorEditarPage = lazy(() => import('@pages/colaboradores/editar').then(module => ({ default: module.ColaboradorEditarPage })));
 const ColaboradorVerPage = lazy(() => import('@pages/colaboradores/ver').then(module => ({ default: module.ColaboradorVerPage })));
+const ColaboradorSolicitudesDocumentosPage = lazy(() => import('@pages/colaborador-solicitudes-documentos').then(module => ({ default: module.ColaboradorSolicitudesDocumentosPage })));
+const SolicitudesLicenciasPage = lazy(() => import('@pages/solicitudes-licencias').then(module => ({ default: module.SolicitudesLicenciasPage })));
 const MantenimientosPage = lazy(() => import('@pages/mantenimientos').then(module => ({ default: module.MantenimientosPage })));
 const MantenimientoNuevoPage = lazy(() => import('@pages/mantenimientos/nuevo').then(module => ({ default: module.MantenimientoNuevoPage })));
 const MantenimientoEditarPage = lazy(() => import('@pages/mantenimientos/editar').then(module => ({ default: module.MantenimientoEditarPage })));
@@ -124,6 +126,16 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     },
     { path: `${APP_ROUTE_SEGMENTS.flotas}/:id/ver`, permission: PERMISSIONS.FLOTA.VER, element: <FlotaVerPage /> },
     { path: APP_ROUTE_SEGMENTS.colaboradores, permission: PERMISSIONS.COLABORADORES.VER, element: <ColaboradoresPage /> },
+    {
+        path: APP_ROUTE_SEGMENTS.colaboradorSolicitudesDocumentos,
+        permission: PERMISSIONS.COLABORADORES.GESTIONAR_SOLICITUDES_DOCUMENTOS,
+        element: <ColaboradorSolicitudesDocumentosPage />,
+    },
+    {
+        path: APP_ROUTE_SEGMENTS.solicitudesLicencias,
+        permission: PERMISSIONS.COLABORADORES.APROBAR_LICENCIAS,
+        element: <SolicitudesLicenciasPage />,
+    },
     { path: `${APP_ROUTE_SEGMENTS.colaboradores}/nuevo`, permission: PERMISSIONS.COLABORADORES.GESTIONAR, element: <ColaboradorNuevoPage /> },
     {
         path: `${APP_ROUTE_SEGMENTS.colaboradores}/:id`,

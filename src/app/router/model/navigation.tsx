@@ -22,6 +22,7 @@ import {
     EventNote as EventNoteIcon,
     Menu as MenuIcon,
     Person as PersonIcon,
+    FactCheck as FactCheckIcon,
 } from '@mui/icons-material';
 import {
     APP_PATHS,
@@ -170,6 +171,18 @@ export const APP_SIDEBAR_MENU: AppNavigationItem[] = [
                 icon: <EngineeringIcon />,
                 permission: PERMISSIONS.COLABORADORES.VER,
             },
+            {
+                text: 'Solicitudes Documentos',
+                path: APP_PATHS.colaboradorSolicitudesDocumentos,
+                icon: <FactCheckIcon />,
+                permission: PERMISSIONS.COLABORADORES.GESTIONAR_SOLICITUDES_DOCUMENTOS,
+            },
+            {
+                text: 'Solicitudes Licencias',
+                path: APP_PATHS.solicitudesLicencias,
+                icon: <EventNoteIcon />,
+                permission: PERMISSIONS.COLABORADORES.APROBAR_LICENCIAS,
+            },
         ],
     },
     {
@@ -253,6 +266,8 @@ export const APP_ROUTE_META: AppRouteMeta[] = [
     { pathPrefix: APP_PATHS.viajes, title: 'Gestión de Viajes', sectionTitle: 'Operaciones', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.flotas, title: 'Gestión de Flota', sectionTitle: 'Operaciones', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.colaboradores, title: 'Gestión de Colaboradores', sectionTitle: 'Operaciones', bottomNavContext: 'admin' },
+    { pathPrefix: APP_PATHS.colaboradorSolicitudesDocumentos, title: 'Solicitudes de Documentos', sectionTitle: 'Operaciones', bottomNavContext: 'admin' },
+    { pathPrefix: APP_PATHS.solicitudesLicencias, title: 'Solicitudes de Licencias', sectionTitle: 'Operaciones', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.mantenimientos, title: 'Gestión de Mantenimientos', sectionTitle: 'Mantenimiento', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.usuarios, title: 'Gestión de Usuarios', sectionTitle: 'Sistema', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.rolesUsuario, title: 'Gestión de Roles', sectionTitle: 'Sistema', bottomNavContext: 'admin' },

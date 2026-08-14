@@ -60,7 +60,7 @@ export function FacturaPagoForm({ open, onClose, factura, facturaId, monedaId, m
 
     const { data: tiposPago } = useQuery({
         queryKey: ['maestros', 'tipo-pago'],
-        queryFn: () => maestroApi.getSelect('',SECCION_MAESTRO.MEDIO_PAGO,10)
+        queryFn: () => maestroApi.getSelect('', SECCION_MAESTRO.MEDIO_PAGO, undefined, 10)
     });
 
     const { data: estadosPago } = useQuery({

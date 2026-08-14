@@ -43,3 +43,38 @@ export interface ColaboradorLicenciaDetailDto {
     fechaFin?: string;
     comentario: string;
 }
+
+export type LicenciaEstadoRevision = 'pendiente' | 'aprobada' | 'rechazada';
+export type LicenciaEstadoRevisionFilter = '' | LicenciaEstadoRevision;
+
+export interface LicenciaSolicitudDto {
+    colaboradorLicenciaId: number;
+    colaboradorId: number;
+    colaboradorNombre: string;
+    tipoLicenciaId: number;
+    tipoLicenciaNombre: string;
+    descripcion: string | null;
+    fechaInicial: string;
+    fechaFinal: string | null;
+    aceptado: boolean | null;
+    usuarioAceptaId: number | null;
+    fechaAceptacion: string | null;
+    comentarioRevision: string | null;
+    estadoRevision: LicenciaEstadoRevision;
+    fechaRegistro: string;
+    rutasFoto: string[];
+}
+
+export interface LicenciaSolicitudParams {
+    search?: string;
+    tipoLicenciaID?: number;
+    estadoRevision?: LicenciaEstadoRevisionFilter;
+    desde?: string;
+    hasta?: string;
+    page: number;
+    size: number;
+}
+
+export interface ReviewLicenciaDto {
+    comentarioRevision?: string;
+}

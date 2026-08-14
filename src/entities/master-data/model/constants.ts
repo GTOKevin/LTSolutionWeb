@@ -24,6 +24,10 @@ export const TIPO_MAESTRO_SECTIONS = {
     COMBUSTIBLE: 'COMBUSTIBLE',
 } as const;
 
+export const LICENCIA_CODIGO = {
+    EMPLEADOS: '1'
+} as const;
+
 export const MONEDA_CODES = {
     PEN: 'PEN',
     USD: 'USD',

@@ -24,7 +24,7 @@ export function EditRutaDialog({ open, onClose, viajeId, ruta }: EditRutaDialogP
 
     const { data: tiposPunto, isLoading: isLoadingTipos } = useQuery({
         queryKey: ['maestro', SECCION_MAESTRO.PUNTO_RUTA],
-        queryFn: () => maestroApi.getSelect('', SECCION_MAESTRO.PUNTO_RUTA, 50),
+        queryFn: () => maestroApi.getSelect('', SECCION_MAESTRO.PUNTO_RUTA, undefined, 50),
         enabled: open,
     });
 
