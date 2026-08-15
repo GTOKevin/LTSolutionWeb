@@ -27,7 +27,7 @@ export function getCreateMisViajeIncidenteDefaultValues(): EmployeeViajeIncident
         hora: getCurrentEmployeeViajeTimeInput(),
         lugar: '',
         descripcion: '',
-        rutasFoto: [''],
+        rutasFoto: [],
     };
 }
 

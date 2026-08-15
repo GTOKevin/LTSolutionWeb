@@ -171,10 +171,9 @@ export function MisViajeIncidentesSection({ controller }: MisViajeIncidentesSect
                                     rutasFoto: values,
                                 }));
                             }}
-                            helperText="Adjunta evidencia del incidente"
+                            helperText="Adjunta evidencia del incidente. Se subirán automáticamente al seleccionarlas."
                             disabled={!canEdit || controller.createIncidenteMutation.isPending}
                             folder="incidentes"
-                            layout="slots"
                         />
 
                         <Button
