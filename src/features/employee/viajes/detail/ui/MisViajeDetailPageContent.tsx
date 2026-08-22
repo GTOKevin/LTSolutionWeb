@@ -1,6 +1,18 @@
+import {
+    AssignmentOutlined as AssignmentOutlinedIcon,
+    DescriptionOutlined as DescriptionOutlinedIcon,
+    FlagOutlined as FlagOutlinedIcon,
+    ReportProblemOutlined as ReportProblemOutlinedIcon,
+    RouteOutlined as RouteOutlinedIcon,
+} from '@mui/icons-material';
 import { Box, Button, Skeleton, Tab, Tabs, Typography } from '@mui/material';
 import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
-import type { useMisViajeDetailPageController } from '../hooks/useMisViajeDetailPageController';
+import type { ReactNode } from 'react';
+import type {
+    MisViajeTabDescriptor,
+    MisViajeTabKey,
+    useMisViajeDetailPageController,
+} from '../hooks/useMisViajeDetailPageController';
 import { MisViajeDetailHeader } from './sections/MisViajeDetailHeader';
 import { MisViajeGuiasSection } from './sections/MisViajeGuiasSection';
 import { MisViajeIncidentesSection } from './sections/MisViajeIncidentesSection';
@@ -11,6 +23,49 @@ import { MisViajeStatusSection } from './sections/MisViajeStatusSection';
 
 interface MisViajeDetailPageContentProps {
     controller: ReturnType<typeof useMisViajeDetailPageController>;
+}
+
+const TAB_ICONS: Record<MisViajeTabKey, ReactNode> = {
+    resumen: <AssignmentOutlinedIcon fontSize="small" />,
+    estado: <FlagOutlinedIcon fontSize="small" />,
+    incidentes: <ReportProblemOutlinedIcon fontSize="small" />,
+    guias: <DescriptionOutlinedIcon fontSize="small" />,
+    permisos: <AssignmentOutlinedIcon fontSize="small" />,
+    kms: <RouteOutlinedIcon fontSize="small" />,
+};
+
+// Armado visual de labels: el controller expone datos planos (key/label/count/highlight)
+// y esta capa de presentacion es la unica responsable del render (iconos, badges, colores).
+function buildTabLabel(tab: MisViajeTabDescriptor) {
+    const { highlight } = tab;
+    return (
+        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', color: highlight ? 'primary.main' : 'text.secondary' }}>
+                {TAB_ICONS[tab.key]}
+            </Box>
+            <span>{tab.label}</span>
+            {typeof tab.count === 'number' ? (
+                <Box
+                    component="span"
+                    sx={{
+                        minWidth: 22,
+                        height: 22,
+                        px: 0.75,
+                        borderRadius: '999px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        bgcolor: highlight ? 'primary.main' : 'action.selected',
+                        color: highlight ? 'primary.contrastText' : 'text.secondary',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                    }}
+                >
+                    {tab.count}
+                </Box>
+            ) : null}
+        </Box>
+    );
 }
 
 function MisViajeDetailLoadingState() {
@@ -84,7 +139,7 @@ export function MisViajeDetailPageContent({ controller }: MisViajeDetailPageCont
                     }}
                 >
                     {controller.tabs.map((tab) => (
-                        <Tab key={tab.key} label={tab.label} />
+                        <Tab key={tab.key} label={buildTabLabel(tab)} />
                     ))}
                 </Tabs>
             </Box>

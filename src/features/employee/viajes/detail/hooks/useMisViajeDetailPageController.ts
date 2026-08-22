@@ -1,17 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-    AssignmentOutlined as AssignmentOutlinedIcon,
-    DescriptionOutlined as DescriptionOutlinedIcon,
-    FlagOutlined as FlagOutlinedIcon,
-    ReportProblemOutlined as ReportProblemOutlinedIcon,
-    RouteOutlined as RouteOutlinedIcon,
-} from '@mui/icons-material';
-import { Box } from '@mui/material';
-import type { ReactNode } from 'react';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
 import type {
@@ -43,40 +34,15 @@ import {
 
 export type MisViajeTabKey = 'resumen' | 'estado' | 'incidentes' | 'guias' | 'permisos' | 'kms';
 
+/**
+ * Descriptor de tab con datos planos (sin JSX). El armado visual (iconos, badges)
+ * es responsabilidad de la capa UI (`MisViajeDetailPageContent`), no del controller.
+ */
 export interface MisViajeTabDescriptor {
     key: MisViajeTabKey;
-    label: ReactNode;
-}
-
-function buildTabLabel(label: string, icon: ReactNode, count?: number, highlight?: boolean) {
-    return (
-        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', color: highlight ? 'primary.main' : 'text.secondary' }}>
-                {icon}
-            </Box>
-            <span>{label}</span>
-            {typeof count === 'number' ? (
-                <Box
-                    component="span"
-                    sx={{
-                        minWidth: 22,
-                        height: 22,
-                        px: 0.75,
-                        borderRadius: '999px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        bgcolor: highlight ? 'primary.main' : 'action.selected',
-                        color: highlight ? 'primary.contrastText' : 'text.secondary',
-                        fontSize: '0.72rem',
-                        fontWeight: 800,
-                    }}
-                >
-                    {count}
-                </Box>
-            ) : null}
-        </Box>
-    );
+    label: string;
+    count?: number;
+    highlight?: boolean;
 }
 
 export function useMisViajeDetailPageController() {
@@ -195,6 +161,10 @@ export function useMisViajeDetailPageController() {
         }));
     }, [kmsForm, statusForm, viaje]);
 
+    // L-1 (review): `isCerrado` (administrativo) y `isWorkflowBlocked` (cerrado/facturado/completado)
+    // son criterios intencionalmente distintos. Un viaje facturado o completado aún puede corregir
+    // KMs o conservar su historial visible; solo el cierre administrativo termina la vida del viaje
+    // en el portal y oculta los formularios/tabs de acción.
     const isCerrado = isEmployeeViajeClosed(viaje);
 
     const nextEstadoId = resolveEmployeeViajeNextEstadoId(viaje, estados);
@@ -205,26 +175,34 @@ export function useMisViajeDetailPageController() {
     const guiasItems = guias?.items ?? [];
     const permisosItems = permisos?.items ?? [];
 
-    const tabs: MisViajeTabDescriptor[] = [
-        { key: 'resumen', label: buildTabLabel('Resumen', <AssignmentOutlinedIcon fontSize="small" />) },
-        ...(isCerrado
-            ? []
-            : [{ key: 'estado' as const, label: buildTabLabel('Estado', <FlagOutlinedIcon fontSize="small" />, undefined, Boolean(nextEstado)) }]),
-        { key: 'incidentes', label: buildTabLabel('Incidentes', <ReportProblemOutlinedIcon fontSize="small" />, incidentesItems.length) },
-        { key: 'guias', label: buildTabLabel('Guías', <DescriptionOutlinedIcon fontSize="small" />, guiasItems.length) },
-        { key: 'permisos', label: buildTabLabel('Permisos', <AssignmentOutlinedIcon fontSize="small" />, permisosItems.length) },
-        ...(isCerrado
-            ? []
-            : [{ key: 'kms' as const, label: buildTabLabel('KMs', <RouteOutlinedIcon fontSize="small" />, undefined, Boolean(viaje?.kmInicio || viaje?.kmLlegada || viaje?.kmLlegadaBase)) }]),
-    ];
+    const hasKmsInfo = Boolean(viaje?.kmInicio || viaje?.kmLlegada || viaje?.kmLlegadaBase);
+    const hasNextEstado = Boolean(nextEstado);
+
+    const tabs: MisViajeTabDescriptor[] = useMemo(
+        () => [
+            { key: 'resumen', label: 'Resumen' },
+            ...(isCerrado
+                ? []
+                : [{ key: 'estado' as const, label: 'Estado', highlight: hasNextEstado }]),
+            { key: 'incidentes', label: 'Incidentes', count: incidentesItems.length },
+            { key: 'guias', label: 'Guías', count: guiasItems.length },
+            { key: 'permisos', label: 'Permisos', count: permisosItems.length },
+            ...(isCerrado
+                ? []
+                : [{ key: 'kms' as const, label: 'KMs', highlight: hasKmsInfo }]),
+        ],
+        [isCerrado, hasNextEstado, incidentesItems.length, guiasItems.length, permisosItems.length, hasKmsInfo],
+    );
+
+    // L-2 (review): si la tab activa desaparece (ej. viaje cerrado mientras estaba en "estado"/"kms"),
+    // la UI cae a "resumen" pero el estado interno quedaba desincronizado. Ajuste de estado durante
+    // el render (patrón oficial de React: "adjusting some state when a prop changes") — sin efecto.
+    if (activeTabKey !== 'resumen' && !tabs.some((tab) => tab.key === activeTabKey)) {
+        setActiveTabKey('resumen');
+    }
 
     const currentTabIndex = Math.max(0, tabs.findIndex((tab) => tab.key === activeTabKey));
     const activeVisibleTabKey = tabs[currentTabIndex]?.key ?? 'resumen';
-    const isStatusTabActive = activeVisibleTabKey === 'estado';
-    const isIncidentesTabActive = activeVisibleTabKey === 'incidentes';
-    const isGuiasTabActive = activeVisibleTabKey === 'guias';
-    const isPermisosTabActive = activeVisibleTabKey === 'permisos';
-    const isKmsTabActive = activeVisibleTabKey === 'kms';
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
         const nextTab = tabs[newValue];
@@ -268,7 +246,6 @@ export function useMisViajeDetailPageController() {
     };
 
     return {
-        activeTabKey,
         activeVisibleTabKey,
         canManageViaje,
         canManageViajeKms,
@@ -281,13 +258,8 @@ export function useMisViajeDetailPageController() {
         handleTabChange,
         incidentes: incidentesItems,
         isCerrado,
-        isKmsTabActive,
-        isPermisosTabActive,
-        isGuiasTabActive,
-        isIncidentesTabActive,
         isError,
         isLoading,
-        isStatusTabActive,
         isWorkflowBlocked: isClosedForWorkflow,
         kmsForm,
         nextEstado,

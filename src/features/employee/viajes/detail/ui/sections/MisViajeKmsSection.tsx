@@ -32,7 +32,7 @@ function resolveKmCompletionLabel(values: Array<number | null | undefined>) {
 
 export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
     const viaje = controller.viaje;
-    const isCerrado = Boolean(viaje?.cerrado);
+    const isCerrado = controller.isCerrado;
 
     if (!viaje) {
         return null;

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
     Box,
     Button,
+    capitalize,
     Dialog,
     DialogActions,
     DialogContent,
@@ -157,7 +158,7 @@ export function RevisarSolicitudModal({ target, isProcessing, onClose, onSubmit,
                             {isView ? (
                                 <ReviewValue
                                     label="Estado"
-                                    value={solicitud.estadoRevision.charAt(0).toUpperCase() + solicitud.estadoRevision.slice(1)}
+                                    value={capitalize(solicitud.estadoRevision)}
                                 />
                             ) : null}
                         </Box>
