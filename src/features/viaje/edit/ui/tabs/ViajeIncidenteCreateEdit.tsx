@@ -31,7 +31,7 @@ const getIncidenteFormDefaults = (incidente?: ViajeIncidente | null): ViajeIncid
     descripcion: incidente?.descripcion || '',
     ubigeoID: incidente?.ubigeoID ?? 0,
     lugar: incidente?.lugar || '',
-    rutasFoto: incidente?.rutasFoto?.length ? incidente.rutasFoto : [''],
+    rutasFoto: incidente?.rutasFoto?.length ? incidente.rutasFoto : [],
 });
 
 const getIncidenteDateTimeDefaults = (incidente?: ViajeIncidente | null) => ({
@@ -58,7 +58,7 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
             descripcion: '',
             ubigeoID: 0,
             lugar: '',
-            rutasFoto: [''],
+            rutasFoto: [],
         },
     });
 
@@ -273,9 +273,9 @@ export function ViajeIncidenteCreateEdit({ viajeId, tiposIncidente, incidente, o
                                 <MultiImageUploadField
                                     values={field.value}
                                     onChange={(values) => field.onChange(values)}
-                                    helperText="JPG o PNG (Max 5MB)"
+                                    helperText="Adjunta evidencia del incidente. Se subirán automáticamente al seleccionarlas. (JPG/PNG, máx. 1 MB)"
                                     folder="incidentes"
-                                    layout="slots"
+                                    minItems={1}
                                 />
                             )}
                         />

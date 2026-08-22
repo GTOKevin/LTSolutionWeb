@@ -44,8 +44,23 @@ function resolveEmployeeViajeWorkflowIndex(viaje: EmployeeViajeWorkflowSource | 
     return -1;
 }
 
+/**
+ * El viaje no admite cambios de flujo ni nuevos registros: cerrado, facturado o completado.
+ * Controla el badge "Bloqueado", las alertas y la deshabilitación de acciones en el portal.
+ */
 export function isEmployeeViajeWorkflowBlocked(viaje: EmployeeViajeWorkflowSource | null | undefined) {
     return Boolean(!viaje || viaje.cerrado || viaje.facturado || isViajeCompletado(viaje));
+}
+
+/**
+ * El viaje está administrativamente cerrado: fin del ciclo de vida en el portal.
+ * Es un criterio MÁS ESTRICTO que `isEmployeeViajeWorkflowBlocked`: mientras el viaje
+ * esté solo facturado o completado (workflow bloqueado pero no cerrado), el empleado
+ * aún puede corregir KMs y conserva visible el historial. Al cerrarse, se ocultan los
+ * formularios de registro y las tabs de acción (Estado/KMs), dejando solo lectura.
+ */
+export function isEmployeeViajeClosed(viaje: EmployeeViajeWorkflowSource | null | undefined) {
+    return Boolean(viaje?.cerrado);
 }
 
 export function getEmployeeViajeQuickActionLabel(viaje: EmployeeViajeWorkflowSource | null | undefined) {

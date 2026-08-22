@@ -165,6 +165,12 @@ export const APP_SIDEBAR_MENU: AppNavigationItem[] = [
                 icon: <LocalShippingIcon />,
                 permission: PERMISSIONS.FLOTA.VER,
             },
+        ],
+    },
+    {
+        text: 'Recursos Humanos',
+        icon: <BadgeIcon />,
+        children: [
             {
                 text: 'Colaboradores',
                 path: APP_PATHS.colaboradores,
@@ -265,9 +271,9 @@ export const APP_ROUTE_META: AppRouteMeta[] = [
     { pathPrefix: APP_PATHS.facturas, title: 'Gestión de Facturas', sectionTitle: 'Gestión Comercial', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.viajes, title: 'Gestión de Viajes', sectionTitle: 'Operaciones', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.flotas, title: 'Gestión de Flota', sectionTitle: 'Operaciones', bottomNavContext: 'admin' },
-    { pathPrefix: APP_PATHS.colaboradores, title: 'Gestión de Colaboradores', sectionTitle: 'Operaciones', bottomNavContext: 'admin' },
-    { pathPrefix: APP_PATHS.colaboradorSolicitudesDocumentos, title: 'Solicitudes de Documentos', sectionTitle: 'Operaciones', bottomNavContext: 'admin' },
-    { pathPrefix: APP_PATHS.solicitudesLicencias, title: 'Solicitudes de Licencias', sectionTitle: 'Operaciones', bottomNavContext: 'admin' },
+    { pathPrefix: APP_PATHS.colaboradores, title: 'Gestión de Colaboradores', sectionTitle: 'Recursos Humanos', bottomNavContext: 'admin' },
+    { pathPrefix: APP_PATHS.colaboradorSolicitudesDocumentos, title: 'Solicitudes de Documentos', sectionTitle: 'Recursos Humanos', bottomNavContext: 'admin' },
+    { pathPrefix: APP_PATHS.solicitudesLicencias, title: 'Solicitudes de Licencias', sectionTitle: 'Recursos Humanos', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.mantenimientos, title: 'Gestión de Mantenimientos', sectionTitle: 'Mantenimiento', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.usuarios, title: 'Gestión de Usuarios', sectionTitle: 'Sistema', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.rolesUsuario, title: 'Gestión de Roles', sectionTitle: 'Sistema', bottomNavContext: 'admin' },

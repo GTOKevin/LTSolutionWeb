@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { APP_PATHS } from '@shared/config/app-routes';
@@ -27,9 +27,23 @@ import {
     type UpdateMisViajesKmsFormInput,
 } from '../../model/schema';
 import {
+    isEmployeeViajeClosed,
     isEmployeeViajeWorkflowBlocked,
     resolveEmployeeViajeNextEstadoId,
 } from '../../model/workflow';
+
+export type MisViajeTabKey = 'resumen' | 'estado' | 'incidentes' | 'guias' | 'permisos' | 'kms';
+
+/**
+ * Descriptor de tab con datos planos (sin JSX). El armado visual (iconos, badges)
+ * es responsabilidad de la capa UI (`MisViajeDetailPageContent`), no del controller.
+ */
+export interface MisViajeTabDescriptor {
+    key: MisViajeTabKey;
+    label: string;
+    count?: number;
+    highlight?: boolean;
+}
 
 export function useMisViajeDetailPageController() {
     const { id } = useParams<{ id: string }>();
@@ -40,7 +54,7 @@ export function useMisViajeDetailPageController() {
     const viajeId = Number(id);
     const canManageViajeKms = usePermission(PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR);
     const canManageViaje = usePermission(PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR);
-    const [activeTab, setActiveTab] = useState(0);
+    const [activeTabKey, setActiveTabKey] = useState<MisViajeTabKey>('resumen');
     const resourceFilters = { page: 1, size: 100 };
 
     const { data: viaje, isLoading, isError, refetch } = useQuery({
@@ -147,15 +161,54 @@ export function useMisViajeDetailPageController() {
         }));
     }, [kmsForm, statusForm, viaje]);
 
-    const currentTab = activeTab;
-    const isStatusTabActive = currentTab === 1;
-    const isIncidentesTabActive = currentTab === 2;
-    const isGuiasTabActive = currentTab === 3;
-    const isPermisosTabActive = currentTab === 4;
-    const isKmsTabActive = currentTab === 5;
+    // L-1 (review): `isCerrado` (administrativo) y `isWorkflowBlocked` (cerrado/facturado/completado)
+    // son criterios intencionalmente distintos. Un viaje facturado o completado aún puede corregir
+    // KMs o conservar su historial visible; solo el cierre administrativo termina la vida del viaje
+    // en el portal y oculta los formularios/tabs de acción.
+    const isCerrado = isEmployeeViajeClosed(viaje);
+
+    const nextEstadoId = resolveEmployeeViajeNextEstadoId(viaje, estados);
+    const nextEstado = estados?.find((item) => item.id === nextEstadoId) ?? null;
+    const isClosedForWorkflow = isEmployeeViajeWorkflowBlocked(viaje);
+
+    const incidentesItems = incidentes?.items ?? [];
+    const guiasItems = guias?.items ?? [];
+    const permisosItems = permisos?.items ?? [];
+
+    const hasKmsInfo = Boolean(viaje?.kmInicio || viaje?.kmLlegada || viaje?.kmLlegadaBase);
+    const hasNextEstado = Boolean(nextEstado);
+
+    const tabs: MisViajeTabDescriptor[] = useMemo(
+        () => [
+            { key: 'resumen', label: 'Resumen' },
+            ...(isCerrado
+                ? []
+                : [{ key: 'estado' as const, label: 'Estado', highlight: hasNextEstado }]),
+            { key: 'incidentes', label: 'Incidentes', count: incidentesItems.length },
+            { key: 'guias', label: 'Guías', count: guiasItems.length },
+            { key: 'permisos', label: 'Permisos', count: permisosItems.length },
+            ...(isCerrado
+                ? []
+                : [{ key: 'kms' as const, label: 'KMs', highlight: hasKmsInfo }]),
+        ],
+        [isCerrado, hasNextEstado, incidentesItems.length, guiasItems.length, permisosItems.length, hasKmsInfo],
+    );
+
+    // L-2 (review): si la tab activa desaparece (ej. viaje cerrado mientras estaba en "estado"/"kms"),
+    // la UI cae a "resumen" pero el estado interno quedaba desincronizado. Ajuste de estado durante
+    // el render (patrón oficial de React: "adjusting some state when a prop changes") — sin efecto.
+    if (activeTabKey !== 'resumen' && !tabs.some((tab) => tab.key === activeTabKey)) {
+        setActiveTabKey('resumen');
+    }
+
+    const currentTabIndex = Math.max(0, tabs.findIndex((tab) => tab.key === activeTabKey));
+    const activeVisibleTabKey = tabs[currentTabIndex]?.key ?? 'resumen';
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-        setActiveTab(newValue);
+        const nextTab = tabs[newValue];
+        if (nextTab) {
+            setActiveTabKey(nextTab.key);
+        }
     };
 
     const handleBack = () => {
@@ -169,10 +222,6 @@ export function useMisViajeDetailPageController() {
             kmLlegadaBase: data.kmLlegadaBase,
         });
     };
-
-    const nextEstadoId = resolveEmployeeViajeNextEstadoId(viaje, estados);
-    const nextEstado = estados?.find((item) => item.id === nextEstadoId) ?? null;
-    const isClosedForWorkflow = isEmployeeViajeWorkflowBlocked(viaje);
 
     const submitNextEstado = (fechaLlegada?: string | null) => {
         if (!nextEstadoId) {
@@ -197,32 +246,30 @@ export function useMisViajeDetailPageController() {
     };
 
     return {
+        activeVisibleTabKey,
         canManageViaje,
         canManageViajeKms,
         createGuiaMutation,
         createIncidenteMutation,
-        currentTab,
+        currentTabIndex,
         estados,
-        guias: guias?.items ?? [],
+        guias: guiasItems,
         handleBack,
         handleTabChange,
-        incidentes: incidentes?.items ?? [],
-        isKmsTabActive,
-        isPermisosTabActive,
-        isGuiasTabActive,
-        isIncidentesTabActive,
+        incidentes: incidentesItems,
+        isCerrado,
         isError,
         isLoading,
-        isStatusTabActive,
         isWorkflowBlocked: isClosedForWorkflow,
         kmsForm,
         nextEstado,
         onSubmitKms,
-        permisos: permisos?.items ?? [],
+        permisos: permisosItems,
         retryViajeLoad: () => refetch(),
         saveFechaLlegada,
         statusForm,
         submitNextEstado,
+        tabs,
         tiposGuia: tiposGuia ?? [],
         tiposIncidente: tiposIncidente ?? [],
         updateKmsMutation,

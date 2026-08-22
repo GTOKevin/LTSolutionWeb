@@ -229,13 +229,15 @@ export function SolicitudesDocumentosPageContent({ controller }: SolicitudesDocu
                                     </TableCell>
                                     <TableCell align="right">
                                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                                            {item.rutaArchivoPropuesta ? (
-                                                <Tooltip title="Ver archivo propuesto">
-                                                    <IconButton size="small" onClick={(event) => { event.stopPropagation(); void controller.handlePreviewArchivo(item); }}>
-                                                        <VisibilityOutlined fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            ) : null}
+                                            <Tooltip title="Ver solicitud">
+                                                <IconButton
+                                                    size="small"
+                                                    color="primary"
+                                                    onClick={(event) => { event.stopPropagation(); controller.handleOpenReview(item, 'view'); }}
+                                                >
+                                                    <VisibilityOutlined fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
                                             {renderReviewActions(item)}
                                         </Box>
                                     </TableCell>
@@ -292,17 +294,15 @@ export function SolicitudesDocumentosPageContent({ controller }: SolicitudesDocu
                                         </Typography>
                                     ) : null}
                                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
-                                        {item.rutaArchivoPropuesta ? (
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                startIcon={<VisibilityOutlined />}
-                                                onClick={() => void controller.handlePreviewArchivo(item)}
-                                                sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
-                                            >
-                                                Ver archivo
-                                            </Button>
-                                        ) : null}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            startIcon={<VisibilityOutlined />}
+                                            onClick={() => controller.handleOpenReview(item, 'view')}
+                                            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                                        >
+                                            Ver solicitud
+                                        </Button>
                                         {item.aprobada == null && controller.canGestionarSolicitudes ? (
                                             <>
                                                 <Button

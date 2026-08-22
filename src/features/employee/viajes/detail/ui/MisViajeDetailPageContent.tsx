@@ -8,7 +8,11 @@ import {
 import { Box, Button, Skeleton, Tab, Tabs, Typography } from '@mui/material';
 import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import type { ReactNode } from 'react';
-import type { useMisViajeDetailPageController } from '../hooks/useMisViajeDetailPageController';
+import type {
+    MisViajeTabDescriptor,
+    MisViajeTabKey,
+    useMisViajeDetailPageController,
+} from '../hooks/useMisViajeDetailPageController';
 import { MisViajeDetailHeader } from './sections/MisViajeDetailHeader';
 import { MisViajeGuiasSection } from './sections/MisViajeGuiasSection';
 import { MisViajeIncidentesSection } from './sections/MisViajeIncidentesSection';
@@ -21,14 +25,26 @@ interface MisViajeDetailPageContentProps {
     controller: ReturnType<typeof useMisViajeDetailPageController>;
 }
 
-function buildTabLabel(label: string, icon: ReactNode, count?: number, highlight?: boolean) {
+const TAB_ICONS: Record<MisViajeTabKey, ReactNode> = {
+    resumen: <AssignmentOutlinedIcon fontSize="small" />,
+    estado: <FlagOutlinedIcon fontSize="small" />,
+    incidentes: <ReportProblemOutlinedIcon fontSize="small" />,
+    guias: <DescriptionOutlinedIcon fontSize="small" />,
+    permisos: <AssignmentOutlinedIcon fontSize="small" />,
+    kms: <RouteOutlinedIcon fontSize="small" />,
+};
+
+// Armado visual de labels: el controller expone datos planos (key/label/count/highlight)
+// y esta capa de presentacion es la unica responsable del render (iconos, badges, colores).
+function buildTabLabel(tab: MisViajeTabDescriptor) {
+    const { highlight } = tab;
     return (
         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', color: highlight ? 'primary.main' : 'text.secondary' }}>
-                {icon}
+                {TAB_ICONS[tab.key]}
             </Box>
-            <span>{label}</span>
-            {typeof count === 'number' ? (
+            <span>{tab.label}</span>
+            {typeof tab.count === 'number' ? (
                 <Box
                     component="span"
                     sx={{
@@ -45,7 +61,7 @@ function buildTabLabel(label: string, icon: ReactNode, count?: number, highlight
                         fontWeight: 800,
                     }}
                 >
-                    {count}
+                    {tab.count}
                 </Box>
             ) : null}
         </Box>
@@ -98,13 +114,15 @@ export function MisViajeDetailPageContent({ controller }: MisViajeDetailPageCont
         );
     }
 
+    const activeTabKey = controller.activeVisibleTabKey;
+
     return (
         <Box sx={{ minHeight: '100%', display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
             <MisViajeDetailHeader controller={controller} />
 
             <Box sx={{ px: { xs: 2, md: 4 }, borderBottom: 1, borderColor: 'divider', bgcolor: 'background.default' }}>
                 <Tabs
-                    value={controller.currentTab}
+                    value={controller.currentTabIndex}
                     onChange={controller.handleTabChange}
                     variant="scrollable"
                     allowScrollButtonsMobile
@@ -120,22 +138,19 @@ export function MisViajeDetailPageContent({ controller }: MisViajeDetailPageCont
                         },
                     }}
                 >
-                    <Tab label={buildTabLabel('Resumen', <AssignmentOutlinedIcon fontSize="small" />)} />
-                    <Tab label={buildTabLabel('Estado', <FlagOutlinedIcon fontSize="small" />, undefined, Boolean(controller.nextEstado))} />
-                    <Tab label={buildTabLabel('Incidentes', <ReportProblemOutlinedIcon fontSize="small" />, controller.incidentes.length)} />
-                    <Tab label={buildTabLabel('Guías', <DescriptionOutlinedIcon fontSize="small" />, controller.guias.length)} />
-                    <Tab label={buildTabLabel('Permisos', <AssignmentOutlinedIcon fontSize="small" />, controller.permisos.length)} />
-                    <Tab label={buildTabLabel('KMs', <RouteOutlinedIcon fontSize="small" />, undefined, Boolean(viaje.kmInicio || viaje.kmLlegada || viaje.kmLlegadaBase))} />
+                    {controller.tabs.map((tab) => (
+                        <Tab key={tab.key} label={buildTabLabel(tab)} />
+                    ))}
                 </Tabs>
             </Box>
 
             <Box sx={{ flex: 1, bgcolor: 'background.paper', p: { xs: 2, md: 4 } }}>
-                {controller.currentTab === 0 ? <MisViajeResumenSection controller={controller} /> : null}
-                {controller.isStatusTabActive ? <MisViajeStatusSection controller={controller} /> : null}
-                {controller.isIncidentesTabActive ? <MisViajeIncidentesSection controller={controller} /> : null}
-                {controller.isGuiasTabActive ? <MisViajeGuiasSection controller={controller} /> : null}
-                {controller.isPermisosTabActive ? <MisViajePermisosSection controller={controller} /> : null}
-                {controller.isKmsTabActive ? <MisViajeKmsSection controller={controller} /> : null}
+                {activeTabKey === 'resumen' ? <MisViajeResumenSection controller={controller} /> : null}
+                {activeTabKey === 'estado' ? <MisViajeStatusSection controller={controller} /> : null}
+                {activeTabKey === 'incidentes' ? <MisViajeIncidentesSection controller={controller} /> : null}
+                {activeTabKey === 'guias' ? <MisViajeGuiasSection controller={controller} /> : null}
+                {activeTabKey === 'permisos' ? <MisViajePermisosSection controller={controller} /> : null}
+                {activeTabKey === 'kms' ? <MisViajeKmsSection controller={controller} /> : null}
             </Box>
         </Box>
     );
