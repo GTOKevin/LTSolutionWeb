@@ -48,6 +48,10 @@ export function isEmployeeViajeWorkflowBlocked(viaje: EmployeeViajeWorkflowSourc
     return Boolean(!viaje || viaje.cerrado || viaje.facturado || isViajeCompletado(viaje));
 }
 
+export function isEmployeeViajeClosed(viaje: EmployeeViajeWorkflowSource | null | undefined) {
+    return Boolean(viaje?.cerrado);
+}
+
 export function getEmployeeViajeQuickActionLabel(viaje: EmployeeViajeWorkflowSource | null | undefined) {
     if (!viaje || isEmployeeViajeWorkflowBlocked(viaje)) {
         return null;

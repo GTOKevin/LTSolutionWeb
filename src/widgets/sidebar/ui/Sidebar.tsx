@@ -84,15 +84,15 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
 
             // If it has children, filter them too
             if (item.children) {
-                const filteredChildren = item.children.filter(child => 
+                const filteredChildren = item.children.filter(child =>
                     hasUserPermission(user, child.permission)
                 );
-                
+
                 // If after filtering children none remain, and it was a category (no path), skip it
                 if (filteredChildren.length === 0 && !item.path) {
                     return acc;
                 }
-                
+
                 // Return item with filtered children
                 acc.push({
                     ...item,
@@ -111,7 +111,7 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
         filteredMenu.forEach(item => {
             if (item.children) {
                 // Check if any child matches current path
-                const isActive = item.children.some(child => 
+                const isActive = item.children.some(child =>
                     location.pathname === child.path || location.pathname.startsWith(`${child.path}/`)
                 );
                 if (isActive) {
@@ -141,14 +141,14 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
     const handleNavigation = (path: string, label: string) => {
         if (isNavigating) return;
         if (location.pathname === path) return;
-        
+
         if (navigationTimeoutRef.current) {
             clearTimeout(navigationTimeoutRef.current);
         }
 
         setPendingNavigation({ path, label });
         navigate(path);
-        
+
         navigationTimeoutRef.current = window.setTimeout(() => {
             setPendingNavigation(null);
         }, 4000);
@@ -177,23 +177,37 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
         onRequestChangePassword?.();
     };
 
-    const isPathActive = (path?: string) => {
-        if (!path) return false;
-        if (location.pathname === path) return true;
-        return location.pathname.startsWith(`${path}/`);
-    };
+    // Active item = the longest menu path that matches the current location.
+    // Prefix matching keeps CRUD detail routes highlighted (e.g. /app/colaboradores/:id
+    // -> "Colaboradores"), but when sibling items share a prefix (e.g. the solicitudes
+    // under /app/colaboradores/...), only the deepest match is marked as active.
+    const activePath = useMemo(() => {
+        const menuPaths: string[] = [];
+        filteredMenu.forEach((item) => {
+            if (item.path) menuPaths.push(item.path);
+            item.children?.forEach((child) => {
+                if (child.path) menuPaths.push(child.path);
+            });
+        });
+
+        return menuPaths
+            .filter((path) => location.pathname === path || location.pathname.startsWith(`${path}/`))
+            .sort((a, b) => b.length - a.length)[0];
+    }, [filteredMenu, location.pathname]);
+
+    const isPathActive = (path?: string) => !!path && path === activePath;
 
     const renderMenuItem = (item: SidebarMenuItem) => (
         <Box key={item.text}>
             {item.section && (
                 <Box sx={{ px: 3, py: 2 }}>
-                    <Typography 
-                        variant="caption" 
-                        sx={{ 
-                            color: '#5a6b7c', 
-                            fontWeight: 600, 
-                            textTransform: 'uppercase', 
-                            letterSpacing: '0.05em' 
+                    <Typography
+                        variant="caption"
+                        sx={{
+                            color: '#5a6b7c',
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
                         }}
                     >
                         {item.section}
@@ -202,10 +216,10 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
             )}
             {/* Parent Menu Item */}
             {item.children ? (
-                <ListItemButton 
+                <ListItemButton
                     onClick={() => handleSubmenuClick(item.text)}
                     disabled={isNavigating}
-                    sx={{ 
+                    sx={{
                         borderRadius: 2,
                         mb: 0.5,
                         mx: 1.5,
@@ -217,15 +231,15 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
                         }
                     }}
                 >
-                    <ListItemIcon sx={{ 
+                    <ListItemIcon sx={{
                         minWidth: 40,
                         color: 'inherit'
                     }}>
                         {item.icon}
                     </ListItemIcon>
-                    <ListItemText 
-                        primary={item.text} 
-                        primaryTypographyProps={{ 
+                    <ListItemText
+                        primary={item.text}
+                        primaryTypographyProps={{
                             fontWeight: openSubmenus[item.text] ? 600 : 500,
                             fontSize: '0.95rem'
                         }}
@@ -233,11 +247,11 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
                     {openSubmenus[item.text] ? <ExpandLess /> : <ExpandMore />}
                 </ListItemButton>
             ) : (
-                <ListItemButton 
+                <ListItemButton
                     onClick={() => item.path && handleNavigation(item.path, item.text)}
                     selected={isPathActive(item.path)}
                     disabled={isNavigating}
-                    sx={{ 
+                    sx={{
                         borderRadius: 2,
                         mb: 0.5,
                         mx: 1.5,
@@ -256,15 +270,15 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
                         }
                     }}
                 >
-                    <ListItemIcon sx={{ 
+                    <ListItemIcon sx={{
                         minWidth: 40,
                         color: 'inherit'
                     }}>
                         {item.icon}
                     </ListItemIcon>
-                    <ListItemText 
-                        primary={item.text} 
-                        primaryTypographyProps={{ 
+                    <ListItemText
+                        primary={item.text}
+                        primaryTypographyProps={{
                             fontWeight: isPathActive(item.path) ? 600 : 500,
                             fontSize: '0.95rem'
                         }}
@@ -277,13 +291,13 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
                 <Collapse in={openSubmenus[item.text]} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
                         {item.children.map((child: SidebarMenuItem) => (
-                            <ListItemButton 
+                            <ListItemButton
                                 key={child.text}
                                 onClick={() => child.path && handleNavigation(child.path, child.text)}
                                 selected={isPathActive(child.path)}
                                 disabled={isNavigating}
-                                sx={{ 
-                                    pl: 4, 
+                                sx={{
+                                    pl: 4,
                                     borderRadius: 2,
                                     mb: 0.5,
                                     mx: 1.5,
@@ -299,16 +313,16 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
                                     }
                                 }}
                             >
-                                <ListItemIcon sx={{ 
+                                <ListItemIcon sx={{
                                     minWidth: 36,
                                     color: 'inherit',
-                                    mr: 1 
+                                    mr: 1
                                 }}>
                                     {child.icon}
                                 </ListItemIcon>
-                                <ListItemText 
-                                    primary={child.text} 
-                                    primaryTypographyProps={{ 
+                                <ListItemText
+                                    primary={child.text}
+                                    primaryTypographyProps={{
                                         fontWeight: isPathActive(child.path) ? 600 : 400,
                                         fontSize: '0.9rem'
                                     }}
@@ -322,18 +336,18 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
     );
 
     const drawerContent = (
-        <Box sx={{ 
-            height: '100%', 
-            display: 'flex', 
+        <Box sx={{
+            height: '100%',
+            display: 'flex',
             flexDirection: 'column',
             bgcolor: theme.palette.mode === 'dark' ? '#111418' : '#ffffff', // From design: bg-surface-dark or white
             color: theme.palette.text.primary
         }}>
             {/* Logo Area */}
-            <Box sx={{ 
-                p: 3, 
-                display: 'flex', 
-                alignItems: 'center', 
+            <Box sx={{
+                p: 3,
+                display: 'flex',
+                alignItems: 'center',
                 gap: 1.5
             }}>
                 <Box sx={{
@@ -360,14 +374,14 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
             </Box>
 
             {/* Navigation Links */}
-            <Box sx={{ 
-                flex: 1, 
-                overflowY: 'auto', 
+            <Box sx={{
+                flex: 1,
+                overflowY: 'auto',
                 py: 1,
                 '&::-webkit-scrollbar': { width: 6 },
-                '&::-webkit-scrollbar-thumb': { 
-                    backgroundColor: '#3b4754', 
-                    borderRadius: 4 
+                '&::-webkit-scrollbar-thumb': {
+                    backgroundColor: '#3b4754',
+                    borderRadius: 4
                 }
             }}>
                 <List component="nav" disablePadding>
@@ -376,11 +390,11 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
             </Box>
 
             {/* User Profile (Bottom) */}
-            <Box sx={{ 
-                p: 2, 
+            <Box sx={{
+                p: 2,
                 borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#283039' : theme.palette.divider}`,
             }}>
-                <Box 
+                <Box
                     sx={{
                         display: 'flex',
                         alignItems: 'center',
@@ -407,8 +421,8 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
                             {user?.email || ''}
                         </Typography>
                     </Box>
-                    <IconButton 
-                        size="small" 
+                    <IconButton
+                        size="small"
                         sx={{ color: '#9dabb9' }}
                         onClick={(e) => {
                             e.stopPropagation(); // Prevent double triggering if parent has handler
@@ -491,8 +505,8 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
                 ModalProps={{ keepMounted: true }}
                 sx={{
                     display: { xs: 'block', md: 'none' },
-                    '& .MuiDrawer-paper': { 
-                        boxSizing: 'border-box', 
+                    '& .MuiDrawer-paper': {
+                        boxSizing: 'border-box',
                         width: DRAWER_WIDTH,
                         borderRight: 'none'
                     },
@@ -506,8 +520,8 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
                 variant="permanent"
                 sx={{
                     display: { xs: 'none', md: 'block' },
-                    '& .MuiDrawer-paper': { 
-                        boxSizing: 'border-box', 
+                    '& .MuiDrawer-paper': {
+                        boxSizing: 'border-box',
                         width: DRAWER_WIDTH,
                         borderRight: `1px solid ${theme.palette.mode === 'dark' ? '#283039' : theme.palette.divider}`,
                         backgroundColor: 'transparent'

@@ -24,7 +24,7 @@ export const SOLICITUDES_DOCUMENTOS_QUERY_KEY = ['colaborador-documento-solicitu
 
 export type EstadoRevisionFilter = '' | 'pendiente' | 'aprobada' | 'rechazada';
 
-export type SolicitudRevisionAccion = 'approve' | 'reject';
+export type SolicitudRevisionAccion = 'approve' | 'reject' | 'view';
 
 export interface SolicitudReviewTarget {
     solicitud: ColaboradorDocumentoSolicitud;
@@ -145,7 +145,7 @@ export function useSolicitudesDocumentosPageController() {
         values: ReviewSolicitudDocumentoForm,
         setError: UseFormSetError<ReviewSolicitudDocumentoForm>,
     ) => {
-        if (!reviewTarget) {
+        if (!reviewTarget || reviewTarget.accion === 'view') {
             return;
         }
 

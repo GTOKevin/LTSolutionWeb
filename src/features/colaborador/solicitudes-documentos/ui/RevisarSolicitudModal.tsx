@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Box,
     Button,
@@ -15,11 +15,15 @@ import {
     CheckCircleOutline,
     FactCheck as FactCheckIcon,
     InsertDriveFileOutlined,
+    VisibilityOutlined,
 } from '@mui/icons-material';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm, type UseFormSetError } from 'react-hook-form';
 import type { ColaboradorDocumentoSolicitud } from '@entities/colaborador-documento/model/types';
 import { formatDateLong, formatDateTime } from '@shared/utils/date-utils';
+import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
+import { EvidenceGallery } from '@shared/components/ui/EvidenceGallery';
+import { isPreviewableImageUrl } from '@shared/utils/file-utils';
 import {
     getReviewSolicitudDocumentoDefaultValues,
     reviewSolicitudDocumentoSchema,
@@ -55,137 +59,258 @@ export function RevisarSolicitudModal({ target, isProcessing, onClose, onSubmit,
         defaultValues: getReviewSolicitudDocumentoDefaultValues(),
     });
 
+    const [preview, setPreview] = useState<{
+        previewUrl: string | null;
+        previewUrls: string[];
+        currentIndex: number;
+    }>({
+        previewUrl: null,
+        previewUrls: [],
+        currentIndex: 0,
+    });
+    const [archivoImagen, setArchivoImagen] = useState<{ solicitudId: number; isImage: boolean } | null>(null);
+
     useEffect(() => {
         if (target) {
             form.reset(getReviewSolicitudDocumentoDefaultValues());
         }
     }, [target, form]);
 
+    useEffect(() => {
+        if (!target || target.accion !== 'view') {
+            return;
+        }
+
+        const rutaArchivo = target.solicitud.rutaArchivoPropuesta;
+        if (!rutaArchivo) {
+            return;
+        }
+
+        let cancelled = false;
+        void isPreviewableImageUrl(rutaArchivo).then((isImage) => {
+            if (!cancelled) {
+                setArchivoImagen({ solicitudId: target.solicitud.solicitudId, isImage });
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [target]);
+
     if (!target) {
         return null;
     }
 
     const { solicitud, accion } = target;
+    const isView = accion === 'view';
     const isApprove = accion === 'approve';
+    const rutaArchivo = solicitud.rutaArchivoPropuesta;
+    const isArchivoImagen = isView && archivoImagen !== null && archivoImagen.solicitudId === solicitud.solicitudId
+        ? archivoImagen.isImage
+        : null;
 
     return (
-        <Dialog
-            open={Boolean(target)}
-            onClose={onClose}
-            fullWidth
-            maxWidth="sm"
-            PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}
-        >
-            <DialogTitle sx={{ px: 4, py: 3, borderBottom: '1px solid', borderColor: 'divider' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box
-                        sx={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 2,
-                            bgcolor: isApprove ? 'success.50' : 'error.50',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: isApprove ? 'success.main' : 'error.main',
-                        }}
-                    >
-                        <FactCheckIcon />
-                    </Box>
-                    <Box>
-                        <Typography variant="h6" fontWeight="bold" color="text.primary" sx={{ letterSpacing: '-0.02em' }}>
-                            {isApprove ? 'Aprobar Solicitud' : 'Rechazar Solicitud'}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Revise los datos propuestos antes de confirmar.
-                        </Typography>
-                    </Box>
-                </Box>
-            </DialogTitle>
-            <DialogContent sx={{ p: 4 }}>
-                <Stack spacing={3} sx={{ mt: 1 }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                        <ReviewValue label="Colaborador" value={solicitud.colaboradorNombre} />
-                        <ReviewValue label="Tipo de Documento" value={solicitud.tipoDocumentoNombre} />
-                        <ReviewValue label="Fecha de Solicitud" value={formatDateTime(solicitud.fechaRegistro)} />
-                        <ReviewValue label="Motivo" value={solicitud.motivoSolicitud || 'Sin motivo'} />
-                    </Box>
-
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                        <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'action.hover' }}>
-                            <Typography variant="overline" fontWeight="bold" color="text.secondary" sx={{ display: 'block', mb: 1, letterSpacing: '0.1em' }}>
-                                DATOS ACTUALES
-                            </Typography>
-                            <Stack spacing={1}>
-                                <ReviewValue label="Número" value={solicitud.numeroDocumentoActual || '—'} />
-                                <ReviewValue label="Emisión" value={solicitud.fechaEmisionActual ? formatDateLong(solicitud.fechaEmisionActual) : '—'} />
-                                <ReviewValue label="Vencimiento" value={solicitud.fechaVencimientoActual ? formatDateLong(solicitud.fechaVencimientoActual) : '—'} />
-                            </Stack>
+        <>
+            <Dialog
+                open={Boolean(target)}
+                onClose={onClose}
+                fullWidth
+                maxWidth="sm"
+                PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}
+            >
+                <DialogTitle sx={{ px: 4, py: 3, borderBottom: '1px solid', borderColor: 'divider' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box
+                            sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 2,
+                                bgcolor: isView ? 'info.50' : isApprove ? 'success.50' : 'error.50',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: isView ? 'info.main' : isApprove ? 'success.main' : 'error.main',
+                            }}
+                        >
+                            {isView ? <VisibilityOutlined /> : <FactCheckIcon />}
                         </Box>
-                        <Box sx={{ p: 2, border: '1px solid', borderColor: 'primary.main', borderRadius: 2, bgcolor: 'primary.50' }}>
-                            <Typography variant="overline" fontWeight="bold" color="primary.main" sx={{ display: 'block', mb: 1, letterSpacing: '0.1em' }}>
-                                DATOS PROPUESTOS
-                            </Typography>
-                            <Stack spacing={1}>
-                                <ReviewValue label="Número" value={solicitud.numeroDocumentoPropuesto || '—'} />
-                                <ReviewValue label="Emisión" value={solicitud.fechaEmisionPropuesta ? formatDateLong(solicitud.fechaEmisionPropuesta) : '—'} />
-                                <ReviewValue label="Vencimiento" value={solicitud.fechaVencimientoPropuesta ? formatDateLong(solicitud.fechaVencimientoPropuesta) : '—'} />
-                            </Stack>
-                        </Box>
-                    </Box>
-
-                    {solicitud.rutaArchivoPropuesta ? (
                         <Box>
-                            <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<InsertDriveFileOutlined />}
-                                onClick={() => onPreviewFile(solicitud)}
-                                sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
-                            >
-                                Ver archivo propuesto
-                            </Button>
+                            <Typography variant="h6" fontWeight="bold" color="text.primary" sx={{ letterSpacing: '-0.02em' }}>
+                                {isView ? 'Detalle de Solicitud' : isApprove ? 'Aprobar Solicitud' : 'Rechazar Solicitud'}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {isView
+                                    ? 'Revisa la información completa de la solicitud y el documento propuesto.'
+                                    : 'Revise los datos propuestos antes de confirmar.'}
+                            </Typography>
                         </Box>
-                    ) : null}
-
-                    <Box>
-                        <Typography variant="overline" fontWeight="bold" color="text.primary" sx={{ display: 'block', mb: 1, letterSpacing: '0.1em' }}>
-                            COMENTARIO DE REVISIÓN
-                        </Typography>
-                        <Controller
-                            control={form.control}
-                            name="comentarioRevision"
-                            render={({ field, fieldState }) => (
-                                <TextField
-                                    {...field}
-                                    fullWidth
-                                    multiline
-                                    minRows={3}
-                                    placeholder={isApprove ? 'Comentario opcional para la aprobación...' : 'Indique el motivo del rechazo...'}
-                                    error={Boolean(fieldState.error)}
-                                    helperText={fieldState.error?.message}
-                                    sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'action.hover', borderRadius: 2 } }}
-                                />
-                            )}
-                        />
                     </Box>
-                </Stack>
-            </DialogContent>
-            <DialogActions sx={{ px: 4, py: 3, bgcolor: 'action.hover', borderTop: '1px solid', borderColor: 'divider', gap: 2 }}>
-                <Button onClick={onClose} disabled={isProcessing} sx={{ fontWeight: 'bold', color: 'text.primary', '&:hover': { bgcolor: 'action.selected' } }}>
-                    Cancelar
-                </Button>
-                <Button
-                    variant="contained"
-                    color={isApprove ? 'success' : 'error'}
-                    disabled={isProcessing}
-                    onClick={form.handleSubmit((values) => onSubmit(values, form.setError))}
-                    endIcon={isApprove ? <CheckCircleOutline /> : <CancelOutlined />}
-                    sx={{ px: 4, py: 1.5, borderRadius: 2, fontWeight: 'bold', boxShadow: 'none' }}
-                >
-                    {isProcessing ? 'Procesando...' : isApprove ? 'Confirmar Aprobación' : 'Confirmar Rechazo'}
-                </Button>
-            </DialogActions>
-        </Dialog>
+                </DialogTitle>
+                <DialogContent sx={{ p: 4 }}>
+                    <Stack spacing={3} sx={{ mt: 1 }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                            <ReviewValue label="Colaborador" value={solicitud.colaboradorNombre} />
+                            <ReviewValue label="Tipo de Documento" value={solicitud.tipoDocumentoNombre} />
+                            <ReviewValue label="Fecha de Solicitud" value={formatDateTime(solicitud.fechaRegistro)} />
+                            <ReviewValue label="Motivo" value={solicitud.motivoSolicitud || 'Sin motivo'} />
+                            {isView ? (
+                                <ReviewValue
+                                    label="Estado"
+                                    value={solicitud.estadoRevision.charAt(0).toUpperCase() + solicitud.estadoRevision.slice(1)}
+                                />
+                            ) : null}
+                        </Box>
+
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                            <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'action.hover' }}>
+                                <Typography variant="overline" fontWeight="bold" color="text.secondary" sx={{ display: 'block', mb: 1, letterSpacing: '0.1em' }}>
+                                    DATOS ACTUALES
+                                </Typography>
+                                <Stack spacing={1}>
+                                    <ReviewValue label="Número" value={solicitud.numeroDocumentoActual || '—'} />
+                                    <ReviewValue label="Emisión" value={solicitud.fechaEmisionActual ? formatDateLong(solicitud.fechaEmisionActual) : '—'} />
+                                    <ReviewValue label="Vencimiento" value={solicitud.fechaVencimientoActual ? formatDateLong(solicitud.fechaVencimientoActual) : '—'} />
+                                </Stack>
+                            </Box>
+                            <Box sx={{ p: 2, border: '1px solid', borderColor: 'primary.main', borderRadius: 2, bgcolor: 'primary.50' }}>
+                                <Typography variant="overline" fontWeight="bold" color="primary.main" sx={{ display: 'block', mb: 1, letterSpacing: '0.1em' }}>
+                                    DATOS PROPUESTOS
+                                </Typography>
+                                <Stack spacing={1}>
+                                    <ReviewValue label="Número" value={solicitud.numeroDocumentoPropuesto || '—'} />
+                                    <ReviewValue label="Emisión" value={solicitud.fechaEmisionPropuesta ? formatDateLong(solicitud.fechaEmisionPropuesta) : '—'} />
+                                    <ReviewValue label="Vencimiento" value={solicitud.fechaVencimientoPropuesta ? formatDateLong(solicitud.fechaVencimientoPropuesta) : '—'} />
+                                </Stack>
+                            </Box>
+                        </Box>
+
+                        {rutaArchivo ? (
+                            <Box>
+                                {isView && isArchivoImagen === true ? (
+                                    <EvidenceGallery
+                                        items={[{ url: rutaArchivo, alt: 'Documento propuesto' }]}
+                                        onPreview={(index) => {
+                                            setPreview({
+                                                previewUrl: rutaArchivo,
+                                                previewUrls: [rutaArchivo],
+                                                currentIndex: index,
+                                            });
+                                        }}
+                                    />
+                                ) : (
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={<InsertDriveFileOutlined />}
+                                        onClick={() => onPreviewFile(solicitud)}
+                                        sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                                    >
+                                        Ver archivo propuesto
+                                    </Button>
+                                )}
+                            </Box>
+                        ) : null}
+
+                        {isView ? (
+                            <Box
+                                sx={{
+                                    bgcolor: 'action.hover',
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    borderRadius: 2,
+                                    px: 1.75,
+                                    py: 1.5,
+                                }}
+                            >
+                                <Typography variant="caption" fontWeight={600} color="text.primary" sx={{ textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                    Resolución
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                    {solicitud.fechaRevision
+                                        ? `Resuelta el ${formatDateTime(solicitud.fechaRevision)}`
+                                        : solicitud.aprobada == null
+                                            ? 'Pendiente de resolución'
+                                            : 'Sin fecha de resolución'}
+                                </Typography>
+                                {solicitud.comentarioRevision ? (
+                                    <>
+                                        <Typography
+                                            variant="caption"
+                                            fontWeight={600}
+                                            color="text.primary"
+                                            sx={{ textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', mt: 1.5 }}
+                                        >
+                                            Comentario del revisor
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                            {solicitud.comentarioRevision}
+                                        </Typography>
+                                    </>
+                                ) : null}
+                            </Box>
+                        ) : (
+                            <Box>
+                                <Typography variant="overline" fontWeight="bold" color="text.primary" sx={{ display: 'block', mb: 1, letterSpacing: '0.1em' }}>
+                                    COMENTARIO DE REVISIÓN
+                                </Typography>
+                                <Controller
+                                    control={form.control}
+                                    name="comentarioRevision"
+                                    render={({ field, fieldState }) => (
+                                        <TextField
+                                            {...field}
+                                            fullWidth
+                                            multiline
+                                            minRows={3}
+                                            placeholder={isApprove ? 'Comentario opcional para la aprobación...' : 'Indique el motivo del rechazo...'}
+                                            error={Boolean(fieldState.error)}
+                                            helperText={fieldState.error?.message}
+                                            sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'action.hover', borderRadius: 2 } }}
+                                        />
+                                    )}
+                                />
+                            </Box>
+                        )}
+                    </Stack>
+                </DialogContent>
+                <DialogActions sx={{ px: 4, py: 3, bgcolor: 'action.hover', borderTop: '1px solid', borderColor: 'divider', gap: 2 }}>
+                    {isView ? (
+                        <Button
+                            variant="contained"
+                            onClick={onClose}
+                            sx={{ px: 4, py: 1.5, borderRadius: 2, fontWeight: 'bold', boxShadow: 'none' }}
+                        >
+                            Cerrar
+                        </Button>
+                    ) : (
+                        <>
+                            <Button onClick={onClose} disabled={isProcessing} sx={{ fontWeight: 'bold', color: 'text.primary', '&:hover': { bgcolor: 'action.selected' } }}>
+                                Cancelar
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color={isApprove ? 'success' : 'error'}
+                                disabled={isProcessing}
+                                onClick={form.handleSubmit((values) => onSubmit(values, form.setError))}
+                                endIcon={isApprove ? <CheckCircleOutline /> : <CancelOutlined />}
+                                sx={{ px: 4, py: 1.5, borderRadius: 2, fontWeight: 'bold', boxShadow: 'none' }}
+                            >
+                                {isProcessing ? 'Procesando...' : isApprove ? 'Confirmar Aprobación' : 'Confirmar Rechazo'}
+                            </Button>
+                        </>
+                    )}
+                </DialogActions>
+            </Dialog>
+
+            <DocumentPreviewDialog
+                open={Boolean(preview.previewUrl)}
+                onClose={() => setPreview({ previewUrl: null, previewUrls: [], currentIndex: 0 })}
+                previewUrl={preview.previewUrl}
+                previewUrls={preview.previewUrls}
+                initialIndex={preview.currentIndex}
+                title={`${solicitud.tipoDocumentoNombre} — ${solicitud.colaboradorNombre}`}
+            />
+        </>
     );
 }
