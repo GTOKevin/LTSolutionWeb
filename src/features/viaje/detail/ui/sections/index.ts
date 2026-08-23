@@ -1,4 +1,8 @@
 export { ViajeInfoGeneralSection } from './ViajeInfoGeneralSection';
+export { ViajeInfoServiceSection } from './ViajeInfoServiceSection';
+export { ViajeRutaSection } from './ViajeRutaSection';
+export { ViajeSeguimientoSection } from './ViajeSeguimientoSection';
+export { ViajeCargaSection } from './ViajeCargaSection';
 export { ViajeGastosSection } from './ViajeGastosSection';
 export { ViajeGuiasSection } from './ViajeGuiasSection';
 export { ViajePermisosSection } from './ViajePermisosSection';

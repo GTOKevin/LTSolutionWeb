@@ -57,8 +57,8 @@ export function ViajeDetailAccordions({ viaje, tiposIncidente, isViewOnly = true
         }));
     };
 
-    const { data: incidentesData } = useViajeIncidentes(viaje.viajeID, 1, 100);
-    const incidentesCount = incidentesData?.items?.length ?? 0;
+    const { data: incidentesData } = useViajeIncidentes(viaje.viajeID, 1, 1);
+    const incidentesCount = incidentesData?.total ?? 0;
 
     const accordionStyle = {
         borderRadius: '12px !important',

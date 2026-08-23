@@ -4,6 +4,17 @@ export function buildRutasArchivo(values: string[]): string[] {
         .filter((value) => Boolean(value));
 }
 
+export function downloadBlob(blob: Blob, filename: string) {
+    const objectUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
+}
+
 export function isImageUrl(url: string | null | undefined): boolean {
     if (!url) return false;
     return /\.(png|jpg|jpeg|gif|webp)(\?.*)?$/i.test(url);

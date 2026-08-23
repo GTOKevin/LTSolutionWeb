@@ -1,4 +1,13 @@
 import { formatDateCustom, formatDateTime, getCurrentDateISO, getCurrentTimeISO } from '@shared/utils/date-utils';
+import {
+    resolveViajePermisoStatus,
+    type ViajePermisoStatus,
+} from '@entities/viaje/model/permiso-status';
+
+// Re-export del resolutor de vigencia neutral (dominio viaje) para compatibilidad
+// con los consumidores del portal empleado.
+export { resolveViajePermisoStatus as resolveEmployeeViajePermisoStatus };
+export type { ViajePermisoStatus as EmployeeViajePermisoStatus };
 
 export const employeeViajeDetailStyles = {
     heroHeader: {
@@ -69,21 +78,6 @@ export function getCurrentEmployeeViajeTimeInput() {
     return getCurrentTimeISO();
 }
 
-function resolveDateOnlyUtcTime(value: string) {
-    const [year, month, day] = value.split('-').map(Number);
-
-    if (!year || !month || !day) {
-        return null;
-    }
-
-    return Date.UTC(year, month - 1, day);
-}
-
-export interface EmployeeViajePermisoStatus {
-    label: string;
-    color: 'success' | 'warning' | 'error';
-}
-
 export type EmployeeViajeTone = 'success' | 'warning' | 'error' | 'info' | 'neutral';
 
 export function resolveEmployeeViajeToneColors(tone: EmployeeViajeTone) {
@@ -119,44 +113,4 @@ export function resolveEmployeeViajeToneColors(tone: EmployeeViajeTone) {
                 border: 'divider',
             };
     }
-}
-
-export function resolveEmployeeViajePermisoStatus(fechaVencimiento?: string | null): EmployeeViajePermisoStatus {
-    if (!fechaVencimiento) {
-        return {
-            label: 'Vigente',
-            color: 'success',
-        };
-    }
-
-    const today = resolveDateOnlyUtcTime(getCurrentDateISO());
-    const dueDate = resolveDateOnlyUtcTime(fechaVencimiento);
-
-    if (!today || !dueDate) {
-        return {
-            label: 'Vigente',
-            color: 'success',
-        };
-    }
-
-    const diffDays = Math.floor((dueDate - today) / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) {
-        return {
-            label: 'Vencido',
-            color: 'error',
-        };
-    }
-
-    if (diffDays <= 2) {
-        return {
-            label: 'Por vencer',
-            color: 'warning',
-        };
-    }
-
-    return {
-        label: 'Vigente',
-        color: 'success',
-    };
 }

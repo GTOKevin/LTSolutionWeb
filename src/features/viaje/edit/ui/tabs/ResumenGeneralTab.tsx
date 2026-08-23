@@ -428,7 +428,6 @@ export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving 
 
                     <Box sx={{ display: 'flex', gap: 4 }}>
                         <FormControlLabel
-                            disabled={true}
                             control={
                                 <Switch
                                     checked={formData.requiereEscolta}

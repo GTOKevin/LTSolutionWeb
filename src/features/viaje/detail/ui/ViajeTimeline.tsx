@@ -6,6 +6,7 @@ import {
     isViajeDescargando,
     isViajeTransito,
 } from '@entities/viaje/model/status';
+import { formatDateShort } from '@/shared/utils/date-utils';
 
 interface ViajeTimelineProps {
     viaje: ViajeDetail;
@@ -15,22 +16,22 @@ export function ViajeTimeline({ viaje }: ViajeTimelineProps) {
     const steps = [
         {
             label: 'Programado',
-            description: `El viaje fue programado para el ${new Date(viaje.fechaCarga).toLocaleDateString()}.`,
+            description: `El viaje fue programado para el ${formatDateShort(viaje.fechaCarga)}.`,
             key: 'agendado'
         },
         {
             label: 'En Ruta',
-            description: viaje.fechaPartida ? `Salió a ruta el ${new Date(viaje.fechaPartida).toLocaleDateString()}.` : 'Pendiente de salida.',
+            description: viaje.fechaPartida ? `Salió a ruta el ${formatDateShort(viaje.fechaPartida)}.` : 'Pendiente de salida.',
             key: 'transito'
         },
         {
             label: 'Descargando',
-            description: viaje.fechaLlegada ? `Llegó a destino el ${new Date(viaje.fechaLlegada).toLocaleDateString()}.` : 'Pendiente de llegada.',
+            description: viaje.fechaLlegada ? `Llegó a destino el ${formatDateShort(viaje.fechaLlegada)}.` : 'Pendiente de llegada.',
             key: 'descargando'
         },
         {
             label: 'Completado',
-            description: viaje.fechaDescarga ? `Descarga completada el ${new Date(viaje.fechaDescarga).toLocaleDateString()}.` : 'Pendiente de descarga.',
+            description: viaje.fechaDescarga ? `Descarga completada el ${formatDateShort(viaje.fechaDescarga)}.` : 'Pendiente de descarga.',
             key: 'completado'
         }
     ];

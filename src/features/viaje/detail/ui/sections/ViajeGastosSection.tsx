@@ -11,19 +11,19 @@ import {
     useTheme,
 } from '@mui/material';
 import {
-    Description as DescriptionIcon,
     GridOn as GridOnIcon,
     LocalAtm as LocalAtmIcon,
     LocalGasStation as LocalGasStationIcon,
     Payments as PaymentsIcon,
     PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
-import type { Viaje, ViajeGastoCurrencyTotal } from '@/entities/viaje/model/types';
+import type { Viaje, ViajeGasto, ViajeGastoCurrencyTotal } from '@/entities/viaje/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { formatCurrencyAmount, formatDecimalAmount } from '@/shared/utils/format-utils';
 import { useViajeGastos } from '@features/viaje/hooks/useViajeGastos';
 import { useViajeGastoOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { useViajeGastosReports } from '../../hooks/useViajeGastosReports';
+import { SimpleDataTable, type SimpleDataTableColumn } from '../shared/SimpleDataTable';
 
 interface ViajeGastosSectionProps {
     viaje: Pick<Viaje, 'viajeID'>;
@@ -174,88 +174,89 @@ export function ViajeGastosSection({ viaje }: ViajeGastosSectionProps) {
                     <Paper variant="outlined" sx={{ p: 4, borderRadius: 2, textAlign: 'center' }}>
                         <CircularProgress size={24} />
                     </Paper>
-                ) : gastos.length === 0 ? (
-                    <Paper variant="outlined" sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
-                        <DescriptionIcon color="disabled" sx={{ fontSize: 36, mb: 1 }} />
-                        <Typography variant="body2" color="text.secondary">
-                            No hay gastos registrados para este viaje.
-                        </Typography>
-                    </Paper>
                 ) : (
-                    <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                        <Box sx={{ overflowX: 'auto' }}>
-                            <Box component="table" sx={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
-                                <Box component="thead">
-                                    <Box component="tr" sx={{ bgcolor: alpha(theme.palette.background.default, 0.7) }}>
-                                        {['Tipo', 'Descripción', 'Fecha', 'Comprobante', 'Monto'].map((header, idx) => (
-                                            <Box
-                                                component="th"
-                                                key={header}
-                                                sx={{
-                                                    px: 2,
-                                                    py: 1.5,
-                                                    typography: 'overline',
-                                                    fontWeight: 800,
-                                                    color: 'text.secondary',
-                                                    letterSpacing: 1,
-                                                    textAlign: idx === 4 ? 'right' : 'left',
-                                                }}
-                                            >
-                                                {header}
-                                            </Box>
-                                        ))}
-                                    </Box>
-                                </Box>
-                                <Box component="tbody" sx={{ '& tr:hover': { bgcolor: alpha(theme.palette.primary.main, 0.02) } }}>
-                                    {gastos.map((gasto) => (
-                                        <Box component="tr" key={gasto.viajeGastoID} sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
-                                            <Box component="td" sx={{ px: 2, py: 1.5 }}>
-                                                <Typography variant="body2" fontWeight={700}>
-                                                    {gasto.gasto?.nombre || 'Otro'}
-                                                </Typography>
-                                            </Box>
-                                            <Box component="td" sx={{ px: 2, py: 1.5 }}>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {gasto.descripcion || '—'}
-                                                </Typography>
-                                            </Box>
-                                            <Box component="td" sx={{ px: 2, py: 1.5 }}>
-                                                <Typography variant="body2">
-                                                    {formatDateShort(gasto.fechaGasto)}
-                                                </Typography>
-                                            </Box>
-                                            <Box component="td" sx={{ px: 2, py: 1.5 }}>
-                                                {gasto.comprobante ? (
-                                                    <Chip
-                                                        label={gasto.numeroComprobante || 'SÍ'}
-                                                        size="small"
-                                                        variant="outlined"
-                                                        color="success"
-                                                        sx={{ fontWeight: 700, fontSize: '0.7rem' }}
-                                                    />
-                                                ) : (
-                                                    <Typography variant="caption" color="text.disabled">No</Typography>
-                                                )}
-                                            </Box>
-                                            <Box component="td" sx={{ px: 2, py: 1.5, textAlign: 'right' }}>
-                                                <Typography variant="body2" fontWeight={800}>
-                                                    {formatCurrencyAmount(Number(gasto.monto), resolveMonedaDescriptor(gasto.monedaID))}
-                                                </Typography>
-                                                {gasto.combustible && gasto.galones ? (
-                                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                                        {gasto.galones} Gal.
-                                                    </Typography>
-                                                ) : null}
-                                            </Box>
-                                        </Box>
-                                    ))}
-                                </Box>
-                            </Box>
-                        </Box>
-                    </Paper>
+                    <GastosTable
+                        gastos={gastos}
+                        resolveMonedaDescriptor={resolveMonedaDescriptor}
+                    />
                 )}
             </Box>
         </Stack>
+    );
+}
+
+function GastosTable({
+    gastos,
+    resolveMonedaDescriptor,
+}: {
+    gastos: ViajeGasto[];
+    resolveMonedaDescriptor: (monedaId: number) => { codigo?: string; nombre?: string };
+}) {
+    const columns: SimpleDataTableColumn<ViajeGasto>[] = [
+        {
+            header: 'Tipo',
+            render: (gasto) => (
+                <Typography variant="body2" fontWeight={700}>
+                    {gasto.gasto?.nombre || 'Otro'}
+                </Typography>
+            ),
+        },
+        {
+            header: 'Descripción',
+            render: (gasto) => (
+                <Typography variant="body2" color="text.secondary">
+                    {gasto.descripcion || '—'}
+                </Typography>
+            ),
+        },
+        {
+            header: 'Fecha',
+            render: (gasto) => (
+                <Typography variant="body2">
+                    {formatDateShort(gasto.fechaGasto)}
+                </Typography>
+            ),
+        },
+        {
+            header: 'Comprobante',
+            render: (gasto) =>
+                gasto.comprobante ? (
+                    <Chip
+                        label={gasto.numeroComprobante || 'SÍ'}
+                        size="small"
+                        variant="outlined"
+                        color="success"
+                        sx={{ fontWeight: 700, fontSize: '0.7rem' }}
+                    />
+                ) : (
+                    <Typography variant="caption" color="text.disabled">No</Typography>
+                ),
+        },
+        {
+            header: 'Monto',
+            align: 'right',
+            render: (gasto) => (
+                <>
+                    <Typography variant="body2" fontWeight={800}>
+                        {formatCurrencyAmount(Number(gasto.monto), resolveMonedaDescriptor(gasto.monedaID))}
+                    </Typography>
+                    {gasto.combustible && gasto.galones ? (
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                            {gasto.galones} Gal.
+                        </Typography>
+                    ) : null}
+                </>
+            ),
+        },
+    ];
+
+    return (
+        <SimpleDataTable
+            columns={columns}
+            rows={gastos}
+            rowKey={(gasto) => gasto.viajeGastoID}
+            emptyMessage="No hay gastos registrados para este viaje."
+        />
     );
 }
 

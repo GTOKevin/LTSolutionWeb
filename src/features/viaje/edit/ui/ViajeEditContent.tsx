@@ -48,24 +48,24 @@ export function ViajeEditContent({
                     isViewOnly={isViewOnly}
                 />
             </TabPanel>
-            <TabPanel value={activeTab} index={1}>
+            {/* <TabPanel value={activeTab} index={1}>
                 <PlanificacionRutaTab viaje={viaje} isViewOnly={isViewOnly} />
-            </TabPanel>
-            <TabPanel value={activeTab} index={2}>
+            </TabPanel> */}
+            <TabPanel value={activeTab} index={1}>
                 <GuiasTab viaje={viaje} isViewOnly={isViewOnly} />
             </TabPanel>
-            <TabPanel value={activeTab} index={3}>
+            <TabPanel value={activeTab} index={2}>
                 <GastosTab viaje={viaje} isViewOnly={isViewOnly} />
             </TabPanel>
-            <TabPanel value={activeTab} index={4}>
+            <TabPanel value={activeTab} index={3}>
                 <Box sx={{ p: 2 }}>
                     <ViajeIncidente viewOnly={isViewOnly} tiposIncidente={tiposIncidente} viajeId={viajeId} />
                 </Box>
             </TabPanel>
-            <TabPanel value={activeTab} index={5}>
+            <TabPanel value={activeTab} index={4}>
                 <PermisosTab viaje={viaje} isViewOnly={isViewOnly} />
             </TabPanel>
-            <TabPanel value={activeTab} index={6}>
+            <TabPanel value={activeTab} index={5}>
                 <EscoltaTab viaje={viaje} isViewOnly={isViewOnly} />
             </TabPanel>
         </>

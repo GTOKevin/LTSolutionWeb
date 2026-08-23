@@ -2,17 +2,7 @@ import { useCallback, useState } from 'react';
 import { viajeGastoApi } from '@entities/viaje/api/viaje-gasto.api';
 import { useToast } from '@/shared/components/ui/Toast';
 import { notifyGenericError } from '@/shared/utils/api-errors';
-
-function downloadBlob(blob: Blob, filename: string) {
-    const objectUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = objectUrl;
-    link.setAttribute('download', filename);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
-}
+import { downloadBlob } from '@/shared/utils/file-utils';
 
 export function useViajeGastosReports() {
     const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
