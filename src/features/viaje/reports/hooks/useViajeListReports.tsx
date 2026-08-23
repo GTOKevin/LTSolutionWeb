@@ -6,6 +6,7 @@ import { viajeApi } from '@entities/viaje/api/viaje.api';
 import type { ViajeFilters as ViajeFiltersType } from '@entities/viaje/model/types';
 import { useToast } from '@/shared/components/ui/Toast';
 import { notifyGenericError } from '@/shared/utils/api-errors';
+import { downloadBlob } from '@/shared/utils/file-utils';
 
 export function useViajeListReports() {
     const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
@@ -39,8 +40,6 @@ export function useViajeListReports() {
     }, [showToast]);
 
     const handleExportListPdf = useCallback(async (filters: ViajeFiltersType) => {
-        let objectUrl: string | null = null;
-
         try {
             setLoadingMessage('Generando reporte PDF...');
             if (!filters.fechaInicio || !filters.fechaFin) {
@@ -60,20 +59,10 @@ export function useViajeListReports() {
             const blob = await pdf(
                 <ViajeListPdf data={reportData} fechaInicio={filters.fechaInicio} fechaFin={filters.fechaFin} />,
             ).toBlob();
-
-            objectUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = objectUrl;
-            link.setAttribute('download', `Reporte_Viajes_${filters.fechaInicio}_${filters.fechaFin}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+            downloadBlob(blob, `Reporte_Viajes_${filters.fechaInicio}_${filters.fechaFin}.pdf`);
         } catch (error) {
             notifyGenericError(showToast, 'Reporte de viajes', 'No se pudo exportar el listado en PDF.', error, 'Error exporting PDF list:');
         } finally {
-            if (objectUrl) {
-                window.URL.revokeObjectURL(objectUrl);
-            }
             setLoadingMessage(null);
         }
     }, [showToast]);

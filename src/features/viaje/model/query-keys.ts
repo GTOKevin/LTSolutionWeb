@@ -4,7 +4,8 @@ export const VIAJE_QUERY_KEYS = {
     lists: () => ['viajes'] as const,
     list: (filters: ViajeFiltersType) => ['viajes', filters] as const,
     listPage: (page: number, size: number, filters: ViajeFiltersType) => ['viajes', page, size, filters] as const,
-    detail: (id: number) => ['viaje', id] as const,
+    detail: (id: number) => ['viaje', id, 'detail'] as const,
+    edit: (id: number) => ['viaje', id] as const,
     
     // Sub-modules
     gastos: (viajeId: number, page?: number, size?: number) => page && size ? ['viaje-gastos', viajeId, page, size] as const : ['viaje-gastos', viajeId] as const,

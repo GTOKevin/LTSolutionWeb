@@ -14,6 +14,7 @@ import { useViajeGuias, useDeleteViajeGuia } from '@features/viaje/hooks/useViaj
 import { useViajeGuiaOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { buildInternalFileUrl } from '@/shared/config/env';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
+import { downloadFileFromUrl } from '@/shared/utils/file-utils';
 import { logger } from '@/shared/utils/logger';
 
 interface GuiasListProps {
@@ -46,7 +47,7 @@ export function GuiasList({ viajeID, isViewOnly }: GuiasListProps) {
     const handleDownload = (path: string) => {
         const url = buildInternalFileUrl(path);
         if (url) {
-            window.open(url, '_blank');
+            void downloadFileFromUrl(url);
         }
     };
 

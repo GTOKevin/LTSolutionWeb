@@ -28,6 +28,7 @@ import { useViajeIncidentes, useDeleteViajeIncidente } from '@/features/viaje/ho
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
 import { formatDateShort, formatTime } from '@/shared/utils/date-utils';
 import { buildInternalFileUrl } from '@/shared/config/env';
+import { downloadFileFromUrl } from '@/shared/utils/file-utils';
 
 interface Props {
     viajeId: number;
@@ -98,7 +99,7 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
     const handleDownload = (path: string) => {
         const url = buildInternalFileUrl(path);
         if (url) {
-            window.open(url, '_blank', 'noopener,noreferrer');
+            void downloadFileFromUrl(url);
         }
     };
 

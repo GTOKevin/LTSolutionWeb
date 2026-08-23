@@ -155,6 +155,7 @@ export interface ViajeGasto {
     gasto?: {
         gastoID: number;
         descripcion: string;
+        nombre: string;
     };
     moneda?: {
         monedaID: number;
@@ -311,7 +312,7 @@ export interface Viaje {
     ejesCarreta: number | null;
     eliminado: boolean;
     facturado?: boolean;
-    
+
     // Navigation properties for display
     cliente?: {
         clienteID: number;
@@ -360,6 +361,82 @@ export interface Viaje {
     viajePermisos: ViajePermiso[];
     viajeEscolta: ViajeEscolta[];
     viajeControlRuta: ViajeRutaDto[];
+}
+
+export interface ViajeMercaderiaDetail {
+    viajeMercaderiaID: number;
+    mercaderiaDescripcion: string | null;
+    descripcion: string | null;
+    largo: number | null;
+    ancho: number | null;
+    alto: number | null;
+    peso: number | null;
+    tipoPesoDescripcion: string | null;
+}
+
+export interface ViajeGuiaDetail {
+    viajeGuiaID: number;
+    tipoGuiaDescripcion: string | null;
+    serie: string;
+    numero: string;
+    rutaArchivo: string | null;
+}
+
+export interface ViajePermisoDetail {
+    viajePermisoID: number;
+    fechaVigencia: string;
+    fechaVencimiento: string | null;
+    rutaArchivo: string | null;
+}
+
+export interface ViajeEscoltaDetail {
+    viajeEscoltaID: number;
+    tercero: boolean | null;
+    nombreConductor: string | null;
+    empresa: string | null;
+    placa: string | null;
+    colaboradorNombreCompleto: string | null;
+}
+
+export interface ViajeDetail {
+    viajeID: number;
+    codigo: string | null;
+    estadoID: number;
+    estadoNombre: string | null;
+    estadoCodigo: string | null;
+    clienteID: number;
+    clienteRazonSocial: string | null;
+    colaboradorID: number;
+    conductorNombreCompleto: string | null;
+    tractoID: number;
+    tractoPlaca: string | null;
+    carretaID: number | null;
+    carretaPlaca: string | null;
+    origenID: number;
+    origenDescripcion: string | null;
+    direccionOrigen: string | null;
+    destinoID: number;
+    destinoDescripcion: string | null;
+    direccionDestino: string | null;
+    fechaCarga: string;
+    fechaPartida: string | null;
+    fechaLlegada: string | null;
+    fechaDescarga: string | null;
+    fechaLlegadaBase: string | null;
+    kmInicio: number | null;
+    kmLlegada: number | null;
+    kmLlegadaBase: number | null;
+    largo: number | null;
+    ancho: number | null;
+    alto: number | null;
+    peso: number | null;
+    ejesTracto: number;
+    ejesCarreta: number | null;
+    requiereEscolta: boolean | null;
+    mercaderias: ViajeMercaderiaDetail[];
+    guias: ViajeGuiaDetail[];
+    permisos: ViajePermisoDetail[];
+    escoltas: ViajeEscoltaDetail[];
 }
 
 // DTOs for Creation/Update

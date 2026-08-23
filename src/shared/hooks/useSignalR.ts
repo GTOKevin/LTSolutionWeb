@@ -32,6 +32,7 @@ export function useSignalR() {
             // Invalidate queries to fetch the latest state
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.lists() });
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.detail(data.ViajeId) });
+            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.edit(data.ViajeId) });
         };
 
         const handleReceiveNotification = () => {

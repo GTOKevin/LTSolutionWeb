@@ -6,9 +6,12 @@ interface GetViajeEditTabsOptions {
 }
 
 export function getViajeEditTabs({ requiereEscolta }: GetViajeEditTabsOptions) {
+    // NOTA: "Planificación de Ruta" fue desactivada intencionalmente por el
+    // cliente (funcionalidad no requerida por ahora). El array debe mantenerse
+    // alineado con los TabPanels de ViajeEditContent (6 paneles: Resumen,
+    // Guías, Costos, Incidentes, Permisos, Escolta).
     return [
         { label: 'Resumen General' },
-        { label: 'Planificación de Ruta' },
         { label: 'Guías de Remisión' },
         { label: 'Costos' },
         { label: 'Incidentes' },

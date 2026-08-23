@@ -29,7 +29,7 @@ export function ViajeEditPageContent() {
     const tabs = getViajeEditTabs({ requiereEscolta: formData.requiereEscolta });
 
     const { data: viaje, isLoading, isError } = useQuery({
-        queryKey: VIAJE_QUERY_KEYS.detail(viajeId),
+        queryKey: VIAJE_QUERY_KEYS.edit(viajeId),
         queryFn: () => viajeApi.getById(viajeId),
         enabled: !!viajeId && viajeId > 0,
     });
@@ -52,6 +52,7 @@ export function ViajeEditPageContent() {
         mutationFn: (data: UpdateViajeDto) => viajeApi.update(data.viajeID, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.lists() });
+            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.edit(viajeId) });
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.detail(viajeId) });
             showToast({ entity: 'Viaje', action: 'update' });
         },
