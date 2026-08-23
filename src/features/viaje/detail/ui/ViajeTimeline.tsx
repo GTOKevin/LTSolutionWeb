@@ -1,5 +1,5 @@
 import { Box, Typography, Stepper, Step, StepLabel, StepContent } from '@mui/material';
-import type { Viaje } from '@/entities/viaje/model/types';
+import type { ViajeDetail } from '@/entities/viaje/model/types';
 import {
     isViajeAgendado,
     isViajeCompletado,
@@ -8,7 +8,7 @@ import {
 } from '@entities/viaje/model/status';
 
 interface ViajeTimelineProps {
-    viaje: Viaje;
+    viaje: ViajeDetail;
 }
 
 export function ViajeTimeline({ viaje }: ViajeTimelineProps) {

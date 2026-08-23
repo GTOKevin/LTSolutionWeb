@@ -1,12 +1,8 @@
-import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
-import { createResumenGeneralDataFromViaje, type ResumenGeneralData } from '@features/viaje/edit';
 import { useViajeIncidenteOptions } from '@features/viaje/options';
 import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
-
-const READ_ONLY_GENERAL_TAB_CHANGE: (changes: Partial<ResumenGeneralData>) => void = () => undefined;
 
 interface UseViajeDetailPageControllerOptions {
     mode?: 'view';
@@ -19,16 +15,11 @@ export function useViajeDetailPageController({ mode = 'view' }: UseViajeDetailPa
 
     const { data: viaje, isLoading, isError } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.detail(viajeId),
-        queryFn: () => viajeApi.getById(viajeId),
+        queryFn: () => viajeApi.getDetail(viajeId),
         enabled: !!viajeId && viajeId > 0,
     });
 
     const { tiposIncidente } = useViajeIncidenteOptions(true);
-
-    const resumenGeneralData = useMemo(
-        () => createResumenGeneralDataFromViaje(viaje),
-        [viaje]
-    );
 
     return {
         viajeId,
@@ -37,7 +28,5 @@ export function useViajeDetailPageController({ mode = 'view' }: UseViajeDetailPa
         isError,
         isViewOnly,
         tiposIncidente: tiposIncidente || [],
-        resumenGeneralData,
-        onReadOnlyGeneralTabChange: READ_ONLY_GENERAL_TAB_CHANGE,
     };
 }

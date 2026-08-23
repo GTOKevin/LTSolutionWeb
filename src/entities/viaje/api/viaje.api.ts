@@ -1,5 +1,5 @@
 import { httpClient as http } from '@/shared/api/http';
-import type { CreateViajeDto, PagedViajes, UpdateViajeDto, Viaje, ViajeFilters } from '../model/types';
+import type { CreateViajeDto, PagedViajes, UpdateViajeDto, Viaje, ViajeDetail, ViajeFilters } from '../model/types';
 
 export const viajeApi = {
     getAll: async (filters: ViajeFilters) => {
@@ -32,6 +32,11 @@ export const viajeApi = {
 
     getById: async (id: number) => {
         const response = await http.get<Viaje>(`/viaje/${id}`);
+        return response.data;
+    },
+
+    getDetail: async (id: number) => {
+        const response = await http.get<ViajeDetail>(`/viaje/${id}/detail`);
         return response.data;
     },
 

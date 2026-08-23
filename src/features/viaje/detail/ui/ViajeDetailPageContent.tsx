@@ -1,6 +1,24 @@
-import { Alert, Box, Card, CardContent, Chip, CircularProgress, Divider, Stack, Typography, Grid as Grid2 } from '@mui/material';
-import { ResumenGeneralTab, ViajeIncidente } from '@features/viaje/edit';
+import {
+    Alert,
+    Box,
+    Card,
+    CardContent,
+    Chip,
+    CircularProgress,
+    Divider,
+    Stack,
+    Typography,
+    Grid,
+    Button,
+} from '@mui/material';
+import {
+    ArrowBack as ArrowBackIcon,
+    DirectionsCar as DirectionsCarIcon,
+} from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { APP_PATHS } from '@shared/config/app-routes';
 import { ViajeTimeline } from './ViajeTimeline';
+import { ViajeDetailAccordions } from './ViajeDetailAccordions';
 import { useViajeDetailPageController } from '../hooks/useViajeDetailPageController';
 
 interface ViajeDetailPageContentProps {
@@ -8,20 +26,19 @@ interface ViajeDetailPageContentProps {
 }
 
 export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContentProps) {
+    const navigate = useNavigate();
+
     const {
-        viajeId,
         viaje,
         isLoading,
         isError,
         isViewOnly,
         tiposIncidente,
-        resumenGeneralData,
-        onReadOnlyGeneralTabChange,
     } = useViajeDetailPageController({ mode });
 
     if (isLoading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400, p: 4 }}>
                 <CircularProgress />
             </Box>
         );
@@ -29,65 +46,132 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
 
     if (isError || !viaje) {
         return (
-            <Alert severity="error" sx={{ mt: 2 }}>
-                Error al cargar los detalles del viaje.
-            </Alert>
+            <Box sx={{ p: 3 }}>
+                <Alert severity="error" sx={{ borderRadius: 2 }}>
+                    Error al cargar los detalles del viaje.
+                </Alert>
+                <Button
+                    startIcon={<ArrowBackIcon />}
+                    onClick={() => navigate(APP_PATHS.viajes)}
+                    sx={{ mt: 2 }}
+                >
+                    Volver al listado de viajes
+                </Button>
+            </Box>
         );
     }
 
-    return (
-        <Box>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                <Typography variant="h4" fontWeight={800} color="primary.main">
-                    Panel 360° - Viaje #{viaje.viajeID}
-                </Typography>
-                <Chip label={viaje.estado?.nombre || ''} color="info" size="medium" sx={{ fontWeight: 600 }} />
-            </Stack>
+    const viajeCodigo = viaje.codigo || `#${viaje.viajeID}`;
+    const estadoNombre = viaje.estadoNombre || 'EN RUTA';
 
-            <Grid2 container spacing={3}>
-                <Grid2 size={{ xs: 12, md: 3 }}>
-                    <Card sx={{ height: '100%', borderRadius: 3, boxShadow: 2 }}>
-                        <CardContent>
-                            <Typography variant="h6" fontWeight={700} gutterBottom>Línea de Tiempo</Typography>
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 4 }}>
+            {/* Header / Top Bar de Detalle */}
+            <PaperCard>
+                <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                    spacing={2}
+                >
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={<ArrowBackIcon />}
+                            onClick={() => navigate(APP_PATHS.viajes)}
+                            sx={{
+                                borderRadius: 2,
+                                color: 'text.secondary',
+                                borderColor: 'divider',
+                                '&:hover': {
+                                    borderColor: 'primary.main',
+                                    color: 'primary.main',
+                                },
+                            }}
+                        >
+                            Volver
+                        </Button>
+                        <Box>
+                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                <Typography variant="h5" fontWeight={900} color="primary.main">
+                                    Viaje {viajeCodigo}
+                                </Typography>
+                                <Chip
+                                    icon={<DirectionsCarIcon fontSize="small" />}
+                                    label={estadoNombre.toUpperCase()}
+                                    color="primary"
+                                    size="small"
+                                    sx={{
+                                        fontWeight: 800,
+                                        letterSpacing: '0.05em',
+                                        fontSize: '0.75rem',
+                                        px: 0.5,
+                                    }}
+                                />
+                            </Stack>
+                            <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                                Panel 360° de Operación, Seguimiento y Gestión Integral
+                            </Typography>
+                        </Box>
+                    </Stack>
+
+                </Stack>
+            </PaperCard>
+
+            {/* Grid 2 Columnas: Línea de Tiempo (Izquierda) + Acordeones (Derecha) */}
+            <Grid container spacing={3} alignItems="flex-start">
+                {/* Columna Izquierda: Línea de Tiempo */}
+                <Grid size={{ xs: 12, lg: 3.5, xl: 3 }}>
+                    <Card
+                        sx={{
+                            borderRadius: 3,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            boxShadow: '0 2px 12px rgba(0,0,0,0.03)',
+                            position: { lg: 'sticky' },
+                            top: { lg: 24 },
+                        }}
+                    >
+                        <CardContent sx={{ p: 3 }}>
+                            <Typography variant="subtitle1" fontWeight={800} color="primary.main">
+                                Línea de Tiempo
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                                Progreso operativo del viaje
+                            </Typography>
                             <Divider sx={{ mb: 2 }} />
                             <ViajeTimeline viaje={viaje} />
                         </CardContent>
                     </Card>
-                </Grid2>
+                </Grid>
 
-                <Grid2 size={{ xs: 12, md: 9 }}>
-                    <Stack spacing={3}>
-                        <Card sx={{ borderRadius: 3, boxShadow: 2 }}>
-                            <CardContent>
-                                <Typography variant="h6" fontWeight={700} gutterBottom>Datos Generales</Typography>
-                                <Divider sx={{ mb: 2 }} />
-                                <ResumenGeneralTab
-                                    viaje={viaje}
-                                    formData={resumenGeneralData}
-                                    onChange={onReadOnlyGeneralTabChange}
-                                    isViewOnly={isViewOnly}
-                                />
-                            </CardContent>
-                        </Card>
+                {/* Columna Derecha: Acordeones de Secciones Expandibles */}
+                <Grid size={{ xs: 12, lg: 8.5, xl: 9 }}>
+                    <ViajeDetailAccordions
+                        viaje={viaje}
+                        tiposIncidente={tiposIncidente}
+                        isViewOnly={isViewOnly}
+                    />
+                </Grid>
+            </Grid>
+        </Box>
+    );
+}
 
-                        <Grid2 container spacing={3}>
-                            <Grid2 size={{ xs: 12 }}>
-                                <Card sx={{ borderRadius: 3, boxShadow: 2, height: '100%' }}>
-                                    <CardContent>
-                                        <Typography variant="h6" fontWeight={700} gutterBottom>Incidentes</Typography>
-                                        <Divider sx={{ mb: 2 }} />
-                                        <ViajeIncidente
-                                            viewOnly={isViewOnly}
-                                            tiposIncidente={tiposIncidente || []}
-                                            viajeId={viajeId}
-                                        />
-                                    </CardContent>
-                                </Card>
-                            </Grid2>
-                        </Grid2>
-                    </Stack>
-                </Grid2>
-            </Grid2>
+function PaperCard({ children }: { children: React.ReactNode }) {
+    return (
+        <Box
+            sx={{
+                p: { xs: 2, sm: 2.5 },
+                borderRadius: 3,
+                bgcolor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.03)',
+            }}
+        >
+            {children}
         </Box>
     );
 }
