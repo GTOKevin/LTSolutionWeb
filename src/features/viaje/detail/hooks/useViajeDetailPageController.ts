@@ -13,7 +13,7 @@ export function useViajeDetailPageController({ mode = 'view' }: UseViajeDetailPa
     const viajeId = parseInt(id || '0', 10);
     const isViewOnly = mode === 'view';
 
-    const { data: viaje, isLoading, isError } = useQuery({
+    const { data: viaje, isLoading, isError, error } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.detail(viajeId),
         queryFn: () => viajeApi.getDetail(viajeId),
         enabled: !!viajeId && viajeId > 0,
@@ -26,6 +26,7 @@ export function useViajeDetailPageController({ mode = 'view' }: UseViajeDetailPa
         viaje,
         isLoading,
         isError,
+        error,
         isViewOnly,
         tiposIncidente: tiposIncidente || [],
     };

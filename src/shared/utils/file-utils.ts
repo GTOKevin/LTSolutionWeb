@@ -15,6 +15,32 @@ export function downloadBlob(blob: Blob, filename: string) {
     window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
 }
 
+/**
+ * Descarga real de un archivo servido por URL (mismo origen o CORS habilitado).
+ * Hace fetch -> blob y usa `downloadBlob` para forzar la descarga. Si el fetch
+ * falla (red/origen bloqueado), degrada a abrir la URL en pestaña nueva para
+ * que el usuario conserve acceso al recurso.
+ */
+export async function downloadFileFromUrl(url: string, fileName?: string): Promise<void> {
+    try {
+        const response = await fetch(url, { cache: 'no-store' });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        const resolvedFileName =
+            fileName
+            || url.split('?')[0].split('/').pop()
+            || 'archivo';
+
+        downloadBlob(blob, resolvedFileName);
+    } catch {
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }
+}
+
 export function isImageUrl(url: string | null | undefined): boolean {
     if (!url) return false;
     return /\.(png|jpg|jpeg|gif|webp)(\?.*)?$/i.test(url);

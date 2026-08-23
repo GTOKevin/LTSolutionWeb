@@ -57,8 +57,10 @@ export function ViajeDetailAccordions({ viaje, tiposIncidente, isViewOnly = true
         }));
     };
 
-    const { data: incidentesData } = useViajeIncidentes(viaje.viajeID, 1, 1);
-    const incidentesCount = incidentesData?.total ?? 0;
+    // Misma query key que ViajeIncidenteList (1, 100): React Query deduplica la
+    // petición y el contador se deriva del mismo dataset de la lista.
+    const { data: incidentesData } = useViajeIncidentes(viaje.viajeID, 1, 100);
+    const incidentesCount = incidentesData?.items.length ?? 0;
 
     const accordionStyle = {
         borderRadius: '12px !important',

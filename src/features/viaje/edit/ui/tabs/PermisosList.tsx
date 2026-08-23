@@ -4,6 +4,7 @@ import { useViajePermisos, useDeleteViajePermiso } from '@/features/viaje/hooks/
 import { useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
+import { downloadFileFromUrl } from '@/shared/utils/file-utils';
 import { buildInternalFileUrl } from '@/shared/config/env';
 import dayjs from 'dayjs';
 import type { ViajePermiso } from '@/entities/viaje/model/types';
@@ -244,7 +245,10 @@ export function PermisosList({ viajeId, isViewOnly }: PermisosListProps) {
             >
                 {selectedItem?.rutaArchivo && (
                     <MenuItem onClick={() => {
-                        window.open(buildInternalFileUrl(selectedItem.rutaArchivo!), '_blank');
+                        const url = buildInternalFileUrl(selectedItem.rutaArchivo!);
+                        if (url) {
+                            void downloadFileFromUrl(url, `Permiso_${selectedItem.viajePermisoID}`);
+                        }
                         handleMenuClose();
                     }}>
                         <DownloadIcon fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />

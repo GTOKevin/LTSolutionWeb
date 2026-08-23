@@ -1,8 +1,8 @@
 import { DescriptionOutlined as DescriptionOutlinedIcon } from '@mui/icons-material';
 import { Box, Chip, Paper, Stack, Typography, alpha, useTheme } from '@mui/material';
 import { buildInternalFileUrl } from '@shared/config/env';
-import type { ViajeDetail, ViajeGuiaDetail } from '@/entities/viaje/model/types';
-import { DocumentAttachmentCard } from '../shared/DocumentAttachmentCard';
+import type { ViajeDetail } from '@/entities/viaje/model/types';
+import { DocumentAttachmentCard } from '@shared/components/ui/DocumentAttachmentCard';
 
 interface ViajeGuiasSectionProps {
     viaje: ViajeDetail;
@@ -11,12 +11,6 @@ interface ViajeGuiasSectionProps {
 export function ViajeGuiasSection({ viaje }: ViajeGuiasSectionProps) {
     const theme = useTheme();
     const guias = viaje.guias ?? [];
-
-    const handleDownloadImage = (item: ViajeGuiaDetail) => {
-        const archivoUrl = item.rutaArchivo ? buildInternalFileUrl(item.rutaArchivo) : null;
-        if (!archivoUrl) return;
-        window.open(archivoUrl, '_blank', 'noopener,noreferrer');
-    };
 
     return (
         <Stack spacing={2}>
@@ -77,7 +71,8 @@ export function ViajeGuiasSection({ viaje }: ViajeGuiasSectionProps) {
                                 <DocumentAttachmentCard
                                     title={`Guía ${item.serie} - ${item.numero}`}
                                     fileUrl={archivoUrl}
-                                    onDownload={() => handleDownloadImage(item)}
+                                    downloadUrl={archivoUrl}
+                                    fileName={`Guia_${item.serie}-${item.numero}`}
                                 />
                             </Stack>
                         </Paper>

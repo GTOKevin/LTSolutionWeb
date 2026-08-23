@@ -3,6 +3,7 @@ import { CalendarToday as CalendarTodayIcon } from '@mui/icons-material';
 import type { ViajeDetail } from '@/entities/viaje/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { formatDecimalAmount } from '@/shared/utils/format-utils';
+import { getTotalGalonesConsumidos } from '../../model/gasto-derivations';
 import { useViajeGastos } from '@features/viaje/hooks/useViajeGastos';
 
 interface ViajeSeguimientoSectionProps {
@@ -14,9 +15,7 @@ export function ViajeSeguimientoSection({ viaje }: ViajeSeguimientoSectionProps)
     const { data: gastosData } = useViajeGastos(viaje.viajeID, 1, 100);
 
     const gastos = gastosData?.items ?? [];
-    const totalGalonesConsumidos = gastos
-        .filter((gasto) => gasto.combustible)
-        .reduce((acc, gasto) => acc + (gasto.galones ?? 0), 0);
+    const totalGalonesConsumidos = getTotalGalonesConsumidos(gastos);
 
     const kmRecorridoDestino = viaje.kmInicio != null && viaje.kmLlegada != null ? viaje.kmLlegada - viaje.kmInicio : null;
     const kmRecorridoBase = viaje.kmInicio != null && viaje.kmLlegadaBase != null ? viaje.kmLlegadaBase - viaje.kmInicio : null;

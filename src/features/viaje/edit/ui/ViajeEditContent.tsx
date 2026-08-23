@@ -7,7 +7,6 @@ import {
     GastosTab,
     GuiasTab,
     PermisosTab,
-    PlanificacionRutaTab,
     ResumenGeneralTab,
     type ResumenGeneralData,
     ViajeIncidente,
@@ -48,9 +47,6 @@ export function ViajeEditContent({
                     isViewOnly={isViewOnly}
                 />
             </TabPanel>
-            {/* <TabPanel value={activeTab} index={1}>
-                <PlanificacionRutaTab viaje={viaje} isViewOnly={isViewOnly} />
-            </TabPanel> */}
             <TabPanel value={activeTab} index={1}>
                 <GuiasTab viaje={viaje} isViewOnly={isViewOnly} />
             </TabPanel>

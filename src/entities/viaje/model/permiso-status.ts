@@ -1,56 +1,41 @@
-import { getCurrentDateISO } from '@/shared/utils/date-utils';
+import { getDocumentVigenciaMetaByExpirationDate } from '@/shared/utils/document-vigencia';
 
 export interface ViajePermisoStatus {
     label: string;
     color: 'success' | 'warning' | 'error';
 }
 
-function resolveDateOnlyUtcTime(value: string) {
-    const [year, month, day] = value.split('-').map(Number);
-
-    if (!year || !month || !day) {
-        return null;
-    }
-
-    return Date.UTC(year, month - 1, day);
-}
-
+/**
+ * Resolutor de vigencia de permisos de viaje.
+ *
+ * Delega en el resolutor compartido `getDocumentVigenciaMetaByExpirationDate`
+ * (umbrales 30/90 días) para no mantener reglas de vigencia divergentes en el
+ * sistema. Los permisos sin fecha de vencimiento se consideran vigentes.
+ */
 export function resolveViajePermisoStatus(fechaVencimiento?: string | null): ViajePermisoStatus {
-    if (!fechaVencimiento) {
-        return {
-            label: 'Vigente',
-            color: 'success',
-        };
+    const meta = getDocumentVigenciaMetaByExpirationDate(fechaVencimiento);
+
+    switch (meta.key) {
+        case 'vencido':
+            return {
+                label: 'Vencido',
+                color: 'error',
+            };
+        case 'por_vencer':
+            return {
+                label: meta.label, // 'Vence pronto' (<= 30 días) | 'Próximo a vencer' (<= 90 días)
+                color: meta.chipColor === 'error' ? 'error' : 'warning',
+            };
+        case 'vigente':
+            return {
+                label: 'Vigente',
+                color: 'success',
+            };
+        // Sin fecha de vencimiento: sin restricción de caducidad.
+        default:
+            return {
+                label: 'Vigente',
+                color: 'success',
+            };
     }
-
-    const today = resolveDateOnlyUtcTime(getCurrentDateISO());
-    const dueDate = resolveDateOnlyUtcTime(fechaVencimiento);
-
-    if (!today || !dueDate) {
-        return {
-            label: 'Vigente',
-            color: 'success',
-        };
-    }
-
-    const diffDays = Math.floor((dueDate - today) / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) {
-        return {
-            label: 'Vencido',
-            color: 'error',
-        };
-    }
-
-    if (diffDays <= 2) {
-        return {
-            label: 'Por vencer',
-            color: 'warning',
-        };
-    }
-
-    return {
-        label: 'Vigente',
-        color: 'success',
-    };
 }

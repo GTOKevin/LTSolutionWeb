@@ -15,9 +15,9 @@ interface SimpleDataTableProps<T> {
 }
 
 /**
- * Tabla de lectura simple (sin paginación ni acciones) para secciones embebidas
- * del detalle de viaje. Centraliza el markup de <Box component="table"> para
- * evitar duplicación entre secciones.
+ * Tabla de lectura simple (sin paginación ni acciones) para secciones embebidas.
+ * Centraliza el markup de <Box component="table"> para evitar duplicación entre
+ * secciones de detalle.
  */
 export function SimpleDataTable<T>({ columns, rows, rowKey, emptyMessage }: SimpleDataTableProps<T>) {
     const theme = useTheme();

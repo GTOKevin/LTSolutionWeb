@@ -20,10 +20,12 @@ import {
 import type { Viaje, ViajeGasto, ViajeGastoCurrencyTotal } from '@/entities/viaje/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { formatCurrencyAmount, formatDecimalAmount } from '@/shared/utils/format-utils';
+import { toViajeCurrencyDescriptor } from '@/entities/viaje/model/currency';
+import { getCombustibleGastos, getTotalGalonesConsumidos } from '../../model/gasto-derivations';
 import { useViajeGastos } from '@features/viaje/hooks/useViajeGastos';
 import { useViajeGastoOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { useViajeGastosReports } from '../../hooks/useViajeGastosReports';
-import { SimpleDataTable, type SimpleDataTableColumn } from '../shared/SimpleDataTable';
+import { SimpleDataTable, type SimpleDataTableColumn } from '@shared/components/ui/SimpleDataTable';
 
 interface ViajeGastosSectionProps {
     viaje: Pick<Viaje, 'viajeID'>;
@@ -38,17 +40,11 @@ export function ViajeGastosSection({ viaje }: ViajeGastosSectionProps) {
     const gastos = gastosData?.items ?? [];
     const totalsByCurrency = gastosData?.totalsByCurrency ?? [];
 
-    const totalGalonesConsumidos = gastos
-        .filter((gasto) => gasto.combustible)
-        .reduce((acc, gasto) => acc + (gasto.galones ?? 0), 0);
+    const totalGalonesConsumidos = getTotalGalonesConsumidos(gastos);
+    const combustibleGastos = getCombustibleGastos(gastos);
 
-    const resolveMonedaDescriptor = (monedaId: number) => {
-        const moneda = monedas?.find((item) => item.id === monedaId);
-        return {
-            codigo: moneda?.extra,
-            nombre: moneda?.text,
-        };
-    };
+    const resolveMonedaDescriptor = (monedaId: number) =>
+        toViajeCurrencyDescriptor(monedas?.find((item) => item.id === monedaId));
 
     return (
         <Stack spacing={3}>
@@ -148,8 +144,8 @@ export function ViajeGastosSection({ viaje }: ViajeGastosSectionProps) {
                                 Total combustible
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                                {gastos.filter((gasto) => gasto.combustible).length}{' '}
-                                {gastos.filter((gasto) => gasto.combustible).length === 1 ? 'gasto con combustible' : 'gastos con combustible'}
+                                {combustibleGastos.length}{' '}
+                                {combustibleGastos.length === 1 ? 'gasto con combustible' : 'gastos con combustible'}
                             </Typography>
                         </Box>
                     </Stack>

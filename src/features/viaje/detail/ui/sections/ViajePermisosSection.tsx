@@ -2,9 +2,9 @@ import { AssignmentTurnedInOutlined as AssignmentTurnedInOutlinedIcon } from '@m
 import { Box, Chip, Paper, Stack, Typography, alpha, useTheme } from '@mui/material';
 import { buildInternalFileUrl } from '@shared/config/env';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import type { ViajeDetail, ViajePermisoDetail } from '@/entities/viaje/model/types';
+import type { ViajeDetail } from '@/entities/viaje/model/types';
 import { resolveViajePermisoStatus } from '@entities/viaje/model/permiso-status';
-import { DocumentAttachmentCard } from '../shared/DocumentAttachmentCard';
+import { DocumentAttachmentCard } from '@shared/components/ui/DocumentAttachmentCard';
 
 interface ViajePermisosSectionProps {
     viaje: ViajeDetail;
@@ -19,12 +19,6 @@ const STATUS_TONE: Record<string, 'success' | 'warning' | 'error'> = {
 export function ViajePermisosSection({ viaje }: ViajePermisosSectionProps) {
     const theme = useTheme();
     const permisos = viaje.permisos ?? [];
-
-    const handleDownloadImage = (item: ViajePermisoDetail) => {
-        const archivoUrl = item.rutaArchivo ? buildInternalFileUrl(item.rutaArchivo) : null;
-        if (!archivoUrl) return;
-        window.open(archivoUrl, '_blank', 'noopener,noreferrer');
-    };
 
     return (
         <Stack spacing={2}>
@@ -93,7 +87,8 @@ export function ViajePermisosSection({ viaje }: ViajePermisosSectionProps) {
                                 <DocumentAttachmentCard
                                     title={`Permiso ${item.viajePermisoID}`}
                                     fileUrl={archivoUrl}
-                                    onDownload={() => handleDownloadImage(item)}
+                                    downloadUrl={archivoUrl}
+                                    fileName={`Permiso_${item.viajePermisoID}`}
                                 />
                             </Stack>
                         </Paper>

@@ -17,6 +17,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { APP_PATHS } from '@shared/config/app-routes';
+import { getErrorMessage } from '@/shared/utils/api-errors';
 import { PaperCard } from './shared/PaperCard';
 import { ViajeTimeline } from './ViajeTimeline';
 import { ViajeDetailAccordions } from './ViajeDetailAccordions';
@@ -33,6 +34,7 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
         viaje,
         isLoading,
         isError,
+        error,
         isViewOnly,
         tiposIncidente,
     } = useViajeDetailPageController({ mode });
@@ -49,7 +51,7 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
         return (
             <Box sx={{ p: 3 }}>
                 <Alert severity="error" sx={{ borderRadius: 2 }}>
-                    Error al cargar los detalles del viaje.
+                    {getErrorMessage(error, 'Error al cargar los detalles del viaje.')}
                 </Alert>
                 <Button
                     startIcon={<ArrowBackIcon />}
@@ -123,7 +125,7 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
             {/* Grid 2 Columnas: Línea de Tiempo (Izquierda) + Acordeones (Derecha) */}
             <Grid container spacing={3} alignItems="flex-start">
                 {/* Columna Izquierda: Línea de Tiempo */}
-                <Grid size={{ xs: 12, lg: 3.5, xl: 3 }}>
+                <Grid size={{ xs: 12, lg: 3.5, xl: 2 }}>
                     <Card
                         sx={{
                             borderRadius: 3,
@@ -148,7 +150,7 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
                 </Grid>
 
                 {/* Columna Derecha: Acordeones de Secciones Expandibles */}
-                <Grid size={{ xs: 12, lg: 8.5, xl: 9 }}>
+                <Grid size={{ xs: 12, lg: 8.5, xl: 10 }}>
                     <ViajeDetailAccordions
                         viaje={viaje}
                         tiposIncidente={tiposIncidente}

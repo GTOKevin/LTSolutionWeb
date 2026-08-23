@@ -2,19 +2,23 @@ import { useState } from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { Download as DownloadIcon, ZoomIn as ZoomInIcon } from '@mui/icons-material';
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
+import { downloadFileFromUrl } from '@shared/utils/file-utils';
 
 interface DocumentAttachmentCardProps {
     title: string;
     fileUrl: string | null;
-    onDownload?: () => void;
+    /** URL del archivo a descargar. Si se omite, el botón Descargar se deshabilita. */
+    downloadUrl?: string | null;
+    /** Nombre sugerido para el archivo descargado. */
+    fileName?: string;
 }
 
 /**
  * Tarjeta de documento adjunto: thumbnail con overlay de zoom, acciones de
- * vista previa y descarga, y el dialogo de preview. Centraliza el patrón
- * repetido en las secciones de guías y permisos del detalle de viaje.
+ * vista previa y descarga real (fetch -> blob -> downloadBlob), y el dialogo
+ * de preview. Centraliza el patrón repetido en secciones de guías y permisos.
  */
-export function DocumentAttachmentCard({ title, fileUrl, onDownload }: DocumentAttachmentCardProps) {
+export function DocumentAttachmentCard({ title, fileUrl, downloadUrl, fileName }: DocumentAttachmentCardProps) {
     const [previewOpen, setPreviewOpen] = useState(false);
 
     if (!fileUrl) {
@@ -24,6 +28,12 @@ export function DocumentAttachmentCard({ title, fileUrl, onDownload }: DocumentA
             </Typography>
         );
     }
+
+    const handleDownload = () => {
+        if (downloadUrl) {
+            void downloadFileFromUrl(downloadUrl, fileName);
+        }
+    };
 
     return (
         <>
@@ -79,7 +89,8 @@ export function DocumentAttachmentCard({ title, fileUrl, onDownload }: DocumentA
                         variant="outlined"
                         color="primary"
                         startIcon={<DownloadIcon />}
-                        onClick={onDownload}
+                        onClick={handleDownload}
+                        disabled={!downloadUrl}
                         sx={{ borderRadius: 2, textTransform: 'none' }}
                     >
                         Descargar

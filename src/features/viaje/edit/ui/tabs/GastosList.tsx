@@ -7,6 +7,7 @@ import { useViajeGastos, useDeleteViajeGasto } from '@features/viaje/hooks/useVi
 import { useViajeGastoOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { formatCurrencyAmount, formatDecimalAmount } from '@/shared/utils/format-utils';
+import { toViajeCurrencyDescriptor } from '@/entities/viaje/model/currency';
 import { logger } from '@/shared/utils/logger';
 
 interface GastosListProps {
@@ -65,7 +66,7 @@ export function GastosList({ viajeID, isViewOnly }: GastosListProps) {
                         {totalsByCurrency.length > 0 ? (
                             totalsByCurrency.map((total, index) => (
                                 <Typography key={index} variant="h5" sx={{ fontWeight: 800, color: 'text.primary' }}>
-                                    {total.symbol} {total.total.toFixed(2)}
+                                    {total.symbol} {formatDecimalAmount(Number(total.total))}
                                 </Typography>
                             ))
                         ) : (
@@ -103,11 +104,9 @@ export function GastosList({ viajeID, isViewOnly }: GastosListProps) {
                             ) : (
                                 gastos.map((gasto) => {
                                     const tipo = tiposGasto?.find((item) => item.id === gasto.gastoID)?.text || gasto.gasto?.descripcion || 'Otro';
-                                    const moneda = monedas?.find((item) => item.id === gasto.monedaID);
-                                    const monedaDescriptor = {
-                                        codigo: moneda?.extra,
-                                        nombre: moneda?.text,
-                                    };
+                                    const monedaDescriptor = toViajeCurrencyDescriptor(
+                                        monedas?.find((item) => item.id === gasto.monedaID),
+                                    );
 
                                     return (
                                         <Box component="tr" key={gasto.viajeGastoID} sx={{ borderBottom: '1px solid', borderColor: alpha(theme.palette.divider, 0.1) }}>

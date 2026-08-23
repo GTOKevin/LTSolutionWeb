@@ -5,7 +5,7 @@ import {
     Straighten as StraightenIcon,
 } from '@mui/icons-material';
 import type { ViajeDetail, ViajeMercaderiaDetail } from '@/entities/viaje/model/types';
-import { SimpleDataTable, type SimpleDataTableColumn } from '../shared/SimpleDataTable';
+import { SimpleDataTable, type SimpleDataTableColumn } from '@shared/components/ui/SimpleDataTable';
 
 interface ViajeCargaSectionProps {
     viaje: ViajeDetail;
