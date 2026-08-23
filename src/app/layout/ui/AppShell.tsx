@@ -7,6 +7,7 @@ import { SelfChangePasswordModal } from '@features/auth/change-password';
 import { useAuthStore } from '@shared/store/auth.store';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { hasPermission } from '@shared/lib/permissions/hasPermission';
+import { useEmployeeAssociation } from '@features/profile';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { useState } from 'react';
 import {
@@ -23,6 +24,7 @@ export function AppShell() {
     const user = useAuthStore((state) => state.user);
     const pageTitle = useLayoutStore((state) => state.pageTitle);
     const toggleSidebar = useLayoutStore((state) => state.toggleSidebar);
+    const { isEmployee } = useEmployeeAssociation();
     const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
     useSignalR();
@@ -32,7 +34,10 @@ export function AppShell() {
     const routeSectionTitle = currentRoute?.sectionTitle ?? 'Administración';
     const bottomNavContext = currentRoute?.bottomNavContext ?? 'admin';
     const bottomNavItems = APP_BOTTOM_NAV_ITEMS.filter(
-        (item) => item.context === bottomNavContext && hasPermission(user, item.permission),
+        (item) =>
+            item.context === bottomNavContext &&
+            hasPermission(user, item.permission) &&
+            (!item.requiresEmployee || isEmployee),
     ).map((item) => ({
         label: item.label,
         icon: item.icon,
@@ -60,6 +65,7 @@ export function AppShell() {
                 title={routeTitle}
                 sectionTitle={routeSectionTitle}
                 sidebarMenu={APP_SIDEBAR_MENU}
+                isEmployee={isEmployee}
                 bottomNavItems={bottomNavItems}
                 bottomNavValue={bottomNavValue}
                 onRequestChangePassword={() => setChangePasswordOpen(true)}

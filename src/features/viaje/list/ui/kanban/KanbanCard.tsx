@@ -21,6 +21,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
+import LockIcon from '@mui/icons-material/Lock';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import RvHookupIcon from '@mui/icons-material/RvHookup';
 import PersonIcon from '@mui/icons-material/Person';
@@ -35,9 +36,10 @@ interface KanbanCardProps {
     onEdit?: (viaje: ViajeListItem) => void;
     onView?: (viaje: ViajeListItem) => void;
     onDelete?: (viaje: ViajeListItem) => void;
+    onCerrar?: (viaje: ViajeListItem) => void;
 }
 
-export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, onDelete }: KanbanCardProps) {
+export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, onDelete, onCerrar }: KanbanCardProps) {
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
@@ -51,12 +53,13 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
         setAnchorEl(null);
     };
 
-    const handleAction = (action: 'edit' | 'view' | 'delete') => (event: React.MouseEvent<HTMLElement>) => {
+    const handleAction = (action: 'edit' | 'view' | 'delete' | 'cerrar') => (event: React.MouseEvent<HTMLElement>) => {
         event.stopPropagation();
         handleClose();
         if (action === 'edit' && onEdit) onEdit(viaje);
         if (action === 'view' && onView) onView(viaje);
         if (action === 'delete' && onDelete) onDelete(viaje);
+        if (action === 'cerrar' && onCerrar) onCerrar(viaje);
     };
 
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -76,7 +79,7 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
         marginBottom: theme.spacing(2),
     };
 
-    const hasActions = Boolean(onEdit || onView || onDelete);
+    const hasActions = Boolean(onEdit || onView || onDelete || onCerrar);
 
     return (
         <Card
@@ -139,6 +142,14 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
                                             <VisibilityIcon fontSize="small" />
                                         </ListItemIcon>
                                         <ListItemText>Visualizar</ListItemText>
+                                    </MenuItem>
+                                ) : null}
+                                {onCerrar && viaje.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO && !viaje.cerrado ? (
+                                    <MenuItem onClick={handleAction('cerrar')} sx={{ color: 'success.main' }}>
+                                        <ListItemIcon>
+                                            <LockIcon fontSize="small" color="success" />
+                                        </ListItemIcon>
+                                        <ListItemText>Cerrar</ListItemText>
                                     </MenuItem>
                                 ) : null}
                                 {onDelete && viaje.estadoCodigo === VIAJE_STATUS_CODE.AGENDADO && !viaje.fechaPartida ? (

@@ -17,9 +17,11 @@ import type { ViajeListItem } from '@/entities/viaje/model/types';
 import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
 import { useToast } from '@/shared/components/ui/Toast';
 import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
+import { useCerrarViaje } from '../../hooks/useCerrarViaje';
 import type { ViajeKanbanColumnDefinition } from '../model/kanban';
 import { KanbanCard } from './kanban/KanbanCard';
 import { KanbanColumn } from './kanban/KanbanColumn';
+import { ViajeEstadoDateDialog } from './kanban/ViajeEstadoDateDialog';
 
 interface KanbanBoardProps {
     viajes: ViajeListItem[];
@@ -37,6 +39,7 @@ interface PendingStatusChange {
     targetColumnId: string;
     targetColumnTitle: string;
     targetEstadoId: number;
+    fechaTipo?: 'fechaPartida' | 'fechaDescarga';
 }
 
 export function ViajeKanbanBoard({
@@ -54,6 +57,9 @@ export function ViajeKanbanBoard({
     const [localViajes, setLocalViajes] = useState<ViajeListItem[]>([]);
     const [activeId, setActiveId] = useState<number | null>(null);
     const [pendingStatusChange, setPendingStatusChange] = useState<PendingStatusChange | null>(null);
+    const [pendingDateValue, setPendingDateValue] = useState('');
+    const [cerrarDialogOpen, setCerrarDialogOpen] = useState(false);
+    const [viajeToCerrar, setViajeToCerrar] = useState<ViajeListItem | null>(null);
 
     useEffect(() => {
         setLocalViajes(viajes);
@@ -61,6 +67,11 @@ export function ViajeKanbanBoard({
 
     const updateEstadoMutation = useUpdateEstadoViaje(() => {
         setLocalViajes(viajes);
+    });
+
+    const cerrarMutation = useCerrarViaje(() => {
+        setCerrarDialogOpen(false);
+        setViajeToCerrar(null);
     });
 
     const sensors = useSensors(
@@ -94,7 +105,10 @@ export function ViajeKanbanBoard({
         return localViajes.filter(v => v.estadoCodigo === estadoCodigo);
     };
 
-    const applyStatusChange = (change: PendingStatusChange) => {
+    const applyStatusChange = (change: PendingStatusChange, fecha?: string) => {
+        const isFechaPartida = change.fechaTipo === 'fechaPartida';
+        const isFechaDescarga = change.fechaTipo === 'fechaDescarga';
+
         setLocalViajes((prev) =>
             prev.map((viaje) =>
                 viaje.viajeID === change.viajeId
@@ -103,12 +117,19 @@ export function ViajeKanbanBoard({
                         estadoCodigo: change.targetColumnId,
                         estadoNombre: change.targetColumnTitle,
                         estadoID: change.targetEstadoId,
+                        ...(isFechaPartida && fecha ? { fechaPartida: fecha } : {}),
+                        ...(isFechaDescarga && fecha ? { fechaDescarga: fecha } : {}),
                     }
                     : viaje
             )
         );
 
-        updateEstadoMutation.mutate({ id: change.viajeId, estadoId: change.targetEstadoId });
+        updateEstadoMutation.mutate({
+            id: change.viajeId,
+            estadoId: change.targetEstadoId,
+            ...(isFechaPartida ? { fechaPartida: fecha } : {}),
+            ...(isFechaDescarga ? { fechaDescarga: fecha } : {}),
+        });
     };
 
     const handleDragStart = (event: DragStartEvent) => {
@@ -167,6 +188,16 @@ export function ViajeKanbanBoard({
                 targetEstadoId: targetColumnDef.estadoId,
             };
 
+            if (targetColumnId === VIAJE_STATUS_CODE.TRANSITO || targetColumnId === VIAJE_STATUS_CODE.DESCARGANDO) {
+                // Los estados En Ruta / En Descarga requieren registrar la fecha asociada
+                // antes de aplicarse (fecha de partida / fecha de descarga).
+                const fechaTipo = targetColumnId === VIAJE_STATUS_CODE.TRANSITO ? 'fechaPartida' : 'fechaDescarga';
+                const fechaInicial = fechaTipo === 'fechaPartida' ? (activeViaje.fechaPartida ?? '') : (activeViaje.fechaDescarga ?? '');
+                setPendingStatusChange({ ...nextStatusChange, fechaTipo });
+                setPendingDateValue(fechaInicial);
+                return;
+            }
+
             if (targetColumnId === VIAJE_STATUS_CODE.COMPLETADO) {
                 setPendingStatusChange(nextStatusChange);
                 return;
@@ -200,6 +231,10 @@ export function ViajeKanbanBoard({
                             onEditCard={onEditViaje}
                             onViewCard={onViewViaje}
                             onDeleteCard={onDeleteViaje}
+                            onCerrarCard={(viaje) => {
+                                setViajeToCerrar(viaje);
+                                setCerrarDialogOpen(true);
+                            }}
                         />
                     ))}
                 </Box>
@@ -212,9 +247,9 @@ export function ViajeKanbanBoard({
             </DndContext>
 
             <ConfirmDialog
-                open={Boolean(pendingStatusChange)}
+                open={Boolean(pendingStatusChange) && !pendingStatusChange?.fechaTipo}
                 title="Confirmar viaje completado"
-                content="Una vez el viaje se encuentre completado no podra realizar modificaciones al viaje."
+                content="El viaje pasará a estado Completado. Para cerrarlo definitivamente (bloqueando modificaciones y generando los reportes) usa la acción «Cerrar viaje»."
                 confirmText="Completar viaje"
                 cancelText="Cancelar"
                 severity="info"
@@ -224,6 +259,36 @@ export function ViajeKanbanBoard({
                     if (!pendingStatusChange) return;
                     applyStatusChange(pendingStatusChange);
                     setPendingStatusChange(null);
+                }}
+            />
+
+            <ViajeEstadoDateDialog
+                open={Boolean(pendingStatusChange?.fechaTipo)}
+                title={pendingStatusChange?.fechaTipo === 'fechaPartida' ? 'Registrar fecha de partida' : 'Registrar fecha de descarga'}
+                fieldLabel={pendingStatusChange?.fechaTipo === 'fechaPartida' ? 'Fecha de partida' : 'Fecha de descarga'}
+                value={pendingDateValue}
+                onValueChange={setPendingDateValue}
+                onCancel={() => setPendingStatusChange(null)}
+                onConfirm={() => {
+                    if (!pendingStatusChange) return;
+                    applyStatusChange(pendingStatusChange, pendingDateValue);
+                    setPendingStatusChange(null);
+                }}
+                isLoading={updateEstadoMutation.isPending}
+            />
+
+            <ConfirmDialog
+                open={cerrarDialogOpen}
+                title="Cerrar Viaje"
+                content={`¿Estás seguro de que deseas cerrar el viaje #${viajeToCerrar?.viajeID}? Al cerrar se bloquearán las modificaciones y se habilitarán los reportes finales.`}
+                confirmText="Cerrar viaje"
+                cancelText="Cancelar"
+                severity="primary"
+                isLoading={cerrarMutation.isPending}
+                onClose={() => setCerrarDialogOpen(false)}
+                onConfirm={() => {
+                    if (!viajeToCerrar) return;
+                    cerrarMutation.mutate(viajeToCerrar.viajeID);
                 }}
             />
         </Box>

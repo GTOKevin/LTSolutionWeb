@@ -22,6 +22,8 @@ export function getViajeEditTabs({ requiereEscolta }: GetViajeEditTabsOptions) {
 
 export function createResumenGeneralDataFromViaje(
     viaje?: {
+        estadoID?: number | null;
+        estado?: { nombre?: string | null } | null;
         fechaCarga?: string | null;
         fechaPartida?: string | null;
         fechaLlegada?: string | null;
@@ -38,6 +40,8 @@ export function createResumenGeneralDataFromViaje(
     },
 ): ResumenGeneralData {
     return {
+        estadoID: viaje?.estadoID ?? 0,
+        estadoNombre: viaje?.estado?.nombre ?? '',
         fechaCarga: viaje?.fechaCarga ? dayjs(viaje.fechaCarga) : null,
         fechaPartida: viaje?.fechaPartida ? dayjs(viaje.fechaPartida) : null,
         fechaLlegada: viaje?.fechaLlegada ? dayjs(viaje.fechaLlegada) : null,

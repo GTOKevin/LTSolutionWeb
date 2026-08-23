@@ -12,6 +12,7 @@ interface AppLayoutProps {
     bottomNavValue: number;
     onBottomNavChange: (item: BottomNavItem) => void;
     onRequestChangePassword?: () => void;
+    isEmployee?: boolean;
     headerMobileAction?: {
         icon: React.ReactNode;
         onClick: () => void;
@@ -27,6 +28,7 @@ export function AppLayout({
     bottomNavValue,
     onBottomNavChange,
     onRequestChangePassword,
+    isEmployee,
     headerMobileAction,
     children,
 }: AppLayoutProps) {
@@ -35,7 +37,7 @@ export function AppLayout({
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: theme.palette.mode === 'dark' ? '#111418' : '#f6f7f8' }}>
             <Header title={title} sectionTitle={sectionTitle} mobileAction={headerMobileAction} />
-            <Sidebar menu={sidebarMenu} onRequestChangePassword={onRequestChangePassword} />
+            <Sidebar menu={sidebarMenu} onRequestChangePassword={onRequestChangePassword} isEmployee={isEmployee} />
             <Box
                 component="main"
                 sx={{

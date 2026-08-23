@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { useToast } from '@shared/components/ui/Toast';
-import { usePermission } from '@shared/lib/hooks/usePermission';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
 import type {
@@ -13,14 +12,12 @@ import type {
 } from '@entities/employee/model/types';
 import { isPreviewableImageUrl } from '@shared/utils/file-utils';
 import { getErrorMessage } from '@shared/utils/api-errors';
-import { PERMISSIONS } from '@shared/constants/permissions';
 import { tipoDocumentoApi } from '@/entities/tipo-documento/api/tipo-documento.api';
 import { isDocumentNearExpiry, isDocumentVigente } from '@shared/utils/document-vigencia';
 
 export function useMisDocumentosPageController() {
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const { showToast } = useToast();
-    const canRequestDocumentUpdate = usePermission(PERMISSIONS.EMPLOYEE.DOCUMENTOS.SOLICITAR_ACTUALIZACION);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [requestPage, setRequestPage] = useState(0);
@@ -218,7 +215,7 @@ export function useMisDocumentosPageController() {
         activo,
         canDeleteSolicitud,
         canEditSolicitud,
-        canRequestDocumentUpdate,
+        canRequestDocumentUpdate: true,
         confirmDeleteSolicitud,
         deleteSolicitudMutation,
         deleteTarget,

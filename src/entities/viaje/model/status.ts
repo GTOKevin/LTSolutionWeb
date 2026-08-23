@@ -64,3 +64,46 @@ export function resolveViajeDescargandoId(items: SelectItem[] | undefined) {
 export function resolveViajeCompletadoId(items: SelectItem[] | undefined) {
     return items?.find((item) => matchesCatalogCandidate(item.extra, VIAJE_STATUS_CODES.COMPLETADO) || matchesCatalogCandidate(item.text, VIAJE_STATUS_CODES.COMPLETADO))?.id;
 }
+
+export interface ViajeEstadoProyectado {
+    estadoID: number;
+    estadoNombre: string;
+}
+
+/**
+ * Proyecta el estado del viaje a partir de las fechas registradas en el formulario,
+ * SIN degradar el estado actual. Resuelve los IDs/nombres desde el catálogo
+ * (viajeEstados) usando los helpers canónicos, nunca IDs hardcodeados.
+ *
+ * - fechaDescarga registrada y estado actual anterior a Descargando → Descargando.
+ * - fechaPartida registrada y estado actual anterior a Transito → Transito.
+ * - En cualquier otro caso devuelve null (mantener el estado actual).
+ */
+export function resolveViajeEstadoProyectado(
+    fechas: { fechaPartida?: string | null; fechaDescarga?: string | null },
+    estadoActualId: number | undefined | null,
+    viajeEstados: SelectItem[] | undefined,
+): ViajeEstadoProyectado | null {
+    const transitoId = resolveViajeTransitoId(viajeEstados);
+    const descargandoId = resolveViajeDescargandoId(viajeEstados);
+
+    // Rango del flujo: AGENDADO(1) < TRANSITO(2) < DESCARGANDO(3) < COMPLETADO(4).
+    const getEstadoRank = (id: number | undefined | null): number => {
+        if (id == null) return 0;
+        if (id === descargandoId) return 3;
+        if (id === transitoId) return 2;
+        return 1; // Agendado o estado desconocido: se asume el inicio del flujo
+    };
+
+    if (fechas.fechaDescarga && descargandoId != null && getEstadoRank(estadoActualId) < 3) {
+        const descargandoItem = viajeEstados?.find((item) => item.id === descargandoId);
+        return { estadoID: descargandoId, estadoNombre: descargandoItem?.text ?? 'En Descarga' };
+    }
+
+    if (fechas.fechaPartida && transitoId != null && getEstadoRank(estadoActualId) < 2) {
+        const transitoItem = viajeEstados?.find((item) => item.id === transitoId);
+        return { estadoID: transitoId, estadoNombre: transitoItem?.text ?? 'En Ruta' };
+    }
+
+    return null;
+}

@@ -18,6 +18,7 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
         kanbanColumns,
         canManageViajes,
         canReabrirViajes,
+        canCerrarViajes,
         canViewViajes,
         page,
         rowsPerPage,
@@ -27,16 +28,21 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
         handleView,
         handleDelete,
         handleReopen,
+        handleCerrar,
         handleExportExcel,
         handleExportPdf,
         deleteDialogOpen,
         reopenDialogOpen,
+        cerrarDialogOpen,
         viajeToDelete,
         viajeToReopen,
+        viajeToCerrar,
         deleteMutation,
         reopenMutation,
+        cerrarMutation,
         closeDeleteDialog,
         closeReopenDialog,
+        closeCerrarDialog,
         loadingMessage,
     } = controller;
 
@@ -65,12 +71,14 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
                             onRowsPerPageChange={handleChangeRowsPerPage}
                             canManage={canManageViajes}
                             canReabrir={canReabrirViajes}
+                            canCerrar={canCerrarViajes}
                             onEdit={canManageViajes ? handleEdit : undefined}
                             onView={canViewViajes ? handleView : undefined}
                             onDelete={canManageViajes ? handleDelete : undefined}
                             onExportExcel={canViewViajes ? handleExportExcel : undefined}
                             onExportPdf={canViewViajes ? handleExportPdf : undefined}
                             onReopen={canReabrirViajes ? handleReopen : undefined}
+                            onCerrar={canCerrarViajes ? handleCerrar : undefined}
                         />
                     </Box>
 
@@ -83,12 +91,14 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
                         onRowsPerPageChange={handleChangeRowsPerPage}
                         canManage={canManageViajes}
                         canReabrir={canReabrirViajes}
+                        canCerrar={canCerrarViajes}
                         onEdit={canManageViajes ? handleEdit : undefined}
                         onView={canViewViajes ? handleView : undefined}
                         onDelete={canManageViajes ? handleDelete : undefined}
                         onExportExcel={canViewViajes ? handleExportExcel : undefined}
                         onExportPdf={canViewViajes ? handleExportPdf : undefined}
                         onReopen={canReabrirViajes ? handleReopen : undefined}
+                        onCerrar={canCerrarViajes ? handleCerrar : undefined}
                     />
                 </>
             )}
@@ -108,6 +118,16 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
                 onConfirm={() => viajeToReopen && reopenMutation.mutate(viajeToReopen.viajeID)}
                 onClose={closeReopenDialog}
                 isLoading={reopenMutation.isPending}
+            />
+
+            <ConfirmDialog
+                open={cerrarDialogOpen}
+                title="Cerrar Viaje"
+                content={`¿Estás seguro de que deseas cerrar el viaje #${viajeToCerrar?.codigo}? Al cerrar se bloquearán las modificaciones y se habilitarán los reportes finales.`}
+                confirmText="Cerrar viaje"
+                onConfirm={() => viajeToCerrar && cerrarMutation.mutate(viajeToCerrar.viajeID)}
+                onClose={closeCerrarDialog}
+                isLoading={cerrarMutation.isPending}
             />
 
             <LoadingModal open={!!loadingMessage} message={loadingMessage || ''} />

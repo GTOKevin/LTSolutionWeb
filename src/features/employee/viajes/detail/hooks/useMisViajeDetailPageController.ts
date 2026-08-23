@@ -10,8 +10,6 @@ import type {
     CreateMiViajeIncidenteDto,
     UpdateMiViajeKmsDto,
 } from '@entities/employee/model/types';
-import { usePermission } from '@shared/lib/hooks/usePermission';
-import { PERMISSIONS } from '@shared/constants/permissions';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { getErrorMessage } from '@shared/utils/api-errors';
 import { useToast } from '@shared/components/ui/Toast/useToast';
@@ -52,8 +50,6 @@ export function useMisViajeDetailPageController() {
     const queryClient = useQueryClient();
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const viajeId = Number(id);
-    const canManageViajeKms = usePermission(PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR);
-    const canManageViaje = usePermission(PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR);
     const [activeTabKey, setActiveTabKey] = useState<MisViajeTabKey>('resumen');
     const resourceFilters = { page: 1, size: 100 };
 
@@ -247,8 +243,8 @@ export function useMisViajeDetailPageController() {
 
     return {
         activeVisibleTabKey,
-        canManageViaje,
-        canManageViajeKms,
+        canManageViaje: true,
+        canManageViajeKms: true,
         createGuiaMutation,
         createIncidenteMutation,
         currentTabIndex,

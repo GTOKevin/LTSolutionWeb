@@ -22,6 +22,7 @@ interface ViajeEditContentProps {
     isViewOnly: boolean;
     viajeId: number;
     tiposIncidente: SelectItem[];
+    viajeEstados?: SelectItem[];
 }
 
 export function ViajeEditContent({
@@ -34,6 +35,7 @@ export function ViajeEditContent({
     isViewOnly,
     viajeId,
     tiposIncidente,
+    viajeEstados,
 }: ViajeEditContentProps) {
     return (
         <>
@@ -45,6 +47,7 @@ export function ViajeEditContent({
                     onSave={onSaveResumen}
                     isSaving={isSavingResumen}
                     isViewOnly={isViewOnly}
+                    viajeEstados={viajeEstados}
                 />
             </TabPanel>
             <TabPanel value={activeTab} index={1}>

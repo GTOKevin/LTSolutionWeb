@@ -42,15 +42,17 @@ export interface SidebarMenuItem {
     icon: React.ReactNode;
     children?: SidebarMenuItem[];
     permission?: string | string[];
+    requiresEmployee?: boolean;
     section?: string;
 }
 
 interface SidebarProps {
     menu: SidebarMenuItem[];
     onRequestChangePassword?: () => void;
+    isEmployee?: boolean;
 }
 
-export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
+export function Sidebar({ menu, onRequestChangePassword, isEmployee = false }: SidebarProps) {
     const navigate = useNavigate();
     const location = useLocation();
     const { sidebarOpen, setSidebarOpen } = useLayoutStore();
@@ -82,10 +84,13 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
             // Check if parent has permission
             if (!hasUserPermission(user, item.permission)) return acc;
 
+            // Portal items only visible for users associated to a collaborator
+            if (item.requiresEmployee && !isEmployee) return acc;
+
             // If it has children, filter them too
             if (item.children) {
                 const filteredChildren = item.children.filter(child =>
-                    hasUserPermission(user, child.permission)
+                    hasUserPermission(user, child.permission) && (!child.requiresEmployee || isEmployee)
                 );
 
                 // If after filtering children none remain, and it was a category (no path), skip it
@@ -104,7 +109,7 @@ export function Sidebar({ menu, onRequestChangePassword }: SidebarProps) {
             }
             return acc;
         }, []);
-    }, [menu, user]);
+    }, [menu, user, isEmployee]);
 
     const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>(() => {
         const initialOpen: Record<string, boolean> = {};

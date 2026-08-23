@@ -49,6 +49,7 @@ export interface AppNavigationItem {
     icon: React.ReactNode;
     children?: AppNavigationItem[];
     permission?: AppPermission;
+    requiresEmployee?: boolean;
     section?: string;
 }
 
@@ -64,27 +65,34 @@ export interface AppBottomNavItem {
     icon: React.ReactNode;
     path?: string;
     permission?: AppPermission;
+    requiresEmployee?: boolean;
     context: 'admin' | 'portal';
     action?: 'toggle-sidebar';
 }
 
-export const APP_DEFAULT_ROUTE_PRIORITY: Array<{ route: string; permission: AppPermission }> = [
+export interface AppDefaultRoutePriorityItem {
+    route: string;
+    permission?: AppPermission;
+    requiresEmployee?: boolean;
+}
+
+export const APP_DEFAULT_ROUTE_PRIORITY: AppDefaultRoutePriorityItem[] = [
     { route: APP_PATHS.dashboard, permission: PERMISSIONS.DASHBOARD.VER },
     {
         route: APP_PATHS.misViajes,
-        permission: PERMISSIONS.EMPLOYEE.VIAJES.VER,
+        requiresEmployee: true,
     },
     {
         route: APP_PATHS.misPagos,
-        permission: PERMISSIONS.EMPLOYEE.PAGOS.VER,
+        requiresEmployee: true,
     },
     {
         route: APP_PATHS.misLicencias,
-        permission: PERMISSIONS.EMPLOYEE.LICENCIAS.VER,
+        requiresEmployee: true,
     },
     {
         route: APP_PATHS.misDocumentos,
-        permission: PERMISSIONS.EMPLOYEE.DOCUMENTOS.VER,
+        requiresEmployee: true,
     },
     { route: APP_PATHS.clientes, permission: PERMISSIONS.CLIENTES.VER },
     { route: APP_PATHS.viajes, permission: PERMISSIONS.VIAJES.VER },
@@ -104,30 +112,31 @@ export const APP_SIDEBAR_MENU: AppNavigationItem[] = [
         text: 'Portal del Empleado',
         icon: <BadgeIcon />,
         section: 'Autoservicio',
+        requiresEmployee: true,
         children: [
             {
                 text: 'Mis Viajes',
                 path: APP_PATHS.misViajes,
                 icon: <RouteIcon />,
-                permission: PERMISSIONS.EMPLOYEE.VIAJES.VER,
+                requiresEmployee: true,
             },
             {
                 text: 'Mis Pagos',
                 path: APP_PATHS.misPagos,
                 icon: <AccountBalanceWalletIcon />,
-                permission: PERMISSIONS.EMPLOYEE.PAGOS.VER,
+                requiresEmployee: true,
             },
             {
                 text: 'Mis Licencias',
                 path: APP_PATHS.misLicencias,
                 icon: <EventNoteIcon />,
-                permission: PERMISSIONS.EMPLOYEE.LICENCIAS.VER,
+                requiresEmployee: true,
             },
             {
                 text: 'Mis Documentos',
                 path: APP_PATHS.misDocumentos,
                 icon: <DescriptionIcon />,
-                permission: PERMISSIONS.EMPLOYEE.DOCUMENTOS.VER,
+                requiresEmployee: true,
             },
         ],
     },
@@ -316,28 +325,28 @@ export const APP_BOTTOM_NAV_ITEMS: AppBottomNavItem[] = [
         label: 'Viajes',
         icon: <RouteIcon />,
         path: APP_PATHS.misViajes,
-        permission: PERMISSIONS.EMPLOYEE.VIAJES.VER,
+        requiresEmployee: true,
         context: 'portal',
     },
     {
         label: 'Pagos',
         icon: <AccountBalanceWalletIcon />,
         path: APP_PATHS.misPagos,
-        permission: PERMISSIONS.EMPLOYEE.PAGOS.VER,
+        requiresEmployee: true,
         context: 'portal',
     },
     {
         label: 'Licencias',
         icon: <EventNoteIcon />,
         path: APP_PATHS.misLicencias,
-        permission: PERMISSIONS.EMPLOYEE.LICENCIAS.VER,
+        requiresEmployee: true,
         context: 'portal',
     },
     {
         label: 'Documentos',
         icon: <BadgeIcon />,
         path: APP_PATHS.misDocumentos,
-        permission: PERMISSIONS.EMPLOYEE.DOCUMENTOS.VER,
+        requiresEmployee: true,
         context: 'portal',
     },
     {

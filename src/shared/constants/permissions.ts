@@ -39,6 +39,7 @@ export const PERMISSIONS = {
         VER: 'VIAJES_VER',
         GESTIONAR: 'VIAJES_GESTIONAR',
         REABRIR: 'VIAJES_REABRIR',
+        CERRAR: 'VIAJES_CERRAR',
     },
     FLOTA: {
         VER: 'FLOTA_VER',

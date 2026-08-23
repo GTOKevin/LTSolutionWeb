@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
     Alert,
     Box,
@@ -14,10 +15,14 @@ import {
 import {
     ArrowBack as ArrowBackIcon,
     DirectionsCar as DirectionsCarIcon,
+    Lock as LockIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { getErrorMessage } from '@/shared/utils/api-errors';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
+import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
+import { useCerrarViaje } from '@features/viaje/hooks/useCerrarViaje';
 import { PaperCard } from './shared/PaperCard';
 import { ViajeTimeline } from './ViajeTimeline';
 import { ViajeDetailAccordions } from './ViajeDetailAccordions';
@@ -29,6 +34,7 @@ interface ViajeDetailPageContentProps {
 
 export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContentProps) {
     const navigate = useNavigate();
+    const [cerrarDialogOpen, setCerrarDialogOpen] = useState(false);
 
     const {
         viaje,
@@ -36,8 +42,13 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
         isError,
         error,
         isViewOnly,
+        canCerrarViajes,
         tiposIncidente,
     } = useViajeDetailPageController({ mode });
+
+    const cerrarMutation = useCerrarViaje(() => {
+        setCerrarDialogOpen(false);
+    });
 
     if (isLoading) {
         return (
@@ -66,6 +77,7 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
 
     const viajeCodigo = viaje.codigo || `#${viaje.viajeID}`;
     const estadoNombre = viaje.estadoNombre || null;
+    const puedeCerrar = canCerrarViajes && viaje.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO && !viaje.cerrado;
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 4 }}>
@@ -119,6 +131,18 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
                         </Box>
                     </Stack>
 
+                    {puedeCerrar ? (
+                        <Button
+                            variant="contained"
+                            size="small"
+                            startIcon={<LockIcon />}
+                            onClick={() => setCerrarDialogOpen(true)}
+                            sx={{ borderRadius: 2 }}
+                        >
+                            Cerrar viaje
+                        </Button>
+                    ) : null}
+
                 </Stack>
             </PaperCard>
 
@@ -158,6 +182,21 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
                     />
                 </Grid>
             </Grid>
+
+            <ConfirmDialog
+                open={cerrarDialogOpen}
+                title="Cerrar Viaje"
+                content={`¿Estás seguro de que deseas cerrar el viaje ${viajeCodigo}? Al cerrar se bloquearán las modificaciones y se habilitarán los reportes finales.`}
+                confirmText="Cerrar viaje"
+                cancelText="Cancelar"
+                severity="primary"
+                isLoading={cerrarMutation.isPending}
+                onClose={() => setCerrarDialogOpen(false)}
+                onConfirm={() => {
+                    if (viaje.cerrado) return;
+                    cerrarMutation.mutate(viaje.viajeID);
+                }}
+            />
         </Box>
     );
 }

@@ -5,6 +5,8 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import type { UpdateViajeDto } from '@/entities/viaje/model/types';
+import { estadoApi } from '@entities/estado/api/estado.api';
+import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
 import { useViajeIncidenteOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { useToast } from '@/shared/components/ui/Toast';
 import { usePermission } from '@/shared/lib/hooks/usePermission';
@@ -35,6 +37,13 @@ export function ViajeEditPageContent() {
     });
 
     const { tiposIncidente } = useViajeIncidenteOptions(true);
+
+    // Catálogo de estados del viaje (necesario para proyectar el estado al
+    // registrar fechas de partida/descarga en el Resumen General).
+    const { data: viajeEstados } = useQuery({
+        queryKey: VIAJE_QUERY_KEYS.options.estados(),
+        queryFn: async () => (await estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE)) ?? [],
+    });
 
     useEffect(() => {
         if (viaje) {
@@ -83,7 +92,7 @@ export function ViajeEditPageContent() {
             kmInicio: formData.kmInicio === '' ? undefined : formData.kmInicio,
             kmLlegada: formData.kmLlegada === '' ? undefined : formData.kmLlegada,
             kmLlegadaBase: formData.kmLlegadaBase === '' ? undefined : formData.kmLlegadaBase,
-            estadoID: viaje.estadoID,
+            estadoID: formData.estadoID ?? viaje.estadoID,
             requiereEscolta: formData.requiereEscolta,
             tipoMedidaID: viaje.tipoMedidaID,
             largo: formData.largo === '' ? undefined : formData.largo,
@@ -133,6 +142,7 @@ export function ViajeEditPageContent() {
                 isViewOnly={isViewOnly}
                 viajeId={viajeId}
                 tiposIncidente={tiposIncidente || []}
+                viajeEstados={viajeEstados}
             />
         </ViajeEditShell>
     );
