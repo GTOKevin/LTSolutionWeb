@@ -89,7 +89,7 @@ export function ForgotPasswordPage() {
             >
                 <Stack direction="row" alignItems="center" spacing={2}>
                     <Box sx={{ color: 'primary.main', display: 'flex' }}>
-                         <TruckIcon sx={{ fontSize: 32 }} />
+                        <TruckIcon sx={{ fontSize: 32 }} />
                     </Box>
                     <Typography
                         variant="h6"
@@ -99,7 +99,7 @@ export function ForgotPasswordPage() {
                             color: 'text.primary',
                         }}
                     >
-                        HAZMAT Logistics{' '}
+                        Euro Transport{' '}
                         <Box
                             component="span"
                             sx={{
@@ -295,7 +295,7 @@ export function ForgotPasswordPage() {
                                 >
                                     {isPending ? <CircularProgress size={24} color="inherit" /> : 'Enviar enlace de recuperación'}
                                 </Button>
-                                
+
                                 <Link
                                     component={RouterLink}
                                     to={APP_PATHS.login}
@@ -321,7 +321,7 @@ export function ForgotPasswordPage() {
                     {/* Footer Text */}
                     <Box sx={{ mt: 4, textAlign: 'center' }}>
                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.6 }}>
-                            © {new Date().getFullYear()} HAZMAT Logistics Platform v2.4. <br />
+                            © {new Date().getFullYear()} Euro Transport Platform v2.4. <br />
                             Sistema seguro de gestión de transporte de cargas peligrosas.
                         </Typography>
                     </Box>

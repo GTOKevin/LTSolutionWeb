@@ -370,7 +370,7 @@ export function Sidebar({ menu, onRequestChangePassword, isEmployee = false }: S
                 </Box>
                 <Box sx={{ overflow: 'hidden' }}>
                     <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2} noWrap>
-                        LogisticsApp
+                        Euro Transport
                     </Typography>
                     <Typography variant="caption" color="text.secondary" noWrap>
                         Admin Console
