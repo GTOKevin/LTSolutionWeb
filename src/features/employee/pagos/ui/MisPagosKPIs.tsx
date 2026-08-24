@@ -20,7 +20,6 @@ interface MisPagosKPIsProps {
     paymentStats: PaymentStats;
     dataItems?: MiPagoDto[];
     onSelectPending: (pago: MiPagoDto) => void;
-    canConfirmPayments: boolean;
     isRefreshing?: boolean;
 }
 
@@ -28,7 +27,6 @@ export function MisPagosKPIs({
     paymentStats,
     dataItems = [],
     onSelectPending,
-    canConfirmPayments,
     isRefreshing = false,
 }: MisPagosKPIsProps) {
     const hasSingleCurrency = paymentStats.currencyTotals.length === 1;
@@ -104,7 +102,7 @@ export function MisPagosKPIs({
                     <Button
                         fullWidth
                         variant="contained"
-                        disabled={!canConfirmPayments || paymentStats.pendingCount === 0 || isRefreshing}
+                        disabled={paymentStats.pendingCount === 0 || isRefreshing}
                         onClick={() => {
                             const firstPending = dataItems.find((item) => item.confirmadoPago == null);
                             if (firstPending) onSelectPending(firstPending);

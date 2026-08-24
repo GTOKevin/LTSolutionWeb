@@ -68,8 +68,7 @@ export function MisViajesPageContent({ controller }: MisViajesPageContentProps) 
                     <MisViajesGrid
                         items={controller.data?.items ?? []}
                         onNavigate={controller.handleNavigate}
-                        canManageViajes={controller.canManageViajes}
-                        canQuickUpdate={(item) => controller.canManageViajes && !controller.isViajeWorkflowBlocked(item)}
+                        canQuickUpdate={(item) => !controller.isViajeWorkflowBlocked(item)}
                         getQuickActionLabel={controller.getQuickActionLabel}
                         onQuickUpdate={controller.handleOpenQuickStatus}
                     />
@@ -86,7 +85,7 @@ export function MisViajesPageContent({ controller }: MisViajesPageContentProps) 
                             emptyMessage="No tienes viajes registrados con los filtros seleccionados."
                             onView={(item) => controller.handleNavigate(item.viajeId)}
                             onPrimaryAction={(item) => controller.handleOpenQuickStatus(item.viajeId)}
-                            canPrimaryAction={(item) => controller.canManageViajes && !controller.isViajeWorkflowBlocked(item)}
+                            canPrimaryAction={(item) => !controller.isViajeWorkflowBlocked(item)}
                             getPrimaryActionLabel={(item) => controller.getQuickActionLabel(item) ?? 'Actualizar flujo'}
                             getCardStyle={(item, theme) => ({
                                 borderRadius: 4,

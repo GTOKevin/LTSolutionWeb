@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLayoutStore } from '@shared/store/layout.store';
-import { usePermission } from '@shared/lib/hooks/usePermission';
 import { useToast } from '@shared/components/ui/Toast/useToast';
 import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employee/api/employee-portal.api';
 import type { MiPagoDto, MiPagoFilters } from '@entities/employee/model/types';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
-import { PERMISSIONS } from '@shared/constants/permissions';
 import {
     formatDateOnly,
     getFirstDayOfCurrentMonthISO,
@@ -61,7 +59,6 @@ export function useMisPagosPageController() {
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const queryClient = useQueryClient();
     const { showToast } = useToast();
-    const canConfirmPayments = usePermission(PERMISSIONS.EMPLOYEE.PAGOS.CONFIRMAR);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [tipoPagoID, setTipoPagoID] = useState<number | ''>('');
@@ -181,7 +178,6 @@ export function useMisPagosPageController() {
     };
 
     return {
-        canConfirmPayments,
         confirmMutation,
         data,
         desde,

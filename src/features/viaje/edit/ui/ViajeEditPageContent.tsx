@@ -5,12 +5,14 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import type { UpdateViajeDto } from '@/entities/viaje/model/types';
+import { estadoApi } from '@entities/estado/api/estado.api';
+import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
 import { useViajeIncidenteOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { useToast } from '@/shared/components/ui/Toast';
 import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
 import { createResumenGeneralDataFromViaje, getViajeEditTabs } from '../model/viaje-edit-tabs';
-import type { ResumenGeneralData } from './tabs/ResumenGeneralTab';
+import type { ResumenGeneralData } from '../model/viaje-edit-tabs';
 import { ViajeEditShell } from './ViajeEditShell';
 import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
 import { ViajeEditContent } from './ViajeEditContent';
@@ -35,6 +37,13 @@ export function ViajeEditPageContent() {
     });
 
     const { tiposIncidente } = useViajeIncidenteOptions(true);
+
+    // Catálogo de estados del viaje (necesario para proyectar el estado al
+    // registrar fechas de partida/descarga en el Resumen General).
+    const { data: viajeEstados } = useQuery({
+        queryKey: VIAJE_QUERY_KEYS.options.estados(),
+        queryFn: async () => (await estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE)) ?? [],
+    });
 
     useEffect(() => {
         if (viaje) {
@@ -64,6 +73,14 @@ export function ViajeEditPageContent() {
     const handleSave = () => {
         if (!viaje) return;
 
+        // Guard explícito: nunca enviar `estadoID: 0`. Si el formulario no proyectó
+        // un estado (ni siquiera el del viaje), se bloquea el guardado.
+        const estadoID = formData.estadoID || viaje.estadoID;
+        if (!estadoID) {
+            showToast({ entity: 'Viaje', action: 'update', isError: true, message: 'El viaje no tiene un estado válido para guardar.' });
+            return;
+        }
+
         const payload: UpdateViajeDto = {
             viajeID: viaje.viajeID,
             cotizacionID: viaje.cotizacionID ?? null,
@@ -83,7 +100,7 @@ export function ViajeEditPageContent() {
             kmInicio: formData.kmInicio === '' ? undefined : formData.kmInicio,
             kmLlegada: formData.kmLlegada === '' ? undefined : formData.kmLlegada,
             kmLlegadaBase: formData.kmLlegadaBase === '' ? undefined : formData.kmLlegadaBase,
-            estadoID: viaje.estadoID,
+            estadoID,
             requiereEscolta: formData.requiereEscolta,
             tipoMedidaID: viaje.tipoMedidaID,
             largo: formData.largo === '' ? undefined : formData.largo,
@@ -133,6 +150,7 @@ export function ViajeEditPageContent() {
                 isViewOnly={isViewOnly}
                 viajeId={viajeId}
                 tiposIncidente={tiposIncidente || []}
+                viajeEstados={viajeEstados}
             />
         </ViajeEditShell>
     );

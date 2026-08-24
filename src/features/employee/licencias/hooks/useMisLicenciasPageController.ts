@@ -5,8 +5,6 @@ import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employe
 import type { MiLicenciaDto, MiLicenciaEstadoRevision, MiLicenciaFilters, CreateMiLicenciaRequestDto } from '@entities/employee/model/types';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
-import { usePermission } from '@shared/lib/hooks/usePermission';
-import { PERMISSIONS } from '@shared/constants/permissions';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
 import { useToast } from '@shared/components/ui/Toast';
 import { getErrorMessage } from '@shared/utils/api-errors';
@@ -16,7 +14,6 @@ export function useMisLicenciasPageController() {
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
     const { showToast } = useToast();
     const queryClient = useQueryClient();
-    const canSolicitarLicencia = usePermission(PERMISSIONS.EMPLOYEE.LICENCIAS.SOLICITAR);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [tipoLicenciaID, setTipoLicenciaID] = useState<number | ''>('');
@@ -154,7 +151,6 @@ export function useMisLicenciasPageController() {
     };
 
     return {
-        canSolicitarLicencia,
         canCancel,
         canEdit,
         cancelPending: cancelMutation.isPending,

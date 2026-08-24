@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { LoadingModal } from '@shared/components/ui/LoadingModal';
+import { CerrarViajeDialog } from '@features/viaje/ui/CerrarViajeDialog';
 import { ViajesMobileList } from './ViajesMobileList';
 import { ViajesTable } from './ViajesTable';
 import { ViajeKanbanBoard } from './ViajeKanbanBoard';
@@ -18,6 +19,7 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
         kanbanColumns,
         canManageViajes,
         canReabrirViajes,
+        canCerrarViajes,
         canViewViajes,
         page,
         rowsPerPage,
@@ -27,16 +29,20 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
         handleView,
         handleDelete,
         handleReopen,
+        handleCerrar,
         handleExportExcel,
         handleExportPdf,
         deleteDialogOpen,
         reopenDialogOpen,
+        cerrarDialogOpen,
         viajeToDelete,
         viajeToReopen,
+        viajeToCerrar,
         deleteMutation,
         reopenMutation,
         closeDeleteDialog,
         closeReopenDialog,
+        closeCerrarDialog,
         loadingMessage,
     } = controller;
 
@@ -65,12 +71,14 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
                             onRowsPerPageChange={handleChangeRowsPerPage}
                             canManage={canManageViajes}
                             canReabrir={canReabrirViajes}
+                            canCerrar={canCerrarViajes}
                             onEdit={canManageViajes ? handleEdit : undefined}
                             onView={canViewViajes ? handleView : undefined}
                             onDelete={canManageViajes ? handleDelete : undefined}
                             onExportExcel={canViewViajes ? handleExportExcel : undefined}
                             onExportPdf={canViewViajes ? handleExportPdf : undefined}
                             onReopen={canReabrirViajes ? handleReopen : undefined}
+                            onCerrar={canCerrarViajes ? handleCerrar : undefined}
                         />
                     </Box>
 
@@ -83,12 +91,14 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
                         onRowsPerPageChange={handleChangeRowsPerPage}
                         canManage={canManageViajes}
                         canReabrir={canReabrirViajes}
+                        canCerrar={canCerrarViajes}
                         onEdit={canManageViajes ? handleEdit : undefined}
                         onView={canViewViajes ? handleView : undefined}
                         onDelete={canManageViajes ? handleDelete : undefined}
                         onExportExcel={canViewViajes ? handleExportExcel : undefined}
                         onExportPdf={canViewViajes ? handleExportPdf : undefined}
                         onReopen={canReabrirViajes ? handleReopen : undefined}
+                        onCerrar={canCerrarViajes ? handleCerrar : undefined}
                     />
                 </>
             )}
@@ -109,6 +119,15 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
                 onClose={closeReopenDialog}
                 isLoading={reopenMutation.isPending}
             />
+
+            {viajeToCerrar ? (
+                <CerrarViajeDialog
+                    open={cerrarDialogOpen}
+                    viajeID={viajeToCerrar.viajeID}
+                    viajeCodigo={viajeToCerrar.codigo}
+                    onClose={closeCerrarDialog}
+                />
+            ) : null}
 
             <LoadingModal open={!!loadingMessage} message={loadingMessage || ''} />
         </>

@@ -27,6 +27,7 @@ export function useViajesPageController() {
     const canViewViajes = usePermission(PERMISSIONS.VIAJES.VER);
     const canManageViajes = usePermission(PERMISSIONS.VIAJES.GESTIONAR);
     const canReabrirViajes = usePermission(PERMISSIONS.VIAJES.REABRIR);
+    const canCerrarViajes = usePermission(PERMISSIONS.VIAJES.CERRAR);
     const listReports = useViajeListReports();
     const detailReports = useViajeDetailReports();
     const defaultDraftFilters = useMemo(() => createDefaultViajeListDraftFilters(), []);
@@ -41,6 +42,8 @@ export function useViajesPageController() {
     const [viajeToDelete, setViajeToDelete] = useState<ViajeListItem | null>(null);
     const [reopenDialogOpen, setReopenDialogOpen] = useState(false);
     const [viajeToReopen, setViajeToReopen] = useState<ViajeListItem | null>(null);
+    const [cerrarDialogOpen, setCerrarDialogOpen] = useState(false);
+    const [viajeToCerrar, setViajeToCerrar] = useState<ViajeListItem | null>(null);
     const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
 
     const queryFilters = useMemo<ViajeFiltersType>(() => ({
@@ -110,6 +113,11 @@ export function useViajesPageController() {
         setReopenDialogOpen(true);
     }, []);
 
+    const handleCerrar = useCallback((item: ViajeListItem) => {
+        setViajeToCerrar(item);
+        setCerrarDialogOpen(true);
+    }, []);
+
     const handleChangePage = useCallback((_: unknown, newPage: number) => {
         setPage(newPage);
     }, []);
@@ -175,6 +183,7 @@ export function useViajesPageController() {
         canViewViajes,
         canManageViajes,
         canReabrirViajes,
+        canCerrarViajes,
         page,
         rowsPerPage,
         draftFilters,
@@ -193,12 +202,15 @@ export function useViajesPageController() {
         viajeToReopen,
         deleteMutation,
         reopenMutation,
+        cerrarDialogOpen,
+        viajeToCerrar,
         loadingMessage: listReports.loadingMessage ?? detailReports.loadingMessage,
         handleCreate,
         handleView,
         handleEdit,
         handleDelete,
         handleReopen,
+        handleCerrar,
         handleChangePage,
         handleChangeRowsPerPage,
         handleDraftFilterChange,
@@ -210,5 +222,6 @@ export function useViajesPageController() {
         handleExportPdf: detailReports.handleExportPdf,
         closeDeleteDialog: () => setDeleteDialogOpen(false),
         closeReopenDialog: () => setReopenDialogOpen(false),
+        closeCerrarDialog: () => setCerrarDialogOpen(false),
     };
 }

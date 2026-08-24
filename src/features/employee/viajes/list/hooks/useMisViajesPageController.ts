@@ -7,8 +7,6 @@ import type { MiViajeFilters } from '@entities/employee/model/types';
 import { getFirstDayOfCurrentMonthISO, getLastDayOfCurrentMonthISO } from '@shared/utils/date-utils';
 import { ROWS_PER_PAGE_OPTIONS } from '@shared/constants/constantes';
 import { useLayoutStore } from '@shared/store/layout.store';
-import { usePermission } from '@shared/lib/hooks/usePermission';
-import { PERMISSIONS } from '@shared/constants/permissions';
 import { useToast } from '@shared/components/ui/Toast/useToast';
 import { getErrorMessage } from '@shared/utils/api-errors';
 import { useViajeCatalogOptions } from '@features/viaje/options/hooks/useViajeCatalogOptions';
@@ -24,7 +22,6 @@ export function useMisViajesPageController() {
     const queryClient = useQueryClient();
     const { showToast } = useToast();
     const setPageTitle = useLayoutStore((state) => state.setPageTitle);
-    const canManageViajes = usePermission(PERMISSIONS.EMPLOYEE.VIAJES.GESTIONAR);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(ROWS_PER_PAGE_OPTIONS[0]);
     const [search, setSearch] = useState('');
@@ -166,7 +163,6 @@ export function useMisViajesPageController() {
     };
 
     return {
-        canManageViajes,
         data,
         desde,
         hasta,

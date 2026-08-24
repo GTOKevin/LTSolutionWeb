@@ -5,6 +5,9 @@ import { useAuthStore } from '@shared/store/auth.store';
 import { ProtectedRoute } from '@shared/lib/guards/ProtectedRoute';
 import { PublicRoute } from '@shared/lib/guards/PublicRoute';
 import { PermissionGuard } from '@shared/lib/guards/PermissionGuard';
+import { EmployeeGuard } from '@app/providers/guards/EmployeeGuard';
+import { useEmployeeAssociation } from '@features/profile';
+import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { AppShell } from '@app/layout/ui/AppShell';
 import { env } from '@shared/config/env';
@@ -69,28 +72,67 @@ function LoadingFallback() {
 function RootRedirect() {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
     const user = useAuthStore((state) => state.user);
-    return <Navigate to={isAuthenticated ? getDefaultAppRoute(user) : APP_PATHS.login} replace />;
+    const { isEmployee, isEmployeeLoading, isEmployeeError, retryProfile } = useEmployeeAssociation();
+
+    if (!isAuthenticated) {
+        return <Navigate to={APP_PATHS.login} replace />;
+    }
+
+    if (isEmployeeLoading) {
+        return <LoadingFallback />;
+    }
+
+    if (isEmployeeError) {
+        return (
+            <Box sx={{ p: 4 }}>
+                <FetchErrorState
+                    message="No se pudo verificar tu perfil para determinar la vista de inicio. Intenta nuevamente."
+                    onRetry={retryProfile}
+                />
+            </Box>
+        );
+    }
+
+    return <Navigate to={getDefaultAppRoute(user, isEmployee)} replace />;
 }
 
 function AppIndexRedirect() {
     const user = useAuthStore((state) => state.user);
-    return <Navigate to={getDefaultAppRoute(user)} replace />;
+    const { isEmployee, isEmployeeLoading, isEmployeeError, retryProfile } = useEmployeeAssociation();
+
+    if (isEmployeeLoading) {
+        return <LoadingFallback />;
+    }
+
+    if (isEmployeeError) {
+        return (
+            <Box sx={{ p: 4 }}>
+                <FetchErrorState
+                    message="No se pudo verificar tu perfil para determinar la vista de inicio. Intenta nuevamente."
+                    onRetry={retryProfile}
+                />
+            </Box>
+        );
+    }
+
+    return <Navigate to={getDefaultAppRoute(user, isEmployee)} replace />;
 }
 
 interface GuardedAppRoute {
     path: string;
-    permission: string | string[];
+    permission?: string | string[];
+    requiresEmployee?: boolean;
     element: ReactNode;
     mode?: PermissionCheckMode;
 }
 
 const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: APP_ROUTE_SEGMENTS.dashboard, permission: PERMISSIONS.DASHBOARD.VER, element: <DashboardPage /> },
-    { path: APP_ROUTE_SEGMENTS.misPagos, permission: PERMISSIONS.EMPLOYEE.PAGOS.VER, element: <MisPagosPage /> },
-    { path: APP_ROUTE_SEGMENTS.misLicencias, permission: PERMISSIONS.EMPLOYEE.LICENCIAS.VER, element: <MisLicenciasPage /> },
+    { path: APP_ROUTE_SEGMENTS.misPagos, requiresEmployee: true, element: <MisPagosPage /> },
+    { path: APP_ROUTE_SEGMENTS.misLicencias, requiresEmployee: true, element: <MisLicenciasPage /> },
     {
         path: APP_ROUTE_SEGMENTS.misDocumentos,
-        permission: PERMISSIONS.EMPLOYEE.DOCUMENTOS.VER,
+        requiresEmployee: true,
         element: <MisDocumentosPage />,
     },
     { path: APP_ROUTE_SEGMENTS.clientes, permission: PERMISSIONS.CLIENTES.VER, element: <ClientesPage /> },
@@ -161,6 +203,9 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
 ];
 
 export function RouterProvider() {
+    const user = useAuthStore((state) => state.user);
+    const employeeRedirectTo = getDefaultAppRoute(user, false);
+
     return (
         <BrowserRouter>
             <Suspense fallback={<LoadingFallback />}>
@@ -208,18 +253,14 @@ export function RouterProvider() {
                         <Route index element={<AppIndexRedirect />} />
                         <Route path={APP_ROUTE_SEGMENTS.misViajes}>
                             <Route index element={
-                                <PermissionGuard
-                                    permission={PERMISSIONS.EMPLOYEE.VIAJES.VER}
-                                >
+                                <EmployeeGuard redirectTo={employeeRedirectTo}>
                                     <MisViajesPage />
-                                </PermissionGuard>
+                                </EmployeeGuard>
                             } />
                             <Route path=":id" element={
-                                <PermissionGuard
-                                    permission={PERMISSIONS.EMPLOYEE.VIAJES.VER}
-                                >
+                                <EmployeeGuard redirectTo={employeeRedirectTo}>
                                     <MisViajesDetallePage />
-                                </PermissionGuard>
+                                </EmployeeGuard>
                             } />
                         </Route>
                         <Route path={APP_ROUTE_SEGMENTS.profile} element={<PerfilPage />} />
@@ -228,9 +269,13 @@ export function RouterProvider() {
                                 key={route.path}
                                 path={route.path}
                                 element={
-                                    <PermissionGuard permission={route.permission} mode={route.mode}>
-                                        {route.element}
-                                    </PermissionGuard>
+                                    route.requiresEmployee ? (
+                                        <EmployeeGuard redirectTo={employeeRedirectTo}>{route.element}</EmployeeGuard>
+                                    ) : (
+                                        <PermissionGuard permission={route.permission!} mode={route.mode}>
+                                            {route.element}
+                                        </PermissionGuard>
+                                    )
                                 }
                             />
                         ))}

@@ -20,8 +20,6 @@ import { employeePortalApi, EMPLOYEE_PORTAL_QUERY_KEYS } from '@entities/employe
 import type { CreateMiLicenciaRequestDto, MiLicenciaDto } from '@entities/employee/model/types';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { LICENCIA_CODIGO, SECCION_MAESTRO } from '@entities/master-data/model/constants';
-import { usePermission } from '@shared/lib/hooks/usePermission';
-import { PERMISSIONS } from '@shared/constants/permissions';
 import {
     createLicenciaSolicitudSchema,
     getCreateLicenciaSolicitudDefaultValues,
@@ -45,7 +43,6 @@ interface SolicitarLicenciaModalProps {
 export function SolicitarLicenciaModal({ open, onClose, editing, editPending = false, onEditSubmit }: SolicitarLicenciaModalProps) {
     const queryClient = useQueryClient();
     const { showToast } = useToast();
-    const canSolicitarLicencia = usePermission(PERMISSIONS.EMPLOYEE.LICENCIAS.SOLICITAR);
     const isEditing = Boolean(editing);
     const dialogVisible = open || isEditing;
 
@@ -55,14 +52,14 @@ export function SolicitarLicenciaModal({ open, onClose, editing, editPending = f
     });
 
     useEffect(() => {
-        if (dialogVisible && canSolicitarLicencia) {
+        if (dialogVisible) {
             form.reset(
                 editing
                     ? getUpdateLicenciaSolicitudDefaultValues(editing)
                     : getCreateLicenciaSolicitudDefaultValues(),
             );
         }
-    }, [canSolicitarLicencia, dialogVisible, editing, form]);
+    }, [dialogVisible, editing, form]);
 
     const { data: tiposLicencia } = useQuery({
         queryKey: ['employee-portal', 'tipos-licencia'],
@@ -92,7 +89,7 @@ export function SolicitarLicenciaModal({ open, onClose, editing, editPending = f
 
     return (
         <Dialog
-            open={dialogVisible && canSolicitarLicencia}
+            open={dialogVisible}
             onClose={handleClose}
             fullWidth
             maxWidth="md"
@@ -227,7 +224,7 @@ export function SolicitarLicenciaModal({ open, onClose, editing, editPending = f
                 </Button>
                 <Button
                     variant="contained"
-                    disabled={createMutation.isPending || editPending || !canSolicitarLicencia}
+                    disabled={createMutation.isPending || editPending}
                     onClick={form.handleSubmit((values) => {
                         const payload: CreateMiLicenciaRequestDto = {
                             tipoLicenciaID: values.tipoLicenciaID,

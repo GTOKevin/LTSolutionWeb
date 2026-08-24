@@ -13,6 +13,7 @@ interface KanbanColumnProps {
     onEditCard?: (viaje: ViajeListItem) => void;
     onViewCard?: (viaje: ViajeListItem) => void;
     onDeleteCard?: (viaje: ViajeListItem) => void;
+    onCerrarCard?: (viaje: ViajeListItem) => void;
     color: string;
     bgColor: string;
 }
@@ -26,6 +27,7 @@ export function KanbanColumn({
     onEditCard,
     onViewCard,
     onDeleteCard,
+    onCerrarCard,
     color,
     bgColor,
 }: KanbanColumnProps) {
@@ -105,6 +107,7 @@ export function KanbanColumn({
                                     onEdit={isEditable ? onEditCard : undefined}
                                     onView={onViewCard}
                                     onDelete={isEditable ? onDeleteCard : undefined}
+                                    onCerrar={onCerrarCard}
                                 />
                             );
                         })}

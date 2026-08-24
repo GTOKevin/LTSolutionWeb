@@ -15,7 +15,6 @@ import {
 interface MisViajesGridProps {
     items: MiViajeListItemDto[];
     onNavigate: (id: number) => void;
-    canManageViajes: boolean;
     canQuickUpdate: (item: MiViajeListItemDto) => boolean;
     getQuickActionLabel: (item: MiViajeListItemDto) => string | null;
     onQuickUpdate: (id: number) => void;
@@ -24,7 +23,6 @@ interface MisViajesGridProps {
 export function MisViajesGrid({
     items,
     onNavigate,
-    canManageViajes,
     canQuickUpdate,
     getQuickActionLabel,
     onQuickUpdate,
@@ -120,7 +118,7 @@ export function MisViajesGrid({
                         </Box>
 
                         <Box sx={{ ml: 1, width: 'calc(100% - 8px)', display: 'flex', gap: 1.5 }}>
-                            {canManageViajes && canQuickUpdate(item) ? (
+                            {canQuickUpdate(item) ? (
                                 <Button
                                     variant="contained"
                                     onClick={(event) => {

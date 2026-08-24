@@ -404,6 +404,7 @@ export interface ViajeDetail {
     estadoID: number;
     estadoNombre: string | null;
     estadoCodigo: string | null;
+    cerrado: boolean;
     clienteID: number;
     clienteRazonSocial: string | null;
     colaboradorID: number;
@@ -531,6 +532,12 @@ export interface UpdateViajeDto extends CreateViajeDto {
     viajeID: number;
 }
 
+export interface UpdateEstadoViajePayload {
+    estadoId: number;
+    fechaPartida?: string;
+    fechaDescarga?: string;
+}
+
 export interface ViajeFilters extends PagedFilters {
     fechaInicio?: string;
     fechaFin?: string;
@@ -546,6 +553,7 @@ export interface ViajeListItem {
     viajeID: number;
     fechaCarga: string;
     fechaPartida?: string;
+    fechaDescarga?: string;
     requiereEscolta?: boolean;
     codigo?: string;
     kmLlegadaBase?: number;

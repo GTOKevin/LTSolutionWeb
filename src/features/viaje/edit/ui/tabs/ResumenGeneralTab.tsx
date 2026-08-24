@@ -4,28 +4,15 @@ import {
     Grid, Divider, Button, Chip, CircularProgress
 } from '@mui/material';
 import type { Viaje } from '@/entities/viaje/model/types';
+import type { SelectItem } from '@/shared/model/types';
+import { resolveViajeEstadoProyectado } from '@entities/viaje/model/status';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import type { Dayjs } from 'dayjs';
+import type { ResumenGeneralData } from '../../model/viaje-edit-tabs';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import AnalyticsOutlinedIcon from '@mui/icons-material/AnalyticsOutlined';
 import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
-
-export interface ResumenGeneralData {
-    fechaCarga: Dayjs | null;
-    fechaPartida: Dayjs | null;
-    fechaLlegada: Dayjs | null;
-    fechaDescarga: Dayjs | null;
-    fechaLlegadaBase: Dayjs | null;
-    kmInicio: number | '';
-    kmLlegada: number | '';
-    kmLlegadaBase: number | '';
-    largo: number | '';
-    ancho: number | '';
-    alto: number | '';
-    peso: number | '';
-    requiereEscolta: boolean;
-}
 
 interface ResumenGeneralTabProps {
     viaje: Viaje;
@@ -34,6 +21,7 @@ interface ResumenGeneralTabProps {
     onSave?: () => void;
     isSaving?: boolean;
     isViewOnly?: boolean;
+    viajeEstados?: SelectItem[];
 }
 
 const getConductorNombre = (viaje: Viaje) =>
@@ -51,15 +39,42 @@ const getUbigeoDescripcion = (ubigeo?: Viaje['origen']) =>
 const getDisplayValue = (value: string | null | undefined, fallback: string) =>
     value?.trim() ? value : fallback;
 
-export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving = false, isViewOnly }: ResumenGeneralTabProps) {
+export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving = false, isViewOnly, viajeEstados }: ResumenGeneralTabProps) {
     const handleNumberChange = (field: keyof ResumenGeneralData) => (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         onChange({ [field]: val === '' ? '' : Number(val) });
     };
 
+    // Al registrar fecha de partida/descarga se proyecta el estado del viaje sin
+    // degradar: si el estado actual es anterior al objetivo en el flujo, se
+    // actualiza estadoID/estadoNombre al proyectado (resuelto desde el catálogo).
+    const handleFechaChange = (field: 'fechaPartida' | 'fechaDescarga') => (date: Dayjs | null) => {
+        const next: Partial<ResumenGeneralData> = { [field]: date };
+        const fechaActualStr = (value: Dayjs | null | undefined) => (value ? value.format('YYYY-MM-DD') : undefined);
+
+        const estadoProyectado = resolveViajeEstadoProyectado(
+            {
+                fechaPartida: field === 'fechaPartida' ? fechaActualStr(date) : fechaActualStr(formData.fechaPartida),
+                fechaDescarga: field === 'fechaDescarga' ? fechaActualStr(date) : fechaActualStr(formData.fechaDescarga),
+            },
+            viaje.estado?.codigo,
+            viajeEstados,
+        );
+
+        if (estadoProyectado) {
+            next.estadoID = estadoProyectado.estadoID;
+            next.estadoNombre = estadoProyectado.estadoNombre;
+        }
+
+        onChange(next);
+    };
+
     const conductorNombre = getConductorNombre(viaje);
     const origenDescripcion = getUbigeoDescripcion(viaje.origen);
     const destinoDescripcion = getUbigeoDescripcion(viaje.destino);
+
+    const estadoMostrado = formData.estadoNombre || viaje.estado?.nombre || 'Sin estado';
+    const estadoDifiere = Boolean(formData.estadoNombre && viaje.estado?.nombre && formData.estadoNombre !== viaje.estado.nombre);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -210,11 +225,16 @@ export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving 
                                         }}
                                     >
                                         <Chip
-                                            label={viaje.estado?.nombre || 'Sin estado'}
+                                            label={estadoMostrado}
                                             color="info"
                                             size="small"
                                             sx={{ fontWeight: 600 }}
                                         />
+                                        {estadoDifiere && (
+                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                                El estado del viaje se actualizará a «{formData.estadoNombre}» al guardar los cambios.
+                                            </Typography>
+                                        )}
                                     </Box>
                                 </Box>
                             </Grid>
@@ -239,7 +259,7 @@ export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving 
                                     <DatePicker
                                         slotProps={{ textField: { fullWidth: true, size: 'small', sx: { bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } } } }}
                                         value={formData.fechaPartida}
-                                        onChange={(date) => onChange({ fechaPartida: date })}
+                                        onChange={handleFechaChange('fechaPartida')}
                                         disabled={isViewOnly}
                                     />
                                 </Box>
@@ -265,7 +285,7 @@ export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving 
                                     <DatePicker
                                         slotProps={{ textField: { fullWidth: true, size: 'small', sx: { bgcolor: 'background.paper', '& .MuiOutlinedInput-root': { borderRadius: 2 } } } }}
                                         value={formData.fechaDescarga}
-                                        onChange={(date) => onChange({ fechaDescarga: date })}
+                                        onChange={handleFechaChange('fechaDescarga')}
                                         disabled={isViewOnly}
                                     />
                                 </Box>

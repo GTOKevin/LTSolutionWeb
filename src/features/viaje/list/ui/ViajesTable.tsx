@@ -9,7 +9,7 @@ import {
     Tooltip,
     IconButton
 } from '@mui/material';
-import { ArrowForward, LockOpen } from '@mui/icons-material';
+import { ArrowForward, Lock, LockOpen } from '@mui/icons-material';
 import type { ViajeListItem } from '@entities/viaje/model/types';
 import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
 import type { PagedResponse } from '@/shared/model/types';
@@ -26,12 +26,14 @@ interface Props {
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     canManage?: boolean;
     canReabrir?: boolean;
+    canCerrar?: boolean;
     onEdit?: (viaje: ViajeListItem) => void;
     onDelete?: (viaje: ViajeListItem) => void;
     onView?: (viaje: ViajeListItem) => void;
     onExportExcel?: (viaje: ViajeListItem) => void;
     onExportPdf?: (viaje: ViajeListItem) => void;
     onReopen?: (viaje: ViajeListItem) => void;
+    onCerrar?: (viaje: ViajeListItem) => void;
 }
 
 export function ViajesTable({
@@ -43,12 +45,14 @@ export function ViajesTable({
     onRowsPerPageChange,
     canManage = false,
     canReabrir = false,
+    canCerrar = false,
     onEdit,
     onDelete,
     onView,
     onExportExcel,
     onExportPdf,
-    onReopen
+    onReopen,
+    onCerrar
 }: Props) {
     const theme = useTheme();
     const getRouteLabel = (value?: string) => value?.split('-')[2]?.trim() || value || 'Ruta no registrada';
@@ -123,6 +127,7 @@ export function ViajesTable({
                 const isEditable = canManage && !viaje.cerrado;
                 const showReports = viaje.cerrado && Boolean(onExportExcel || onExportPdf);
                 const showReopen = canReabrir && viaje.cerrado;
+                const showCerrar = canCerrar && onCerrar && viaje.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO && !viaje.cerrado;
 
                 return (
                     <>
@@ -245,6 +250,26 @@ export function ViajesTable({
                                             }}
                                         >
                                             <LockOpen fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
+                                {showCerrar && (
+                                    <Tooltip title="Cerrar Viaje">
+                                        <IconButton
+                                            size="small"
+                                            color="success"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onCerrar?.(viaje);
+                                            }}
+                                            sx={{
+                                                bgcolor: alpha(theme.palette.success.main, 0.1),
+                                                '&:hover': {
+                                                    bgcolor: alpha(theme.palette.success.main, 0.2),
+                                                }
+                                            }}
+                                        >
+                                            <Lock fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
                                 )}

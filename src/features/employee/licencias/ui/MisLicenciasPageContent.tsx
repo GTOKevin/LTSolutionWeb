@@ -103,16 +103,14 @@ export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentP
                         Consulta el estado de tus permisos laborales, solicita nuevas ausencias y gestiona tus días disponibles con total transparencia.
                     </Typography>
                 </Box>
-                {controller.canSolicitarLicencia ? (
-                    <Button
-                        variant="contained"
-                        onClick={() => controller.setDialogOpen(true)}
-                        startIcon={<CheckCircleOutline sx={{ transform: 'rotate(45deg)' }} />}
-                        sx={{ borderRadius: 3, px: 4, py: 1.5, fontWeight: 700, boxShadow: 'none', '&:hover': { boxShadow: 'none' } }}
-                    >
-                        Solicitar Licencia
-                    </Button>
-                ) : null}
+                <Button
+                    variant="contained"
+                    onClick={() => controller.setDialogOpen(true)}
+                    startIcon={<CheckCircleOutline sx={{ transform: 'rotate(45deg)' }} />}
+                    sx={{ borderRadius: 3, px: 4, py: 1.5, fontWeight: 700, boxShadow: 'none', '&:hover': { boxShadow: 'none' } }}
+                >
+                    Solicitar Licencia
+                </Button>
             </Box>
 
             {controller.hasBlockingError ? (
@@ -257,9 +255,9 @@ export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentP
                                 onPageChange={controller.handleChangePage}
                                 onRowsPerPageChange={controller.handleChangeRowsPerPage}
                                 onCancel={controller.handleOpenCancel}
-                                canCancel={(item) => controller.canSolicitarLicencia && controller.canCancel(item)}
+                                canCancel={controller.canCancel}
                                 onEdit={controller.handleOpenEdit}
-                                canEdit={(item) => controller.canSolicitarLicencia && controller.canEdit(item)}
+                                canEdit={controller.canEdit}
                                 onViewDetail={controller.handleOpenDetail}
                                 onPreviewImages={handlePreviewRutas}
                             />
@@ -390,7 +388,7 @@ export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentP
                                                             </IconButton>
                                                         </Tooltip>
                                                     ) : null}
-                                                    {controller.canSolicitarLicencia && item.aceptado === null ? (
+                                                    {item.aceptado === null ? (
                                                         <>
                                                             <Tooltip title="Editar">
                                                                 <IconButton size="small" onClick={() => controller.handleOpenEdit(item)}>

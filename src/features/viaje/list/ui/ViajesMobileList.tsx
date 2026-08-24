@@ -23,6 +23,7 @@ import {
     Person as PersonIcon,
     CalendarToday as CalendarIcon,
     LockOpen as LockOpenIcon,
+    Lock as LockIcon,
     Description as DescriptionIcon,
     PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
@@ -42,12 +43,14 @@ interface ViajesMobileListProps {
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     canManage?: boolean;
     canReabrir?: boolean;
+    canCerrar?: boolean;
     onView?: (viaje: ViajeListItem) => void;
     onEdit?: (viaje: ViajeListItem) => void;
     onDelete?: (viaje: ViajeListItem) => void;
     onExportExcel?: (viaje: ViajeListItem) => void;
     onExportPdf?: (viaje: ViajeListItem) => void;
     onReopen?: (viaje: ViajeListItem) => void;
+    onCerrar?: (viaje: ViajeListItem) => void;
 }
 
 export function ViajesMobileList({
@@ -59,12 +62,14 @@ export function ViajesMobileList({
     onRowsPerPageChange,
     canManage = false,
     canReabrir = false,
+    canCerrar = false,
     onView,
     onEdit,
     onDelete,
     onExportExcel,
     onExportPdf,
-    onReopen
+    onReopen,
+    onCerrar
 }: ViajesMobileListProps) {
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -82,7 +87,7 @@ export function ViajesMobileList({
         setSelectedViaje(null);
     };
 
-    const handleAction = (action: 'view' | 'edit' | 'delete' | 'reopen' | 'excel' | 'pdf') => {
+    const handleAction = (action: 'view' | 'edit' | 'delete' | 'reopen' | 'cerrar' | 'excel' | 'pdf') => {
         if (!selectedViaje) return;
 
         switch (action) {
@@ -97,6 +102,9 @@ export function ViajesMobileList({
                 break;
             case 'reopen':
                 onReopen?.(selectedViaje);
+                break;
+            case 'cerrar':
+                onCerrar?.(selectedViaje);
                 break;
             case 'excel':
                 onExportExcel?.(selectedViaje);
@@ -162,6 +170,9 @@ export function ViajesMobileList({
     const isEditable = canManage && Boolean(selectedViaje && !selectedViaje.cerrado);
     const showReports = Boolean(selectedViaje?.cerrado && (onExportExcel || onExportPdf));
     const showReopen = canReabrir && Boolean(selectedViaje?.cerrado);
+    const showCerrar = canCerrar && Boolean(
+        selectedViaje?.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO && !selectedViaje.cerrado,
+    );
 
     return (
         <Box sx={{ display: { xs: 'block', md: 'none' }, pb: 12 }}>
@@ -311,6 +322,13 @@ export function ViajesMobileList({
                     <MenuItem onClick={() => handleAction('reopen')}>
                         <LockOpenIcon fontSize="small" color="warning" sx={{ mr: 1.5 }} />
                         Reabrir Viaje
+                    </MenuItem>
+                )}
+
+                {showCerrar && (
+                    <MenuItem onClick={() => handleAction('cerrar')}>
+                        <LockIcon fontSize="small" color="success" sx={{ mr: 1.5 }} />
+                        Cerrar Viaje
                     </MenuItem>
                 )}
 
