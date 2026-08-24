@@ -100,7 +100,7 @@ export function LoginForm() {
                             color: colors.textPrimary,
                         }}
                     >
-                        HAZMAT Logística
+                        Euro Transport
                     </Typography>
                 </Stack>
                 <IconButton onClick={(e) => setThemeAnchorEl(e.currentTarget)} sx={{ color: colors.primary }}>
@@ -183,10 +183,10 @@ export function LoginForm() {
                 )}
 
                 {loginErrorMessage && (
-                    <Alert 
-                        severity="error" 
-                        sx={{ 
-                            mb: 3, 
+                    <Alert
+                        severity="error"
+                        sx={{
+                            mb: 3,
                             borderRadius: 2,
                         }}
                     >
