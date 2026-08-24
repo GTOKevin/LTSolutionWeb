@@ -33,7 +33,7 @@ function MisViajeGuiasFormCard({ controller }: MisViajeGuiasFormCardProps) {
         getCreateMisViajeGuiaDefaultValues(),
     );
 
-    const canEdit = controller.canManageViaje && !controller.isWorkflowBlocked;
+    const canEdit = !controller.isWorkflowBlocked;
 
     const handleSubmit = async () => {
         await controller.createGuiaMutation.mutateAsync(

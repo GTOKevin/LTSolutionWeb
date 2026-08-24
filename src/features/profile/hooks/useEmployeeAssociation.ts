@@ -6,5 +6,7 @@ export function useEmployeeAssociation() {
     return {
         isEmployee: profileQuery.data?.usuario.tieneColaboradorAsociado ?? false,
         isEmployeeLoading: profileQuery.isLoading,
+        isEmployeeError: profileQuery.isError,
+        retryProfile: () => void profileQuery.refetch(),
     };
 }

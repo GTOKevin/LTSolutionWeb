@@ -38,7 +38,7 @@ function MisViajeIncidentesFormCard({ controller }: MisViajeIncidentesFormCardPr
         getCreateMisViajeIncidenteDefaultValues(),
     );
 
-    const canEdit = controller.canManageViaje && !controller.isWorkflowBlocked;
+    const canEdit = !controller.isWorkflowBlocked;
 
     const handleSubmit = async () => {
         await controller.createIncidenteMutation.mutateAsync(

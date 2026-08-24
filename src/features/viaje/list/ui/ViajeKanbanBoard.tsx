@@ -14,10 +14,10 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Box, CircularProgress, Alert } from '@mui/material';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
-import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
+import { VIAJE_STATUS_CODE, getViajeEstadoRank } from '@entities/viaje/model/status';
 import { useToast } from '@/shared/components/ui/Toast';
 import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
-import { useCerrarViaje } from '../../hooks/useCerrarViaje';
+import { CerrarViajeDialog } from '@features/viaje/ui/CerrarViajeDialog';
 import type { ViajeKanbanColumnDefinition } from '../model/kanban';
 import { KanbanCard } from './kanban/KanbanCard';
 import { KanbanColumn } from './kanban/KanbanColumn';
@@ -65,14 +65,7 @@ export function ViajeKanbanBoard({
         setLocalViajes(viajes);
     }, [viajes]);
 
-    const updateEstadoMutation = useUpdateEstadoViaje(() => {
-        setLocalViajes(viajes);
-    });
-
-    const cerrarMutation = useCerrarViaje(() => {
-        setCerrarDialogOpen(false);
-        setViajeToCerrar(null);
-    });
+    const updateEstadoMutation = useUpdateEstadoViaje();
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -109,26 +102,17 @@ export function ViajeKanbanBoard({
         const isFechaPartida = change.fechaTipo === 'fechaPartida';
         const isFechaDescarga = change.fechaTipo === 'fechaDescarga';
 
-        setLocalViajes((prev) =>
-            prev.map((viaje) =>
-                viaje.viajeID === change.viajeId
-                    ? {
-                        ...viaje,
-                        estadoCodigo: change.targetColumnId,
-                        estadoNombre: change.targetColumnTitle,
-                        estadoID: change.targetEstadoId,
-                        ...(isFechaPartida && fecha ? { fechaPartida: fecha } : {}),
-                        ...(isFechaDescarga && fecha ? { fechaDescarga: fecha } : {}),
-                    }
-                    : viaje
-            )
-        );
-
+        // El optimistic update del listado vive en `useUpdateEstadoViaje` (onMutate/onError),
+        // que actualiza el cache de `VIAJE_QUERY_KEYS.lists()` y propaga el cambio a esta vista.
         updateEstadoMutation.mutate({
             id: change.viajeId,
             estadoId: change.targetEstadoId,
             ...(isFechaPartida ? { fechaPartida: fecha } : {}),
             ...(isFechaDescarga ? { fechaDescarga: fecha } : {}),
+            optimistic: {
+                estadoCodigo: change.targetColumnId,
+                estadoNombre: change.targetColumnTitle,
+            },
         });
     };
 
@@ -171,8 +155,12 @@ export function ViajeKanbanBoard({
         }
 
         if (targetColumnId && activeViaje.estadoCodigo !== targetColumnId) {
-            if (targetColumnId === VIAJE_STATUS_CODE.AGENDADO && activeViaje.estadoCodigo !== VIAJE_STATUS_CODE.AGENDADO) {
-                showToast({ message: 'Un viaje que ya inició no puede regresar a estado Programado', severity: 'warning' });
+            // Regla de rango canónico (misma fuente de verdad que el formulario):
+            // se bloquea toda degradación de estado, no solo el regreso a AGENDADO.
+            const currentRank = getViajeEstadoRank(activeViaje.estadoCodigo);
+            const targetRank = getViajeEstadoRank(targetColumnId);
+            if (currentRank === null || targetRank === null || targetRank < currentRank) {
+                showToast({ message: 'Un viaje no puede moverse a un estado anterior del flujo.', severity: 'warning' });
                 return;
             }
 
@@ -277,18 +265,13 @@ export function ViajeKanbanBoard({
                 isLoading={updateEstadoMutation.isPending}
             />
 
-            <ConfirmDialog
+            <CerrarViajeDialog
                 open={cerrarDialogOpen}
-                title="Cerrar Viaje"
-                content={`¿Estás seguro de que deseas cerrar el viaje #${viajeToCerrar?.viajeID}? Al cerrar se bloquearán las modificaciones y se habilitarán los reportes finales.`}
-                confirmText="Cerrar viaje"
-                cancelText="Cancelar"
-                severity="primary"
-                isLoading={cerrarMutation.isPending}
-                onClose={() => setCerrarDialogOpen(false)}
-                onConfirm={() => {
-                    if (!viajeToCerrar) return;
-                    cerrarMutation.mutate(viajeToCerrar.viajeID);
+                viajeID={viajeToCerrar?.viajeID ?? 0}
+                viajeCodigo={viajeToCerrar?.codigo}
+                onClose={() => {
+                    setCerrarDialogOpen(false);
+                    setViajeToCerrar(null);
                 }}
             />
         </Box>

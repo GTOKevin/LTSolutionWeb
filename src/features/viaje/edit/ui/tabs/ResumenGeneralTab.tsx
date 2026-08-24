@@ -8,28 +8,11 @@ import type { SelectItem } from '@/shared/model/types';
 import { resolveViajeEstadoProyectado } from '@entities/viaje/model/status';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import type { Dayjs } from 'dayjs';
+import type { ResumenGeneralData } from '../../model/viaje-edit-tabs';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import AnalyticsOutlinedIcon from '@mui/icons-material/AnalyticsOutlined';
 import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
-
-export interface ResumenGeneralData {
-    estadoID: number;
-    estadoNombre: string;
-    fechaCarga: Dayjs | null;
-    fechaPartida: Dayjs | null;
-    fechaLlegada: Dayjs | null;
-    fechaDescarga: Dayjs | null;
-    fechaLlegadaBase: Dayjs | null;
-    kmInicio: number | '';
-    kmLlegada: number | '';
-    kmLlegadaBase: number | '';
-    largo: number | '';
-    ancho: number | '';
-    alto: number | '';
-    peso: number | '';
-    requiereEscolta: boolean;
-}
 
 interface ResumenGeneralTabProps {
     viaje: Viaje;
@@ -74,7 +57,7 @@ export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving 
                 fechaPartida: field === 'fechaPartida' ? fechaActualStr(date) : fechaActualStr(formData.fechaPartida),
                 fechaDescarga: field === 'fechaDescarga' ? fechaActualStr(date) : fechaActualStr(formData.fechaDescarga),
             },
-            viaje.estadoID,
+            viaje.estado?.codigo,
             viajeEstados,
         );
 

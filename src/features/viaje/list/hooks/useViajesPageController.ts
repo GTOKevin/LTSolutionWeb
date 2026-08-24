@@ -7,7 +7,6 @@ import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
 import { useToast } from '@/shared/components/ui/Toast';
 import { useViajeDetailReports } from '../../reports/hooks/useViajeDetailReports';
 import { useViajeListReports } from '../../reports/hooks/useViajeListReports';
-import { useCerrarViaje } from '../../hooks/useCerrarViaje';
 import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
 import { getErrorMessage, type ApiMutationError } from '@/shared/utils/api-errors';
@@ -90,11 +89,6 @@ export function useViajesPageController() {
             showToast({ entity: 'Viaje', action: 'reopen', isError: true, message });
             logger.error('Error reabriendo viaje:', message);
         },
-    });
-
-    const cerrarMutation = useCerrarViaje(() => {
-        setCerrarDialogOpen(false);
-        setViajeToCerrar(null);
     });
 
     const handleCreate = useCallback(() => {
@@ -210,7 +204,6 @@ export function useViajesPageController() {
         reopenMutation,
         cerrarDialogOpen,
         viajeToCerrar,
-        cerrarMutation,
         loadingMessage: listReports.loadingMessage ?? detailReports.loadingMessage,
         handleCreate,
         handleView,

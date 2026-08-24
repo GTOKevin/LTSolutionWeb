@@ -70,6 +70,26 @@ export interface ViajeEstadoProyectado {
     estadoNombre: string;
 }
 
+export const VIAJE_STATUS_FLOW_ORDER = [
+    VIAJE_STATUS_CODE.AGENDADO,
+    VIAJE_STATUS_CODE.TRANSITO,
+    VIAJE_STATUS_CODE.DESCARGANDO,
+    VIAJE_STATUS_CODE.COMPLETADO,
+] as const;
+
+export type ViajeEstadoRank = 1 | 2 | 3 | 4;
+
+/**
+ * Rango canónico del flujo del viaje: AGENDADO(1) < TRANSITO(2) < DESCARGANDO(3) < COMPLETADO(4).
+ * Devuelve `null` para códigos fuera del flujo (cancelado, desviado, desconocido):
+ * esos estados no pueden ser "ascendidos" por el formulario ni "degradados" por el kanban.
+ * Es la ÚNICA fuente de verdad de la regla de transición (no degradar).
+ */
+export function getViajeEstadoRank(codigo: string | null | undefined): ViajeEstadoRank | null {
+    const index = VIAJE_STATUS_FLOW_ORDER.indexOf(codigo as (typeof VIAJE_STATUS_FLOW_ORDER)[number]);
+    return index === -1 ? null : ((index + 1) as ViajeEstadoRank);
+}
+
 /**
  * Proyecta el estado del viaje a partir de las fechas registradas en el formulario,
  * SIN degradar el estado actual. Resuelve los IDs/nombres desde el catálogo
@@ -77,32 +97,32 @@ export interface ViajeEstadoProyectado {
  *
  * - fechaDescarga registrada y estado actual anterior a Descargando → Descargando.
  * - fechaPartida registrada y estado actual anterior a Transito → Transito.
+ * - Estado actual fuera del flujo canónico (rank desconocido) → null (no se asciende).
  * - En cualquier otro caso devuelve null (mantener el estado actual).
  */
 export function resolveViajeEstadoProyectado(
     fechas: { fechaPartida?: string | null; fechaDescarga?: string | null },
-    estadoActualId: number | undefined | null,
+    estadoActualCodigo: string | null | undefined,
     viajeEstados: SelectItem[] | undefined,
 ): ViajeEstadoProyectado | null {
     const transitoId = resolveViajeTransitoId(viajeEstados);
     const descargandoId = resolveViajeDescargandoId(viajeEstados);
 
-    // Rango del flujo: AGENDADO(1) < TRANSITO(2) < DESCARGANDO(3) < COMPLETADO(4).
-    const getEstadoRank = (id: number | undefined | null): number => {
-        if (id == null) return 0;
-        if (id === descargandoId) return 3;
-        if (id === transitoId) return 2;
-        return 1; // Agendado o estado desconocido: se asume el inicio del flujo
-    };
-
-    if (fechas.fechaDescarga && descargandoId != null && getEstadoRank(estadoActualId) < 3) {
-        const descargandoItem = viajeEstados?.find((item) => item.id === descargandoId);
-        return { estadoID: descargandoId, estadoNombre: descargandoItem?.text ?? 'En Descarga' };
+    // Estado fuera del flujo canónico (cancelado/desviado/desconocido) no puede
+    // ser ascendido: se conserva el estado actual.
+    const estadoActualRank = getViajeEstadoRank(estadoActualCodigo);
+    if (estadoActualRank === null) {
+        return null;
     }
 
-    if (fechas.fechaPartida && transitoId != null && getEstadoRank(estadoActualId) < 2) {
+    if (fechas.fechaDescarga && descargandoId != null && estadoActualRank < 3) {
+        const descargandoItem = viajeEstados?.find((item) => item.id === descargandoId);
+        return { estadoID: descargandoId, estadoNombre: descargandoItem?.text ?? '' };
+    }
+
+    if (fechas.fechaPartida && transitoId != null && estadoActualRank < 2) {
         const transitoItem = viajeEstados?.find((item) => item.id === transitoId);
-        return { estadoID: transitoId, estadoNombre: transitoItem?.text ?? 'En Ruta' };
+        return { estadoID: transitoId, estadoNombre: transitoItem?.text ?? '' };
     }
 
     return null;

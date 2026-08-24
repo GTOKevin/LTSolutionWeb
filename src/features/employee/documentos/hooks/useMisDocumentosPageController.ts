@@ -215,7 +215,6 @@ export function useMisDocumentosPageController() {
         activo,
         canDeleteSolicitud,
         canEditSolicitud,
-        canRequestDocumentUpdate: true,
         confirmDeleteSolicitud,
         deleteSolicitudMutation,
         deleteTarget,

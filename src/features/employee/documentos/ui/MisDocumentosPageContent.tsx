@@ -176,18 +176,16 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
             <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
                 <Box sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="h6" fontWeight={800} color="text.primary">Documentos Oficiales</Typography>
-                    {controller.canRequestDocumentUpdate ? (
-                        <Button
-                            variant="contained"
-                            size="small"
-                            startIcon={<AddIcon />}
-                            onClick={() => controller.handleOpenCreateSolicitud()}
-                            disabled={isRefreshingDocumentos}
-                            sx={{ borderRadius: 2, boxShadow: 'none' }}
-                        >
-                            Nueva Solicitud
-                        </Button>
-                    ) : null}
+                    <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={<AddIcon />}
+                        onClick={() => controller.handleOpenCreateSolicitud()}
+                        disabled={isRefreshingDocumentos}
+                        sx={{ borderRadius: 2, boxShadow: 'none' }}
+                    >
+                        Nueva Solicitud
+                    </Button>
                 </Box>
                 {isRefreshingDocumentos ? (
                     <Box sx={{ px: 3, py: 1.5, bgcolor: 'action.hover', color: 'text.secondary', fontWeight: 600 }}>
@@ -249,14 +247,12 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                                                     <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleDownloadDocument(item)}>
                                                         <DownloadIcon fontSize="small" />
                                                     </Button>
-                                                    {controller.canRequestDocumentUpdate ? (
-                                                        <Button
-                                                            sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-                                                            onClick={() => controller.handleOpenCreateSolicitud(item.colaboradorDocumentoId)}
-                                                        >
-                                                            <SyncOutlined fontSize="small" />
-                                                        </Button>
-                                                    ) : null}
+                                                    <Button
+                                                        sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+                                                        onClick={() => controller.handleOpenCreateSolicitud(item.colaboradorDocumentoId)}
+                                                    >
+                                                        <SyncOutlined fontSize="small" />
+                                                    </Button>
                                                 </Box>
                                             </TableCell>
                                         </>
@@ -271,7 +267,6 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                             rowsPerPage={controller.rowsPerPage}
                             onPageChange={controller.handleChangePage}
                             onRowsPerPageChange={controller.handleChangeRowsPerPage}
-                            canRequestDocumentUpdate={controller.canRequestDocumentUpdate}
                             onOpenDocument={controller.handleOpenDocument}
                             onDownloadDocument={controller.handleDownloadDocument}
                             onRequestUpdate={(item) => {
@@ -337,19 +332,15 @@ export function MisDocumentosPageContent({ controller }: MisDocumentosPageConten
                                             </TableCell>
                                             <TableCell align="right" sx={{ py: 2, px: 3 }}>
                                                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                                                    {controller.canRequestDocumentUpdate ? (
-                                                        <>
-                                                            {controller.canEditSolicitud(item) ? (
-                                                                <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleEditSolicitud(item)}>
-                                                                    <EditOutlined fontSize="small" />
-                                                                </Button>
-                                                            ) : null}
-                                                            {controller.canDeleteSolicitud(item) ? (
-                                                                <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleDeleteSolicitud(item)}>
-                                                                    <DeleteOutline fontSize="small" />
-                                                                </Button>
-                                                            ) : null}
-                                                        </>
+                                                    {controller.canEditSolicitud(item) ? (
+                                                        <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleEditSolicitud(item)}>
+                                                            <EditOutlined fontSize="small" />
+                                                        </Button>
+                                                    ) : null}
+                                                    {controller.canDeleteSolicitud(item) ? (
+                                                        <Button sx={{ minWidth: 'auto', p: 1, color: 'text.secondary', '&:hover': { color: 'primary.main' } }} onClick={() => controller.handleDeleteSolicitud(item)}>
+                                                            <DeleteOutline fontSize="small" />
+                                                        </Button>
                                                     ) : null}
                                                 </Box>
                                             </TableCell>

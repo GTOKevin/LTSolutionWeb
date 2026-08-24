@@ -74,7 +74,6 @@ export function MisPagosPageContent({ controller }: MisPagosPageContentProps) {
                         paymentStats={controller.paymentStats}
                         dataItems={controller.data?.items}
                         onSelectPending={controller.setSelectedPago}
-                        canConfirmPayments={controller.canConfirmPayments}
                         isRefreshing={isRefreshing}
                     />
 
@@ -108,7 +107,6 @@ export function MisPagosPageContent({ controller }: MisPagosPageContentProps) {
                                 rowsPerPage={controller.rowsPerPage}
                                 onPageChange={controller.handleChangePage}
                                 onRowsPerPageChange={controller.handleChangeRowsPerPage}
-                                canConfirmPayments={controller.canConfirmPayments}
                                 actionsDisabled={isRefreshing}
                                 onConfirmPayment={controller.setSelectedPago}
                                 onExportPayment={controller.handleExportPayment}
@@ -159,7 +157,7 @@ export function MisPagosPageContent({ controller }: MisPagosPageContentProps) {
                                                 )}
                                             </TableCell>
                                             <TableCell sx={{ py: 2.5, textAlign: 'right' }}>
-                                                {isPending && controller.canConfirmPayments ? (
+                                                {isPending ? (
                                                     <Button
                                                         onClick={() => controller.setSelectedPago(item)}
                                                         disabled={isRefreshing}

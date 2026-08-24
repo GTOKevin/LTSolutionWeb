@@ -109,7 +109,7 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                         title="Actualizar hoja de ruta"
                         description="Registra los kilómetros clave del viaje para mantener consistencia en el seguimiento."
                         aside={
-                            controller.canManageViajeKms && !isCerrado
+                            !isCerrado
                                 ? <OperationalStatusBadge label="Editable" tone="success" />
                                 : <OperationalStatusBadge label="Bloqueado" tone="warning" />
                         }
@@ -130,7 +130,7 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                                             fullWidth
                                             type="number"
                                             placeholder="0"
-                                            disabled={!controller.canManageViajeKms || isCerrado}
+                                            disabled={isCerrado}
                                             error={!!controller.kmsForm.formState.errors.kmInicio}
                                             helperText={controller.kmsForm.formState.errors.kmInicio?.message ?? 'Registro de salida del viaje'}
                                             InputProps={{
@@ -166,7 +166,7 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                                             fullWidth
                                             type="number"
                                             placeholder="0"
-                                            disabled={!controller.canManageViajeKms || isCerrado}
+                                            disabled={isCerrado}
                                             error={!!controller.kmsForm.formState.errors.kmLlegada}
                                             helperText={controller.kmsForm.formState.errors.kmLlegada?.message ?? 'Registro al llegar al destino'}
                                             InputProps={{
@@ -204,7 +204,7 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                                         fullWidth
                                         type="number"
                                         placeholder="0"
-                                        disabled={!controller.canManageViajeKms || isCerrado}
+                                        disabled={isCerrado}
                                         error={!!controller.kmsForm.formState.errors.kmLlegadaBase}
                                         helperText={controller.kmsForm.formState.errors.kmLlegadaBase?.message ?? 'Último kilometraje del ciclo completo'}
                                         InputProps={{
@@ -240,7 +240,7 @@ export function MisViajeKmsSection({ controller }: MisViajeKmsSectionProps) {
                             <Button
                                 type="submit"
                                 variant="contained"
-                                disabled={!controller.canManageViajeKms || isCerrado || controller.updateKmsMutation.isPending}
+                                disabled={isCerrado || controller.updateKmsMutation.isPending}
                                 startIcon={<SaveIcon />}
                                 sx={{ px: 4, py: 1.5, borderRadius: 2.5, fontWeight: 'bold', fontSize: '1rem' }}
                             >

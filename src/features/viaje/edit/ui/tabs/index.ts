@@ -1,4 +1,5 @@
-export { ResumenGeneralTab, type ResumenGeneralData } from './ResumenGeneralTab';
+export { ResumenGeneralTab } from './ResumenGeneralTab';
+export type { ResumenGeneralData } from '../../model/viaje-edit-tabs';
 export { PlanificacionRutaTab } from './PlanificacionRutaTab';
 export { GuiasTab } from './GuiasTab';
 export { GastosTab } from './GastosTab';

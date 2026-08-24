@@ -1,5 +1,27 @@
 import dayjs from 'dayjs';
-import type { ResumenGeneralData } from '../ui/tabs';
+import type { Dayjs } from 'dayjs';
+
+/**
+ * Contrato del formulario del Resumen General (edit de viaje). Vive en el modelo
+ * (no en la UI) junto al mapper `createResumenGeneralDataFromViaje`.
+ */
+export interface ResumenGeneralData {
+    estadoID: number;
+    estadoNombre: string;
+    fechaCarga: Dayjs | null;
+    fechaPartida: Dayjs | null;
+    fechaLlegada: Dayjs | null;
+    fechaDescarga: Dayjs | null;
+    fechaLlegadaBase: Dayjs | null;
+    kmInicio: number | '';
+    kmLlegada: number | '';
+    kmLlegadaBase: number | '';
+    largo: number | '';
+    ancho: number | '';
+    alto: number | '';
+    peso: number | '';
+    requiereEscolta: boolean;
+}
 
 interface GetViajeEditTabsOptions {
     requiereEscolta: boolean;

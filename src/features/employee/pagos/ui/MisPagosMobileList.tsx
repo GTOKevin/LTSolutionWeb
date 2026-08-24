@@ -18,7 +18,6 @@ interface MisPagosMobileListProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    canConfirmPayments: boolean;
     actionsDisabled?: boolean;
     onConfirmPayment: (item: MiPagoDto) => void;
     onExportPayment: (item: MiPagoDto) => void;
@@ -33,7 +32,6 @@ export function MisPagosMobileList({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
-    canConfirmPayments,
     actionsDisabled = false,
     onConfirmPayment,
     onExportPayment,
@@ -98,7 +96,7 @@ export function MisPagosMobileList({
                             Estado: {item.estadoConfirmacion}
                         </Typography>
                         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', pt: 0.5 }}>
-                            {isPending && canConfirmPayments ? (
+                            {isPending ? (
                                 <Button
                                     size="small"
                                     variant="contained"
@@ -112,7 +110,7 @@ export function MisPagosMobileList({
                             ) : null}
                             <Button
                                 size="small"
-                                variant={isPending && canConfirmPayments ? 'outlined' : 'contained'}
+                                variant={isPending ? 'outlined' : 'contained'}
                                 startIcon={<DownloadForOfflineIcon />}
                                 disabled={actionsDisabled}
                                 onClick={() => onExportPayment(item)}

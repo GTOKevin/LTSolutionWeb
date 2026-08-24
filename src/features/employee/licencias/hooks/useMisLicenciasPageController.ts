@@ -151,7 +151,6 @@ export function useMisLicenciasPageController() {
     };
 
     return {
-        canSolicitarLicencia: true,
         canCancel,
         canEdit,
         cancelPending: cancelMutation.isPending,

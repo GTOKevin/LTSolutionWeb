@@ -243,8 +243,6 @@ export function useMisViajeDetailPageController() {
 
     return {
         activeVisibleTabKey,
-        canManageViaje: true,
-        canManageViajeKms: true,
         createGuiaMutation,
         createIncidenteMutation,
         currentTabIndex,

@@ -163,7 +163,6 @@ export function useMisViajesPageController() {
     };
 
     return {
-        canManageViajes: true,
         data,
         desde,
         hasta,

@@ -20,9 +20,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { getErrorMessage } from '@/shared/utils/api-errors';
-import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
-import { useCerrarViaje } from '@features/viaje/hooks/useCerrarViaje';
+import { CerrarViajeDialog } from '@features/viaje/ui/CerrarViajeDialog';
 import { PaperCard } from './shared/PaperCard';
 import { ViajeTimeline } from './ViajeTimeline';
 import { ViajeDetailAccordions } from './ViajeDetailAccordions';
@@ -45,10 +44,6 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
         canCerrarViajes,
         tiposIncidente,
     } = useViajeDetailPageController({ mode });
-
-    const cerrarMutation = useCerrarViaje(() => {
-        setCerrarDialogOpen(false);
-    });
 
     if (isLoading) {
         return (
@@ -183,19 +178,11 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
                 </Grid>
             </Grid>
 
-            <ConfirmDialog
+            <CerrarViajeDialog
                 open={cerrarDialogOpen}
-                title="Cerrar Viaje"
-                content={`¿Estás seguro de que deseas cerrar el viaje ${viajeCodigo}? Al cerrar se bloquearán las modificaciones y se habilitarán los reportes finales.`}
-                confirmText="Cerrar viaje"
-                cancelText="Cancelar"
-                severity="primary"
-                isLoading={cerrarMutation.isPending}
+                viajeID={viaje.viajeID}
+                viajeCodigo={viajeCodigo}
                 onClose={() => setCerrarDialogOpen(false)}
-                onConfirm={() => {
-                    if (viaje.cerrado) return;
-                    cerrarMutation.mutate(viaje.viajeID);
-                }}
             />
         </Box>
     );

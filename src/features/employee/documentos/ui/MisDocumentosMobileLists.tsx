@@ -22,7 +22,6 @@ interface MisDocumentosMobileListProps {
     rowsPerPage: number;
     onPageChange: (event: unknown, newPage: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    canRequestDocumentUpdate: boolean;
     onOpenDocument: (item: MiDocumentoDto) => void;
     onDownloadDocument: (item: MiDocumentoDto) => void;
     onRequestUpdate?: (item: MiDocumentoDto) => void;
@@ -48,7 +47,6 @@ export function MisDocumentosMobileList({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
-    canRequestDocumentUpdate,
     onOpenDocument,
     onDownloadDocument,
     onRequestUpdate,
@@ -126,7 +124,7 @@ export function MisDocumentosMobileList({
                         >
                             Descargar
                         </Button>
-                        {canRequestDocumentUpdate && onRequestUpdate ? (
+                        {onRequestUpdate ? (
                             <Button
                                 size="small"
                                 variant="contained"

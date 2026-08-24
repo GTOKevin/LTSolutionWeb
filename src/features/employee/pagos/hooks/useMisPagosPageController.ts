@@ -178,7 +178,6 @@ export function useMisPagosPageController() {
     };
 
     return {
-        canConfirmPayments: true,
         confirmMutation,
         data,
         desde,

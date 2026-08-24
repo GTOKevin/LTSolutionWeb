@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { LoadingModal } from '@shared/components/ui/LoadingModal';
+import { CerrarViajeDialog } from '@features/viaje/ui/CerrarViajeDialog';
 import { ViajesMobileList } from './ViajesMobileList';
 import { ViajesTable } from './ViajesTable';
 import { ViajeKanbanBoard } from './ViajeKanbanBoard';
@@ -39,7 +40,6 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
         viajeToCerrar,
         deleteMutation,
         reopenMutation,
-        cerrarMutation,
         closeDeleteDialog,
         closeReopenDialog,
         closeCerrarDialog,
@@ -120,15 +120,14 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
                 isLoading={reopenMutation.isPending}
             />
 
-            <ConfirmDialog
-                open={cerrarDialogOpen}
-                title="Cerrar Viaje"
-                content={`¿Estás seguro de que deseas cerrar el viaje #${viajeToCerrar?.codigo}? Al cerrar se bloquearán las modificaciones y se habilitarán los reportes finales.`}
-                confirmText="Cerrar viaje"
-                onConfirm={() => viajeToCerrar && cerrarMutation.mutate(viajeToCerrar.viajeID)}
-                onClose={closeCerrarDialog}
-                isLoading={cerrarMutation.isPending}
-            />
+            {viajeToCerrar ? (
+                <CerrarViajeDialog
+                    open={cerrarDialogOpen}
+                    viajeID={viajeToCerrar.viajeID}
+                    viajeCodigo={viajeToCerrar.codigo}
+                    onClose={closeCerrarDialog}
+                />
+            ) : null}
 
             <LoadingModal open={!!loadingMessage} message={loadingMessage || ''} />
         </>

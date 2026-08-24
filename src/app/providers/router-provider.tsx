@@ -5,8 +5,9 @@ import { useAuthStore } from '@shared/store/auth.store';
 import { ProtectedRoute } from '@shared/lib/guards/ProtectedRoute';
 import { PublicRoute } from '@shared/lib/guards/PublicRoute';
 import { PermissionGuard } from '@shared/lib/guards/PermissionGuard';
-import { EmployeeGuard } from '@shared/lib/guards/EmployeeGuard';
+import { EmployeeGuard } from '@app/providers/guards/EmployeeGuard';
 import { useEmployeeAssociation } from '@features/profile';
+import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { AppShell } from '@app/layout/ui/AppShell';
 import { env } from '@shared/config/env';
@@ -71,7 +72,7 @@ function LoadingFallback() {
 function RootRedirect() {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
     const user = useAuthStore((state) => state.user);
-    const { isEmployee, isEmployeeLoading } = useEmployeeAssociation();
+    const { isEmployee, isEmployeeLoading, isEmployeeError, retryProfile } = useEmployeeAssociation();
 
     if (!isAuthenticated) {
         return <Navigate to={APP_PATHS.login} replace />;
@@ -81,15 +82,37 @@ function RootRedirect() {
         return <LoadingFallback />;
     }
 
+    if (isEmployeeError) {
+        return (
+            <Box sx={{ p: 4 }}>
+                <FetchErrorState
+                    message="No se pudo verificar tu perfil para determinar la vista de inicio. Intenta nuevamente."
+                    onRetry={retryProfile}
+                />
+            </Box>
+        );
+    }
+
     return <Navigate to={getDefaultAppRoute(user, isEmployee)} replace />;
 }
 
 function AppIndexRedirect() {
     const user = useAuthStore((state) => state.user);
-    const { isEmployee, isEmployeeLoading } = useEmployeeAssociation();
+    const { isEmployee, isEmployeeLoading, isEmployeeError, retryProfile } = useEmployeeAssociation();
 
     if (isEmployeeLoading) {
         return <LoadingFallback />;
+    }
+
+    if (isEmployeeError) {
+        return (
+            <Box sx={{ p: 4 }}>
+                <FetchErrorState
+                    message="No se pudo verificar tu perfil para determinar la vista de inicio. Intenta nuevamente."
+                    onRetry={retryProfile}
+                />
+            </Box>
+        );
     }
 
     return <Navigate to={getDefaultAppRoute(user, isEmployee)} replace />;
@@ -180,6 +203,9 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
 ];
 
 export function RouterProvider() {
+    const user = useAuthStore((state) => state.user);
+    const employeeRedirectTo = getDefaultAppRoute(user, false);
+
     return (
         <BrowserRouter>
             <Suspense fallback={<LoadingFallback />}>
@@ -227,12 +253,12 @@ export function RouterProvider() {
                         <Route index element={<AppIndexRedirect />} />
                         <Route path={APP_ROUTE_SEGMENTS.misViajes}>
                             <Route index element={
-                                <EmployeeGuard>
+                                <EmployeeGuard redirectTo={employeeRedirectTo}>
                                     <MisViajesPage />
                                 </EmployeeGuard>
                             } />
                             <Route path=":id" element={
-                                <EmployeeGuard>
+                                <EmployeeGuard redirectTo={employeeRedirectTo}>
                                     <MisViajesDetallePage />
                                 </EmployeeGuard>
                             } />
@@ -244,7 +270,7 @@ export function RouterProvider() {
                                 path={route.path}
                                 element={
                                     route.requiresEmployee ? (
-                                        <EmployeeGuard>{route.element}</EmployeeGuard>
+                                        <EmployeeGuard redirectTo={employeeRedirectTo}>{route.element}</EmployeeGuard>
                                     ) : (
                                         <PermissionGuard permission={route.permission!} mode={route.mode}>
                                             {route.element}

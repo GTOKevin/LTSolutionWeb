@@ -22,7 +22,7 @@ interface MisViajeStatusSectionProps {
 }
 
 export function MisViajeStatusSection({ controller }: MisViajeStatusSectionProps) {
-    const canEdit = controller.canManageViaje && !controller.isWorkflowBlocked;
+    const canEdit = !controller.isWorkflowBlocked;
     const workflowSteps = getEmployeeViajeWorkflowSteps(controller.viaje);
 
     return (
