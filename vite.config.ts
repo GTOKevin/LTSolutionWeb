@@ -76,16 +76,17 @@ export default defineConfig({
             return 'vendor-export';
           }
 
-          if (id.includes('@mui') || id.includes('@emotion')) {
-            return 'vendor-mui';
+          if (
+            id.includes('@mui') ||
+            id.includes('@emotion') ||
+            id.includes('react') ||
+            id.includes('scheduler')
+          ) {
+            return 'vendor-ui';
           }
 
           if (id.includes('@tanstack')) {
             return 'vendor-query';
-          }
-
-          if (id.includes('react') || id.includes('scheduler')) {
-            return 'vendor-react';
           }
         }
       }
