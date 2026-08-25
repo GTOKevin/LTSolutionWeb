@@ -30,8 +30,8 @@ export interface FacturaDetalleViajeOption {
 }
 
 export interface FacturaGuia {
-    viajeID?: number | null;
-    codigoViaje: string;
+    viajeID: number;
+    codigoViaje: string | null;
     viajeGuiaID: number;
     tipoGuiaDescripcion: string;
     serie: string;

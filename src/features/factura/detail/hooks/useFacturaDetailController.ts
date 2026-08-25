@@ -53,11 +53,6 @@ export function useFacturaDetailController(customId?: number) {
         await generateFacturaExcel(facturaReporte);
     };
 
-    const handlePrint = () => {
-        if (!facturaReporte) return;
-        generateFacturaPdf(facturaReporte);
-    };
-
     const handleBack = () => {
         navigate(APP_PATHS.facturas);
     };
@@ -83,7 +78,6 @@ export function useFacturaDetailController(customId?: number) {
         setPagosListModalOpen,
         handleDownloadPdf,
         handleDownloadExcel,
-        handlePrint,
         handleBack,
         handlePaymentSuccess,
         refetch: () => {

@@ -17,6 +17,7 @@ import {
     Inventory2 as BoxIcon,
 } from '@mui/icons-material';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
+import { IGV_RATE } from '@/entities/factura/model/constants';
 import type { FacturaReporte, FacturaDetalleReporte } from '@/entities/factura/model/types';
 
 interface FacturaLineItemsTableProps {
@@ -101,7 +102,7 @@ export function FacturaLineItemsTable({ factura }: FacturaLineItemsTableProps) {
                                     Subtotal
                                 </TableCell>
                                 <TableCell align="right">
-                                    IGV (18%)
+                                    IGV ({IGV_RATE * 100}%)
                                 </TableCell>
                                 <TableCell align="right">
                                     Total

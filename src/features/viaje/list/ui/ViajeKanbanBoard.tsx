@@ -13,7 +13,7 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Box, CircularProgress, Alert } from '@mui/material';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
-import { VIAJE_STATUS_CODE, VIAJE_STATUS_FLOW_ORDER } from '@entities/viaje/model/status';
+import { VIAJE_STATUS_CODE, resolveNextViajeEstado } from '@entities/viaje/model/status';
 import { useToast } from '@/shared/components/ui/Toast';
 import { CerrarViajeDialog } from '@features/viaje/ui/CerrarViajeDialog';
 import type { ViajeKanbanColumnDefinition } from '../model/kanban';
@@ -30,16 +30,6 @@ interface KanbanBoardProps {
     onEditViaje?: (viaje: ViajeListItem) => void;
     onViewViaje?: (viaje: ViajeListItem) => void;
     onDeleteViaje?: (viaje: ViajeListItem) => void;
-}
-
-function getNextStatusColumnId(viaje: ViajeListItem): string | null {
-    const currentIndex = VIAJE_STATUS_FLOW_ORDER.indexOf(
-        viaje.estadoCodigo as (typeof VIAJE_STATUS_FLOW_ORDER)[number],
-    );
-    if (currentIndex === -1) {
-        return null;
-    }
-    return VIAJE_STATUS_FLOW_ORDER[currentIndex + 1] ?? null;
 }
 
 export function ViajeKanbanBoard({
@@ -134,8 +124,14 @@ export function ViajeKanbanBoard({
             }
         }
 
+        // Acción neutra: soltar la tarjeta sobre su misma columna no debe disparar
+        // warning ni consumir el flujo de transición.
+        if (targetColumnId === activeViaje.estadoCodigo) {
+            return;
+        }
+
         // El kanban solo permite avanzar al siguiente estado del flujo (sin saltos).
-        const nextColumnId = getNextStatusColumnId(activeViaje);
+        const nextColumnId = resolveNextViajeEstado(activeViaje.estadoCodigo);
         if (!nextColumnId || targetColumnId !== nextColumnId) {
             showToast({ message: 'El viaje solo puede moverse al siguiente estado del flujo.', severity: 'warning' });
             return;

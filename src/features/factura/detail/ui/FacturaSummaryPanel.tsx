@@ -16,11 +16,12 @@ import {
     History as HistoryIcon,
     WarningAmber as WarningIcon,
     Business as BusinessIcon,
-    AccountBalanceWallet as WalletIcon,
 } from '@mui/icons-material';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import type { FacturaReporte } from '@/entities/factura/model/types';
+import { getFacturaStatusMeta } from '@/entities/factura/model/status';
+import { IGV_RATE } from '@/entities/factura/model/constants';
 import { FacturaDocumentosCompactList } from './FacturaDocumentosCompactList';
 
 
@@ -47,16 +48,12 @@ export function FacturaSummaryPanel({
     const saldoPendiente = factura.saldoPendiente ?? 0;
     const montoPagado = Math.max(totalFacturado - saldoPendiente, 0);
     const hasSaldo = saldoPendiente > 0;
-    const estadoNombre = factura.estado?.nombre || 'Generado';
 
-    // Status chip color resolve
-    const resolveStatusColor = () => {
-        const lower = estadoNombre.toLowerCase();
-        if (lower.includes('paga') || lower.includes('entreg')) return 'success';
-        if (lower.includes('emit') || lower.includes('gene')) return 'info';
-        if (lower.includes('venc') || lower.includes('anul')) return 'error';
-        return 'default';
-    };
+    // Estado resuelto desde `estado.codigo` (map centralizado en entities/factura).
+    // Si el backend omite estado, se muestra un placeholder honesto («Sin estado»),
+    // nunca un valor de negocio inventado.
+    const statusMeta = getFacturaStatusMeta(factura);
+    const estadoLabel = factura.estado?.nombre?.trim() || statusMeta.label;
 
     return (
         <Paper
@@ -91,8 +88,8 @@ export function FacturaSummaryPanel({
                     </Typography>
                 </Box>
                 <Chip
-                    label={estadoNombre.toUpperCase()}
-                    color={resolveStatusColor()}
+                    label={estadoLabel.toUpperCase()}
+                    color={statusMeta.color}
                     size="small"
                     sx={{
                         fontWeight: 700,
@@ -162,7 +159,7 @@ export function FacturaSummaryPanel({
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary">
-                        IGV (18%)
+                        IGV ({IGV_RATE * 100}%)
                     </Typography>
                     <Typography variant="body2" fontWeight={700} textAlign="right" fontFamily="monospace">
                         {formatCurrencyAmount(factura.igv, factura.moneda)}

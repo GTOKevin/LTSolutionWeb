@@ -97,7 +97,7 @@ export function ViajeFacturaSection({ viajeId }: ViajeFacturaSectionProps) {
                                     Emisión: {formatDateShort(item.fechaEmision)}
                                 </Typography>
                                 <Typography variant="h6" fontWeight={800} color="primary.main" mt={0.5}>
-                                    {formatDecimalAmount(Number(item.total))}
+                                    {formatDecimalAmount(item.total)}
                                 </Typography>
                             </Box>
 

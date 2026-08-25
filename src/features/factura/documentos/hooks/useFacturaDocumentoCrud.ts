@@ -18,8 +18,10 @@ export const {
     FacturaDocumentoCrudApi,
     'Documento de Factura',
     (args) => {
+        // Invalidaciones reales del módulo: lista de documentos y detalle (reporte) de la factura.
+        // `['factura', id]` era un no-op (no es prefijo de `['factura-reporte', id]`).
         if (args && typeof args === 'object' && 'facturaId' in args) {
-            return [['factura-documentos', args.facturaId], ['factura', args.facturaId]];
+            return [['factura-documentos', args.facturaId], ['factura-reporte', args.facturaId]];
         }
         return [['factura-documentos']];
     },

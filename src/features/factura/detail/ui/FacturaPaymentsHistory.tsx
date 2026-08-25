@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
+import { getFacturaPagoStatusMeta } from '@/entities/factura/model/status';
 import type { FacturaReporte, FacturaPagoReporte } from '@/entities/factura/model/types';
 
 interface FacturaPaymentsHistoryProps {
@@ -145,6 +146,7 @@ export function FacturaPaymentsHistory({
                         <TableBody>
                             {pagos.map((pago, index) => {
                                 const isEven = index % 2 === 0;
+                                const pagoStatusMeta = getFacturaPagoStatusMeta(pago.estadoNombre);
 
                                 return (
                                     <TableRow
@@ -179,9 +181,9 @@ export function FacturaPaymentsHistory({
                                         </TableCell>
                                         <TableCell sx={{ py: 1.5 }}>
                                             <Chip
-                                                label={pago.estadoNombre || 'Acreditado'}
+                                                label={pagoStatusMeta.label}
                                                 size="small"
-                                                color={pago.estadoNombre?.toLowerCase().includes('acred') ? 'success' : 'default'}
+                                                color={pagoStatusMeta.color}
                                                 variant="outlined"
                                                 sx={{ fontWeight: 700, fontSize: '0.68rem', height: 22 }}
                                             />

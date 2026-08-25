@@ -4,6 +4,7 @@ import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import type { SelectItem } from '@shared/model/types';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
 import {
+    resolveNextViajeEstado,
     resolveViajeCompletadoId,
     resolveViajeDescargandoId,
     resolveViajeTransitoId,
@@ -40,14 +41,9 @@ function resolveNextEstado(
     viaje: ViajeListItem,
     viajeEstados: SelectItem[] | undefined,
 ): NextEstadoResolved | null {
-    const currentIndex = VIAJE_STATUS_FLOW_ORDER.indexOf(
-        viaje.estadoCodigo as (typeof VIAJE_STATUS_FLOW_ORDER)[number],
-    );
-    if (currentIndex === -1) {
-        return null;
-    }
-
-    const nextCode = VIAJE_STATUS_FLOW_ORDER[currentIndex + 1];
+    // Regla única de "siguiente estado" (entities/viaje/model/status.ts), compartida
+    // con el kanban y la proyección del formulario: nunca divergen.
+    const nextCode = resolveNextViajeEstado(viaje.estadoCodigo);
     if (!nextCode) {
         return null;
     }

@@ -50,7 +50,7 @@ export const facturaApi = {
         return response.data;
     },
 
-getDetalleViajes: async (params: { clienteId: number; search?: string; limit?: number }) => {
+    getDetalleViajes: async (params: { clienteId: number; search?: string; limit?: number }) => {
         const query = new URLSearchParams();
         query.append('clienteId', params.clienteId.toString());
         if (params.search) query.append('search', params.search);
