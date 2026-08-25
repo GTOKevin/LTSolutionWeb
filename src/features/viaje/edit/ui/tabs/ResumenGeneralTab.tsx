@@ -3,9 +3,16 @@ import {
     FormControlLabel, Switch,
     Grid, Divider, Button, Chip, CircularProgress
 } from '@mui/material';
+import { useState } from 'react';
 import type { Viaje } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
-import { resolveViajeEstadoProyectado } from '@entities/viaje/model/status';
+import {
+    resolveViajeCompletadoId,
+    resolveViajeDescargandoId,
+    resolveViajeEstadoProyectado,
+} from '@entities/viaje/model/status';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
+import { useUpdateEstadoViaje } from '@features/viaje/hooks/useUpdateEstadoViaje';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import type { Dayjs } from 'dayjs';
 import type { ResumenGeneralData } from '../../model/viaje-edit-tabs';
@@ -13,6 +20,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import AnalyticsOutlinedIcon from '@mui/icons-material/AnalyticsOutlined';
 import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 interface ResumenGeneralTabProps {
     viaje: Viaje;
@@ -22,6 +30,7 @@ interface ResumenGeneralTabProps {
     isSaving?: boolean;
     isViewOnly?: boolean;
     viajeEstados?: SelectItem[];
+    canGestionar?: boolean;
 }
 
 const getConductorNombre = (viaje: Viaje) =>
@@ -39,25 +48,30 @@ const getUbigeoDescripcion = (ubigeo?: Viaje['origen']) =>
 const getDisplayValue = (value: string | null | undefined, fallback: string) =>
     value?.trim() ? value : fallback;
 
-export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving = false, isViewOnly, viajeEstados }: ResumenGeneralTabProps) {
+export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving = false, isViewOnly, viajeEstados, canGestionar = false }: ResumenGeneralTabProps) {
+    const [completarDialogOpen, setCompletarDialogOpen] = useState(false);
+    const updateEstadoMutation = useUpdateEstadoViaje();
+
     const handleNumberChange = (field: keyof ResumenGeneralData) => (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         onChange({ [field]: val === '' ? '' : Number(val) });
     };
 
-    // Al registrar fecha de partida/descarga se proyecta el estado del viaje sin
-    // degradar: si el estado actual es anterior al objetivo en el flujo, se
-    // actualiza estadoID/estadoNombre al proyectado (resuelto desde el catálogo).
     const handleFechaChange = (field: 'fechaPartida' | 'fechaDescarga') => (date: Dayjs | null) => {
         const next: Partial<ResumenGeneralData> = { [field]: date };
         const fechaActualStr = (value: Dayjs | null | undefined) => (value ? value.format('YYYY-MM-DD') : undefined);
+
+        const estadoPendienteCodigo =
+            viajeEstados?.find((item) => item.id === formData.estadoID)?.extra
+            ?? viaje.estado?.codigo
+            ?? null;
 
         const estadoProyectado = resolveViajeEstadoProyectado(
             {
                 fechaPartida: field === 'fechaPartida' ? fechaActualStr(date) : fechaActualStr(formData.fechaPartida),
                 fechaDescarga: field === 'fechaDescarga' ? fechaActualStr(date) : fechaActualStr(formData.fechaDescarga),
             },
-            viaje.estado?.codigo,
+            estadoPendienteCodigo,
             viajeEstados,
         );
 
@@ -72,6 +86,22 @@ export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving 
     const conductorNombre = getConductorNombre(viaje);
     const origenDescripcion = getUbigeoDescripcion(viaje.origen);
     const destinoDescripcion = getUbigeoDescripcion(viaje.destino);
+
+    const descargandoId = resolveViajeDescargandoId(viajeEstados);
+    const completadoId = resolveViajeCompletadoId(viajeEstados);
+    const isDescargando = descargandoId != null && viaje.estadoID === descargandoId;
+    const canMarcarCompletado = Boolean(canGestionar && !isViewOnly && isDescargando && completadoId != null);
+
+    const handleMarcarCompletado = () => {
+        if (!viaje || completadoId == null) {
+            return;
+        }
+
+        updateEstadoMutation.mutate({
+            id: viaje.viajeID,
+            estadoId: completadoId,
+        });
+    };
 
     const estadoMostrado = formData.estadoNombre || viaje.estado?.nombre || 'Sin estado';
     const estadoDifiere = Boolean(formData.estadoNombre && viaje.estado?.nombre && formData.estadoNombre !== viaje.estado.nombre);
@@ -230,6 +260,19 @@ export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving 
                                             size="small"
                                             sx={{ fontWeight: 600 }}
                                         />
+                                        {canMarcarCompletado && (
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                color="success"
+                                                startIcon={<CheckCircleOutlineIcon />}
+                                                onClick={() => setCompletarDialogOpen(true)}
+                                                disabled={updateEstadoMutation.isPending}
+                                                sx={{ ml: 1.5, borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
+                                            >
+                                                Marcar Completado
+                                            </Button>
+                                        )}
                                         {estadoDifiere && (
                                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
                                                 El estado del viaje se actualizará a «{formData.estadoNombre}» al guardar los cambios.
@@ -474,6 +517,21 @@ export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving 
                     </Button>
                 </Box>
             ) : null}
+
+            <ConfirmDialog
+                open={completarDialogOpen}
+                title="Marcar viaje como completado"
+                content="El viaje pasará a estado Completado. Para cerrarlo definitivamente (bloqueando modificaciones y generando los reportes) usa la acción «Cerrar viaje»."
+                confirmText="Completar viaje"
+                cancelText="Cancelar"
+                severity="info"
+                isLoading={updateEstadoMutation.isPending}
+                onClose={() => setCompletarDialogOpen(false)}
+                onConfirm={() => {
+                    handleMarcarCompletado();
+                    setCompletarDialogOpen(false);
+                }}
+            />
         </Box>
     );
 }

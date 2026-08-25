@@ -25,7 +25,8 @@ import {
     LockOpen as LockOpenIcon,
     Lock as LockIcon,
     Description as DescriptionIcon,
-    PictureAsPdf as PdfIcon
+    PictureAsPdf as PdfIcon,
+    PlayArrow as PlayArrowIcon
 } from '@mui/icons-material';
 import type { ViajeListItem } from '@entities/viaje/model/types';
 import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
@@ -51,6 +52,8 @@ interface ViajesMobileListProps {
     onExportPdf?: (viaje: ViajeListItem) => void;
     onReopen?: (viaje: ViajeListItem) => void;
     onCerrar?: (viaje: ViajeListItem) => void;
+    onAdvanceEstado?: (viaje: ViajeListItem) => void;
+    getNextEstadoLabel?: (viaje: ViajeListItem) => string | undefined;
 }
 
 export function ViajesMobileList({
@@ -69,7 +72,9 @@ export function ViajesMobileList({
     onExportExcel,
     onExportPdf,
     onReopen,
-    onCerrar
+    onCerrar,
+    onAdvanceEstado,
+    getNextEstadoLabel
 }: ViajesMobileListProps) {
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -87,7 +92,7 @@ export function ViajesMobileList({
         setSelectedViaje(null);
     };
 
-    const handleAction = (action: 'view' | 'edit' | 'delete' | 'reopen' | 'cerrar' | 'excel' | 'pdf') => {
+    const handleAction = (action: 'view' | 'edit' | 'delete' | 'reopen' | 'cerrar' | 'excel' | 'pdf' | 'advance') => {
         if (!selectedViaje) return;
 
         switch (action) {
@@ -111,6 +116,9 @@ export function ViajesMobileList({
                 break;
             case 'pdf':
                 onExportPdf?.(selectedViaje);
+                break;
+            case 'advance':
+                onAdvanceEstado?.(selectedViaje);
                 break;
         }
         handleMenuClose();
@@ -173,6 +181,8 @@ export function ViajesMobileList({
     const showCerrar = canCerrar && Boolean(
         selectedViaje?.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO && !selectedViaje.cerrado,
     );
+    const nextEstadoLabel = selectedViaje ? getNextEstadoLabel?.(selectedViaje) : undefined;
+    const showAdvance = canManage && Boolean(selectedViaje && !selectedViaje.cerrado) && Boolean(nextEstadoLabel) && Boolean(onAdvanceEstado);
 
     return (
         <Box sx={{ display: { xs: 'block', md: 'none' }, pb: 12 }}>
@@ -329,6 +339,13 @@ export function ViajesMobileList({
                     <MenuItem onClick={() => handleAction('cerrar')}>
                         <LockIcon fontSize="small" color="success" sx={{ mr: 1.5 }} />
                         Cerrar Viaje
+                    </MenuItem>
+                )}
+
+                {showAdvance && (
+                    <MenuItem onClick={() => handleAction('advance')}>
+                        <PlayArrowIcon fontSize="small" color="primary" sx={{ mr: 1.5 }} />
+                        Pasar a {nextEstadoLabel}
                     </MenuItem>
                 )}
 

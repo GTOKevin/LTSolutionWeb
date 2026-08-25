@@ -14,10 +14,12 @@ import {
     Close as CloseIcon,
     ChevronLeft as ChevronLeftIcon,
     ChevronRight as ChevronRightIcon,
+    Description as FileIcon,
 } from '@mui/icons-material';
 import { useEffect, useMemo, useState } from 'react';
 import { useToast } from './Toast';
 import { getErrorMessage } from '@/shared/utils/api-errors';
+import { isPdfUrl } from '@/shared/utils/file-utils';
 
 interface DocumentPreviewDialogProps {
     open: boolean;
@@ -305,22 +307,30 @@ export function DocumentPreviewDialog({
                             </IconButton>
                         ) : null}
 
-                        <img
-                            src={activePreviewUrl}
-                            alt="Vista previa"
-                            onError={() => {
-                                const message = 'No se pudo cargar la vista previa del documento.';
-                                setImageLoadFailed(true);
-                                setErrorMessage(message);
-                                onError?.(message);
-                                showToast({ message, severity: 'error' });
-                            }}
-                            style={{
-                                maxWidth: '100%',
-                                maxHeight: '80vh',
-                                objectFit: 'contain'
-                            }}
-                        />
+                        {isPdfUrl(activePreviewUrl) ? (
+                            <iframe
+                                src={activePreviewUrl}
+                                title="Vista previa PDF"
+                                style={{ width: '100%', height: '80vh', border: 'none' }}
+                            />
+                        ) : (
+                            <img
+                                src={activePreviewUrl}
+                                alt="Vista previa"
+                                onError={() => {
+                                    const message = 'No se pudo cargar la vista previa del documento.';
+                                    setImageLoadFailed(true);
+                                    setErrorMessage(message);
+                                    onError?.(message);
+                                    showToast({ message, severity: 'error' });
+                                }}
+                                style={{
+                                    maxWidth: '100%',
+                                    maxHeight: '80vh',
+                                    objectFit: 'contain'
+                                }}
+                            />
+                        )}
 
                         {hasMultipleImages ? (
                             <IconButton
@@ -373,11 +383,17 @@ export function DocumentPreviewDialog({
                                     transition: 'all 0.2s ease',
                                 }}
                             >
-                                <img
-                                    src={url}
-                                    alt={`Vista previa ${index + 1}`}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                                />
+                                {isPdfUrl(url) ? (
+                                    <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(255,255,255,0.06)', color: 'common.white' }}>
+                                        <FileIcon fontSize="small" />
+                                    </Box>
+                                ) : (
+                                    <img
+                                        src={url}
+                                        alt={`Vista previa ${index + 1}`}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                    />
+                                )}
                             </Box>
                         ))}
                     </Box>

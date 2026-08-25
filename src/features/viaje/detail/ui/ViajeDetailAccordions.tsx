@@ -17,6 +17,7 @@ import {
     AssignmentTurnedInOutlined as AssignmentTurnedInOutlinedIcon,
     SecurityOutlined as SecurityOutlinedIcon,
     ReportProblemOutlined as ReportProblemOutlinedIcon,
+    ReceiptLongOutlined as ReceiptLongOutlinedIcon,
 } from '@mui/icons-material';
 import type { ViajeDetail } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
@@ -27,6 +28,7 @@ import { ViajeGastosSection } from './sections/ViajeGastosSection';
 import { ViajeGuiasSection } from './sections/ViajeGuiasSection';
 import { ViajePermisosSection } from './sections/ViajePermisosSection';
 import { ViajeEscoltaSection } from './sections/ViajeEscoltaSection';
+import { ViajeFacturaSection } from './sections/ViajeFacturaSection';
 
 interface ViajeDetailAccordionsProps {
     viaje: ViajeDetail;
@@ -34,7 +36,7 @@ interface ViajeDetailAccordionsProps {
     isViewOnly?: boolean;
 }
 
-type AccordionKey = 'general' | 'gastos' | 'guias' | 'permisos' | 'escolta' | 'incidentes';
+type AccordionKey = 'general' | 'gastos' | 'guias' | 'permisos' | 'escolta' | 'incidentes' | 'factura';
 
 const DEFAULT_EXPANDED: Record<AccordionKey, boolean> = {
     general: true,
@@ -43,6 +45,7 @@ const DEFAULT_EXPANDED: Record<AccordionKey, boolean> = {
     permisos: false,
     escolta: false,
     incidentes: false,
+    factura: false,
 };
 
 export function ViajeDetailAccordions({ viaje, tiposIncidente, isViewOnly = true }: ViajeDetailAccordionsProps) {
@@ -207,6 +210,21 @@ export function ViajeDetailAccordions({ viaje, tiposIncidente, isViewOnly = true
                     />
                 </AccordionDetails>
             </Accordion>
+
+            {viaje.facturado === true ? (
+                <Accordion
+                    expanded={expandedSections.factura}
+                    onChange={() => toggleSection('factura')}
+                    sx={accordionStyle}
+                >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
+                        {renderSummary(<ReceiptLongOutlinedIcon color="primary" />, 'Factura del Viaje')}
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ p: 3 }}>
+                        <ViajeFacturaSection viajeId={viaje.viajeID} />
+                    </AccordionDetails>
+                </Accordion>
+            ) : null}
         </Box>
     );
 }

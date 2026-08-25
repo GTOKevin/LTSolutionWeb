@@ -13,11 +13,13 @@ import {
     CloudUpload as UploadIcon,
     Delete as DeleteIcon,
     Visibility as ViewIcon,
-    Image as ImageIcon
+    Image as ImageIcon,
+    PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import imageCompression from 'browser-image-compression';
 import { archivoApi } from '@shared/api/archivo.api';
 import { buildInternalFileUrl } from '@/shared/config/env';
+import { isImageUrl } from '@/shared/utils/file-utils';
 import { DocumentPreviewDialog } from './DocumentPreviewDialog';
 import { useToast } from '@/shared/components/ui/Toast';
 import { getErrorMessage } from '@/shared/utils/api-errors';
@@ -63,27 +65,32 @@ export function ImageUpload({
             setUploading(true);
             setOperationError(null);
 
-            const options = {
-                maxSizeMB: 0.8, // Menos de 1MB
-                maxWidthOrHeight: 1920,
-                useWebWorker: true,
-                fileType: file.type // Mantener tipo original
-            };
+            const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
 
-            const compressedBlob = await imageCompression(file, options);
-            
+            let fileToUpload: File = file;
 
-            const compressedFile = new File([compressedBlob], file.name, {
-                type: compressedBlob.type,
-                lastModified: Date.now()
-            });
+            if (!isPdf) {
+                const options = {
+                    maxSizeMB: 0.8, // Menos de 1MB
+                    maxWidthOrHeight: 1920,
+                    useWebWorker: true,
+                    fileType: file.type // Mantener tipo original
+                };
+
+                const compressedBlob = await imageCompression(file, options);
+
+                fileToUpload = new File([compressedBlob], file.name, {
+                    type: compressedBlob.type,
+                    lastModified: Date.now()
+                });
+            }
 
             // NO eliminamos el archivo anterior aquí. Se manejará en el backend al guardar.
             // if (value && value.startsWith('/uploads')) {
             //    await archivoApi.delete(value).catch(console.error);
             // }
 
-            const response = await archivoApi.upload(compressedFile, folder);
+            const response = await archivoApi.upload(fileToUpload, folder);
             onChange(response.url);
             onUploadSuccess?.(response.url);
         } catch (error) {
@@ -182,15 +189,22 @@ export function ImageUpload({
                         }}
                         onClick={() => setPreviewOpen(true)}
                     >
-                        <img 
-                            src={buildInternalFileUrl(value)} 
-                            alt="Preview" 
-                            style={{ 
-                                maxWidth: '100%', 
-                                maxHeight: '100%', 
-                                objectFit: 'contain' 
-                            }} 
-                        />
+                        {isImageUrl(value) ? (
+                            <img 
+                                src={buildInternalFileUrl(value)} 
+                                alt="Preview" 
+                                style={{ 
+                                    maxWidth: '100%', 
+                                    maxHeight: '100%', 
+                                    objectFit: 'contain' 
+                                }} 
+                            />
+                        ) : (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                                <PdfIcon sx={{ fontSize: 48, opacity: 0.5 }} />
+                                <Typography variant="caption">Archivo adjunto</Typography>
+                            </Box>
+                        )}
                     </Box>
                 ) : (
                     <Box 
@@ -220,11 +234,11 @@ export function ImageUpload({
                         startIcon={uploading ? <CircularProgress size={20} /> : <UploadIcon />}
                         disabled={uploading}
                     >
-                        {value ? 'Cambiar Imagen' : 'Subir Imagen'}
+                        {value ? 'Cambiar Archivo' : 'Subir Archivo'}
                         <input
                             type="file"
                             hidden
-                            accept=".jpg,.jpeg,.png"
+                            accept=".jpg,.jpeg,.png,.pdf"
                             onChange={handleFileUpload}
                         />
                     </Button>

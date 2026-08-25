@@ -36,13 +36,14 @@ import { resolveCurrencyLabel } from '@/shared/utils/format-utils';
 interface FacturaPagoFormProps {
     open: boolean;
     onClose: () => void;
+    onSuccess?: () => void;
     factura: Factura;
     facturaId: number;
     monedaId: number;
     maxAmount: number;
 }
 
-export function FacturaPagoForm({ open, onClose, factura, facturaId, monedaId, maxAmount }: FacturaPagoFormProps) {
+export function FacturaPagoForm({ open, onClose, onSuccess, factura, facturaId, monedaId, maxAmount }: FacturaPagoFormProps) {
     const theme = useTheme();
     const createMutation = useCreateFacturaPago();
     const currencyLabel = resolveCurrencyLabel(factura.moneda);
@@ -83,6 +84,7 @@ export function FacturaPagoForm({ open, onClose, factura, facturaId, monedaId, m
                 observacion: data.observacion?.trim() || undefined
             }
         });
+        onSuccess?.();
         onClose();
     };
 

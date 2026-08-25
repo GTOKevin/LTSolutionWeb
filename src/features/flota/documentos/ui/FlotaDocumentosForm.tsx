@@ -148,7 +148,7 @@ export function FlotaDocumentosForm({
                                 value={field.value}
                                 onChange={field.onChange}
                                 folder="flotas"
-                                label="Subir imagen del documento"
+                                label="Subir archivo del documento (JPG, PNG o PDF)"
                                 error={!!errors.rutaArchivo}
                                 helperText={errors.rutaArchivo?.message}
                                 viewOnly={viewOnly}

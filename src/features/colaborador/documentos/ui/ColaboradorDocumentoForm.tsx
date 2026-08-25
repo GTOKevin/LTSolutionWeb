@@ -183,7 +183,7 @@ export function ColaboradorDocumentoForm({ open, onClose, colaboradorId, documen
                                             value={field.value}
                                             onChange={field.onChange}
                                             folder="temp/documentos/colaborador"
-                                            label="Subir imagen del documento"
+                                            label="Subir archivo del documento (JPG, PNG o PDF)"
                                             error={!!errors.rutaArchivo}
                                             helperText={errors.rutaArchivo?.message}
                                         />

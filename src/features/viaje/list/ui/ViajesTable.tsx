@@ -9,7 +9,7 @@ import {
     Tooltip,
     IconButton
 } from '@mui/material';
-import { ArrowForward, Lock, LockOpen } from '@mui/icons-material';
+import { ArrowForward, Lock, LockOpen, PlayArrow } from '@mui/icons-material';
 import type { ViajeListItem } from '@entities/viaje/model/types';
 import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
 import type { PagedResponse } from '@/shared/model/types';
@@ -34,6 +34,8 @@ interface Props {
     onExportPdf?: (viaje: ViajeListItem) => void;
     onReopen?: (viaje: ViajeListItem) => void;
     onCerrar?: (viaje: ViajeListItem) => void;
+    onAdvanceEstado?: (viaje: ViajeListItem) => void;
+    getNextEstadoLabel?: (viaje: ViajeListItem) => string | undefined;
 }
 
 export function ViajesTable({
@@ -52,7 +54,9 @@ export function ViajesTable({
     onExportExcel,
     onExportPdf,
     onReopen,
-    onCerrar
+    onCerrar,
+    onAdvanceEstado,
+    getNextEstadoLabel
 }: Props) {
     const theme = useTheme();
     const getRouteLabel = (value?: string) => value?.split('-')[2]?.trim() || value || 'Ruta no registrada';
@@ -128,6 +132,8 @@ export function ViajesTable({
                 const showReports = viaje.cerrado && Boolean(onExportExcel || onExportPdf);
                 const showReopen = canReabrir && viaje.cerrado;
                 const showCerrar = canCerrar && onCerrar && viaje.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO && !viaje.cerrado;
+                const nextEstadoLabel = getNextEstadoLabel?.(viaje);
+                const showAdvance = canManage && !viaje.cerrado && Boolean(nextEstadoLabel) && Boolean(onAdvanceEstado);
 
                 return (
                     <>
@@ -233,6 +239,26 @@ export function ViajesTable({
                         </TableCell>
                         <TableCell align="right">
                             <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
+                                {showAdvance && (
+                                    <Tooltip title={`Pasar a ${nextEstadoLabel}`}>
+                                        <IconButton
+                                            size="small"
+                                            color="primary"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onAdvanceEstado?.(viaje);
+                                            }}
+                                            sx={{
+                                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                                '&:hover': {
+                                                    bgcolor: alpha(theme.palette.primary.main, 0.2),
+                                                }
+                                            }}
+                                        >
+                                            <PlayArrow fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
                                 {showReopen && (
                                     <Tooltip title="Reabrir Viaje">
                                         <IconButton

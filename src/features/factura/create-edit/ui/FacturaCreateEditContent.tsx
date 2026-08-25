@@ -1,5 +1,6 @@
-import { Alert, Box, Button, CircularProgress, Grid, Stack } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Grid, Paper, Stack } from '@mui/material';
 import { FacturaDetalles } from '../../detalles/ui';
+import { FacturaDocumentosCompactList } from '../../detail';
 import type { FacturaCreateEditController } from '../hooks/useFacturaCreateEditController';
 import { FacturaBasicInfoForm } from './FacturaBasicInfoForm';
 import { FacturaCreateEditHeader } from './FacturaCreateEditHeader';
@@ -93,14 +94,31 @@ export function FacturaCreateEditContent({ controller }: FacturaCreateEditConten
                 </Grid>
 
                 <Grid size={{ xs: 12, lg: 4 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, height: '100%' }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <FacturaFinancialSummaryCard
                             factura={isEdit ? factura : undefined}
                             currencyLabel={facturaCurrencyLabel}
                         />
+
+                        {isEdit && factura ? (
+                            <Paper
+                                sx={{
+                                    p: 3,
+                                    borderRadius: 3,
+                                    boxShadow: '0 24px 40px -10px rgba(25, 28, 29, 0.05)',
+                                    border: (theme) => `1px solid ${theme.palette.divider}`,
+                                }}
+                            >
+                                <FacturaDocumentosCompactList
+                                    facturaId={factura.facturaID}
+                                    canManageFacturas={!viewOnly}
+                                />
+                            </Paper>
+                        ) : null}
                     </Box>
                 </Grid>
             </Grid>
         </Box>
     );
 }
+

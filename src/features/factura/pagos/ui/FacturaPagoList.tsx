@@ -1,6 +1,7 @@
 import React from 'react';
 import { TableCell, Chip } from '@mui/material';
 import type { FacturaPago } from '@/entities/factura/model/types';
+import { getFacturaPagoStatusMeta } from '@/entities/factura/model/status';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
@@ -52,7 +53,7 @@ export function FacturaPagoList({
                 <Chip 
                     label={pago.estado?.nombre || '-'} 
                     size="small" 
-                    color={pago.estado?.nombre === 'Acreditado' ? 'success' : 'default'}
+                    color={getFacturaPagoStatusMeta(pago.estado?.nombre).color}
                 />
             </TableCell>
             <TableCell>{pago.numeroOperacion || '-'}</TableCell>

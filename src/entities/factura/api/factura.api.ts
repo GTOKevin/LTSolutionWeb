@@ -9,6 +9,7 @@ import type {
     CreateFacturaPagoDto,
     FacturaDetalle,
     FacturaDetalleViajeOption,
+    FacturaGuia,
     FacturaPago,
     FacturaReporte,
     FacturasResumen
@@ -56,6 +57,11 @@ export const facturaApi = {
         if (params.limit) query.append('limit', params.limit.toString());
 
         const response = await http.get<FacturaDetalleViajeOption[]>(`/factura/detalle-viajes?${query.toString()}`);
+        return response.data;
+    },
+
+    getGuias: async (facturaId: number) => {
+        const response = await http.get<FacturaGuia[]>(`/factura/${facturaId}/guias`);
         return response.data;
     },
 

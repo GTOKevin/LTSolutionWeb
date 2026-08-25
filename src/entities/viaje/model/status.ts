@@ -79,51 +79,60 @@ export const VIAJE_STATUS_FLOW_ORDER = [
 
 export type ViajeEstadoRank = 1 | 2 | 3 | 4;
 
-/**
- * Rango canónico del flujo del viaje: AGENDADO(1) < TRANSITO(2) < DESCARGANDO(3) < COMPLETADO(4).
- * Devuelve `null` para códigos fuera del flujo (cancelado, desviado, desconocido):
- * esos estados no pueden ser "ascendidos" por el formulario ni "degradados" por el kanban.
- * Es la ÚNICA fuente de verdad de la regla de transición (no degradar).
- */
+
+export function resolveNextViajeEstado(codigoActual: string | null | undefined): (typeof VIAJE_STATUS_FLOW_ORDER)[number] | null {
+    const currentIndex = VIAJE_STATUS_FLOW_ORDER.indexOf(codigoActual as (typeof VIAJE_STATUS_FLOW_ORDER)[number]);
+    if (currentIndex === -1) {
+        return null;
+    }
+    return VIAJE_STATUS_FLOW_ORDER[currentIndex + 1] ?? null;
+}
+
+
 export function getViajeEstadoRank(codigo: string | null | undefined): ViajeEstadoRank | null {
     const index = VIAJE_STATUS_FLOW_ORDER.indexOf(codigo as (typeof VIAJE_STATUS_FLOW_ORDER)[number]);
     return index === -1 ? null : ((index + 1) as ViajeEstadoRank);
 }
 
-/**
- * Proyecta el estado del viaje a partir de las fechas registradas en el formulario,
- * SIN degradar el estado actual. Resuelve los IDs/nombres desde el catálogo
- * (viajeEstados) usando los helpers canónicos, nunca IDs hardcodeados.
- *
- * - fechaDescarga registrada y estado actual anterior a Descargando → Descargando.
- * - fechaPartida registrada y estado actual anterior a Transito → Transito.
- * - Estado actual fuera del flujo canónico (rank desconocido) → null (no se asciende).
- * - En cualquier otro caso devuelve null (mantener el estado actual).
- */
+
 export function resolveViajeEstadoProyectado(
     fechas: { fechaPartida?: string | null; fechaDescarga?: string | null },
     estadoActualCodigo: string | null | undefined,
     viajeEstados: SelectItem[] | undefined,
 ): ViajeEstadoProyectado | null {
-    const transitoId = resolveViajeTransitoId(viajeEstados);
-    const descargandoId = resolveViajeDescargandoId(viajeEstados);
+    let codigo = estadoActualCodigo;
+    let proyectado: ViajeEstadoProyectado | null = null;
 
-    // Estado fuera del flujo canónico (cancelado/desviado/desconocido) no puede
-    // ser ascendido: se conserva el estado actual.
-    const estadoActualRank = getViajeEstadoRank(estadoActualCodigo);
-    if (estadoActualRank === null) {
-        return null;
+    while (codigo) {
+        const nextCodigo = resolveNextViajeEstado(codigo);
+        if (!nextCodigo) {
+            break;
+        }
+
+        if (nextCodigo === VIAJE_STATUS_CODE.TRANSITO && fechas.fechaPartida) {
+            const transitoId = resolveViajeTransitoId(viajeEstados);
+            if (transitoId == null) {
+                break;
+            }
+            const transitoItem = viajeEstados?.find((item) => item.id === transitoId);
+            proyectado = { estadoID: transitoId, estadoNombre: transitoItem?.text ?? '' };
+            codigo = nextCodigo;
+            continue;
+        }
+
+        if (nextCodigo === VIAJE_STATUS_CODE.DESCARGANDO && fechas.fechaDescarga) {
+            const descargandoId = resolveViajeDescargandoId(viajeEstados);
+            if (descargandoId == null) {
+                break;
+            }
+            const descargandoItem = viajeEstados?.find((item) => item.id === descargandoId);
+            proyectado = { estadoID: descargandoId, estadoNombre: descargandoItem?.text ?? '' };
+            codigo = nextCodigo;
+            continue;
+        }
+
+        break;
     }
 
-    if (fechas.fechaDescarga && descargandoId != null && estadoActualRank < 3) {
-        const descargandoItem = viajeEstados?.find((item) => item.id === descargandoId);
-        return { estadoID: descargandoId, estadoNombre: descargandoItem?.text ?? '' };
-    }
-
-    if (fechas.fechaPartida && transitoId != null && estadoActualRank < 2) {
-        const transitoItem = viajeEstados?.find((item) => item.id === transitoId);
-        return { estadoID: transitoId, estadoNombre: transitoItem?.text ?? '' };
-    }
-
-    return null;
+    return proyectado;
 }

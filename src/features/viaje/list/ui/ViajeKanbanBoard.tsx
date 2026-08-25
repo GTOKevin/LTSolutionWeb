@@ -12,16 +12,14 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Box, CircularProgress, Alert } from '@mui/material';
-import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
-import { VIAJE_STATUS_CODE, getViajeEstadoRank } from '@entities/viaje/model/status';
+import { VIAJE_STATUS_CODE, resolveNextViajeEstado } from '@entities/viaje/model/status';
 import { useToast } from '@/shared/components/ui/Toast';
-import { useUpdateEstadoViaje } from '../../hooks/useUpdateEstadoViaje';
 import { CerrarViajeDialog } from '@features/viaje/ui/CerrarViajeDialog';
 import type { ViajeKanbanColumnDefinition } from '../model/kanban';
 import { KanbanCard } from './kanban/KanbanCard';
 import { KanbanColumn } from './kanban/KanbanColumn';
-import { ViajeEstadoDateDialog } from './kanban/ViajeEstadoDateDialog';
+import { useViajeEstadoTransition } from '../hooks/useViajeEstadoTransition';
 
 interface KanbanBoardProps {
     viajes: ViajeListItem[];
@@ -32,14 +30,6 @@ interface KanbanBoardProps {
     onEditViaje?: (viaje: ViajeListItem) => void;
     onViewViaje?: (viaje: ViajeListItem) => void;
     onDeleteViaje?: (viaje: ViajeListItem) => void;
-}
-
-interface PendingStatusChange {
-    viajeId: number;
-    targetColumnId: string;
-    targetColumnTitle: string;
-    targetEstadoId: number;
-    fechaTipo?: 'fechaPartida' | 'fechaDescarga';
 }
 
 export function ViajeKanbanBoard({
@@ -56,16 +46,14 @@ export function ViajeKanbanBoard({
 
     const [localViajes, setLocalViajes] = useState<ViajeListItem[]>([]);
     const [activeId, setActiveId] = useState<number | null>(null);
-    const [pendingStatusChange, setPendingStatusChange] = useState<PendingStatusChange | null>(null);
-    const [pendingDateValue, setPendingDateValue] = useState('');
     const [cerrarDialogOpen, setCerrarDialogOpen] = useState(false);
     const [viajeToCerrar, setViajeToCerrar] = useState<ViajeListItem | null>(null);
+
+    const { modals, handleAdvanceEstado } = useViajeEstadoTransition();
 
     useEffect(() => {
         setLocalViajes(viajes);
     }, [viajes]);
-
-    const updateEstadoMutation = useUpdateEstadoViaje();
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -98,24 +86,6 @@ export function ViajeKanbanBoard({
         return localViajes.filter(v => v.estadoCodigo === estadoCodigo);
     };
 
-    const applyStatusChange = (change: PendingStatusChange, fecha?: string) => {
-        const isFechaPartida = change.fechaTipo === 'fechaPartida';
-        const isFechaDescarga = change.fechaTipo === 'fechaDescarga';
-
-        // El optimistic update del listado vive en `useUpdateEstadoViaje` (onMutate/onError),
-        // que actualiza el cache de `VIAJE_QUERY_KEYS.lists()` y propaga el cambio a esta vista.
-        updateEstadoMutation.mutate({
-            id: change.viajeId,
-            estadoId: change.targetEstadoId,
-            ...(isFechaPartida ? { fechaPartida: fecha } : {}),
-            ...(isFechaDescarga ? { fechaDescarga: fecha } : {}),
-            optimistic: {
-                estadoCodigo: change.targetColumnId,
-                estadoNombre: change.targetColumnTitle,
-            },
-        });
-    };
-
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;
         setActiveId(active.id as number);
@@ -138,6 +108,10 @@ export function ViajeKanbanBoard({
             return;
         }
 
+        if (!canManage) {
+            return;
+        }
+
         let targetColumnId = '';
         const isOverColumn = columns.some(c => c.id === overId);
 
@@ -150,49 +124,20 @@ export function ViajeKanbanBoard({
             }
         }
 
-        if (!canManage) {
+        // Acción neutra: soltar la tarjeta sobre su misma columna no debe disparar
+        // warning ni consumir el flujo de transición.
+        if (targetColumnId === activeViaje.estadoCodigo) {
             return;
         }
 
-        if (targetColumnId && activeViaje.estadoCodigo !== targetColumnId) {
-            // Regla de rango canónico (misma fuente de verdad que el formulario):
-            // se bloquea toda degradación de estado, no solo el regreso a AGENDADO.
-            const currentRank = getViajeEstadoRank(activeViaje.estadoCodigo);
-            const targetRank = getViajeEstadoRank(targetColumnId);
-            if (currentRank === null || targetRank === null || targetRank < currentRank) {
-                showToast({ message: 'Un viaje no puede moverse a un estado anterior del flujo.', severity: 'warning' });
-                return;
-            }
-
-            const targetColumnDef = columns.find(c => c.id === targetColumnId);
-            if (!targetColumnDef?.estadoId) {
-                showToast({ message: 'No se pudo resolver el catálogo de estados del viaje.', severity: 'warning' });
-                return;
-            }
-            const nextStatusChange: PendingStatusChange = {
-                viajeId: activeViajeId,
-                targetColumnId,
-                targetColumnTitle: targetColumnDef.title,
-                targetEstadoId: targetColumnDef.estadoId,
-            };
-
-            if (targetColumnId === VIAJE_STATUS_CODE.TRANSITO || targetColumnId === VIAJE_STATUS_CODE.DESCARGANDO) {
-                // Los estados En Ruta / En Descarga requieren registrar la fecha asociada
-                // antes de aplicarse (fecha de partida / fecha de descarga).
-                const fechaTipo = targetColumnId === VIAJE_STATUS_CODE.TRANSITO ? 'fechaPartida' : 'fechaDescarga';
-                const fechaInicial = fechaTipo === 'fechaPartida' ? (activeViaje.fechaPartida ?? '') : (activeViaje.fechaDescarga ?? '');
-                setPendingStatusChange({ ...nextStatusChange, fechaTipo });
-                setPendingDateValue(fechaInicial);
-                return;
-            }
-
-            if (targetColumnId === VIAJE_STATUS_CODE.COMPLETADO) {
-                setPendingStatusChange(nextStatusChange);
-                return;
-            }
-
-            applyStatusChange(nextStatusChange);
+        // El kanban solo permite avanzar al siguiente estado del flujo (sin saltos).
+        const nextColumnId = resolveNextViajeEstado(activeViaje.estadoCodigo);
+        if (!nextColumnId || targetColumnId !== nextColumnId) {
+            showToast({ message: 'El viaje solo puede moverse al siguiente estado del flujo.', severity: 'warning' });
+            return;
         }
+
+        handleAdvanceEstado(activeViaje);
     };
 
     const activeViaje = activeId ? localViajes.find(v => v.viajeID === activeId) : null;
@@ -234,36 +179,7 @@ export function ViajeKanbanBoard({
                 </DragOverlay>
             </DndContext>
 
-            <ConfirmDialog
-                open={Boolean(pendingStatusChange) && !pendingStatusChange?.fechaTipo}
-                title="Confirmar viaje completado"
-                content="El viaje pasará a estado Completado. Para cerrarlo definitivamente (bloqueando modificaciones y generando los reportes) usa la acción «Cerrar viaje»."
-                confirmText="Completar viaje"
-                cancelText="Cancelar"
-                severity="info"
-                isLoading={updateEstadoMutation.isPending}
-                onClose={() => setPendingStatusChange(null)}
-                onConfirm={() => {
-                    if (!pendingStatusChange) return;
-                    applyStatusChange(pendingStatusChange);
-                    setPendingStatusChange(null);
-                }}
-            />
-
-            <ViajeEstadoDateDialog
-                open={Boolean(pendingStatusChange?.fechaTipo)}
-                title={pendingStatusChange?.fechaTipo === 'fechaPartida' ? 'Registrar fecha de partida' : 'Registrar fecha de descarga'}
-                fieldLabel={pendingStatusChange?.fechaTipo === 'fechaPartida' ? 'Fecha de partida' : 'Fecha de descarga'}
-                value={pendingDateValue}
-                onValueChange={setPendingDateValue}
-                onCancel={() => setPendingStatusChange(null)}
-                onConfirm={() => {
-                    if (!pendingStatusChange) return;
-                    applyStatusChange(pendingStatusChange, pendingDateValue);
-                    setPendingStatusChange(null);
-                }}
-                isLoading={updateEstadoMutation.isPending}
-            />
+            {modals}
 
             <CerrarViajeDialog
                 open={cerrarDialogOpen}
