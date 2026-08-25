@@ -235,7 +235,7 @@ export function SolicitudActualizacionModal({ open, onClose, documentos, initial
                                     folder="temp/colaboradores/documentos"
                                     label="Adjuntar sustento documental"
                                     error={Boolean(fieldState.error)}
-                                    helperText={fieldState.error?.message || 'Adjunta una imagen JPG o PNG del documento si deseas sustentar la actualización.'}
+                                    helperText={fieldState.error?.message || 'Adjunta una imagen JPG, PNG o PDF del documento si deseas sustentar la actualización.'}
                                 />
                             )}
                         />

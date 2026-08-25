@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { LoadingModal } from '@shared/components/ui/LoadingModal';
 import { CerrarViajeDialog } from '@features/viaje/ui/CerrarViajeDialog';
+import { useViajeEstadoTransition } from '../hooks/useViajeEstadoTransition';
 import { ViajesMobileList } from './ViajesMobileList';
 import { ViajesTable } from './ViajesTable';
 import { ViajeKanbanBoard } from './ViajeKanbanBoard';
@@ -12,6 +13,7 @@ interface ViajesPageContentProps {
 }
 
 export function ViajesPageContent({ controller }: ViajesPageContentProps) {
+    const { modals: estadoTransitionModals, handleAdvanceEstado, getNextEstadoLabel } = useViajeEstadoTransition();
     const {
         viewMode,
         data,
@@ -79,6 +81,8 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
                             onExportPdf={canViewViajes ? handleExportPdf : undefined}
                             onReopen={canReabrirViajes ? handleReopen : undefined}
                             onCerrar={canCerrarViajes ? handleCerrar : undefined}
+                            onAdvanceEstado={canManageViajes ? handleAdvanceEstado : undefined}
+                            getNextEstadoLabel={getNextEstadoLabel}
                         />
                     </Box>
 
@@ -99,6 +103,8 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
                         onExportPdf={canViewViajes ? handleExportPdf : undefined}
                         onReopen={canReabrirViajes ? handleReopen : undefined}
                         onCerrar={canCerrarViajes ? handleCerrar : undefined}
+                        onAdvanceEstado={canManageViajes ? handleAdvanceEstado : undefined}
+                        getNextEstadoLabel={getNextEstadoLabel}
                     />
                 </>
             )}
@@ -119,6 +125,8 @@ export function ViajesPageContent({ controller }: ViajesPageContentProps) {
                 onClose={closeReopenDialog}
                 isLoading={reopenMutation.isPending}
             />
+
+            {estadoTransitionModals}
 
             {viajeToCerrar ? (
                 <CerrarViajeDialog

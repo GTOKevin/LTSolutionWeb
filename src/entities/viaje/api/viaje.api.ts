@@ -1,5 +1,5 @@
 import { httpClient as http } from '@/shared/api/http';
-import type { CreateViajeDto, PagedViajes, UpdateEstadoViajePayload, UpdateViajeDto, Viaje, ViajeDetail, ViajeFilters } from '../model/types';
+import type { CreateViajeDto, PagedViajes, UpdateEstadoViajePayload, UpdateViajeDto, Viaje, ViajeDetail, ViajeFactura, ViajeFilters } from '../model/types';
 
 export const viajeApi = {
     getAll: async (filters: ViajeFilters) => {
@@ -105,5 +105,10 @@ export const viajeApi = {
 
     updateEstado: async (id: number, payload: UpdateEstadoViajePayload) => {
         await http.patch(`/viaje/${id}/estado`, payload);
+    },
+
+    getFacturas: async (id: number) => {
+        const response = await http.get<ViajeFactura[]>(`/viaje/${id}/factura`);
+        return response.data;
     }
 };

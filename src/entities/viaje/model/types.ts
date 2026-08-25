@@ -382,6 +382,17 @@ export interface ViajeGuiaDetail {
     rutaArchivo: string | null;
 }
 
+export interface ViajeFactura {
+    facturaID: number;
+    serie: string;
+    numero: string;
+    fechaEmision: string;
+    total: number;
+    estadoID: number;
+    estadoNombre: string | null;
+    estadoCodigo: string | null;
+}
+
 export interface ViajePermisoDetail {
     viajePermisoID: number;
     fechaVigencia: string;
@@ -438,6 +449,7 @@ export interface ViajeDetail {
     guias: ViajeGuiaDetail[];
     permisos: ViajePermisoDetail[];
     escoltas: ViajeEscoltaDetail[];
+    facturado?: boolean;
 }
 
 // DTOs for Creation/Update

@@ -46,6 +46,11 @@ export function isImageUrl(url: string | null | undefined): boolean {
     return /\.(png|jpg|jpeg|gif|webp)(\?.*)?$/i.test(url);
 }
 
+export function isPdfUrl(url: string | null | undefined): boolean {
+    if (!url) return false;
+    return /\.pdf(\?.*)?$/i.test(url);
+}
+
 export async function isPreviewableImageUrl(url: string | null | undefined): Promise<boolean> {
     if (!url) {
         return false;

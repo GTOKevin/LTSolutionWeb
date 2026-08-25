@@ -29,6 +29,16 @@ export interface FacturaDetalleViajeOption {
     descripcionDetalleSugerida: string;
 }
 
+export interface FacturaGuia {
+    viajeID?: number | null;
+    codigoViaje: string;
+    viajeGuiaID: number;
+    tipoGuiaDescripcion: string;
+    serie: string;
+    numero: string;
+    rutaArchivo: string | null;
+}
+
 export interface FacturaPago {
     facturaPagoID: number;
     facturaID: number;
