@@ -8,7 +8,7 @@ import { Alert, Box, Button, Chip, CircularProgress, Paper, Stack, Typography, a
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import { getErrorMessage } from '@/shared/utils/api-errors';
 import { formatDateShort } from '@/shared/utils/date-utils';
-import { formatDecimalAmount } from '@/shared/utils/format-utils';
+import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import { buildAppViewPath, APP_PATHS } from '@shared/config/app-routes';
 import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
@@ -97,7 +97,7 @@ export function ViajeFacturaSection({ viajeId }: ViajeFacturaSectionProps) {
                                     Emisión: {formatDateShort(item.fechaEmision)}
                                 </Typography>
                                 <Typography variant="h6" fontWeight={800} color="primary.main" mt={0.5}>
-                                    {formatDecimalAmount(item.total)}
+                                    {formatCurrencyAmount(item.total, item.moneda)}
                                 </Typography>
                             </Box>
 

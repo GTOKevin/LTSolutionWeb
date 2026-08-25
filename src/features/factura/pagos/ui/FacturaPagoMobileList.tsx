@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography, Chip } from '@mui/material';
+import { getFacturaPagoStatusMeta } from '@/entities/factura/model/status';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import { formatDateLong } from '@/shared/utils/date-utils';
 import type { FacturaPago } from '@/entities/factura/model/types';
@@ -55,7 +56,7 @@ export function FacturaPagoMobileList({
                         <Chip 
                             label={item.estado?.nombre || '-'} 
                             size="small" 
-                            color={item.estado?.nombre === 'Acreditado' ? 'success' : 'default'}
+                            color={getFacturaPagoStatusMeta(item.estado?.nombre).color}
                         />
                     </Box>
                     {item.numeroOperacion && (

@@ -1,5 +1,6 @@
 import type { TipoMaestro } from '@/shared/model/maestro.types';
 import type { PagedFilters, PagedResponse, SelectItem } from '@/shared/model/types';
+import type { Moneda } from '@/entities/moneda/model/types';
 
 export interface ViajeListReportDto {
     cliente: string;
@@ -391,6 +392,11 @@ export interface ViajeFactura {
     estadoID: number;
     estadoNombre: string | null;
     estadoCodigo: string | null;
+    // Contrato backend (ViajeFacturaDto, alineado con FacturaDto): `MonedaID` int +
+    // `MonedaDto? Moneda`. `moneda` es nullable/defensivo mientras el backend no
+    // despliegue el campo; `formatCurrencyAmount` cae a formato decimal sin símbolo.
+    monedaID: number;
+    moneda?: Moneda | null;
 }
 
 export interface ViajePermisoDetail {

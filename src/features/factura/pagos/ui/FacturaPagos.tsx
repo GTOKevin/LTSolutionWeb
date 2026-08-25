@@ -20,7 +20,7 @@ export function FacturaPagos({ factura, viewOnly = false }: FacturaPagosProps) {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [pagoToDelete, setPagoToDelete] = useState<number | null>(null);
-    
+
     const deleteMutation = useDeleteFacturaPago();
     const queryClient = useQueryClient();
 
@@ -47,7 +47,7 @@ export function FacturaPagos({ factura, viewOnly = false }: FacturaPagosProps) {
         if (pagoToDelete !== null) {
             await deleteMutation.mutateAsync(pagoToDelete, {
                 onSuccess: () => {
-                    queryClient.invalidateQueries({ queryKey: ['factura', factura.facturaID] });
+                    queryClient.invalidateQueries({ queryKey: ['factura-reporte', factura.facturaID] });
                     setDeleteDialogOpen(false);
                     setPagoToDelete(null);
                 }
@@ -61,12 +61,12 @@ export function FacturaPagos({ factura, viewOnly = false }: FacturaPagosProps) {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, mt:2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, mt: 2 }}>
                 <Typography variant="h6" color="primary.main" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <span className="material-symbols-outlined">payments</span>
                     Amortizaciones
                 </Typography>
-                
+
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}

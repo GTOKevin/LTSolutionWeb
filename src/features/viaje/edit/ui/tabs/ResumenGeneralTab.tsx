@@ -57,19 +57,21 @@ export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving 
         onChange({ [field]: val === '' ? '' : Number(val) });
     };
 
-    // Al registrar fecha de partida/descarga se proyecta el estado del viaje sin
-    // degradar: si el estado actual es anterior al objetivo en el flujo, se
-    // actualiza estadoID/estadoNombre al proyectado (resuelto desde el catálogo).
     const handleFechaChange = (field: 'fechaPartida' | 'fechaDescarga') => (date: Dayjs | null) => {
         const next: Partial<ResumenGeneralData> = { [field]: date };
         const fechaActualStr = (value: Dayjs | null | undefined) => (value ? value.format('YYYY-MM-DD') : undefined);
+
+        const estadoPendienteCodigo =
+            viajeEstados?.find((item) => item.id === formData.estadoID)?.extra
+            ?? viaje.estado?.codigo
+            ?? null;
 
         const estadoProyectado = resolveViajeEstadoProyectado(
             {
                 fechaPartida: field === 'fechaPartida' ? fechaActualStr(date) : fechaActualStr(formData.fechaPartida),
                 fechaDescarga: field === 'fechaDescarga' ? fechaActualStr(date) : fechaActualStr(formData.fechaDescarga),
             },
-            viaje.estado?.codigo,
+            estadoPendienteCodigo,
             viajeEstados,
         );
 
