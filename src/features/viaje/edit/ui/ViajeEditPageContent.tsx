@@ -175,7 +175,6 @@ export function ViajeEditPageContent() {
                     onSaveResumen={handleSave}
                     isSavingResumen={updateMutation.isPending}
                     isViewOnly={isViewOnly}
-                    canGestionar={canManageViajes}
                     viajeId={viajeId}
                     tiposIncidente={tiposIncidente || []}
                     viajeEstados={viajeEstados}
