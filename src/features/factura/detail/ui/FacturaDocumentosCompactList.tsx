@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { facturaDocumentoApi } from '@entities/factura-documento/api/factura-documento.api';
 import type { FacturaDocumento } from '@entities/factura-documento/model/types';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
-import { FacturaDocumentoItem } from '@shared/components/ui/FacturaDocumentoItem';
+import { DocumentListItem } from '@shared/components/ui/DocumentListItem';
 import { FacturaDocumentoForm } from '@/features/factura/documentos/ui/FacturaDocumentoForm';
 import { useDeleteFacturaDocumento } from '@/features/factura/documentos/hooks/useFacturaDocumentoCrud';
 
@@ -111,10 +111,11 @@ export function FacturaDocumentosCompactList({
                         const fileName = doc.descripcion || (doc.rutaArchivo ? doc.rutaArchivo.split('/').pop() : `Factura #${doc.facturaDocumentoID}`);
 
                         return (
-                            <FacturaDocumentoItem
+                            <DocumentListItem
                                 key={doc.facturaDocumentoID}
-                                rutaArchivo={doc.rutaArchivo}
+                                filePath={doc.rutaArchivo}
                                 fileName={fileName}
+                                subtitle="Comprobante Electrónico"
                                 canDelete={canManageFacturas}
                                 onDelete={() => {
                                     setDocumentoToDelete(doc);

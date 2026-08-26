@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import {
     Box,
     Typography,
@@ -14,30 +14,16 @@ import {
 import { getFileThumbKind } from '@/shared/utils/file-utils';
 
 interface FileThumbnailProps {
-    /** URL completa del archivo (imagen o PDF) a mostrar como miniatura. */
     fileUrl: string;
-    /** Texto alternativo para las imágenes. */
     alt?: string;
-    /** Estilos extra aplicados al contenedor raíz (ocupa 100% del padre). */
     containerSx?: SxProps<Theme>;
-    /** Ajuste de la imagen dentro del contenedor (default: cover). */
     imageObjectFit?: 'cover' | 'contain';
-    /** Muestra la etiqueta de tipo de archivo (PDF/DOC) en los badges. */
     showFileLabel?: boolean;
-    /** Clase CSS aplicada al <img> (para efectos hover existentes tipo grayscale). */
     className?: string;
-    /** Handler de click sobre el contenedor. */
     onClick?: () => void;
 }
 
-/**
- * Miniatura de archivo adjunto que distingue por tipo:
- * - Imágenes: <img> real con objectFit configurable; si la carga falla, degrada
- *   a badge genérico en vez de dejar un recuadro vacío.
- * - PDF: badge rojo con PictureAsPdfIcon + etiqueta "PDF".
- * - Otro/desconocido: badge neutro con FileIcon + etiqueta "DOC".
- * Centraliza la representación de miniaturas en listados de documentos.
- */
+
 export function FileThumbnail({
     fileUrl,
     alt = 'Documento',
@@ -51,13 +37,22 @@ export function FileThumbnail({
     const [failedUrl, setFailedUrl] = useState<string | null>(null);
     const kind = getFileThumbKind(fileUrl);
 
-    // Deriva el fallback: si el <img> falla se recuerda la URL exacta, de modo
-    // que al cambiar de archivo la nueva imagen vuelve a intentar cargarse.
     const showImage = kind === 'image' && failedUrl !== fileUrl;
+
+    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onClick?.();
+        }
+    };
 
     return (
         <Box
+            role={onClick ? 'button' : undefined}
+            tabIndex={onClick ? 0 : undefined}
+            aria-label={onClick ? alt : undefined}
             onClick={onClick}
+            onKeyDown={onClick ? handleKeyDown : undefined}
             sx={{
                 position: 'relative',
                 width: '100%',
@@ -66,6 +61,7 @@ export function FileThumbnail({
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
+                ...(onClick ? { cursor: 'pointer' } : {}),
                 ...containerSx,
             }}
         >

@@ -9,7 +9,7 @@ import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import { getErrorMessage } from '@/shared/utils/api-errors';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
-import { FacturaDocumentoItem } from '@shared/components/ui/FacturaDocumentoItem';
+import { DocumentListItem } from '@shared/components/ui/DocumentListItem';
 import { buildAppViewPath, APP_PATHS } from '@shared/config/app-routes';
 import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
@@ -130,9 +130,9 @@ export function ViajeFacturaSection({ viajeId }: ViajeFacturaSectionProps) {
                                     const fileName = doc.descripcion?.trim() || (doc.rutaArchivo ? doc.rutaArchivo.split('/').pop() : `Factura ${item.serie}-${item.numero}`);
 
                                     return (
-                                        <FacturaDocumentoItem
+                                        <DocumentListItem
                                             key={doc.facturaDocumentoID}
-                                            rutaArchivo={doc.rutaArchivo}
+                                            filePath={doc.rutaArchivo}
                                             fileName={fileName}
                                         />
                                     );

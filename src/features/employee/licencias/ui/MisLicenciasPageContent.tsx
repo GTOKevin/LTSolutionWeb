@@ -332,7 +332,7 @@ export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentP
                                                                         fileUrl={imageUrl}
                                                                         alt={`Adjunto ${index + 1}`}
                                                                         imageObjectFit="cover"
-                                                                        showFileLabel
+                                                                        showFileLabel={false}
                                                                     />
                                                                     <Box className="thumb-zoom" sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(15,23,42,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s' }}>
                                                                         <ZoomInIcon sx={{ color: 'white', fontSize: 18 }} />

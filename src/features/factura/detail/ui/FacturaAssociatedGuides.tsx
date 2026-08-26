@@ -116,13 +116,27 @@ export function FacturaAssociatedGuides({ guias }: FacturaAssociatedGuidesProps)
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             flexShrink: 0,
+                                            p: 0.5,
                                         }}
                                     >
                                         {fileUrl ? (
-                                        <FileThumbnail fileUrl={fileUrl} alt={`Guía ${guia.serie} - ${guia.numero}`} showFileLabel />
-                                    ) : (
-                                        <FileIcon fontSize="small" />
-                                    )}
+                                            <Box
+                                                sx={{
+                                                    width: 36,
+                                                    height: 36,
+                                                    borderRadius: 1.5,
+                                                    overflow: 'hidden',
+                                                }}
+                                            >
+                                                <FileThumbnail
+                                                    fileUrl={fileUrl}
+                                                    alt={`Guía ${guia.serie} - ${guia.numero}`}
+                                                    showFileLabel={false}
+                                                />
+                                            </Box>
+                                        ) : (
+                                            <FileIcon fontSize="small" />
+                                        )}
                                     </Box>
 
                                     <Box>
