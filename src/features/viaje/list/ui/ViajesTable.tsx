@@ -12,10 +12,11 @@ import {
 } from '@mui/material';
 import { ArrowForward, Lock, LockOpen, PlayArrow } from '@mui/icons-material';
 import type { ViajeListItem } from '@entities/viaje/model/types';
-import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
+import { VIAJE_STATUS_CODE, resolveViajeStatusVisual } from '@entities/viaje/model/status';
 import type { PagedResponse } from '@/shared/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { TableActions } from '@shared/components/ui/TableActions';
+import { StatusPill } from '@shared/components/ui/StatusPill';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 
 interface Props {
@@ -74,49 +75,6 @@ export function ViajesTable({
         { id: 'acciones', label: 'Acciones', align: 'right' }
     ];
 
-    const getEstadoConfig = (codigo?: string, nombre?: string) => {
-        const label = nombre || 'Sin estado';
-
-        if (codigo === VIAJE_STATUS_CODE.AGENDADO) {
-            return {
-                label,
-                bg: alpha(theme.palette.info.main, 0.1),
-                color: theme.palette.info.main,
-                dotColor: theme.palette.info.main
-            };
-        }
-        if (codigo === VIAJE_STATUS_CODE.TRANSITO) {
-            return {
-                label,
-                bg: alpha(theme.palette.warning.main, 0.1),
-                color: theme.palette.warning.dark,
-                dotColor: theme.palette.warning.main
-            };
-        }
-        if (codigo === VIAJE_STATUS_CODE.COMPLETADO) {
-            return {
-                label,
-                bg: alpha(theme.palette.success.main, 0.1),
-                color: theme.palette.success.dark,
-                dotColor: theme.palette.success.main
-            };
-        }
-        if (codigo === VIAJE_STATUS_CODE.DESCARGANDO) {
-            return {
-                label,
-                bg: alpha(theme.palette.secondary.main, 0.1),
-                color: theme.palette.secondary.main,
-                dotColor: theme.palette.secondary.main
-            };
-        }
-        return {
-            label,
-            bg: alpha(theme.palette.text.secondary, 0.1),
-            color: theme.palette.text.secondary,
-            dotColor: theme.palette.text.secondary
-        };
-    };
-
     return (
         <SharedTable
             data={data}
@@ -129,7 +87,7 @@ export function ViajesTable({
             keyExtractor={(item) => item.viajeID}
             emptyMessage="No se encontraron viajes registrados."
             renderRow={(viaje) => {
-                const estado = getEstadoConfig(viaje.estadoCodigo, viaje.estadoNombre);
+                const estado = resolveViajeStatusVisual(viaje.estadoCodigo, viaje.estadoNombre);
                 const isEditable = canManage && !viaje.cerrado;
                 const showReports = viaje.cerrado && Boolean(onExportExcel || onExportPdf);
                 const showReopen = canReabrir && viaje.cerrado;
@@ -243,23 +201,7 @@ export function ViajesTable({
                         </TableCell>
                         <TableCell align="center">
                             <Stack direction="column" alignItems="center" spacing={0.5}>
-                                <Box
-                                    sx={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        bgcolor: estado.bg,
-                                        color: estado.color,
-                                        border: `1px solid ${alpha(estado.color, 0.2)}`,
-                                        borderRadius: 10,
-                                        px: 1.5,
-                                        py: 0.5
-                                    }}
-                                >
-                                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: estado.dotColor, mr: 1 }} />
-                                    <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                        {estado.label}
-                                    </Typography>
-                                </Box>
+                                <StatusPill label={estado.label} tone={estado.tone} size="small" />
                                 {viaje.facturado ? (
                                     <Chip
                                         label={`Facturado · ${viaje.facturaNumero ?? ''}`}

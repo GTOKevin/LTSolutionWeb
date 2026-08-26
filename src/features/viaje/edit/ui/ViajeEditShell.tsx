@@ -1,7 +1,8 @@
 import { Box, Button, Paper, Stack, Tab, Tabs, Typography, useTheme, alpha } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import type { ReactNode, SyntheticEvent } from 'react';
-import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
+import { resolveViajeStatusVisual } from '@entities/viaje/model/status';
+import { StatusPill } from '@shared/components/ui/StatusPill';
 
 interface ViajeEditShellTab {
     label: string;
@@ -32,57 +33,7 @@ export function ViajeEditShell({
     children,
 }: ViajeEditShellProps) {
     const theme = useTheme();
-
-    const getEstadoConfig = (codigo?: string | null, nombre?: string | null) => {
-        const label = nombre || 'Sin estado';
-        const norm = (codigo || label).toLowerCase().trim();
-
-        if (norm === 'age' || norm === 'agendado' || norm === 'programado' || codigo === VIAJE_STATUS_CODE.AGENDADO) {
-            return {
-                label,
-                bg: alpha(theme.palette.info.main, 0.1),
-                color: theme.palette.info.main,
-                borderColor: alpha(theme.palette.info.main, 0.25),
-                dotColor: theme.palette.info.main,
-            };
-        }
-        if (norm === 'tra' || norm === 'transito' || norm === 'tránsito' || norm === 'en ruta' || codigo === VIAJE_STATUS_CODE.TRANSITO) {
-            return {
-                label,
-                bg: alpha(theme.palette.warning.main, 0.12),
-                color: theme.palette.warning.dark,
-                borderColor: alpha(theme.palette.warning.main, 0.3),
-                dotColor: theme.palette.warning.main,
-            };
-        }
-        if (norm === 'desc' || norm === 'descargando' || norm === 'en descarga' || codigo === VIAJE_STATUS_CODE.DESCARGANDO) {
-            return {
-                label,
-                bg: alpha(theme.palette.secondary.main, 0.12),
-                color: theme.palette.secondary.main,
-                borderColor: alpha(theme.palette.secondary.main, 0.3),
-                dotColor: theme.palette.secondary.main,
-            };
-        }
-        if (norm === 'comp' || norm === 'completado' || codigo === VIAJE_STATUS_CODE.COMPLETADO) {
-            return {
-                label,
-                bg: alpha(theme.palette.success.main, 0.12),
-                color: theme.palette.success.dark,
-                borderColor: alpha(theme.palette.success.main, 0.3),
-                dotColor: theme.palette.success.main,
-            };
-        }
-        return {
-            label,
-            bg: alpha(theme.palette.text.secondary, 0.1),
-            color: theme.palette.text.secondary,
-            borderColor: alpha(theme.palette.divider, 0.8),
-            dotColor: theme.palette.text.secondary,
-        };
-    };
-
-    const estadoConfig = getEstadoConfig(statusCodigo, statusLabel);
+    const estadoVisual = resolveViajeStatusVisual(statusCodigo, statusLabel);
 
     return (
         <Box sx={{ marginBottom: '24px' }}>
@@ -120,24 +71,7 @@ export function ViajeEditShell({
                 <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
                     {headerActions}
 
-                    <Box
-                        sx={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            bgcolor: estadoConfig.bg,
-                            color: estadoConfig.color,
-                            border: `1px solid ${estadoConfig.borderColor}`,
-                            borderRadius: 10,
-                            px: 1.5,
-                            py: 0.6,
-                            gap: 0.75,
-                        }}
-                    >
-                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: estadoConfig.dotColor }} />
-                        <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, lineHeight: 1 }}>
-                            {estadoConfig.label}
-                        </Typography>
-                    </Box>
+                    <StatusPill label={estadoVisual.label} tone={estadoVisual.tone} />
 
                     <Button
                         onClick={onBack}
@@ -165,7 +99,7 @@ export function ViajeEditShell({
             <Paper
                 sx={{
                     borderRadius: 3,
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                    boxShadow: theme.shadows[1],
                     overflow: 'hidden',
                     border: '1px solid',
                     borderColor: 'divider',

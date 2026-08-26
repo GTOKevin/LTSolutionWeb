@@ -10,8 +10,6 @@ import {
     Typography,
     Grid,
     Button,
-    useTheme,
-    alpha,
 } from '@mui/material';
 import {
     ArrowBack as ArrowBackIcon,
@@ -20,7 +18,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { getErrorMessage } from '@/shared/utils/api-errors';
-import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
+import { VIAJE_STATUS_CODE, resolveViajeStatusVisual } from '@entities/viaje/model/status';
+import { StatusPill } from '@shared/components/ui/StatusPill';
 import { CerrarViajeDialog } from '@features/viaje/ui/CerrarViajeDialog';
 import { PaperCard } from './shared/PaperCard';
 import { ViajeTimeline } from './ViajeTimeline';
@@ -32,7 +31,6 @@ interface ViajeDetailPageContentProps {
 }
 
 export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContentProps) {
-    const theme = useTheme();
     const navigate = useNavigate();
     const [cerrarDialogOpen, setCerrarDialogOpen] = useState(false);
 
@@ -75,56 +73,7 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
     const estadoNombre = viaje.estadoNombre || null;
     const puedeCerrar = canCerrarViajes && viaje.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO && !viaje.cerrado;
 
-    const getEstadoConfig = (codigo?: string | null, nombre?: string | null) => {
-        const label = nombre || 'Sin estado';
-        const norm = (codigo || label).toLowerCase().trim();
-
-        if (norm === 'age' || norm === 'agendado' || norm === 'programado' || codigo === VIAJE_STATUS_CODE.AGENDADO) {
-            return {
-                label,
-                bg: alpha(theme.palette.info.main, 0.1),
-                color: theme.palette.info.main,
-                borderColor: alpha(theme.palette.info.main, 0.25),
-                dotColor: theme.palette.info.main,
-            };
-        }
-        if (norm === 'tra' || norm === 'transito' || norm === 'tránsito' || norm === 'en ruta' || codigo === VIAJE_STATUS_CODE.TRANSITO) {
-            return {
-                label,
-                bg: alpha(theme.palette.warning.main, 0.12),
-                color: theme.palette.warning.dark,
-                borderColor: alpha(theme.palette.warning.main, 0.3),
-                dotColor: theme.palette.warning.main,
-            };
-        }
-        if (norm === 'desc' || norm === 'descargando' || norm === 'en descarga' || codigo === VIAJE_STATUS_CODE.DESCARGANDO) {
-            return {
-                label,
-                bg: alpha(theme.palette.secondary.main, 0.12),
-                color: theme.palette.secondary.main,
-                borderColor: alpha(theme.palette.secondary.main, 0.3),
-                dotColor: theme.palette.secondary.main,
-            };
-        }
-        if (norm === 'comp' || norm === 'completado' || codigo === VIAJE_STATUS_CODE.COMPLETADO) {
-            return {
-                label,
-                bg: alpha(theme.palette.success.main, 0.12),
-                color: theme.palette.success.dark,
-                borderColor: alpha(theme.palette.success.main, 0.3),
-                dotColor: theme.palette.success.main,
-            };
-        }
-        return {
-            label,
-            bg: alpha(theme.palette.text.secondary, 0.1),
-            color: theme.palette.text.secondary,
-            borderColor: alpha(theme.palette.divider, 0.8),
-            dotColor: theme.palette.text.secondary,
-        };
-    };
-
-    const estadoConfig = getEstadoConfig(viaje.estadoCodigo, estadoNombre);
+    const estadoVisual = resolveViajeStatusVisual(viaje.estadoCodigo, estadoNombre);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 4 }}>
@@ -159,24 +108,7 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
                                 <Typography variant="h5" fontWeight={900} color="primary.main">
                                     Viaje {viajeCodigo}
                                 </Typography>
-                                <Box
-                                    sx={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        bgcolor: estadoConfig.bg,
-                                        color: estadoConfig.color,
-                                        border: `1px solid ${estadoConfig.borderColor}`,
-                                        borderRadius: 10,
-                                        px: 1.5,
-                                        py: 0.5,
-                                        gap: 0.75,
-                                    }}
-                                >
-                                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: estadoConfig.dotColor }} />
-                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, lineHeight: 1 }}>
-                                        {estadoConfig.label}
-                                    </Typography>
-                                </Box>
+                                <StatusPill label={estadoVisual.label} tone={estadoVisual.tone} />
                             </Stack>
                             <Typography variant="caption" color="text.secondary" fontWeight={500}>
                                 Panel 360° de Operación, Seguimiento y Gestión Integral
