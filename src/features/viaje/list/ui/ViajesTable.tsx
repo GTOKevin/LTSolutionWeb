@@ -7,7 +7,8 @@ import {
     Stack,
     TableCell,
     Tooltip,
-    IconButton
+    IconButton,
+    Chip
 } from '@mui/material';
 import { ArrowForward, Lock, LockOpen, PlayArrow } from '@mui/icons-material';
 import type { ViajeListItem } from '@entities/viaje/model/types';
@@ -219,23 +220,38 @@ export function ViajesTable({
                             </Typography>
                         </TableCell>
                         <TableCell align="center">
-                            <Box
-                                sx={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    bgcolor: estado.bg,
-                                    color: estado.color,
-                                    border: `1px solid ${alpha(estado.color, 0.2)}`,
-                                    borderRadius: 10,
-                                    px: 1.5,
-                                    py: 0.5
-                                }}
-                            >
-                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: estado.dotColor, mr: 1 }} />
-                                <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                    {estado.label}
-                                </Typography>
-                            </Box>
+                            <Stack direction="column" alignItems="center" spacing={0.5}>
+                                <Box
+                                    sx={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        bgcolor: estado.bg,
+                                        color: estado.color,
+                                        border: `1px solid ${alpha(estado.color, 0.2)}`,
+                                        borderRadius: 10,
+                                        px: 1.5,
+                                        py: 0.5
+                                    }}
+                                >
+                                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: estado.dotColor, mr: 1 }} />
+                                    <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                        {estado.label}
+                                    </Typography>
+                                </Box>
+                                {viaje.facturado ? (
+                                    <Chip
+                                        label={`Facturado · ${viaje.facturaNumero ?? ''}`}
+                                        size="small"
+                                        sx={{
+                                            bgcolor: alpha(theme.palette.success.main, 0.12),
+                                            color: theme.palette.success.dark,
+                                            fontWeight: 700,
+                                            fontSize: '0.62rem',
+                                            height: 20
+                                        }}
+                                    />
+                                ) : null}
+                            </Stack>
                         </TableCell>
                         <TableCell align="right">
                             <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">

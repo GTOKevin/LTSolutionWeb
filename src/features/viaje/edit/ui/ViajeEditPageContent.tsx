@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
+import { PlayArrow as PlayArrowIcon } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { APP_PATHS } from '@shared/config/app-routes';
@@ -8,6 +9,7 @@ import type { UpdateViajeDto } from '@/entities/viaje/model/types';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
 import { useViajeIncidenteOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
+import { useViajeEstadoTransition, type ViajeEstadoTransitionSource } from '@features/viaje/list/hooks/useViajeEstadoTransition';
 import { useToast } from '@/shared/components/ui/Toast';
 import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
@@ -38,8 +40,8 @@ export function ViajeEditPageContent() {
 
     const { tiposIncidente } = useViajeIncidenteOptions(true);
 
-    // Catálogo de estados del viaje (necesario para proyectar el estado al
-    // registrar fechas de partida/descarga en el Resumen General).
+    const { modals, handleAdvanceEstado, getNextEstadoLabel, getNextEstadoAvailable } = useViajeEstadoTransition();
+
     const { data: viajeEstados } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.estados(),
         queryFn: async () => (await estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE)) ?? [],
@@ -131,28 +133,56 @@ export function ViajeEditPageContent() {
         );
     }
 
+    const estadoSource: ViajeEstadoTransitionSource = {
+        viajeID: viaje.viajeID,
+        cerrado: viaje.cerrado ?? false,
+        estadoCodigo: viaje.estado?.codigo,
+        fechaPartida: viaje.fechaPartida,
+        fechaDescarga: viaje.fechaDescarga,
+    };
+    const nextEstadoLabel = getNextEstadoLabel(estadoSource);
+    const canShowAdvance =
+        canManageViajes && !isViewOnly && !estadoSource.cerrado && Boolean(getNextEstadoAvailable(estadoSource));
+
     return (
-        <ViajeEditShell
-            viajeCodigo={viaje.codigo || `#${viaje.viajeID}`}
-            statusLabel={viaje.estado?.nombre || ''}
-            activeTab={activeTab}
-            onTabChange={(_, newValue) => setActiveTab(newValue)}
-            tabs={tabs}
-            onBack={() => navigate(APP_PATHS.viajes)}
-        >
-            <ViajeEditContent
+        <>
+            <ViajeEditShell
+                viajeCodigo={viaje.codigo || `#${viaje.viajeID}`}
+                statusLabel={viaje.estado?.nombre || ''}
                 activeTab={activeTab}
-                viaje={viaje}
-                formData={formData}
-                onFormDataChange={(changes) => setFormData((prev) => ({ ...prev, ...changes }))}
-                onSaveResumen={handleSave}
-                isSavingResumen={updateMutation.isPending}
-                isViewOnly={isViewOnly}
-                canGestionar={canManageViajes}
-                viajeId={viajeId}
-                tiposIncidente={tiposIncidente || []}
-                viajeEstados={viajeEstados}
-            />
-        </ViajeEditShell>
+                onTabChange={(_, newValue) => setActiveTab(newValue)}
+                tabs={tabs}
+                onBack={() => navigate(APP_PATHS.viajes)}
+                headerActions={
+                    canShowAdvance ? (
+                        <Button
+                            variant="contained"
+                            size="small"
+                            startIcon={<PlayArrowIcon />}
+                            onClick={() => handleAdvanceEstado(estadoSource)}
+                            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700, whiteSpace: 'nowrap' }}
+                        >
+                            Pasar a {nextEstadoLabel}
+                        </Button>
+                    ) : undefined
+                }
+            >
+                <ViajeEditContent
+                    activeTab={activeTab}
+                    viaje={viaje}
+                    formData={formData}
+                    onFormDataChange={(changes) => setFormData((prev) => ({ ...prev, ...changes }))}
+                    onSaveResumen={handleSave}
+                    isSavingResumen={updateMutation.isPending}
+                    isViewOnly={isViewOnly}
+                    canGestionar={canManageViajes}
+                    viajeId={viajeId}
+                    tiposIncidente={tiposIncidente || []}
+                    viajeEstados={viajeEstados}
+                />
+            </ViajeEditShell>
+
+            {modals}
+        </>
     );
 }

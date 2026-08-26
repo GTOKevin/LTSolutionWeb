@@ -241,49 +241,6 @@ export function ResumenGeneralTab({ viaje, formData, onChange, onSave, isSaving 
                             <Grid size={{ xs: 12 }}>
                                 <Box sx={{ position: 'relative' }}>
                                     <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
-                                        Estado del Viaje
-                                    </Typography>
-                                    <Box
-                                        sx={{
-                                            width: '100%',
-                                            border: '1px solid',
-                                            borderColor: 'divider',
-                                            borderRadius: 2,
-                                            px: 1.5,
-                                            py: 1.5,
-                                            bgcolor: 'background.paper',
-                                        }}
-                                    >
-                                        <Chip
-                                            label={estadoMostrado}
-                                            color="info"
-                                            size="small"
-                                            sx={{ fontWeight: 600 }}
-                                        />
-                                        {canMarcarCompletado && (
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                color="success"
-                                                startIcon={<CheckCircleOutlineIcon />}
-                                                onClick={() => setCompletarDialogOpen(true)}
-                                                disabled={updateEstadoMutation.isPending}
-                                                sx={{ ml: 1.5, borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
-                                            >
-                                                Marcar Completado
-                                            </Button>
-                                        )}
-                                        {estadoDifiere && (
-                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                                El estado del viaje se actualizará a «{formData.estadoNombre}» al guardar los cambios.
-                                            </Typography>
-                                        )}
-                                    </Box>
-                                </Box>
-                            </Grid>
-                            <Grid size={{ xs: 12 }}>
-                                <Box sx={{ position: 'relative' }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
                                         Fecha Carga
                                     </Typography>
                                     <DatePicker

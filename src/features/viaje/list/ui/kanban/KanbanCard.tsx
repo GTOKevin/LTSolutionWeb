@@ -15,6 +15,7 @@ import {
     Stack,
     Tooltip,
     Typography,
+    alpha,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -218,6 +219,19 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
                             sx={{
                                 bgcolor: '#fff3e0',
                                 color: '#ff6f00',
+                                fontWeight: 'bold',
+                                fontSize: '0.65rem',
+                                height: 20,
+                            }}
+                        />
+                    ) : null}
+                    {viaje.facturado ? (
+                        <Chip
+                            size="small"
+                            label={`Facturado · ${viaje.facturaNumero ?? ''}`}
+                            sx={{
+                                bgcolor: alpha(theme.palette.success.main, 0.1),
+                                color: theme.palette.success.dark,
                                 fontWeight: 'bold',
                                 fontSize: '0.65rem',
                                 height: 20,

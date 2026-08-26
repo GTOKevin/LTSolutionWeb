@@ -257,18 +257,33 @@ export function ViajesMobileList({
                                             </Typography>
                                         </Box>
 
-                                        <Chip
-                                            label={estado.label}
-                                            size="small"
-                                            sx={{
-                                                bgcolor: estado.bg,
-                                                color: estado.color,
-                                                fontWeight: 700,
-                                                fontSize: '0.7rem',
-                                                height: 24,
-                                                textTransform: 'uppercase'
-                                            }}
-                                        />
+                                        <Stack direction="row" spacing={0.5} alignItems="center">
+                                            <Chip
+                                                label={estado.label}
+                                                size="small"
+                                                sx={{
+                                                    bgcolor: estado.bg,
+                                                    color: estado.color,
+                                                    fontWeight: 700,
+                                                    fontSize: '0.7rem',
+                                                    height: 24,
+                                                    textTransform: 'uppercase'
+                                                }}
+                                            />
+                                            {viaje.facturado ? (
+                                                <Chip
+                                                    label={`Facturado · ${viaje.facturaNumero ?? ''}`}
+                                                    size="small"
+                                                    sx={{
+                                                        bgcolor: alpha(theme.palette.success.main, 0.12),
+                                                        color: theme.palette.success.dark,
+                                                        fontWeight: 700,
+                                                        fontSize: '0.65rem',
+                                                        height: 24
+                                                    }}
+                                                />
+                                            ) : null}
+                                        </Stack>
                                     </Box>
 
                                     <Box sx={{

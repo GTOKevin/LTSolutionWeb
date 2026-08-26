@@ -313,6 +313,7 @@ export interface Viaje {
     ejesCarreta: number | null;
     eliminado: boolean;
     facturado?: boolean;
+    cerrado?: boolean;
 
     // Navigation properties for display
     cliente?: {
@@ -392,11 +393,15 @@ export interface ViajeFactura {
     estadoID: number;
     estadoNombre: string | null;
     estadoCodigo: string | null;
-    // Contrato backend (ViajeFacturaDto, alineado con FacturaDto): `MonedaID` int +
-    // `MonedaDto? Moneda`. `moneda` es nullable/defensivo mientras el backend no
-    // despliegue el campo; `formatCurrencyAmount` cae a formato decimal sin símbolo.
     monedaID: number;
     moneda?: Moneda | null;
+    documentos?: ViajeFacturaDocumento[];
+}
+
+export interface ViajeFacturaDocumento {
+    facturaDocumentoID: number;
+    descripcion?: string | null;
+    rutaArchivo: string;
 }
 
 export interface ViajePermisoDetail {
@@ -606,6 +611,7 @@ export interface ViajeListItem {
     guias?: string;
     cerrado: boolean;
     facturado?: boolean;
+    facturaNumero?: string;
 }
 
 export interface PagedViajes extends PagedResponse<ViajeListItem> {

@@ -9,6 +9,7 @@ interface ViajeEditShellTab {
 interface ViajeEditShellProps {
     viajeCodigo?: string | null;
     statusLabel?: string | null;
+    headerActions?: ReactNode;
     activeTab: number;
     onTabChange: (_event: SyntheticEvent, value: number) => void;
     tabs: ViajeEditShellTab[];
@@ -19,6 +20,7 @@ interface ViajeEditShellProps {
 export function ViajeEditShell({
     viajeCodigo,
     statusLabel,
+    headerActions,
     activeTab,
     onTabChange,
     tabs,
@@ -45,6 +47,7 @@ export function ViajeEditShell({
                 </Box>
 
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    {headerActions}
                     <Chip label={statusLabel || ''} color="info" size="small" sx={{ fontWeight: 600, mr: 2 }} />
                     <Button onClick={onBack} variant="outlined" color="inherit">
                         Volver
