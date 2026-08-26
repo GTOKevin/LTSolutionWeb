@@ -9,6 +9,8 @@ import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import { getErrorMessage } from '@/shared/utils/api-errors';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
+import { buildInternalFileUrl } from '@shared/config/env';
+import { DocumentAttachmentCard } from '@shared/components/ui/DocumentAttachmentCard';
 import { buildAppViewPath, APP_PATHS } from '@shared/config/app-routes';
 import { usePermission } from '@/shared/lib/hooks/usePermission';
 import { PERMISSIONS } from '@/shared/constants/permissions';
@@ -113,6 +115,30 @@ export function ViajeFacturaSection({ viajeId }: ViajeFacturaSectionProps) {
                                 </Button>
                             )}
                         </Stack>
+
+                        {canViewFacturas && item.documentos && item.documentos.length > 0 ? (
+                            <Stack
+                                direction={{ xs: 'column', sm: 'row' }}
+                                spacing={1.5}
+                                flexWrap="wrap"
+                                sx={{ mt: 2, pt: 2, borderTop: `1px dashed ${theme.palette.divider}` }}
+                            >
+                                {item.documentos.map((doc) => {
+                                    const fileUrl = buildInternalFileUrl(doc.rutaArchivo);
+                                    const fileName = doc.descripcion?.trim() || `Factura_${item.serie}-${item.numero}`;
+
+                                    return (
+                                        <DocumentAttachmentCard
+                                            key={doc.facturaDocumentoID}
+                                            title={`Factura ${item.serie} - ${item.numero}`}
+                                            fileUrl={fileUrl}
+                                            downloadUrl={fileUrl}
+                                            fileName={fileName}
+                                        />
+                                    );
+                                })}
+                            </Stack>
+                        ) : null}
                     </Paper>
                 ))
             )}

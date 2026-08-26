@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import type { SelectItem } from '@shared/model/types';
-import type { ViajeListItem } from '@/entities/viaje/model/types';
 import {
     resolveNextViajeEstado,
     resolveViajeCompletadoId,
@@ -17,10 +16,18 @@ import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
 import { useUpdateEstadoViaje } from '@features/viaje/hooks/useUpdateEstadoViaje';
 import { ViajeEstadoDateDialog } from '../ui/kanban/ViajeEstadoDateDialog';
 
+export interface ViajeEstadoTransitionSource {
+    viajeID: number;
+    cerrado: boolean;
+    estadoCodigo?: string | null;
+    fechaPartida?: string | null;
+    fechaDescarga?: string | null;
+}
+
 type PendingTransitionType = 'fechaPartida' | 'fechaDescarga' | 'completado';
 
 interface PendingTransition {
-    viaje: ViajeListItem;
+    viaje: ViajeEstadoTransitionSource;
     tipo: PendingTransitionType;
 }
 
@@ -38,11 +45,9 @@ interface NextEstadoResolved {
 }
 
 function resolveNextEstado(
-    viaje: ViajeListItem,
+    viaje: ViajeEstadoTransitionSource,
     viajeEstados: SelectItem[] | undefined,
 ): NextEstadoResolved | null {
-    // Regla única de "siguiente estado" (entities/viaje/model/status.ts), compartida
-    // con el kanban y la proyección del formulario: nunca divergen.
     const nextCode = resolveNextViajeEstado(viaje.estadoCodigo);
     if (!nextCode) {
         return null;
@@ -83,7 +88,7 @@ export function useViajeEstadoTransition() {
     }, []);
 
     const handleAdvanceEstado = useCallback(
-        (viaje: ViajeListItem) => {
+        (viaje: ViajeEstadoTransitionSource) => {
             if (viaje.cerrado) {
                 return;
             }
@@ -165,7 +170,7 @@ export function useViajeEstadoTransition() {
     return {
         modals,
         handleAdvanceEstado,
-        getNextEstadoLabel: (viaje: ViajeListItem) => resolveNextEstado(viaje, viajeEstados)?.descripcion,
-        getNextEstadoAvailable: (viaje: ViajeListItem) => Boolean(resolveNextEstado(viaje, viajeEstados)),
+        getNextEstadoLabel: (viaje: ViajeEstadoTransitionSource) => resolveNextEstado(viaje, viajeEstados)?.descripcion,
+        getNextEstadoAvailable: (viaje: ViajeEstadoTransitionSource) => Boolean(resolveNextEstado(viaje, viajeEstados)),
     };
 }

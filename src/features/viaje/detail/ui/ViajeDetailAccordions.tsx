@@ -147,6 +147,21 @@ export function ViajeDetailAccordions({ viaje, tiposIncidente, isViewOnly = true
                 </AccordionDetails>
             </Accordion>
 
+            {viaje.facturado === true ? (
+                <Accordion
+                    expanded={expandedSections.factura}
+                    onChange={() => toggleSection('factura')}
+                    sx={accordionStyle}
+                >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
+                        {renderSummary(<ReceiptLongOutlinedIcon color="primary" />, 'Factura del Viaje')}
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ p: 3 }}>
+                        <ViajeFacturaSection viajeId={viaje.viajeID} />
+                    </AccordionDetails>
+                </Accordion>
+            ) : null}
+
             {/* 4. PERMISOS */}
             <Accordion
                 expanded={expandedSections.permisos}
@@ -211,20 +226,7 @@ export function ViajeDetailAccordions({ viaje, tiposIncidente, isViewOnly = true
                 </AccordionDetails>
             </Accordion>
 
-            {viaje.facturado === true ? (
-                <Accordion
-                    expanded={expandedSections.factura}
-                    onChange={() => toggleSection('factura')}
-                    sx={accordionStyle}
-                >
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={summaryStyle}>
-                        {renderSummary(<ReceiptLongOutlinedIcon color="primary" />, 'Factura del Viaje')}
-                    </AccordionSummary>
-                    <AccordionDetails sx={{ p: 3 }}>
-                        <ViajeFacturaSection viajeId={viaje.viajeID} />
-                    </AccordionDetails>
-                </Accordion>
-            ) : null}
+
         </Box>
     );
 }
