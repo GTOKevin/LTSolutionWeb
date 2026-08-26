@@ -4,7 +4,6 @@ import {
     useTheme,
     IconButton,
     Typography,
-    Avatar,
     Tooltip,
     alpha,
     TableCell,
@@ -39,7 +38,7 @@ import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 import { TableActions } from '@/shared/components/ui/TableActions';
 import { buildInternalFileUrl } from '@/shared/config/env';
-import { isImageUrl } from '@/shared/utils/file-utils';
+import { FileThumbnail } from '@/shared/components/ui/FileThumbnail';
 import { getDocumentVigenciaMetaByExpirationDate } from '@/shared/utils/document-vigencia';
 
 interface FlotaDocumentosListProps {
@@ -339,11 +338,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
                                                 }}
                                             >
                                                 {doc.rutaArchivo ? (
-                                                    isImageUrl(doc.rutaArchivo) ? (
-                                                        <Avatar variant="rounded" src={buildInternalFileUrl(doc.rutaArchivo)} alt="Doc" sx={{ width: '100%', height: '100%' }} />
-                                                    ) : (
-                                                        <FileIcon />
-                                                    )
+                                                    <FileThumbnail fileUrl={buildInternalFileUrl(doc.rutaArchivo)} alt="Doc" />
                                                 ) : (
                                                     <FileIcon />
                                                 )}
@@ -433,11 +428,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
                                             }}
                                         >
                                             {doc.rutaArchivo ? (
-                                                isImageUrl(doc.rutaArchivo) ? (
-                                                    <Avatar variant="rounded" src={buildInternalFileUrl(doc.rutaArchivo)} alt="Doc" sx={{ width: '100%', height: '100%' }} />
-                                                ) : (
-                                                    <FileIcon />
-                                                )
+                                                <FileThumbnail fileUrl={buildInternalFileUrl(doc.rutaArchivo)} alt="Doc" />
                                             ) : (
                                                 <FileIcon />
                                             )}

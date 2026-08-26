@@ -51,6 +51,18 @@ export function isPdfUrl(url: string | null | undefined): boolean {
     return /\.pdf(\?.*)?$/i.test(url);
 }
 
+export type FileThumbKind = 'image' | 'pdf' | 'other';
+
+/**
+ * Clasifica una URL de archivo para decidir la miniatura a mostrar:
+ * imagen real, badge PDF o badge genérico para formatos desconocidos.
+ */
+export function getFileThumbKind(url: string | null | undefined): FileThumbKind {
+    if (isImageUrl(url)) return 'image';
+    if (isPdfUrl(url)) return 'pdf';
+    return 'other';
+}
+
 export async function isPreviewableImageUrl(url: string | null | undefined): Promise<boolean> {
     if (!url) {
         return false;

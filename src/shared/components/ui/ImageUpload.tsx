@@ -14,13 +14,12 @@ import {
     Delete as DeleteIcon,
     Visibility as ViewIcon,
     Image as ImageIcon,
-    PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import imageCompression from 'browser-image-compression';
 import { archivoApi } from '@shared/api/archivo.api';
 import { buildInternalFileUrl } from '@/shared/config/env';
-import { isImageUrl } from '@/shared/utils/file-utils';
 import { DocumentPreviewDialog } from './DocumentPreviewDialog';
+import { FileThumbnail } from './FileThumbnail';
 import { useToast } from '@/shared/components/ui/Toast';
 import { getErrorMessage } from '@/shared/utils/api-errors';
 
@@ -189,22 +188,12 @@ export function ImageUpload({
                         }}
                         onClick={() => setPreviewOpen(true)}
                     >
-                        {isImageUrl(value) ? (
-                            <img 
-                                src={buildInternalFileUrl(value)} 
-                                alt="Preview" 
-                                style={{ 
-                                    maxWidth: '100%', 
-                                    maxHeight: '100%', 
-                                    objectFit: 'contain' 
-                                }} 
-                            />
-                        ) : (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
-                                <PdfIcon sx={{ fontSize: 48, opacity: 0.5 }} />
-                                <Typography variant="caption">Archivo adjunto</Typography>
-                            </Box>
-                        )}
+                        <FileThumbnail
+                            fileUrl={buildInternalFileUrl(value)}
+                            alt={label}
+                            imageObjectFit="contain"
+                            showFileLabel
+                        />
                     </Box>
                 ) : (
                     <Box 

@@ -20,6 +20,7 @@ import { archivoApi } from '@shared/api/archivo.api';
 import { buildInternalFileUrl } from '@/shared/config/env';
 import { ImageUpload } from './ImageUpload';
 import { DocumentPreviewDialog } from './DocumentPreviewDialog';
+import { FileThumbnail } from './FileThumbnail';
 import { useToast } from '@/shared/components/ui/Toast';
 import { getErrorMessage } from '@/shared/utils/api-errors';
 
@@ -331,20 +332,14 @@ function MultiImageGrid({
                                         bgcolor: 'background.paper',
                                     }}
                                 >
-                                    <Box
-                                        component="img"
-                                        src={imageUrl}
+                                    <FileThumbnail
+                                        fileUrl={imageUrl}
                                         alt={`Imagen ${index + 1}`}
+                                        imageObjectFit="cover"
+                                        showFileLabel
                                         onClick={() => {
                                             setPreviewIndex(index);
                                             setPreviewOpen(true);
-                                        }}
-                                        sx={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover',
-                                            display: 'block',
-                                            cursor: 'zoom-in',
                                         }}
                                     />
                                     {!disabled && (

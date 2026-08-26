@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material';
 import { buildInternalFileUrl } from '@/shared/config/env';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
+import { FileThumbnail } from '@/shared/components/ui/FileThumbnail';
 import type { FacturaGuia } from '@/entities/factura/model/types';
 
 interface FacturaAssociatedGuidesProps {
@@ -117,7 +118,11 @@ export function FacturaAssociatedGuides({ guias }: FacturaAssociatedGuidesProps)
                                             flexShrink: 0,
                                         }}
                                     >
+                                        {fileUrl ? (
+                                        <FileThumbnail fileUrl={fileUrl} alt={`Guía ${guia.serie} - ${guia.numero}`} showFileLabel />
+                                    ) : (
                                         <FileIcon fontSize="small" />
+                                    )}
                                     </Box>
 
                                     <Box>

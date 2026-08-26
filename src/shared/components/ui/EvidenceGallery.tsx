@@ -1,5 +1,6 @@
 import { ZoomIn as ZoomInIcon } from '@mui/icons-material';
 import { Box, Stack, Typography } from '@mui/material';
+import { FileThumbnail } from '@/shared/components/ui/FileThumbnail';
 
 interface EvidenceGalleryItem {
     url: string;
@@ -82,16 +83,7 @@ export function EvidenceGallery({ items, onPreview }: EvidenceGalleryProps) {
                                 transition: 'transform 0.2s ease',
                             }}
                         >
-                            <img
-                                src={item.url}
-                                alt={item.alt}
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover',
-                                    display: 'block',
-                                }}
-                            />
+                            <FileThumbnail fileUrl={item.url} alt={item.alt} imageObjectFit="cover" showFileLabel />
                             <Box
                                 className="evidence-gallery-overlay"
                                 sx={{

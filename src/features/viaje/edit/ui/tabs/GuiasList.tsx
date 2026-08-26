@@ -14,6 +14,7 @@ import { useViajeGuias, useDeleteViajeGuia } from '@features/viaje/hooks/useViaj
 import { useViajeGuiaOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
 import { buildInternalFileUrl } from '@/shared/config/env';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
+import { FileThumbnail } from '@/shared/components/ui/FileThumbnail';
 import { downloadFileFromUrl } from '@/shared/utils/file-utils';
 import { logger } from '@/shared/utils/logger';
 
@@ -139,18 +140,19 @@ export function GuiasList({ viajeID, isViewOnly }: GuiasListProps) {
                                     borderRadius: 2,
                                     overflow: 'hidden',
                                     bgcolor: 'grey.100',
+                                    '& .preview-img': { filter: 'grayscale(100%)', transition: 'filter 0.3s ease' },
                                     '&:hover .actions-overlay': { opacity: 1 },
                                     '&:hover .preview-img': { filter: 'grayscale(0)' },
                                 }}
                             >
                                 {hasFile ? (
                                     <>
-                                        <img
+                                        <FileThumbnail
+                                            fileUrl={buildInternalFileUrl(guia.rutaArchivo!)}
+                                            alt={`Documento ${guia.serie}-${guia.numero}`}
                                             className="preview-img"
-                                            src={buildInternalFileUrl(guia.rutaArchivo!)}
-                                            alt="Documento"
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(100%)', transition: 'all 0.3s' }}
-                                            onError={(event) => { event.currentTarget.style.display = 'none'; }}
+                                            imageObjectFit="cover"
+                                            showFileLabel
                                         />
                                         <Box
                                             className="actions-overlay"

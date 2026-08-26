@@ -4,6 +4,7 @@ import { useViajePermisos, useDeleteViajePermiso } from '@/features/viaje/hooks/
 import { useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/shared/components/ui/ConfirmDialog';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
+import { FileThumbnail } from '@/shared/components/ui/FileThumbnail';
 import { downloadFileFromUrl } from '@/shared/utils/file-utils';
 import { buildInternalFileUrl } from '@/shared/config/env';
 import dayjs from 'dayjs';
@@ -178,10 +179,14 @@ export function PermisosList({ viajeId, isViewOnly }: PermisosListProps) {
                                         onClick={() => item.rutaArchivo && setPreviewUrl(buildInternalFileUrl(item.rutaArchivo))}
                                     >
                                         {item.rutaArchivo ? (
-                                            <img
-                                                src={buildInternalFileUrl(item.rutaArchivo)}
+                                            <FileThumbnail
+                                                fileUrl={buildInternalFileUrl(item.rutaArchivo)}
                                                 alt="Permiso"
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover', filter: status.color === 'error' ? 'grayscale(1)' : 'none', opacity: status.color === 'error' ? 0.7 : 1 }}
+                                                imageObjectFit="cover"
+                                                showFileLabel
+                                                containerSx={status.color === 'error'
+                                                    ? { filter: 'grayscale(1)', opacity: 0.7 }
+                                                    : undefined}
                                             />
                                         ) : (
                                             <Typography variant="caption" color="text.disabled">Sin Doc</Typography>

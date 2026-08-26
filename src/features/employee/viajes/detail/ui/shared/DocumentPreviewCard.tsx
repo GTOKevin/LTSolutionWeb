@@ -1,5 +1,6 @@
 import { ZoomIn as ZoomInIcon } from '@mui/icons-material';
 import { Box, Button } from '@mui/material';
+import { FileThumbnail } from '@/shared/components/ui/FileThumbnail';
 
 interface DocumentPreviewCardProps {
     previewUrl: string;
@@ -33,11 +34,7 @@ export function DocumentPreviewCard({
                     },
                 }}
             >
-                <img
-                    src={previewUrl}
-                    alt={alt}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
+                <FileThumbnail fileUrl={previewUrl} alt={alt} imageObjectFit="cover" showFileLabel />
                 <Box
                     className="employee-viaje-preview-overlay"
                     sx={{

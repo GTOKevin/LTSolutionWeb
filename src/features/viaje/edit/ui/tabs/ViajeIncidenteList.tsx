@@ -26,6 +26,7 @@ import { ViajeIncidentePdf } from '@features/viaje/reports/ui/ViajeIncidentePdf'
 import type { SelectItem } from '@/shared/model/types';
 import { useViajeIncidentes, useDeleteViajeIncidente } from '@/features/viaje/hooks/useViajeIncidentes';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
+import { FileThumbnail } from '@/shared/components/ui/FileThumbnail';
 import { formatDateShort, formatTime } from '@/shared/utils/date-utils';
 import { buildInternalFileUrl } from '@/shared/config/env';
 import { downloadFileFromUrl } from '@/shared/utils/file-utils';
@@ -294,10 +295,11 @@ export function ViajeIncidenteList({ viajeId, viewOnly, tiposIncidente, onEdit }
                                                             '&:hover .zoom-icon': { opacity: 1 },
                                                         }}
                                                     >
-                                                        <img
-                                                            src={imageUrl}
+                                                        <FileThumbnail
+                                                            fileUrl={imageUrl}
                                                             alt={`Evidencia ${index + 1}`}
-                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                            imageObjectFit="cover"
+                                                            showFileLabel
                                                         />
                                                         <Box className="zoom-icon" sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s' }}>
                                                             <ZoomInIcon sx={{ color: 'white', fontSize: 20 }} />
