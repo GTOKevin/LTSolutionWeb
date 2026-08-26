@@ -64,6 +64,7 @@ export function ViajesTable({
     const getDisplayValue = (value: string | undefined, fallback: string) => value?.trim() || fallback;
 
     const columns: Column[] = [
+        { id: 'codigo', label: 'Código' },
         { id: 'cliente', label: 'Cliente' },
         { id: 'ruta', label: 'Ruta' },
         { id: 'fechaPartida', label: 'Fecha Partida' },
@@ -138,6 +139,27 @@ export function ViajesTable({
 
                 return (
                     <>
+                        <TableCell>
+                            <Typography
+                                component="span"
+                                sx={{
+                                    fontFamily: 'monospace',
+                                    fontWeight: 800,
+                                    fontSize: '0.75rem',
+                                    color: 'primary.main',
+                                    bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                                    px: 1,
+                                    py: 0.4,
+                                    borderRadius: 1.5,
+                                    whiteSpace: 'nowrap',
+                                    display: 'inline-block',
+                                    letterSpacing: 0.5,
+                                }}
+                            >
+                                {viaje.codigo || `#${viaje.viajeID}`}
+                            </Typography>
+                        </TableCell>
                         <TableCell>
                             <Box>
                                 <Typography variant="body2" fontWeight={700} color="text.primary" sx={{ lineHeight: 1.2 }}>

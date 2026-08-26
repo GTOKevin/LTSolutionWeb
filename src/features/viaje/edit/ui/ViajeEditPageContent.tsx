@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, CircularProgress, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Typography, Tooltip, alpha } from '@mui/material';
 import { PlayArrow as PlayArrowIcon } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -149,21 +149,97 @@ export function ViajeEditPageContent() {
             <ViajeEditShell
                 viajeCodigo={viaje.codigo || `#${viaje.viajeID}`}
                 statusLabel={viaje.estado?.nombre || ''}
+                statusCodigo={viaje.estado?.codigo}
                 activeTab={activeTab}
                 onTabChange={(_, newValue) => setActiveTab(newValue)}
                 tabs={tabs}
                 onBack={() => navigate(APP_PATHS.viajes)}
                 headerActions={
                     canShowAdvance ? (
-                        <Button
-                            variant="contained"
-                            size="small"
-                            startIcon={<PlayArrowIcon />}
-                            onClick={() => handleAdvanceEstado(estadoSource)}
-                            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700, whiteSpace: 'nowrap' }}
-                        >
-                            Pasar a {nextEstadoLabel}
-                        </Button>
+                        <Tooltip title={`Avanzar flujo a estado «${nextEstadoLabel}»`} arrow>
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => handleAdvanceEstado(estadoSource)}
+                                sx={{
+                                    height: 36,
+                                    pl: 1,
+                                    pr: 1.5,
+                                    borderRadius: 2,
+                                    textTransform: 'none',
+                                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                                    color: 'primary.main',
+                                    borderColor: (theme) => alpha(theme.palette.primary.main, 0.3),
+                                    boxShadow: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1,
+                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    '&:hover': {
+                                        bgcolor: 'primary.main',
+                                        color: 'primary.contrastText',
+                                        borderColor: 'primary.main',
+                                        boxShadow: (theme) => `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+                                        transform: 'translateY(-1px)',
+                                        '& .advance-icon-box': {
+                                            bgcolor: (theme) => alpha(theme.palette.common.white, 0.25),
+                                            color: 'common.white',
+                                        },
+                                        '& .advance-caption': {
+                                            color: (theme) => alpha(theme.palette.common.white, 0.85),
+                                        },
+                                    },
+                                    '&:active': {
+                                        transform: 'translateY(0)',
+                                    },
+                                }}
+                            >
+                                <Box
+                                    className="advance-icon-box"
+                                    sx={{
+                                        width: 24,
+                                        height: 24,
+                                        borderRadius: 1.5,
+                                        bgcolor: (theme) => alpha(theme.palette.primary.main, 0.15),
+                                        color: 'primary.main',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        transition: 'all 0.2s ease',
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    <PlayArrowIcon sx={{ fontSize: 16 }} />
+                                </Box>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
+                                    <Typography
+                                        className="advance-caption"
+                                        sx={{
+                                            fontSize: '0.62rem',
+                                            fontWeight: 800,
+                                            lineHeight: 1,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.04em',
+                                            color: 'text.secondary',
+                                            transition: 'color 0.2s ease',
+                                        }}
+                                    >
+                                        Siguiente flujo
+                                    </Typography>
+                                    <Typography
+                                        sx={{
+                                            fontSize: '0.78rem',
+                                            fontWeight: 700,
+                                            lineHeight: 1.2,
+                                            mt: '2px',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        Pasar a {nextEstadoLabel}
+                                    </Typography>
+                                </Box>
+                            </Button>
+                        </Tooltip>
                     ) : undefined
                 }
             >

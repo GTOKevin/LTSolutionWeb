@@ -204,18 +204,19 @@ export function ViajesMobileList({
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
                                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flex: 1 }}>
                                         <Box sx={{
-                                            width: 40,
-                                            height: 40,
-                                            borderRadius: '50%',
+                                            height: 34,
+                                            px: 1.2,
+                                            borderRadius: 1.5,
                                             bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             color: 'primary.main',
                                             flexShrink: 0
                                         }}>
-                                            <Typography variant="caption" fontWeight="bold">
-                                                #{viaje.viajeID}
+                                            <Typography variant="caption" fontWeight="bold" fontFamily="monospace">
+                                                {viaje.codigo || `#${viaje.viajeID}`}
                                             </Typography>
                                         </Box>
                                         <Box sx={{ minWidth: 0 }}>
