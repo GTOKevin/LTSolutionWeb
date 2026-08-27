@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { Download as DownloadIcon, ZoomIn as ZoomInIcon } from '@mui/icons-material';
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
+import { FileThumbnail } from '@shared/components/ui/FileThumbnail';
 import { downloadFileFromUrl } from '@shared/utils/file-utils';
 
 interface DocumentAttachmentCardProps {
@@ -53,11 +54,7 @@ export function DocumentAttachmentCard({ title, fileUrl, downloadUrl, fileName }
                         '&:hover .viaje-preview-overlay': { opacity: 1 },
                     }}
                 >
-                    <img
-                        src={fileUrl}
-                        alt={title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    />
+                    <FileThumbnail fileUrl={fileUrl} alt={title} imageObjectFit="cover" showFileLabel />
                     <Box
                         className="viaje-preview-overlay"
                         sx={{

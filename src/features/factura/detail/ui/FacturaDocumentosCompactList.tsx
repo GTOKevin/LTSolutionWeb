@@ -4,8 +4,6 @@ import {
     Typography,
     Button,
     Paper,
-    IconButton,
-    Tooltip,
     useTheme,
     alpha,
     CircularProgress,
@@ -13,16 +11,12 @@ import {
 import {
     ReceiptLong as ReceiptIcon,
     Add as AddIcon,
-    PictureAsPdf as PdfIcon,
-    OpenInNew as OpenInNewIcon,
-    DeleteOutline as DeleteIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { facturaDocumentoApi } from '@entities/factura-documento/api/factura-documento.api';
 import type { FacturaDocumento } from '@entities/factura-documento/model/types';
-import { buildInternalFileUrl } from '@/shared/config/env';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
-import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
+import { DocumentListItem } from '@shared/components/ui/DocumentListItem';
 import { FacturaDocumentoForm } from '@/features/factura/documentos/ui/FacturaDocumentoForm';
 import { useDeleteFacturaDocumento } from '@/features/factura/documentos/hooks/useFacturaDocumentoCrud';
 
@@ -39,7 +33,6 @@ export function FacturaDocumentosCompactList({
     const [formOpen, setFormOpen] = useState(false);
     const [documentoToDelete, setDocumentoToDelete] = useState<FacturaDocumento | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     const { data, isLoading, refetch } = useQuery({
         queryKey: ['factura-documentos', facturaId],
@@ -49,11 +42,6 @@ export function FacturaDocumentosCompactList({
 
     const deleteMutation = useDeleteFacturaDocumento();
     const documentos: FacturaDocumento[] = data?.items ?? [];
-
-    const handlePreview = (path: string) => {
-        const url = buildInternalFileUrl(path);
-        if (url) setPreviewUrl(url);
-    };
 
     const handleDeleteConfirm = () => {
         if (documentoToDelete) {
@@ -120,81 +108,20 @@ export function FacturaDocumentosCompactList({
             ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     {documentos.map((doc) => {
-                        const fileUrl = doc.rutaArchivo ? buildInternalFileUrl(doc.rutaArchivo) : null;
                         const fileName = doc.descripcion || (doc.rutaArchivo ? doc.rutaArchivo.split('/').pop() : `Factura #${doc.facturaDocumentoID}`);
 
                         return (
-                            <Paper
+                            <DocumentListItem
                                 key={doc.facturaDocumentoID}
-                                variant="outlined"
-                                sx={{
-                                    p: 1.25,
-                                    px: 1.5,
-                                    borderRadius: 2,
-                                    borderColor: alpha(theme.palette.divider, 0.8),
-                                    bgcolor: alpha(theme.palette.background.default, 0.5),
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    gap: 1,
-                                    transition: 'all 0.15s',
-                                    '&:hover': {
-                                        borderColor: theme.palette.primary.main,
-                                        bgcolor: alpha(theme.palette.primary.main, 0.03),
-                                    },
+                                filePath={doc.rutaArchivo}
+                                fileName={fileName}
+                                subtitle="Comprobante Electrónico"
+                                canDelete={canManageFacturas}
+                                onDelete={() => {
+                                    setDocumentoToDelete(doc);
+                                    setDeleteDialogOpen(true);
                                 }}
-                            >
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, minWidth: 0 }}>
-                                    <PdfIcon color="error" fontSize="small" sx={{ flexShrink: 0 }} />
-                                    <Box sx={{ minWidth: 0 }}>
-                                        <Typography
-                                            variant="body2"
-                                            fontWeight={700}
-                                            noWrap
-                                            sx={{
-                                                fontSize: '0.82rem',
-                                                color: 'text.primary',
-                                            }}
-                                        >
-                                            {fileName}
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                                            Comprobante Electrónico
-                                        </Typography>
-                                    </Box>
-                                </Box>
-
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
-                                    {fileUrl && (
-                                        <Tooltip title="Ver archivo">
-                                            <IconButton
-                                                size="small"
-                                                color="primary"
-                                                onClick={() => handlePreview(doc.rutaArchivo)}
-                                                sx={{ p: 0.6 }}
-                                            >
-                                                <OpenInNewIcon fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
-                                    )}
-
-                                    {canManageFacturas && (
-                                        <Tooltip title="Eliminar archivo">
-                                            <IconButton
-                                                size="small"
-                                                color="error"
-                                                onClick={() => {
-                                                    setDocumentoToDelete(doc);
-                                                    setDeleteDialogOpen(true);
-                                                }}
-                                                sx={{ p: 0.6 }}
-                                            >
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
-                                    )}
-                                </Box>
-                            </Paper>
+                            />
                         );
                     })}
                 </Box>
@@ -221,12 +148,6 @@ export function FacturaDocumentosCompactList({
                 confirmText="Eliminar"
                 severity="error"
                 isLoading={deleteMutation.isPending}
-            />
-
-            <DocumentPreviewDialog
-                open={!!previewUrl}
-                onClose={() => setPreviewUrl(null)}
-                previewUrl={previewUrl}
             />
         </Box>
     );

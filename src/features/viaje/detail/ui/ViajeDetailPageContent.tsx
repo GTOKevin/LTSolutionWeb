@@ -4,7 +4,6 @@ import {
     Box,
     Card,
     CardContent,
-    Chip,
     CircularProgress,
     Divider,
     Stack,
@@ -14,13 +13,13 @@ import {
 } from '@mui/material';
 import {
     ArrowBack as ArrowBackIcon,
-    DirectionsCar as DirectionsCarIcon,
     Lock as LockIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { getErrorMessage } from '@/shared/utils/api-errors';
-import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
+import { VIAJE_STATUS_CODE, resolveViajeStatusVisual } from '@entities/viaje/model/status';
+import { StatusPill } from '@shared/components/ui/StatusPill';
 import { CerrarViajeDialog } from '@features/viaje/ui/CerrarViajeDialog';
 import { PaperCard } from './shared/PaperCard';
 import { ViajeTimeline } from './ViajeTimeline';
@@ -74,6 +73,8 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
     const estadoNombre = viaje.estadoNombre || null;
     const puedeCerrar = canCerrarViajes && viaje.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO && !viaje.cerrado;
 
+    const estadoVisual = resolveViajeStatusVisual(viaje.estadoCodigo, estadoNombre);
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 4 }}>
             {/* Header / Top Bar de Detalle */}
@@ -103,22 +104,11 @@ export function ViajeDetailPageContent({ mode = 'view' }: ViajeDetailPageContent
                             Volver
                         </Button>
                         <Box>
-                            <Stack direction="row" spacing={1.5} alignItems="center">
+                            <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
                                 <Typography variant="h5" fontWeight={900} color="primary.main">
                                     Viaje {viajeCodigo}
                                 </Typography>
-                                <Chip
-                                    icon={<DirectionsCarIcon fontSize="small" />}
-                                    label={estadoNombre ? estadoNombre.toUpperCase() : 'SIN ESTADO'}
-                                    color={estadoNombre ? 'primary' : 'default'}
-                                    size="small"
-                                    sx={{
-                                        fontWeight: 800,
-                                        letterSpacing: '0.05em',
-                                        fontSize: '0.75rem',
-                                        px: 0.5,
-                                    }}
-                                />
+                                <StatusPill label={estadoVisual.label} tone={estadoVisual.tone} />
                             </Stack>
                             <Typography variant="caption" color="text.secondary" fontWeight={500}>
                                 Panel 360° de Operación, Seguimiento y Gestión Integral

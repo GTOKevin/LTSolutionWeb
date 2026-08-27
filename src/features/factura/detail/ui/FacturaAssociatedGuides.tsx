@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material';
 import { buildInternalFileUrl } from '@/shared/config/env';
 import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
+import { FileThumbnail } from '@/shared/components/ui/FileThumbnail';
 import type { FacturaGuia } from '@/entities/factura/model/types';
 
 interface FacturaAssociatedGuidesProps {
@@ -115,9 +116,27 @@ export function FacturaAssociatedGuides({ guias }: FacturaAssociatedGuidesProps)
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             flexShrink: 0,
+                                            p: 0.5,
                                         }}
                                     >
-                                        <FileIcon fontSize="small" />
+                                        {fileUrl ? (
+                                            <Box
+                                                sx={{
+                                                    width: 36,
+                                                    height: 36,
+                                                    borderRadius: 1.5,
+                                                    overflow: 'hidden',
+                                                }}
+                                            >
+                                                <FileThumbnail
+                                                    fileUrl={fileUrl}
+                                                    alt={`Guía ${guia.serie} - ${guia.numero}`}
+                                                    showFileLabel={false}
+                                                />
+                                            </Box>
+                                        ) : (
+                                            <FileIcon fontSize="small" />
+                                        )}
                                     </Box>
 
                                     <Box>

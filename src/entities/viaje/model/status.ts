@@ -22,6 +22,40 @@ type ViajeStatusSource = {
     estadoNombre?: ViajeListItem['estadoNombre'] | null;
 };
 
+export type ViajeStatusTone = 'info' | 'warning' | 'secondary' | 'success' | 'neutral';
+
+export interface ViajeStatusVisual {
+    tone: ViajeStatusTone;
+    label: string;
+}
+
+/**
+ * Resuelve la presentacion visual (tone + label) de un estado de viaje a partir
+ * del codigo y/o nombre del catalogo. Unico punto de verdad: matchea por codigo
+ * primero y, si no hay codigo, hace fallback por label via `matchesCatalogCandidate`
+ * contra el contrato `VIAJE_STATUS_CODES`. Sin labels hardcodeados en UI.
+ */
+export function resolveViajeStatusVisual(
+    codigo?: string | null,
+    nombre?: string | null,
+): ViajeStatusVisual {
+    const label = nombre || 'Sin estado';
+
+    if (matchesCatalogCandidate(codigo, VIAJE_STATUS_CODES.AGENDADO) || matchesCatalogCandidate(nombre, VIAJE_STATUS_CODES.AGENDADO)) {
+        return { tone: 'info', label };
+    }
+    if (matchesCatalogCandidate(codigo, VIAJE_STATUS_CODES.TRANSITO) || matchesCatalogCandidate(nombre, VIAJE_STATUS_CODES.TRANSITO)) {
+        return { tone: 'warning', label };
+    }
+    if (matchesCatalogCandidate(codigo, VIAJE_STATUS_CODES.DESCARGANDO) || matchesCatalogCandidate(nombre, VIAJE_STATUS_CODES.DESCARGANDO)) {
+        return { tone: 'secondary', label };
+    }
+    if (matchesCatalogCandidate(codigo, VIAJE_STATUS_CODES.COMPLETADO) || matchesCatalogCandidate(nombre, VIAJE_STATUS_CODES.COMPLETADO)) {
+        return { tone: 'success', label };
+    }
+    return { tone: 'neutral', label };
+}
+
 export function isViajeStatus(source: ViajeStatusSource | null | undefined, candidates: readonly string[]) {
     if (!source) {
         return false;

@@ -14,12 +14,12 @@ import {
     Close as CloseIcon,
     ChevronLeft as ChevronLeftIcon,
     ChevronRight as ChevronRightIcon,
-    Description as FileIcon,
 } from '@mui/icons-material';
 import { useEffect, useMemo, useState } from 'react';
 import { useToast } from './Toast';
 import { getErrorMessage } from '@/shared/utils/api-errors';
 import { isPdfUrl } from '@/shared/utils/file-utils';
+import { FileThumbnail } from './FileThumbnail';
 
 interface DocumentPreviewDialogProps {
     open: boolean;
@@ -384,9 +384,7 @@ export function DocumentPreviewDialog({
                                 }}
                             >
                                 {isPdfUrl(url) ? (
-                                    <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(255,255,255,0.06)', color: 'common.white' }}>
-                                        <FileIcon fontSize="small" />
-                                    </Box>
+                                    <FileThumbnail fileUrl={url} alt={`Vista previa ${index + 1}`} showFileLabel />
                                 ) : (
                                     <img
                                         src={url}

@@ -30,6 +30,7 @@ import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
+import { FileThumbnail } from '@shared/components/ui/FileThumbnail';
 import { portalTableContainerFlatSx, portalTableHeaderFlatSx } from '@shared/components/ui/employee-portal-shell.styles';
 import { MisLicenciasMobileList } from './MisLicenciasMobileList';
 import type { MiLicenciaDto } from '@entities/employee/model/types';
@@ -327,10 +328,11 @@ export function MisLicenciasPageContent({ controller }: MisLicenciasPageContentP
                                                                         '&:hover .thumb-zoom': { opacity: 1 },
                                                                     }}
                                                                 >
-                                                                    <img
-                                                                        src={imageUrl}
+                                                                    <FileThumbnail
+                                                                        fileUrl={imageUrl}
                                                                         alt={`Adjunto ${index + 1}`}
-                                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                        imageObjectFit="cover"
+                                                                        showFileLabel={false}
                                                                     />
                                                                     <Box className="thumb-zoom" sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(15,23,42,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s' }}>
                                                                         <ZoomInIcon sx={{ color: 'white', fontSize: 18 }} />

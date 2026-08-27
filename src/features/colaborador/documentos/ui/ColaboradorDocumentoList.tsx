@@ -3,7 +3,6 @@ import {
     Typography,
     Button,
     useTheme,
-    Avatar,
     Tooltip,
     alpha,
     TableCell,
@@ -29,6 +28,7 @@ import { colaboradorDocumentoApi } from '@entities/colaborador-documento/api/col
 import type { ColaboradorDocumento } from '@entities/colaborador-documento/model/types';
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { DocumentPreviewDialog } from '@shared/components/ui/DocumentPreviewDialog';
+import { FileThumbnail } from '@shared/components/ui/FileThumbnail';
 import { useState, useRef } from 'react';
 import { ColaboradorDocumentoForm } from './ColaboradorDocumentoForm';
 import { formatDateLong } from '@/shared/utils/date-utils';
@@ -303,7 +303,7 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
                                             }}
                                         >
                                             {doc.rutaArchivo ? (
-                                                <Avatar variant="rounded" src={buildInternalFileUrl(doc.rutaArchivo)} alt="Doc" sx={{ width: '100%', height: '100%' }} />
+                                                <FileThumbnail fileUrl={buildInternalFileUrl(doc.rutaArchivo)} alt="Doc" />
                                             ) : (
                                                 <FileIcon />
                                             )}
@@ -393,7 +393,7 @@ export function ColaboradorDocumentoList({ colaboradorId, viewOnly = false }: Co
                                         }}
                                     >
                                         {doc.rutaArchivo ? (
-                                            <Avatar variant="rounded" src={buildInternalFileUrl(doc.rutaArchivo)} alt="Doc" sx={{ width: '100%', height: '100%' }} />
+                                            <FileThumbnail fileUrl={buildInternalFileUrl(doc.rutaArchivo)} alt="Doc" />
                                         ) : (
                                             <FileIcon />
                                         )}
