@@ -10,8 +10,7 @@ import {
     IconButton,
     Menu,
     MenuItem,
-    Divider,
-    Chip
+    Divider
 } from '@mui/material';
 import {
     Visibility as VisibilityIcon,
@@ -35,6 +34,7 @@ import { formatDateShort } from '@/shared/utils/date-utils';
 import { useState } from 'react';
 import { ROWS_PER_PAGE_OPTIONS } from '@/shared/constants/constantes';
 import { StatusPill } from '@shared/components/ui/StatusPill';
+import { FacturadoChip } from '@shared/components/ui/FacturadoChip';
 
 interface ViajesMobileListProps {
     data?: PagedResponse<ViajeListItem>;
@@ -155,12 +155,13 @@ export function ViajesMobileList({
                             sx={{
                                 border: `1px solid ${theme.palette.divider}`,
                                 borderRadius: 3,
-                                position: 'relative'
+                                position: 'relative',
+                                overflow: 'hidden'
                             }}
                         >
                             <CardContent sx={{ p: 2 }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
-                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flex: 1 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5, gap: 1 }}>
+                                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flex: 1, minWidth: 0 }}>
                                         <Box sx={{
                                             height: 34,
                                             px: 1.2,
@@ -177,11 +178,11 @@ export function ViajesMobileList({
                                                 {viaje.codigo || `#${viaje.viajeID}`}
                                             </Typography>
                                         </Box>
-                                        <Box sx={{ minWidth: 0 }}>
+                                        <Box sx={{ minWidth: 0, flex: 1 }}>
                                             <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2} noWrap>
                                                 {viaje.clienteRazonSocial}
                                             </Typography>
-                                            <Typography variant="caption" fontFamily="monospace" color="text.secondary">
+                                            <Typography variant="caption" fontFamily="monospace" color="text.secondary" noWrap display="block">
                                                 {getDisplayValue(viaje.clienteRuc, 'Sin RUC registrado')}
                                             </Typography>
                                         </Box>
@@ -189,7 +190,7 @@ export function ViajesMobileList({
                                     <IconButton
                                         size="small"
                                         onClick={(e) => handleMenuOpen(e, viaje)}
-                                        sx={{ ml: 1 }}
+                                        sx={{ ml: 0.5, flexShrink: 0 }}
                                     >
                                         <MoreVertIcon fontSize="small" />
                                     </IconButton>
@@ -208,28 +209,31 @@ export function ViajesMobileList({
                                         </Typography>
                                     </Box>
 
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                            <CalendarIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                            <Typography variant="body2" fontWeight={500}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        flexWrap: 'wrap',
+                                        gap: 1
+                                    }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, flexShrink: 1 }}>
+                                            <CalendarIcon sx={{ fontSize: 16, color: 'text.secondary', flexShrink: 0 }} />
+                                            <Typography variant="body2" fontWeight={500} noWrap>
                                                 {viaje.fechaPartida ? formatDateShort(viaje.fechaPartida) : 'Pendiente de partida'}
                                             </Typography>
                                         </Box>
 
-                                        <Stack direction="row" spacing={0.5} alignItems="center">
+                                        <Stack
+                                            direction="row"
+                                            spacing={0.75}
+                                            alignItems="center"
+                                            flexWrap="wrap"
+                                            useFlexGap
+                                            sx={{ maxWidth: '100%', ml: 'auto' }}
+                                        >
                                             <StatusPill label={estado.label} tone={estado.tone} size="small" />
                                             {viaje.facturado ? (
-                                                <Chip
-                                                    label={`Facturado · ${viaje.facturaNumero ?? ''}`}
-                                                    size="small"
-                                                    sx={{
-                                                        bgcolor: alpha(theme.palette.success.main, 0.12),
-                                                        color: theme.palette.success.dark,
-                                                        fontWeight: 700,
-                                                        fontSize: '0.65rem',
-                                                        height: 24
-                                                    }}
-                                                />
+                                                <FacturadoChip facturaNumero={viaje.facturaNumero} withIcon size="md" />
                                             ) : null}
                                         </Stack>
                                     </Box>

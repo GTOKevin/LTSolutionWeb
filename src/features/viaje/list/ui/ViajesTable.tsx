@@ -7,8 +7,7 @@ import {
     Stack,
     TableCell,
     Tooltip,
-    IconButton,
-    Chip
+    IconButton
 } from '@mui/material';
 import { ArrowForward, Lock, LockOpen, PlayArrow } from '@mui/icons-material';
 import type { ViajeListItem } from '@entities/viaje/model/types';
@@ -17,6 +16,7 @@ import type { PagedResponse } from '@/shared/model/types';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { TableActions } from '@shared/components/ui/TableActions';
 import { StatusPill } from '@shared/components/ui/StatusPill';
+import { FacturadoChip } from '@shared/components/ui/FacturadoChip';
 import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 
 interface Props {
@@ -203,17 +203,7 @@ export function ViajesTable({
                             <Stack direction="column" alignItems="center" spacing={0.5}>
                                 <StatusPill label={estado.label} tone={estado.tone} size="small" />
                                 {viaje.facturado ? (
-                                    <Chip
-                                        label={`Facturado · ${viaje.facturaNumero ?? ''}`}
-                                        size="small"
-                                        sx={{
-                                            bgcolor: alpha(theme.palette.success.main, 0.12),
-                                            color: theme.palette.success.dark,
-                                            fontWeight: 700,
-                                            fontSize: '0.62rem',
-                                            height: 20
-                                        }}
-                                    />
+                                    <FacturadoChip facturaNumero={viaje.facturaNumero} maxWidth={160} />
                                 ) : null}
                             </Stack>
                         </TableCell>

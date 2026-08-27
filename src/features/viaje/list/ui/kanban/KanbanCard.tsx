@@ -29,6 +29,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import type { ViajeListItem } from '@/entities/viaje/model/types';
 import { VIAJE_STATUS_CODE } from '@entities/viaje/model/status';
+import { FacturadoChip } from '@shared/components/ui/FacturadoChip';
 
 interface KanbanCardProps {
     viaje: ViajeListItem;
@@ -95,10 +96,10 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
                 borderRadius: 2,
                 borderLeft: 4,
                 borderColor:
-                    viaje.estadoCodigo === VIAJE_STATUS_CODE.AGENDADO ? '#94a3b8'
-                        : viaje.estadoCodigo === VIAJE_STATUS_CODE.TRANSITO ? '#2563eb'
-                            : viaje.estadoCodigo === VIAJE_STATUS_CODE.DESCARGANDO ? '#f59e0b'
-                                : viaje.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO ? '#388e3c'
+                    viaje.estadoCodigo === VIAJE_STATUS_CODE.AGENDADO ? theme.palette.grey[500]
+                        : viaje.estadoCodigo === VIAJE_STATUS_CODE.TRANSITO ? theme.palette.info.main
+                            : viaje.estadoCodigo === VIAJE_STATUS_CODE.DESCARGANDO ? theme.palette.warning.dark
+                                : viaje.estadoCodigo === VIAJE_STATUS_CODE.COMPLETADO ? theme.palette.success.main
                                     : 'text.secondary',
             }}
         >
@@ -211,14 +212,14 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
                     </Stack>
                 </Stack>
 
-                <Stack direction="row" spacing={1} mb={1}>
+                <Stack direction="row" spacing={1} mb={1} flexWrap="wrap" useFlexGap>
                     {viaje.requiereEscolta ? (
                         <Chip
                             size="small"
                             label="Escolta"
                             sx={{
-                                bgcolor: '#fff3e0',
-                                color: '#ff6f00',
+                                bgcolor: alpha(theme.palette.secondary.main, 0.1),
+                                color: theme.palette.secondary.main,
                                 fontWeight: 'bold',
                                 fontSize: '0.65rem',
                                 height: 20,
@@ -226,17 +227,7 @@ export function KanbanCard({ viaje, draggable = true, onClick, onEdit, onView, o
                         />
                     ) : null}
                     {viaje.facturado ? (
-                        <Chip
-                            size="small"
-                            label={`Facturado · ${viaje.facturaNumero ?? ''}`}
-                            sx={{
-                                bgcolor: alpha(theme.palette.success.main, 0.1),
-                                color: theme.palette.success.dark,
-                                fontWeight: 'bold',
-                                fontSize: '0.65rem',
-                                height: 20,
-                            }}
-                        />
+                        <FacturadoChip facturaNumero={viaje.facturaNumero} />
                     ) : null}
                 </Stack>
 
