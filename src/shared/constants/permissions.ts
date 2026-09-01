@@ -52,7 +52,11 @@ export const PERMISSIONS = {
             VER: 'SISTEMA_LOGS_VER',
             LIMPIAR: 'SISTEMA_LOGS_LIMPIAR',
         },
+        AUDITORIA: {
+            VER: 'SISTEMA_AUDITORIA_VER',
+        },
         TEMP: {
+            VER: 'SISTEMA_TEMP_VER',
             LIMPIAR: 'SISTEMA_TEMP_LIMPIAR',
         }
     },

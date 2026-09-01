@@ -3,6 +3,8 @@ import type { AuditLog } from '@entities/audit-log/model/types';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import type { PagedResponse } from '@/shared/model/types';
 import { formatDateTime } from '@/shared/utils/date-utils';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 interface Props {
     data?: PagedResponse<AuditLog>;
@@ -21,12 +23,14 @@ export function AuditLogTable({
     onPageChange,
     onRowsPerPageChange,
 }: Props) {
+    const canVerDetalles = usePermission(PERMISSIONS.SISTEMA.AUDITORIA.VER);
+
     const columns: Column[] = [
         { id: 'tableName', label: 'Tabla' },
-        { id: 'dateTime', label: 'Fecha' },
+        { id: 'fecha', label: 'Fecha' },
         { id: 'action', label: 'Acción' },
         { id: 'username', label: 'Usuario' },
-        { id: 'keyValues', label: 'Detalles' },
+        ...(canVerDetalles ? [{ id: 'keyValues', label: 'Detalles' }] : []),
     ];
 
     return (
@@ -49,7 +53,7 @@ export function AuditLogTable({
                     </TableCell>
                     <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                            {formatDateTime(row.dateTime)}
+                            {formatDateTime(row.fecha)}
                         </Typography>
                     </TableCell>
                     <TableCell>
@@ -62,21 +66,23 @@ export function AuditLogTable({
                             {row.username ?? '-'}
                         </Typography>
                     </TableCell>
-                    <TableCell>
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            title={row.keyValues}
-                            sx={{
-                                maxWidth: 340,
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                            }}
-                        >
-                            {row.keyValues}
-                        </Typography>
-                    </TableCell>
+                    {canVerDetalles ? (
+                        <TableCell>
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                title={row.keyValues}
+                                sx={{
+                                    maxWidth: 340,
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                }}
+                            >
+                                {row.keyValues}
+                            </Typography>
+                        </TableCell>
+                    ) : null}
                 </>
             )}
         />

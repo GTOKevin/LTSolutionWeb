@@ -19,6 +19,8 @@ import {
 import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { TabPanel } from '@shared/components/ui/TabPanel';
 import { StatsCard } from '@shared/components/ui/StatsCard';
+import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
+import { formatBytes } from '@shared/utils/format-utils';
 import { DeleteLogTable } from './DeleteLogTable';
 import { AuditLogTable } from './AuditLogTable';
 import type { useMantenimientoSistemaPageController } from '../../hooks/useMantenimientoSistemaPageController';
@@ -36,14 +38,6 @@ interface LogToolbarProps {
     purgeLoading: boolean;
     onPurge: () => void;
     canPurge: boolean;
-}
-
-function formatBytes(bytes: number): string {
-    if (!bytes || bytes <= 0) return '0 B';
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-    const value = bytes / Math.pow(1024, index);
-    return `${value.toFixed(index === 0 ? 0 : 2)} ${units[index]}`;
 }
 
 function LogToolbar({
@@ -168,8 +162,8 @@ export function MantenimientoSistemaPageContent({
                             <LogToolbar
                                 searchTerm={controller.deleteLogSearch}
                                 onSearchChange={controller.handleDeleteLogSearchChange}
-                                searchPlaceholder="Buscar por entidad o datos..."
-                                purgeButtonLabel="Limpiar registros (15+ días)"
+                                searchPlaceholder="Buscar por entidad"
+                                purgeButtonLabel="Limpiar registros antiguos"
                                 purgeDisabled={purgeDeleteLogDisabled}
                                 purgeLoading={controller.purgeDeleteLogMutation.isPending}
                                 onPurge={controller.handlePurgeDeleteLogClick}
@@ -189,8 +183,8 @@ export function MantenimientoSistemaPageContent({
                             <LogToolbar
                                 searchTerm={controller.auditLogSearch}
                                 onSearchChange={controller.handleAuditLogSearchChange}
-                                searchPlaceholder="Buscar por tabla, acción o usuario..."
-                                purgeButtonLabel="Limpiar registros (15+ días)"
+                                searchPlaceholder="Buscar por tabla"
+                                purgeButtonLabel="Limpiar registros antiguos"
                                 purgeDisabled={purgeAuditLogDisabled}
                                 purgeLoading={controller.purgeAuditLogMutation.isPending}
                                 onPurge={controller.handlePurgeAuditLogClick}
@@ -207,48 +201,65 @@ export function MantenimientoSistemaPageContent({
                         </TabPanel>
 
                         <TabPanel value={controller.activeTab} index={2} name="mantenimiento-sistema">
-                            <Grid container spacing={2}>
-                                <Grid size={{ xs: 12, sm: 6 }}>
-                                    <StatsCard
-                                        title="Archivos temporales"
-                                        value={
-                                            controller.tempInfoIsLoading
-                                                ? '-'
-                                                : (controller.tempInfo?.totalArchivos ?? 0)
-                                        }
-                                        icon={<InsertDriveFileIcon />}
-                                        color={theme.palette.primary.main}
+                            {!controller.canVerTemp ? (
+                                <Box sx={{ py: 4, pl: 1 }}>
+                                    <Typography variant="body1" color="text.secondary">
+                                        No tienes permiso para visualizar los archivos temporales del sistema.
+                                    </Typography>
+                                </Box>
+                            ) : controller.tempInfoError ? (
+                                <Box sx={{ py: 4, pl: 1 }}>
+                                    <FetchErrorState
+                                        message={controller.tempInfoError}
+                                        onRetry={controller.handleRetryTempInfo}
                                     />
-                                </Grid>
-                                <Grid size={{ xs: 12, sm: 6 }}>
-                                    <StatsCard
-                                        title="Tamaño total"
-                                        value={
-                                            controller.tempInfoIsLoading
-                                                ? '-'
-                                                : formatBytes(controller.tempInfo?.tamanoBytes ?? 0)
-                                        }
-                                        icon={<StorageIcon />}
-                                        color={theme.palette.secondary.main}
-                                    />
-                                </Grid>
-                            </Grid>
+                                </Box>
+                            ) : (
+                                <>
+                                    <Grid container spacing={2}>
+                                        <Grid size={{ xs: 12, sm: 6 }}>
+                                            <StatsCard
+                                                title="Archivos temporales"
+                                                value={
+                                                    controller.tempInfoIsLoading
+                                                        ? '-'
+                                                        : (controller.tempInfo?.totalArchivos ?? 0)
+                                                }
+                                                icon={<InsertDriveFileIcon />}
+                                                color={theme.palette.primary.main}
+                                            />
+                                        </Grid>
+                                        <Grid size={{ xs: 12, sm: 6 }}>
+                                            <StatsCard
+                                                title="Tamaño total"
+                                                value={
+                                                    controller.tempInfoIsLoading
+                                                        ? '-'
+                                                        : formatBytes(controller.tempInfo?.tamanoBytes ?? 0)
+                                                }
+                                                icon={<StorageIcon />}
+                                                color={theme.palette.secondary.main}
+                                            />
+                                        </Grid>
+                                    </Grid>
 
-                            <Box sx={{ mt: 3 }}>
-                                {controller.canLimpiarTemp ? (
-                                    <Button
-                                        variant="contained"
-                                        color="error"
-                                        startIcon={<FolderDeleteIcon />}
-                                        onClick={controller.handleCleanTempClick}
-                                        disabled={cleanTempDisabled}
-                                        loading={controller.cleanTempMutation.isPending}
-                                        sx={{ boxShadow: 2, fontWeight: 'bold', px: 3, py: 1.2, borderRadius: 2 }}
-                                    >
-                                        Limpiar carpeta temp
-                                    </Button>
-                                ) : null}
-                            </Box>
+                                    <Box sx={{ mt: 3 }}>
+                                        {controller.canLimpiarTemp ? (
+                                            <Button
+                                                variant="contained"
+                                                color="error"
+                                                startIcon={<FolderDeleteIcon />}
+                                                onClick={controller.handleCleanTempClick}
+                                                disabled={cleanTempDisabled}
+                                                loading={controller.cleanTempMutation.isPending}
+                                                sx={{ boxShadow: 2, fontWeight: 'bold', px: 3, py: 1.2, borderRadius: 2 }}
+                                            >
+                                                Limpiar carpeta temp
+                                            </Button>
+                                        ) : null}
+                                    </Box>
+                                </>
+                            )}
                         </TabPanel>
                     </Box>
                 </Box>
@@ -259,7 +270,7 @@ export function MantenimientoSistemaPageContent({
                     <ConfirmDialog
                         open={controller.purgeDeleteLogDialogOpen}
                         title="Limpiar registros de DeleteLog"
-                        content="Esta acción eliminará de forma permanente e irreversible todos los registros de eliminación con más de 15 días de antigüedad. ¿Deseas continuar?"
+                        content="Esta acción eliminará de forma permanente e irreversible los registros de eliminación antiguos según la configuración de retención del sistema. ¿Deseas continuar?"
                         onConfirm={controller.handleConfirmPurgeDeleteLog}
                         onClose={controller.handleClosePurgeDeleteLog}
                         confirmText="Limpiar registros"
@@ -270,7 +281,7 @@ export function MantenimientoSistemaPageContent({
                     <ConfirmDialog
                         open={controller.purgeAuditLogDialogOpen}
                         title="Limpiar registros de AuditLog"
-                        content="Esta acción eliminará de forma permanente e irreversible todos los registros de auditoría con más de 15 días de antigüedad. ¿Deseas continuar?"
+                        content="Esta acción eliminará de forma permanente e irreversible los registros de auditoría antiguos según la configuración de retención del sistema. ¿Deseas continuar?"
                         onConfirm={controller.handleConfirmPurgeAuditLog}
                         onClose={controller.handleClosePurgeAuditLog}
                         confirmText="Limpiar registros"
@@ -285,7 +296,7 @@ export function MantenimientoSistemaPageContent({
                 <ConfirmDialog
                     open={controller.cleanTempDialogOpen}
                     title="Limpiar carpeta temporal"
-                    content="Esta acción eliminará de forma permanente e irreversible todos los archivos temporales del sistema. ¿Deseas continuar?"
+                    content="Esta acción eliminará de forma permanente e irreversible los archivos temporales antiguos del sistema. ¿Deseas continuar?"
                     onConfirm={controller.handleConfirmCleanTemp}
                     onClose={controller.handleCloseCleanTemp}
                     confirmText="Limpiar carpeta temp"

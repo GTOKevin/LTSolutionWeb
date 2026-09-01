@@ -3,6 +3,8 @@ import type { DeleteLog } from '@entities/delete-log/model/types';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import type { PagedResponse } from '@/shared/model/types';
 import { formatDateTime } from '@/shared/utils/date-utils';
+import { usePermission } from '@/shared/lib/hooks/usePermission';
+import { PERMISSIONS } from '@/shared/constants/permissions';
 
 interface Props {
     data?: PagedResponse<DeleteLog>;
@@ -21,12 +23,14 @@ export function DeleteLogTable({
     onPageChange,
     onRowsPerPageChange,
 }: Props) {
+    const canVerDatos = usePermission(PERMISSIONS.SISTEMA.AUDITORIA.VER);
+
     const columns: Column[] = [
         { id: 'entidad', label: 'Entidad' },
         { id: 'entidadId', label: 'Entidad ID' },
         { id: 'fechaEliminacion', label: 'Fecha Eliminación' },
-        { id: 'usuario', label: 'Usuario' },
-        { id: 'datos', label: 'Datos' },
+        { id: 'usuarioEliminacionId', label: 'Usuario' },
+        ...(canVerDatos ? [{ id: 'datos', label: 'Datos' }] : []),
     ];
 
     return (
@@ -59,24 +63,26 @@ export function DeleteLogTable({
                     </TableCell>
                     <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                            {row.usuarioEliminacionId}
+                            {`Usuario ID #${row.usuarioEliminacionId}`}
                         </Typography>
                     </TableCell>
-                    <TableCell>
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            title={row.datos}
-                            sx={{
-                                maxWidth: 340,
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                            }}
-                        >
-                            {row.datos}
-                        </Typography>
-                    </TableCell>
+                    {canVerDatos ? (
+                        <TableCell>
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                title={row.datos}
+                                sx={{
+                                    maxWidth: 340,
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                }}
+                            >
+                                {row.datos}
+                            </Typography>
+                        </TableCell>
+                    ) : null}
                 </>
             )}
         />

@@ -23,6 +23,7 @@ export function useMantenimientoSistemaPageController() {
 
     const canLimpiarLogs = usePermission(PERMISSIONS.SISTEMA.LOGS.LIMPIAR);
     const canLimpiarTemp = usePermission(PERMISSIONS.SISTEMA.TEMP.LIMPIAR);
+    const canVerTemp = usePermission(PERMISSIONS.SISTEMA.TEMP.VER);
 
     const [activeTab, setActiveTab] = useState(0);
 
@@ -70,7 +71,18 @@ export function useMantenimientoSistemaPageController() {
     const tempInfoQuery = useQuery({
         queryKey: TEMP_FILES_QUERY_KEY,
         queryFn: () => sistemaMantenimientoApi.getTempInfo(),
+        enabled: canVerTemp,
     });
+
+    const tempInfoError = tempInfoQuery.error
+        ? getErrorMessage(tempInfoQuery.error, 'No se pudo cargar la información de archivos temporales.')
+        : undefined;
+
+    useEffect(() => {
+        if (tempInfoError) {
+            logger.error('Error cargando info de archivos temporales:', tempInfoError);
+        }
+    }, [tempInfoError]);
 
     const purgeDeleteLogMutation = useMutation({
         mutationFn: () => deleteLogApi.purge(),
@@ -189,8 +201,13 @@ export function useMantenimientoSistemaPageController() {
         handleAuditLogPageChange,
         handleAuditLogRowsPerPageChange,
         // Temp
+        canVerTemp,
         tempInfo: tempInfoQuery.data,
         tempInfoIsLoading: tempInfoQuery.isLoading,
+        tempInfoError,
+        handleRetryTempInfo: () => {
+            void queryClient.invalidateQueries({ queryKey: TEMP_FILES_QUERY_KEY });
+        },
         // Dialogs + mutations
         purgeDeleteLogDialogOpen,
         purgeAuditLogDialogOpen,

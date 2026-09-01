@@ -1,7 +1,7 @@
 export interface AuditLog {
     auditLogID: number;
     tableName: string;
-    dateTime: string;
+    fecha: string;
     keyValues: string;
     oldValues: string | null;
     newValues: string | null;
