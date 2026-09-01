@@ -77,15 +77,15 @@ export function FlotaDocumentosForm({
     };
 
     return (
-        <Box 
-            component="form" 
-            onSubmit={handleSubmit(onSubmit)} 
-            sx={{ 
+        <Box
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
+            sx={{
                 p: 3
             }}
         >
             <Grid container spacing={3}>
-                <Grid size={{xs:12,md:6}}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <Controller
                         name="tipoDocumentoID"
                         control={control}
@@ -101,7 +101,7 @@ export function FlotaDocumentosForm({
                         )}
                     />
                 </Grid>
-                <Grid size={{xs:12,md:6}}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                         label="Número Documento"
                         fullWidth
@@ -111,7 +111,7 @@ export function FlotaDocumentosForm({
                         disabled={viewOnly}
                     />
                 </Grid>
-                <Grid size={{xs:12,md:6}}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                         label="Fecha Emisión"
                         type="date"
@@ -123,7 +123,7 @@ export function FlotaDocumentosForm({
                         disabled={viewOnly}
                     />
                 </Grid>
-                <Grid size={{xs:12,md:6}}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                         label="Fecha Vencimiento"
                         type="date"
@@ -135,8 +135,8 @@ export function FlotaDocumentosForm({
                         disabled={viewOnly}
                     />
                 </Grid>
-                
-                <Grid size={{xs:12}}>
+
+                <Grid size={{ xs: 12 }}>
                     <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
                         Archivo Adjunto
                     </Typography>
@@ -158,19 +158,19 @@ export function FlotaDocumentosForm({
                 </Grid>
 
                 {!viewOnly && (
-                    <Grid size={{xs:12}}>
+                    <Grid size={{ xs: 12 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-                            <Button 
-                                onClick={handleCancel} 
-                                variant="outlined" 
+                            <Button
+                                onClick={handleCancel}
+                                variant="outlined"
                                 color="inherit"
                                 disabled={isSubmitting}
                             >
                                 Cancelar
                             </Button>
-                            <Button 
-                                type="submit" 
-                                variant="contained" 
+                            <Button
+                                type="submit"
+                                variant="contained"
                                 disabled={isSubmitting || (isEditing && !isDirty)}
                             >
                                 {isEditing ? 'Actualizar' : 'Guardar'}

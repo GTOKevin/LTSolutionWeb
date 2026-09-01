@@ -47,6 +47,13 @@ export const PERMISSIONS = {
         MAESTROS: {
             VER: 'MAESTROS_VER',
             GESTIONAR: 'MAESTROS_GESTIONAR',
+        },
+        LOGS: {
+            VER: 'SISTEMA_LOGS_VER',
+            LIMPIAR: 'SISTEMA_LOGS_LIMPIAR',
+        },
+        TEMP: {
+            LIMPIAR: 'SISTEMA_TEMP_LIMPIAR',
         }
     },
     CATALOGOS: {
