@@ -25,6 +25,7 @@ export const APP_PATHS = {
     gasto: '/app/gasto',
     mercaderia: '/app/mercaderia',
     tipoProducto: '/app/tipo-producto',
+    mantenimientoSistema: '/app/mantenimiento-sistema',
 } as const;
 
 export const APP_ROUTE_SEGMENTS = {
@@ -49,6 +50,7 @@ export const APP_ROUTE_SEGMENTS = {
     gasto: 'gasto',
     mercaderia: 'mercaderia',
     tipoProducto: 'tipo-producto',
+    mantenimientoSistema: 'mantenimiento-sistema',
 } as const;
 
 export function buildAppCreatePath(basePath: string) {

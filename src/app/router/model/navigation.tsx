@@ -23,6 +23,7 @@ import {
     Menu as MenuIcon,
     Person as PersonIcon,
     FactCheck as FactCheckIcon,
+    CleaningServices as CleaningServicesIcon,
 } from '@mui/icons-material';
 import {
     APP_PATHS,
@@ -265,6 +266,12 @@ export const APP_SIDEBAR_MENU: AppNavigationItem[] = [
                 icon: <ListAltIcon />,
                 permission: PERMISSIONS.SISTEMA.MAESTROS.VER,
             },
+            {
+                text: 'Mantenimiento del Sistema',
+                path: APP_PATHS.mantenimientoSistema,
+                icon: <CleaningServicesIcon />,
+                permission: PERMISSIONS.SISTEMA.LOGS.VER,
+            },
         ],
     },
 ];
@@ -288,6 +295,7 @@ export const APP_ROUTE_META: AppRouteMeta[] = [
     { pathPrefix: APP_PATHS.rolesUsuario, title: 'Gestión de Roles', sectionTitle: 'Sistema', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.rolesColaborador, title: 'Gestión de Roles de Colaborador', sectionTitle: 'Sistema', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.maestros, title: 'Gestión de Maestros', sectionTitle: 'Sistema', bottomNavContext: 'admin' },
+    { pathPrefix: APP_PATHS.mantenimientoSistema, title: 'Mantenimiento del Sistema', sectionTitle: 'Sistema', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.gasto, title: 'Catálogo de Gastos', sectionTitle: 'Catálogos', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.mercaderia, title: 'Catálogo de Mercaderías', sectionTitle: 'Catálogos', bottomNavContext: 'admin' },
     { pathPrefix: APP_PATHS.tipoProducto, title: 'Tipos de Producto', sectionTitle: 'Catálogos', bottomNavContext: 'admin' },

@@ -60,6 +60,7 @@ const MisViajesDetallePage = lazy(() => import('@pages/mis-viajes/detalle').then
 const MisPagosPage = lazy(() => import('@pages/mis-pagos').then(module => ({ default: module.MisPagosPage })));
 const MisLicenciasPage = lazy(() => import('@pages/mis-licencias').then(module => ({ default: module.MisLicenciasPage })));
 const MisDocumentosPage = lazy(() => import('@pages/mis-documentos').then(module => ({ default: module.MisDocumentosPage })));
+const MantenimientoSistemaPage = lazy(() => import('@pages/mantenimiento-sistema').then(module => ({ default: module.MantenimientoSistemaPage })));
 
 function LoadingFallback() {
     return (
@@ -197,6 +198,7 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
     { path: APP_ROUTE_SEGMENTS.rolesUsuario, permission: PERMISSIONS.SISTEMA.ROLES.VER, element: <RolesPage /> },
     { path: APP_ROUTE_SEGMENTS.rolesColaborador, permission: PERMISSIONS.SISTEMA.ROLES.VER, element: <RolesColaboradorPage /> },
     { path: APP_ROUTE_SEGMENTS.maestros, permission: PERMISSIONS.SISTEMA.MAESTROS.VER, element: <MaestrosPage /> },
+    { path: APP_ROUTE_SEGMENTS.mantenimientoSistema, permission: PERMISSIONS.SISTEMA.LOGS.VER, element: <MantenimientoSistemaPage /> },
     { path: APP_ROUTE_SEGMENTS.gasto, permission: PERMISSIONS.CATALOGOS.GASTO.VER, element: <GastoPage /> },
     { path: APP_ROUTE_SEGMENTS.mercaderia, permission: PERMISSIONS.CATALOGOS.MERCADERIA.VER, element: <MercaderiaPage /> },
     { path: APP_ROUTE_SEGMENTS.tipoProducto, permission: PERMISSIONS.CATALOGOS.TIPO_PRODUCTO.VER, element: <TipoProductoPage /> },
