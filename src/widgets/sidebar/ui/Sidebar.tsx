@@ -15,7 +15,8 @@ import {
     MenuItem as MuiMenuItem,
     Divider,
     Backdrop,
-    CircularProgress
+    CircularProgress,
+    Stack
 } from '@mui/material';
 import {
     ExpandLess,
@@ -23,9 +24,9 @@ import {
     MoreVert as MoreVertIcon,
     AccountCircle,
     Key,
-    Logout,
-    LocalShipping as TruckIcon
+    Logout
 } from '@mui/icons-material';
+import euroTransportLogo from '@/assets/img_euro/euro-transport-monogram-e-icon-only-blue-gold.svg';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLayoutStore } from '@shared/store/layout.store';
 import { useAuthStore } from '@shared/store/auth.store';
@@ -53,12 +54,14 @@ interface SidebarProps {
 }
 
 export function Sidebar({ menu, onRequestChangePassword, isEmployee = false }: SidebarProps) {
+    const theme = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
     const { sidebarOpen, setSidebarOpen } = useLayoutStore();
     const { user } = useAuthStore();
+    const isDark = theme.palette.mode === 'dark';
     const logoutMutation = useLogout();
-    const theme = useTheme();
+
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [pendingNavigation, setPendingNavigation] = useState<{ path: string; label: string } | null>(null);
     const openMenu = Boolean(anchorEl);
@@ -77,6 +80,16 @@ export function Sidebar({ menu, onRequestChangePassword, isEmployee = false }: S
     const navigationTimeoutRef = useRef<number | null>(null);
     const isNavigating = pendingNavigation !== null && location.pathname !== pendingNavigation.path;
     const navigationLabel = pendingNavigation?.label ?? '';
+
+    const colors = {
+        primary: theme.palette.primary.main,
+        primaryHover: theme.palette.primary.dark,
+        textPrimary: theme.palette.text.primary,
+        textSecondary: theme.palette.text.secondary,
+        inputBorder: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(203, 213, 225, 0.9)',
+        inputBg: isDark ? 'rgba(255, 255, 255, 0.04)' : '#f8fafc',
+    };
+
 
     // Filter menu items based on permissions
     const filteredMenu = useMemo(() => {
@@ -349,34 +362,98 @@ export function Sidebar({ menu, onRequestChangePassword, isEmployee = false }: S
             color: theme.palette.text.primary
         }}>
             {/* Logo Area */}
-            <Box sx={{
-                p: 3,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.5
-            }}>
-                <Box sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 2,
-                    bgcolor: theme.palette.primary.main,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    flexShrink: 0
-                }}>
-                    <TruckIcon />
+            <Stack direction="row" alignItems="center" spacing={1.5}>
+                <Box
+                    component="img"
+                    src={euroTransportLogo}
+                    alt="Euro Transport"
+                    sx={{
+                        height: 35,
+                        width: 35,
+                        objectFit: 'contain',
+                        flexShrink: 0,
+                        borderRadius: 1.5,
+                        backgroundColor: isDark ? '#ffffff' : 'transparent',
+                        p: isDark ? 0.6 : 0,
+                        boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.18)' : 'none',
+                    }}
+                />
+
+                {/* Divider with Golden Arrow Indicator */}
+                <Box
+                    component="svg"
+                    viewBox="0 0 10 50"
+                    sx={{
+                        width: 10,
+                        height: 50,
+                        flexShrink: 0,
+                        overflow: 'visible',
+                    }}
+                >
+                    <line
+                        x1="2"
+                        y1="2"
+                        x2="2"
+                        y2="48"
+                        stroke={isDark ? 'rgba(255, 255, 255, 0.22)' : '#CBD5E1'}
+                        strokeWidth="1.5"
+                    />
+                    <polygon points="2,21 8,25 2,29" fill="#EAB308" />
                 </Box>
-                <Box sx={{ overflow: 'hidden' }}>
-                    <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2} noWrap>
-                        Euro Transport
+
+                {/* Typography Branding Block */}
+                <Stack spacing={0.15} sx={{ userSelect: 'none' }}>
+                    <Typography
+                        sx={{
+                            fontFamily: '"Barlow", "Rajdhani", "Spline Sans", sans-serif',
+                            fontSize: '0.44rem',
+                            fontWeight: 700,
+                            letterSpacing: '0.24em',
+                            textTransform: 'uppercase',
+                            color: isDark ? '#94A3B8' : '#475569',
+                            lineHeight: 1.2,
+                        }}
+                    >
+                        SERVICIOS GENERALES
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" noWrap>
-                        Admin Console
+
+                    <Typography
+                        sx={{
+                            fontFamily: '"Barlow", "Rajdhani", "Spline Sans", sans-serif',
+                            fontSize: '0.9rem',
+                            fontWeight: 900,
+                            letterSpacing: '0.06em',
+                            color: isDark ? '#F8FAFC' : '#0F172A',
+                            lineHeight: 1.05,
+                            my: 0.1,
+                        }}
+                    >
+                        EURO TRANSPORT
                     </Typography>
-                </Box>
-            </Box>
+
+                    {/* Bottom Accents & Tagline */}
+                    <Stack direction="row" alignItems="center" spacing={0.75}>
+                        <Box
+                            sx={{
+                                height: 3,
+                                width: 45,
+                                backgroundColor: '#EAB308',
+                                borderRadius: '1px',
+                                flexShrink: 0,
+                            }}
+                        />
+                        <Box
+                            sx={{
+                                height: 3,
+                                width: 110,
+                                backgroundColor: isDark ? colors.primary : '#0B2B68',
+                                borderRadius: '1px',
+                                flexShrink: 0,
+                            }}
+                        />
+                    </Stack>
+                </Stack>
+            </Stack>
 
             {/* Navigation Links */}
             <Box sx={{
