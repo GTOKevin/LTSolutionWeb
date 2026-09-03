@@ -1,332 +1,353 @@
 import {
+    Alert,
     Box,
     Button,
-    Card,
-    Container,
+    CircularProgress,
+    IconButton,
+    InputAdornment,
     Link,
     Stack,
     TextField,
+    Tooltip,
     Typography,
     useTheme,
-    Alert,
-    CircularProgress,
 } from '@mui/material';
 import {
-    LocalShipping as TruckIcon,
-    LockReset as LockResetIcon,
-    Mail as MailIcon,
-    Info as InfoIcon,
-    ArrowBack as ArrowBackIcon,
+    MailOutlineRounded as MailIcon,
+    CheckCircleRounded as CheckCircleIcon,
+    ArrowForwardRounded as ArrowForwardIcon,
+    ArrowBackRounded as ArrowBackIcon,
+    HelpOutlineOutlined as HelpIcon,
+    SupportAgentOutlined as SupportAgentIcon,
 } from '@mui/icons-material';
-import { alpha } from '@mui/material/styles';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
+import { useState } from 'react';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '../model/schema';
+import { FORGOT_PASSWORD_GENERIC_MESSAGE } from '../model/constants';
 import { useForgotPassword } from '../api/use-forgot-password';
-import { useState } from 'react';
+import { EuroTransportBrand } from '@/shared/components/branding/EuroTransportBrand';
+import { ThemeSwitcherMenu } from '@/shared/components/branding/ThemeSwitcherMenu';
+import { BrandFooter } from '@/shared/components/branding/BrandFooter';
+import { RecoveryProtocolPanel } from './RecoveryProtocolPanel';
 
 export function ForgotPasswordPage() {
     const theme = useTheme();
-    const navigate = useNavigate();
+    const isDark = theme.palette.mode === 'dark';
     const { mutate, isPending } = useForgotPassword();
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const supportIllustrationUrl = 'https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=realistic%20flat%20logistics%20operations%20control%20room%2C%20transport%20fleet%20monitoring%20screens%2C%20corporate%20blue%20and%20neutral%20palette%2C%20clean%20lighting%2C%20modern%20enterprise%20website%20background%2C%20no%20text%2C%20no%20watermark&image_size=landscape_16_9';
+
+    const colors = {
+        primary: theme.palette.primary.main,
+        primaryHover: theme.palette.primary.dark,
+        primaryContrastText: theme.palette.primary.contrastText,
+        textPrimary: theme.palette.text.primary,
+        textSecondary: theme.palette.text.secondary,
+        inputBorder: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(203, 213, 225, 0.9)',
+        inputBg: isDark ? 'rgba(255, 255, 255, 0.04)' : '#f8fafc',
+    };
 
     const {
+        control,
         register,
         handleSubmit,
         formState: { errors },
     } = useForm<ForgotPasswordFormData>({
         resolver: zodResolver(forgotPasswordSchema),
+        mode: 'onChange',
     });
+
+    const emailValue = useWatch({ control, name: 'email', defaultValue: '' });
+    const isEmailValid = Boolean(emailValue) && !errors.email;
 
     const onSubmit = (data: ForgotPasswordFormData) => {
         setSuccessMessage(null);
         setErrorMessage(null);
         mutate(data.email, {
             onSuccess: (response) => {
-                setSuccessMessage(response.message || 'Si el correo existe, se enviará un enlace de recuperación.');
+                setSuccessMessage(response.message || FORGOT_PASSWORD_GENERIC_MESSAGE);
             },
             onError: () => {
-                // Generic error message to prevent user enumeration
-                setErrorMessage('Si el correo existe, se enviará un enlace de recuperación.');
+                // Mensaje genérico para prevenir enumeración de usuarios
+                setErrorMessage(FORGOT_PASSWORD_GENERIC_MESSAGE);
             },
         });
     };
-
-    const isDark = theme.palette.mode === 'dark';
 
     return (
         <Box
             sx={{
                 minHeight: '100vh',
                 display: 'flex',
-                flexDirection: 'column',
-                bgcolor: 'background.default',
+                flexDirection: 'row',
+                overflow: 'hidden',
+                backgroundColor: isDark ? 'background.default' : '#ffffff',
                 color: 'text.primary',
-                fontFamily: '"Inter", sans-serif',
+                fontFamily: '"Spline Sans", "Inter", sans-serif',
             }}
         >
-            {/* Header Navigation */}
-            <Box
-                component="header"
-                sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    px: 5,
-                    py: 2,
-                    bgcolor: 'background.paper',
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 50,
-                }}
-            >
-                <Stack direction="row" alignItems="center" spacing={2}>
-                    <Box sx={{ color: 'primary.main', display: 'flex' }}>
-                        <TruckIcon sx={{ fontSize: 32 }} />
-                    </Box>
-                    <Typography
-                        variant="h6"
-                        sx={{
-                            fontWeight: 700,
-                            lineHeight: 1.2,
-                            color: 'text.primary',
-                        }}
-                    >
-                        Euro Transport{' '}
-                        <Box
-                            component="span"
-                            sx={{
-                                fontSize: '0.75rem',
-                                fontWeight: 400,
-                                color: 'text.secondary',
-                                ml: 0.5,
-                                px: 0.75,
-                                py: 0.25,
-                                borderRadius: 1,
-                                border: 1,
-                                borderColor: 'divider',
-                                bgcolor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                            }}
-                        >
-                            CORP
-                        </Box>
-                    </Typography>
-                </Stack>
-
-                <Stack direction="row" alignItems="center" spacing={2}>
-                    <Typography
-                        sx={{
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            color: 'text.secondary',
-                        }}
-                    >
-                        Soporte tecnico interno
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        onClick={() => navigate(APP_PATHS.login)}
-                        sx={{
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontWeight: 700,
-                            px: 2,
-                            minWidth: 84,
-                        }}
-                    >
-                        Iniciar Sesión
-                    </Button>
-                </Stack>
-            </Box>
-
-            {/* Main Content Area */}
+            {/* Left Column: Form & Recovery Options (46% on desktop) */}
             <Box
                 component="main"
                 sx={{
-                    flex: 1,
+                    position: 'relative',
+                    width: { xs: '100%', lg: '46%' },
+                    minHeight: '100vh',
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    p: 3,
-                    position: 'relative',
-                    overflow: 'hidden',
+                    justifyContent: 'space-between',
+                    p: { xs: 3, sm: 6, lg: 6, xl: 8 },
+                    zIndex: 10,
+                    backgroundColor: isDark ? 'background.paper' : '#ffffff',
+                    borderRight: 1,
+                    borderColor: isDark ? 'divider' : 'rgba(226, 232, 240, 0.8)',
+                    boxShadow: { xs: 'none', lg: '4px 0 24px -2px rgba(15, 23, 42, 0.05)' },
                 }}
             >
-                {/* Background Pattern */}
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        inset: 0,
-                        zIndex: 0,
-                        opacity: 0.05,
-                        pointerEvents: 'none',
-                        backgroundImage: `url('${supportIllustrationUrl}')`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }}
-                />
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        inset: 0,
-                        zIndex: 0,
-                        background: `linear-gradient(to bottom, ${isDark ? 'rgba(10,14,26,0.8)' : 'rgba(240,242,245,0.8)'}, ${theme.palette.background.default})`,
-                        pointerEvents: 'none',
-                    }}
-                />
+                {/* Header: Official Logo & Help */}
+                <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ pb: 3, borderBottom: 1, borderColor: isDark ? 'divider' : 'rgba(241, 245, 249, 1)' }}
+                >
+                    <EuroTransportBrand />
 
-                <Container maxWidth="sm" sx={{ zIndex: 10 }}>
-                    <Card
-                        elevation={0}
+                    {/* Header Actions: Theme & Help */}
+                    <Stack sx={{ display: { xs: 'none', md: 'flex' } }} direction="row" alignItems="center" spacing={0.5}>
+                        <ThemeSwitcherMenu />
+                        <Tooltip title="Canal de soporte y ayuda">
+                            <IconButton
+                                size="small"
+                                sx={{
+                                    color: colors.textSecondary,
+                                    p: 1,
+                                    borderRadius: 2,
+                                    border: '1px solid',
+                                    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(226,232,240,0.8)',
+                                }}
+                            >
+                                <HelpIcon fontSize="small" />
+                            </IconButton>
+                        </Tooltip>
+                    </Stack>
+                </Stack>
+
+                {/* Form Content Area */}
+                <Box sx={{ my: 'auto', py: 4, width: '100%', maxWidth: 440, mx: 'auto' }}>
+                    {/* Status Badge */}
+                    <Box
                         sx={{
-                            p: 4,
-                            borderRadius: 3,
-                            border: 1,
-                            borderColor: 'divider',
-                            bgcolor: 'background.paper',
-                            boxShadow: theme.shadows[10],
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            px: 1.75,
+                            py: 0.6,
+                            borderRadius: '9999px',
+                            backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(239, 246, 255, 1)',
+                            border: '1px solid',
+                            borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : '#bfdbfe',
+                            mb: 2.5,
                         }}
                     >
-                        {/* Headline */}
-                        <Stack alignItems="center" spacing={2} sx={{ mb: 4, textAlign: 'center' }}>
-                            <Box
-                                sx={{
-                                    width: 56,
-                                    height: 56,
-                                    borderRadius: '50%',
-                                    bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: 'primary.main',
-                                }}
-                            >
-                                <LockResetIcon sx={{ fontSize: 32 }} />
-                            </Box>
-                            <Box>
-                                <Typography variant="h5" fontWeight={700} gutterBottom>
-                                    Recuperar Contraseña
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 340, mx: 'auto' }}>
-                                    Ingresa tu correo electrónico asociado. Te enviaremos un enlace seguro para restablecer tu acceso al sistema HAZMAT. El enlace estará activo por 15 minutos.
-                                </Typography>
-                            </Box>
-                        </Stack>
-
-                        {/* Form */}
-                        <Stack component="form" spacing={3} onSubmit={handleSubmit(onSubmit)}>
-                            {successMessage && (
-                                <Alert severity="success" sx={{ borderRadius: 2 }}>
-                                    {successMessage}
-                                </Alert>
-                            )}
-                            {errorMessage && (
-                                <Alert severity="error" sx={{ borderRadius: 2 }}>
-                                    {errorMessage}
-                                </Alert>
-                            )}
-
-                            <Stack spacing={1}>
-                                <Typography
-                                    variant="caption"
-                                    fontWeight={600}
-                                    sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}
-                                >
-                                    <MailIcon sx={{ fontSize: 18 }} />
-                                    Correo Electrónico Corporativo
-                                </Typography>
-                                <TextField
-                                    {...register('email')}
-                                    placeholder="nombre@empresa.com"
-                                    fullWidth
-                                    error={!!errors.email}
-                                    helperText={errors.email?.message}
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: 2,
-                                            bgcolor: isDark ? 'background.default' : 'grey.50',
-                                        },
-                                    }}
-                                />
-                            </Stack>
-
-                            {/* Alert / Info Box */}
-                            <Box
-                                sx={{
-                                    p: 1.5,
-                                    bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                    border: 1,
-                                    borderColor: alpha(theme.palette.primary.main, 0.2),
-                                    borderRadius: 2,
-                                    display: 'flex',
-                                    gap: 1.5,
-                                    alignItems: 'start',
-                                }}
-                            >
-                                <InfoIcon sx={{ fontSize: 20, color: 'primary.main', mt: 0.25 }} />
-                                <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.5 }}>
-                                    Si no recuerdas tu usuario, contacta al administrador de flota o al soporte de TI interno.
-                                </Typography>
-                            </Box>
-
-                            {/* Actions */}
-                            <Stack spacing={2} sx={{ mt: 1 }}>
-                                <Button
-                                    type="submit"
-                                    variant="contained"
-                                    size="large"
-                                    fullWidth
-                                    disabled={isPending}
-                                    sx={{
-                                        height: 48,
-                                        borderRadius: 2,
-                                        fontWeight: 600,
-                                        textTransform: 'none',
-                                        fontSize: '1rem',
-                                    }}
-                                >
-                                    {isPending ? <CircularProgress size={24} color="inherit" /> : 'Enviar enlace de recuperación'}
-                                </Button>
-
-                                <Link
-                                    component={RouterLink}
-                                    to={APP_PATHS.login}
-                                    underline="hover"
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: 1,
-                                        color: 'text.secondary',
-                                        fontWeight: 500,
-                                        fontSize: '0.875rem',
-                                        '&:hover': { color: 'primary.main' },
-                                    }}
-                                >
-                                    <ArrowBackIcon sx={{ fontSize: 18 }} />
-                                    Volver al inicio de sesión
-                                </Link>
-                            </Stack>
-                        </Stack>
-                    </Card>
-
-                    {/* Footer Text */}
-                    <Box sx={{ mt: 4, textAlign: 'center' }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.6 }}>
-                            © {new Date().getFullYear()} Euro Transport Platform v2.4. <br />
-                            Sistema seguro de gestión de transporte de cargas peligrosas.
+                        <Box sx={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#2563eb' }} />
+                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: isDark ? '#93c5fd' : '#1e40af' }}>
+                            Recuperación de Acceso Institucional
                         </Typography>
                     </Box>
-                </Container>
+
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            fontWeight: 800,
+                            letterSpacing: '-0.025em',
+                            color: colors.textPrimary,
+                            fontSize: { xs: '1.75rem', md: '2rem' },
+                            lineHeight: 1.2,
+                            mb: 1.5,
+                        }}
+                    >
+                        Recuperar acceso a la plataforma
+                    </Typography>
+                    <Typography sx={{ color: colors.textSecondary, fontSize: '0.9rem', mb: 3.5, lineHeight: 1.6 }}>
+                        Introduce la dirección de correo corporativo asociada a tu perfil operativo o administrativo.
+                    </Typography>
+
+                    {/* Feedback Alerts */}
+                    {successMessage && (
+                        <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
+                            {successMessage}
+                        </Alert>
+                    )}
+
+                    {errorMessage && (
+                        <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                            {errorMessage}
+                        </Alert>
+                    )}
+
+                    {/* Recovery Form */}
+                    <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                        <Box>
+                            <Typography
+                                component="label"
+                                htmlFor="corporate-email"
+                                sx={{
+                                    display: 'block',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.08em',
+                                    color: colors.textPrimary,
+                                    mb: 0.75,
+                                }}
+                            >
+                                Correo Electrónico Corporativo
+                            </Typography>
+                            <TextField
+                                id="corporate-email"
+                                type="email"
+                                placeholder="ejemplo@eurotransport.pe"
+                                fullWidth
+                                {...register('email')}
+                                error={!!errors.email}
+                                helperText={errors.email?.message}
+                                disabled={isPending}
+                                autoFocus
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <MailIcon sx={{ color: colors.textSecondary, fontSize: 20 }} />
+                                        </InputAdornment>
+                                    ),
+                                    endAdornment: isEmailValid ? (
+                                        <InputAdornment position="end">
+                                            <CheckCircleIcon sx={{ color: '#2563eb', fontSize: 20 }} />
+                                        </InputAdornment>
+                                    ) : null,
+                                    sx: {
+                                        borderRadius: 2,
+                                        backgroundColor: colors.inputBg,
+                                        fontSize: '0.88rem',
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: colors.inputBorder,
+                                        },
+                                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: colors.textSecondary,
+                                        },
+                                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: colors.primary,
+                                            borderWidth: 2,
+                                        },
+                                        '& input': { py: 1.4, px: 1 },
+                                    },
+                                }}
+                            />
+                            <Typography sx={{ fontSize: '0.74rem', color: colors.textSecondary, mt: 0.75 }}>
+                                Enviaremos un enlace de un solo uso con validez de 15 minutos.
+                            </Typography>
+                        </Box>
+
+                        {/* Submit Button */}
+                        <Button
+                            type="submit"
+                            fullWidth
+                            disabled={isPending}
+                            variant="contained"
+                            sx={{
+                                mt: 1,
+                                py: 1.5,
+                                borderRadius: 2.5,
+                                fontWeight: 700,
+                                textTransform: 'none',
+                                fontSize: '0.9rem',
+                                backgroundColor: colors.primary,
+                                color: colors.primaryContrastText,
+                                '&:hover': {
+                                    backgroundColor: colors.primaryHover,
+                                },
+                            }}
+                        >
+                            {isPending ? (
+                                <CircularProgress size={22} color="inherit" />
+                            ) : (
+                                <Stack direction="row" alignItems="center" spacing={1}>
+                                    <span>Enviar enlace de recuperación</span>
+                                    <ArrowForwardIcon sx={{ fontSize: 18 }} />
+                                </Stack>
+                            )}
+                        </Button>
+
+                        {/* Back to Login Link */}
+                        <Box sx={{ textAlign: 'center', pt: 1 }}>
+                            <Link
+                                component={RouterLink}
+                                to={APP_PATHS.login}
+                                underline="hover"
+                                sx={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 0.75,
+                                    fontSize: '0.82rem',
+                                    fontWeight: 600,
+                                    color: colors.primary,
+                                    '&:hover': { color: colors.primaryHover },
+                                }}
+                            >
+                                <ArrowBackIcon sx={{ fontSize: 16 }} />
+                                <span>Regresar al inicio de sesión</span>
+                            </Link>
+                        </Box>
+                    </Box>
+
+                    {/* Support / Locked Account Card */}
+                    <Box
+                        sx={{
+                            mt: 4,
+                            p: 2,
+                            borderRadius: 2.5,
+                            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.03)' : '#f8fafc',
+                            border: '1px solid',
+                            borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(226, 232, 240, 0.9)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                        }}
+                    >
+                        <Stack direction="row" alignItems="flex-start" spacing={1.5}>
+                            <Box
+                                sx={{
+                                    p: 1,
+                                    borderRadius: 2,
+                                    backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#e0e7ff',
+                                    color: isDark ? '#93c5fd' : '#1d4ed8',
+                                    display: 'flex',
+                                    mt: 0.25,
+                                }}
+                            >
+                                <SupportAgentIcon sx={{ fontSize: 18 }} />
+                            </Box>
+                            <Box>
+                                <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: colors.textPrimary, lineHeight: 1.3 }}>
+                                    ¿Problemas para recibir el código o correo bloqueado?
+                                </Typography>
+                                <Typography sx={{ fontSize: '0.72rem', color: colors.textSecondary, mt: 0.25 }}>
+                                    Atención inmediata 24/7 para incidencias de credenciales operativas.
+                                </Typography>
+                            </Box>
+                        </Stack>
+                    </Box>
+                </Box>
+
+                {/* Footer */}
+                <BrandFooter showSupportLink />
             </Box>
+
+            {/* Right Column: 3-Step Guided Protocol & Fleet Support (54% on desktop) */}
+            <RecoveryProtocolPanel />
         </Box>
     );
 }

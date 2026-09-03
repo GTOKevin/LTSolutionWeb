@@ -3,26 +3,23 @@ import {
     Box,
     Button,
     Checkbox,
+    CircularProgress,
     FormControlLabel,
     IconButton,
     InputAdornment,
     Link,
-    ListItemIcon,
-    ListItemText,
-    Menu,
-    MenuItem,
     Stack,
     TextField,
+    Tooltip,
     Typography,
     useTheme,
 } from '@mui/material';
 import {
-    LocalShipping as TruckIcon,
     Visibility,
     VisibilityOff,
-    Person as PersonIcon,
-    PaletteOutlined as PaletteIcon,
-    Check as CheckIcon,
+    PersonOutlined as PersonIcon,
+    HelpOutlineOutlined as HelpIcon,
+    ArrowForwardRounded as ArrowForwardIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -31,29 +28,27 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { loginSchema, type LoginFormData } from '../model/schema';
 import { useLogin } from '../api/use-login';
-import { useThemeStore } from '@shared/store/theme.store';
-import { appThemePresets } from '@/shared/config/theme/palette';
 import { getErrorMessage } from '@/shared/utils/api-errors';
+import { EuroTransportBrand } from '@/shared/components/branding/EuroTransportBrand';
+import { ThemeSwitcherMenu } from '@/shared/components/branding/ThemeSwitcherMenu';
+import { BrandFooter } from '@/shared/components/branding/BrandFooter';
 
 export function LoginForm() {
     const theme = useTheme();
     const isDark = theme.palette.mode === 'dark';
-    const { themeId, setThemeId } = useThemeStore();
-    const [themeAnchorEl, setThemeAnchorEl] = useState<null | HTMLElement>(null);
-    const themeMenuOpen = Boolean(themeAnchorEl);
     const [showPassword, setShowPassword] = useState(false);
     const [searchParams] = useSearchParams();
     const resetStatus = searchParams.get('reset');
     const resetMessage = searchParams.get('message');
 
-    // Use theme colors directly
     const colors = {
         primary: theme.palette.primary.main,
         primaryHover: theme.palette.primary.dark,
+        primaryContrastText: theme.palette.primary.contrastText,
         textPrimary: theme.palette.text.primary,
         textSecondary: theme.palette.text.secondary,
-        inputBorder: isDark ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
-        inputBg: isDark ? 'rgba(255, 255, 255, 0.05)' : '#ffffff',
+        inputBorder: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(203, 213, 225, 0.9)',
+        inputBg: isDark ? 'rgba(255, 255, 255, 0.04)' : '#f8fafc',
     };
 
     const {
@@ -74,142 +69,109 @@ export function LoginForm() {
     };
 
     return (
-        <>
-            {/* Header / Logo Area */}
-            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={4}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                    <Box
-                        sx={{
-                            height: 40,
-                            width: 40,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            borderRadius: 1,
-                            backgroundColor: colors.primary,
-                            color: 'white',
-                        }}
-                    >
-                        <TruckIcon />
-                    </Box>
-                    <Typography
-                        variant="h6"
-                        sx={{
-                            fontWeight: 700,
-                            letterSpacing: '-0.025em',
-                            color: colors.textPrimary,
-                        }}
-                    >
-                        Euro Transport
-                    </Typography>
-                </Stack>
-                <IconButton onClick={(e) => setThemeAnchorEl(e.currentTarget)} sx={{ color: colors.primary }}>
-                    <PaletteIcon />
-                </IconButton>
-                <Menu
-                    anchorEl={themeAnchorEl}
-                    open={themeMenuOpen}
-                    onClose={() => setThemeAnchorEl(null)}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                >
-                    {[
-                        appThemePresets.logistica_light,
-                        appThemePresets.logistica_dark,
-                        appThemePresets.midnight_tech,
-                        appThemePresets.nordic_ice,
-                        appThemePresets.sunset_express,
-                    ].map((t) => (
-                        <MenuItem
-                            key={t.id}
-                            selected={t.id === themeId}
-                            onClick={() => {
-                                setThemeId(t.id);
-                                setThemeAnchorEl(null);
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+            {/* Header / Brand Logo & Quick Utilities */}
+            <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ pb: 3, borderBottom: 1, borderColor: isDark ? 'divider' : 'rgba(241, 245, 249, 1)' }}
+            >
+                <EuroTransportBrand />
+
+                {/* Header Actions: Theme & Help */}
+                <Stack sx={{ display: { xs: 'none', md: 'flex' } }} direction="row" alignItems="center" spacing={0.5}>
+                    <ThemeSwitcherMenu />
+                    <Tooltip title="Canal de soporte y ayuda">
+                        <IconButton
+                            size="small"
+                            sx={{
+                                color: colors.textSecondary,
+                                p: 1,
+                                borderRadius: 2,
+                                border: '1px solid',
+                                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(226,232,240,0.8)',
                             }}
                         >
-                            <ListItemIcon sx={{ minWidth: 34 }}>
-                                {t.id === themeId ? <CheckIcon fontSize="small" /> : null}
-                            </ListItemIcon>
-                            <ListItemText>{t.label}</ListItemText>
-                        </MenuItem>
-                    ))}
-                </Menu>
+                            <HelpIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                </Stack>
             </Stack>
 
-            {/* Main Login Content */}
-            <Box
-                component="form"
-                onSubmit={handleSubmit(onSubmit)}
-                sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    flex: 1,
-                    py: 4,
-                }}
-            >
-                <Box mb={4}>
-                    <Typography
-                        variant="h3"
-                        sx={{
-                            fontWeight: 700,
-                            mb: 1,
-                            color: colors.textPrimary,
-                            fontSize: { xs: '1.875rem', md: '2.25rem' },
-                        }}
-                    >
-                        Bienvenido de nuevo
-                    </Typography>
-                    <Typography
-                        variant="body1"
-                        sx={{ color: colors.textSecondary }}
-                    >
-                        Ingresa tus credenciales para acceder a la plataforma de gestión segura.
+            {/* Main Form Content Area */}
+            <Box sx={{ my: 'auto', py: 4, width: '100%', maxWidth: 440, mx: 'auto' }}>
+                {/* Operations Badge */}
+                <Box
+                    sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        px: 1.5,
+                        py: 0.5,
+                        borderRadius: '9999px',
+                        backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(239, 246, 255, 1)',
+                        border: '1px solid',
+                        borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : '#bfdbfe',
+                        mb: 2.5,
+                    }}
+                >
+                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#2563eb' }} />
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: isDark ? '#93c5fd' : '#1e40af' }}>
+                        Portal de Operaciones v1.1
                     </Typography>
                 </Box>
 
-                {/* Error Feedback */}
+                <Typography
+                    variant="h4"
+                    sx={{
+                        fontWeight: 800,
+                        letterSpacing: '-0.025em',
+                        color: colors.textPrimary,
+                        fontSize: { xs: '1.75rem', md: '2rem' },
+                        mb: 1,
+                    }}
+                >
+                    Bienvenido de nuevo
+                </Typography>
+                <Typography sx={{ color: colors.textSecondary, fontSize: '0.88rem', mb: 3, lineHeight: 1.5 }}>
+                    Ingresa tus credenciales para acceder a la plataforma de gestión segura y despacho.
+                </Typography>
+
+                {/* Form Feedback Alerts */}
                 {resetStatus === 'success' && resetMessage && (
-                    <Alert
-                        severity="success"
-                        sx={{
-                            mb: 3,
-                            borderRadius: 2,
-                        }}
-                    >
+                    <Alert severity="success" sx={{ mb: 2.5, borderRadius: 2 }}>
                         {resetMessage}
                     </Alert>
                 )}
 
                 {loginErrorMessage && (
-                    <Alert
-                        severity="error"
-                        sx={{
-                            mb: 3,
-                            borderRadius: 2,
-                        }}
-                    >
+                    <Alert severity="error" sx={{ mb: 2.5, borderRadius: 2 }}>
                         {loginErrorMessage}
                     </Alert>
                 )}
 
-                <Stack spacing={3}>
-                    {/* Email Field */}
-                    <Stack spacing={1}>
+                {/* Authentication Form */}
+                <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2.25 }}>
+                    {/* Username Input */}
+                    <Box>
                         <Typography
                             component="label"
-                            htmlFor="email"
+                            htmlFor="username"
                             sx={{
-                                fontSize: '0.875rem',
-                                fontWeight: 500,
+                                display: 'block',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.08em',
                                 color: colors.textPrimary,
+                                mb: 0.75,
                             }}
                         >
-                            Usuario
+                            Usuario Operativo
                         </Typography>
                         <TextField
-                            id="email"
+                            id="username"
                             placeholder="usuarioxxx"
                             fullWidth
                             {...register('nombre')}
@@ -221,12 +183,13 @@ export function LoginForm() {
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
-                                        <PersonIcon sx={{ color: colors.textSecondary }} />
+                                        <PersonIcon sx={{ color: colors.textSecondary, fontSize: 20 }} />
                                     </InputAdornment>
                                 ),
                                 sx: {
-                                    borderRadius: '9999px',
+                                    borderRadius: 2,
                                     backgroundColor: colors.inputBg,
+                                    fontSize: '0.88rem',
                                     '& .MuiOutlinedInput-notchedOutline': {
                                         borderColor: colors.inputBorder,
                                     },
@@ -235,28 +198,31 @@ export function LoginForm() {
                                     },
                                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                                         borderColor: colors.primary,
+                                        borderWidth: 2,
                                     },
-                                    '& input': { py: 1.5, px: 2 },
+                                    '& input': { py: 1.4, px: 1.75 },
                                 },
                             }}
                         />
-                    </Stack>
+                    </Box>
 
-                    {/* Password Field */}
-                    <Stack spacing={1}>
-                        <Stack direction="row" justifyContent="space-between">
-                            <Typography
-                                component="label"
-                                htmlFor="password"
-                                sx={{
-                                    fontSize: '0.875rem',
-                                    fontWeight: 500,
-                                    color: colors.textPrimary,
-                                }}
-                            >
-                                Contraseña
-                            </Typography>
-                        </Stack>
+                    {/* Password Input */}
+                    <Box>
+                        <Typography
+                            component="label"
+                            htmlFor="password"
+                            sx={{
+                                display: 'block',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.08em',
+                                color: colors.textPrimary,
+                                mb: 0.75,
+                            }}
+                        >
+                            Contraseña
+                        </Typography>
                         <TextField
                             id="password"
                             type={showPassword ? 'text' : 'password'}
@@ -273,15 +239,17 @@ export function LoginForm() {
                                         <IconButton
                                             onClick={() => setShowPassword(!showPassword)}
                                             edge="end"
+                                            size="small"
                                             sx={{ color: colors.textSecondary }}
                                         >
-                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                                         </IconButton>
                                     </InputAdornment>
                                 ),
                                 sx: {
-                                    borderRadius: '9999px',
+                                    borderRadius: 2,
                                     backgroundColor: colors.inputBg,
+                                    fontSize: '0.88rem',
                                     '& .MuiOutlinedInput-notchedOutline': {
                                         borderColor: colors.inputBorder,
                                     },
@@ -290,40 +258,29 @@ export function LoginForm() {
                                     },
                                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                                         borderColor: colors.primary,
+                                        borderWidth: 2,
                                     },
-                                    '& input': { py: 1.5, px: 2 },
+                                    '& input': { py: 1.4, px: 1.75 },
                                 },
                             }}
                         />
-                    </Stack>
+                    </Box>
 
-                    {/* Actions */}
-                    <Stack
-                        direction="row"
-                        alignItems="center"
-                        justifyContent="space-between"
-                        sx={{ mt: 1 }}
-                    >
+                    {/* Utilities: Remember & Forgot Password */}
+                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.25 }}>
                         <FormControlLabel
                             control={
                                 <Checkbox
+                                    size="small"
                                     sx={{
                                         color: colors.textSecondary,
-                                        '&.Mui-checked': {
-                                            color: colors.primary,
-                                        },
+                                        '&.Mui-checked': { color: colors.primary },
                                     }}
                                 />
                             }
                             label={
-                                <Typography
-                                    variant="body2"
-                                    sx={{
-                                        color: colors.textSecondary,
-                                        userSelect: 'none',
-                                    }}
-                                >
-                                    Recordarme
+                                <Typography sx={{ fontSize: '0.8rem', color: colors.textSecondary, userSelect: 'none' }}>
+                                    Recordarme en este equipo
                                 </Typography>
                             }
                         />
@@ -332,63 +289,50 @@ export function LoginForm() {
                             to={APP_PATHS.forgotPassword}
                             underline="hover"
                             sx={{
-                                fontSize: '0.875rem',
-                                fontWeight: 500,
-                                color: colors.textSecondary,
-                                '&:hover': { color: colors.primary },
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                color: colors.primary,
+                                '&:hover': { color: colors.primaryHover },
                             }}
                         >
                             ¿Olvidaste tu contraseña?
                         </Link>
                     </Stack>
 
+                    {/* Submit Button */}
                     <Button
                         type="submit"
                         fullWidth
                         disabled={loginMutation.isPending}
                         variant="contained"
                         sx={{
-                            mt: 2,
-                            height: 48,
-                            borderRadius: '9999px',
+                            mt: 1,
+                            py: 1.5,
+                            borderRadius: 2.5,
                             fontWeight: 700,
                             textTransform: 'none',
-                            fontSize: '0.875rem',
-                            boxShadow: 'none',
+                            fontSize: '0.9rem',
                             backgroundColor: colors.primary,
+                            color: colors.primaryContrastText,
                             '&:hover': {
                                 backgroundColor: colors.primaryHover,
-                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
                             },
                         }}
                     >
-                        {loginMutation.isPending ? 'Ingresando...' : 'Ingresar'}
+                        {loginMutation.isPending ? (
+                            <CircularProgress size={22} color="inherit" />
+                        ) : (
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                                <span>Acceder al Sistema</span>
+                                <ArrowForwardIcon sx={{ fontSize: 18 }} />
+                            </Stack>
+                        )}
                     </Button>
-                </Stack>
+                </Box>
             </Box>
 
-            {/* Footer */}
-            <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                justifyContent="space-between"
-                spacing={2}
-                sx={{
-                    textAlign: { xs: 'center', sm: 'left' },
-                    color: colors.textSecondary,
-                }}
-            >
-                <Typography variant="caption">
-                    © 2024 LogisticsApp. <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Cumplimiento Normativo Garantizado.</Box>
-                </Typography>
-                <Stack direction="row" spacing={2} justifyContent={{ xs: 'center', sm: 'flex-end' }}>
-                    <Link href="#" color="inherit" underline="hover" variant="caption">
-                        Privacidad
-                    </Link>
-                    <Link href="#" color="inherit" underline="hover" variant="caption">
-                        Ayuda
-                    </Link>
-                </Stack>
-            </Stack>
-        </>
+            {/* Footer Institutional Links */}
+            <BrandFooter />
+        </Box>
     );
 }

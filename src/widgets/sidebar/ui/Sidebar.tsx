@@ -23,8 +23,7 @@ import {
     MoreVert as MoreVertIcon,
     AccountCircle,
     Key,
-    Logout,
-    LocalShipping as TruckIcon
+    Logout
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLayoutStore } from '@shared/store/layout.store';
@@ -33,6 +32,7 @@ import { useState, useMemo, useEffect, useRef, type MouseEvent } from 'react';
 import { hasPermission as hasUserPermission } from '@shared/lib/permissions/hasPermission';
 import { APP_PATHS } from '@shared/config/app-routes';
 import { useLogout } from '@features/auth/logout';
+import { EuroTransportBrand } from '@/shared/components/branding/EuroTransportBrand';
 
 export const DRAWER_WIDTH = 280;
 
@@ -53,12 +53,13 @@ interface SidebarProps {
 }
 
 export function Sidebar({ menu, onRequestChangePassword, isEmployee = false }: SidebarProps) {
+    const theme = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
     const { sidebarOpen, setSidebarOpen } = useLayoutStore();
     const { user } = useAuthStore();
     const logoutMutation = useLogout();
-    const theme = useTheme();
+
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [pendingNavigation, setPendingNavigation] = useState<{ path: string; label: string } | null>(null);
     const openMenu = Boolean(anchorEl);
@@ -77,6 +78,7 @@ export function Sidebar({ menu, onRequestChangePassword, isEmployee = false }: S
     const navigationTimeoutRef = useRef<number | null>(null);
     const isNavigating = pendingNavigation !== null && location.pathname !== pendingNavigation.path;
     const navigationLabel = pendingNavigation?.label ?? '';
+
 
     // Filter menu items based on permissions
     const filteredMenu = useMemo(() => {
@@ -349,34 +351,7 @@ export function Sidebar({ menu, onRequestChangePassword, isEmployee = false }: S
             color: theme.palette.text.primary
         }}>
             {/* Logo Area */}
-            <Box sx={{
-                p: 3,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.5
-            }}>
-                <Box sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 2,
-                    bgcolor: theme.palette.primary.main,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    flexShrink: 0
-                }}>
-                    <TruckIcon />
-                </Box>
-                <Box sx={{ overflow: 'hidden' }}>
-                    <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2} noWrap>
-                        Euro Transport
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" noWrap>
-                        Admin Console
-                    </Typography>
-                </Box>
-            </Box>
+            <EuroTransportBrand variant="compact" />
 
             {/* Navigation Links */}
             <Box sx={{
