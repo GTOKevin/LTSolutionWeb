@@ -54,6 +54,19 @@ export const themePalette = {
     }
 };
 
+/**
+ * Colores de marca de Euro Transport.
+ *
+ * Tokens centralizados para el branding (logo, divisor y acentos).
+ * NO usar hex sueltos de estos colores en componentes; consumir desde aquí.
+ */
+export const brandPalette = {
+    /** Dorado de acento institucional (flecha del divisor y franja principal). */
+    gold: '#EAB308',
+    /** Azul corporativo de la franja secundaria del branding. */
+    corporateBlue: '#0B2B68',
+} as const;
+
 export type AppThemeMode = 'light' | 'dark';
 
 export type AppThemeId =
