@@ -23,7 +23,7 @@ export const BRAND_CONSTANTS = {
     /** Nombre regional usado en los paneles de marketing. */
     regionName: 'EURO TRANSPORT',
     /** Descripción de servicios usada en el footer de los paneles. */
-    services: 'Maquinaria Pesada • Cama Bajas • Furgones',
+    services: 'Maquinaria Pesada • Cama Bajas • Carga Especial',
     /** Sufijo de cumplimiento usado en el copyright. */
     complianceSuffix: 'Cumplimiento Normativo Garantizado',
 } as const;
