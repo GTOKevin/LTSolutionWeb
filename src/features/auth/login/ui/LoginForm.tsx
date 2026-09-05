@@ -172,7 +172,7 @@ export function LoginForm() {
                         </Typography>
                         <TextField
                             id="username"
-                            placeholder="usuarioxxx"
+                            placeholder="usuario"
                             fullWidth
                             {...register('nombre')}
                             error={!!errors.nombre}
@@ -268,22 +268,6 @@ export function LoginForm() {
 
                     {/* Utilities: Remember & Forgot Password */}
                     <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.25 }}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    size="small"
-                                    sx={{
-                                        color: colors.textSecondary,
-                                        '&.Mui-checked': { color: colors.primary },
-                                    }}
-                                />
-                            }
-                            label={
-                                <Typography sx={{ fontSize: '0.8rem', color: colors.textSecondary, userSelect: 'none' }}>
-                                    Recordarme en este equipo
-                                </Typography>
-                            }
-                        />
                         <Link
                             component={RouterLink}
                             to={APP_PATHS.forgotPassword}

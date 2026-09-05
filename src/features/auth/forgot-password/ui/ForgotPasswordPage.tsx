@@ -158,7 +158,7 @@ export function ForgotPasswordPage() {
                     >
                         <Box sx={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#2563eb' }} />
                         <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: isDark ? '#93c5fd' : '#1e40af' }}>
-                            Recuperación de Acceso Institucional
+                            Recuperación de Acceso
                         </Typography>
                     </Box>
 
@@ -173,7 +173,7 @@ export function ForgotPasswordPage() {
                             mb: 1.5,
                         }}
                     >
-                        Recuperar acceso a la plataforma
+                        Recuperar contraseña
                     </Typography>
                     <Typography sx={{ color: colors.textSecondary, fontSize: '0.9rem', mb: 3.5, lineHeight: 1.6 }}>
                         Introduce la dirección de correo corporativo asociada a tu perfil operativo o administrativo.
