@@ -168,11 +168,11 @@ export function GuiasList({ viajeID, isViewOnly }: GuiasListProps) {
                                                 gap: 1.5,
                                             }}
                                         >
-                                            <IconButton onClick={() => handlePreview(guia.rutaArchivo!)} sx={{ bgcolor: 'white', '&:hover': { bgcolor: 'white' }, boxShadow: 2, width: 32, height: 32 }}>
-                                                <VisibilityIcon sx={{ fontSize: 18, color: 'text.primary' }} />
+                                            <IconButton onClick={() => handlePreview(guia.rutaArchivo!)} sx={{ bgcolor: 'background.paper', '&:hover': { bgcolor: 'background.default' }, boxShadow: 2, width: 32, height: 32 }}>
+                                                <VisibilityIcon sx={{ fontSize: 18, color: 'primary.main' }} />
                                             </IconButton>
-                                            <IconButton onClick={() => handleDownload(guia.rutaArchivo!)} sx={{ bgcolor: 'white', '&:hover': { bgcolor: 'white' }, boxShadow: 2, width: 32, height: 32 }}>
-                                                <DownloadIcon sx={{ fontSize: 18, color: 'text.primary' }} />
+                                            <IconButton onClick={() => handleDownload(guia.rutaArchivo!)} sx={{ bgcolor: 'background.paper', '&:hover': { bgcolor: 'background.default' }, boxShadow: 2, width: 32, height: 32 }}>
+                                                <DownloadIcon sx={{ fontSize: 18, color: 'primary.main' }} />
                                             </IconButton>
                                         </Box>
                                     </>
