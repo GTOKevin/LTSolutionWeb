@@ -1,12 +1,13 @@
 import {
     Box,
     Grid,
-    MenuItem,
     TextField,
     Typography,
 } from '@mui/material';
+import { Controller } from 'react-hook-form';
 import type { SelectItem } from '@/shared/model/types';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
+import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { FlotaDocumentosList } from '../../documentos/ui/FlotaDocumentosList';
 import type { CreateFlotaSchema } from '../../model/schema';
 import type { useFlotaForm } from '../../hooks/useFlotaForm';
@@ -37,6 +38,7 @@ export function FlotaCrudPageContent({
     const {
         register,
         handleSubmit,
+        control,
         formState: { errors },
     } = form;
 
@@ -64,25 +66,22 @@ export function FlotaCrudPageContent({
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 4 }}>
-                                <TextField
-                                    select
-                                    label="Tipo Unidad"
-                                    fullWidth
-                                    {...register('tipoFlota')}
-                                    defaultValue={0}
-                                    error={!!errors.tipoFlota}
-                                    helperText={errors.tipoFlota?.message}
-                                    disabled={viewOnly}
-                                >
-                                    <MenuItem value={0} disabled>
-                                        Seleccione un tipo
-                                    </MenuItem>
-                                    {listaFlota.map((tipo) => (
-                                        <MenuItem key={tipo.id} value={tipo.id}>
-                                            {tipo.text}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
+                                <Controller
+                                    name="tipoFlota"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <FormSelect
+                                            label="Tipo Unidad"
+                                            size='medium'
+                                            options={listaFlota}
+                                            value={Number(field.value) || 0}
+                                            onChange={(event) => field.onChange(Number(event.target.value))}
+                                            error={!!errors.tipoFlota}
+                                            helperText={errors.tipoFlota?.message}
+                                            disabled={viewOnly}
+                                        />
+                                    )}
+                                />
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 4 }}>
@@ -149,25 +148,22 @@ export function FlotaCrudPageContent({
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 4 }}>
-                                <TextField
-                                    select
-                                    label="Tipo Peso"
-                                    fullWidth
-                                    {...register('tipoPesoID')}
-                                    defaultValue={0}
-                                    error={!!errors.tipoPesoID}
-                                    helperText={errors.tipoPesoID?.message}
-                                    disabled={viewOnly}
-                                >
-                                    <MenuItem value={0} disabled>
-                                        Seleccione un tipo
-                                    </MenuItem>
-                                    {listaPeso.map((tipo) => (
-                                        <MenuItem key={tipo.id} value={tipo.id}>
-                                            {tipo.text}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
+                                <Controller
+                                    name="tipoPesoID"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <FormSelect
+                                            label="Tipo Peso"
+                                            size='medium'
+                                            options={listaPeso}
+                                            value={Number(field.value) || 0}
+                                            onChange={(event) => field.onChange(Number(event.target.value))}
+                                            error={!!errors.tipoPesoID}
+                                            helperText={errors.tipoPesoID?.message}
+                                            disabled={viewOnly}
+                                        />
+                                    )}
+                                />
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 4 }}>
@@ -210,25 +206,22 @@ export function FlotaCrudPageContent({
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 4 }}>
-                                <TextField
-                                    select
-                                    label="Tipo Medida"
-                                    fullWidth
-                                    {...register('tipoMedidaID')}
-                                    defaultValue={0}
-                                    error={!!errors.tipoMedidaID}
-                                    helperText={errors.tipoMedidaID?.message}
-                                    disabled={viewOnly}
-                                >
-                                    <MenuItem value={0} disabled>
-                                        Seleccione un tipo
-                                    </MenuItem>
-                                    {listaMedida.map((tipo) => (
-                                        <MenuItem key={tipo.id} value={tipo.id}>
-                                            {tipo.text}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
+                                <Controller
+                                    name="tipoMedidaID"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <FormSelect
+                                            label="Tipo Medida"
+                                            size='medium'
+                                            options={listaMedida}
+                                            value={Number(field.value) || 0}
+                                            onChange={(event) => field.onChange(Number(event.target.value))}
+                                            error={!!errors.tipoMedidaID}
+                                            helperText={errors.tipoMedidaID?.message}
+                                            disabled={viewOnly}
+                                        />
+                                    )}
+                                />
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 4 }}>
@@ -271,25 +264,22 @@ export function FlotaCrudPageContent({
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 4 }}>
-                                <TextField
-                                    select
-                                    label="Combustible"
-                                    fullWidth
-                                    {...register('tipoCombustibleID')}
-                                    defaultValue={0}
-                                    error={!!errors.tipoCombustibleID}
-                                    helperText={errors.tipoCombustibleID?.message}
-                                    disabled={viewOnly}
-                                >
-                                    <MenuItem value={0} disabled>
-                                        Seleccione un tipo
-                                    </MenuItem>
-                                    {listaCombustible.map((tipo) => (
-                                        <MenuItem key={tipo.id} value={tipo.id}>
-                                            {tipo.text}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
+                                <Controller
+                                    name="tipoCombustibleID"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <FormSelect
+                                            label="Combustible"
+                                            size='medium'
+                                            options={listaCombustible}
+                                            value={Number(field.value) || 0}
+                                            onChange={(event) => field.onChange(Number(event.target.value))}
+                                            error={!!errors.tipoCombustibleID}
+                                            helperText={errors.tipoCombustibleID?.message}
+                                            disabled={viewOnly}
+                                        />
+                                    )}
+                                />
                             </Grid>
                         </Grid>
                     </Box>
