@@ -1,17 +1,17 @@
-export const INPUT_VAL={
-    PLACA_PERU_REGEX : /^[A-Z0-9]{3}-[0-9]{3,4}$/,
-    TEXTO_SEGURO_REGEX : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\-_.,\s]+$/,
-    ALPHA_NUMERICO_ESPECIAL : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_/()[\]:]*$/,
-    ALPHA_NUMERICO_ESPACIOS : /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]*$/,
+export const INPUT_VAL = {
+    PLACA_PERU_REGEX: /^[A-Z0-9]{3}-[0-9]{3,4}$/,
+    TEXTO_SEGURO_REGEX: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\-_.,\s]+$/,
+    ALPHA_NUMERICO_ESPECIAL: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_/()[\]:]*$/,
+    ALPHA_NUMERICO_ESPACIOS: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]*$/,
     LETRAS_ESPACIO: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/,
     ALPHA_NUMERICO_GUION_SIN_ESPACIOS: /^[a-zA-Z0-9-]*$/,
-    DECIMAL_10_2_REGEX : /^\d{1,8}(\.\d{1,2})?$/,
-    TELEFONO_PERU_REGEX : /^9\d{8}$/,
+    DECIMAL_10_2_REGEX: /^\d{1,8}(\.\d{1,2})?$/,
+    TELEFONO_PERU_REGEX: /^9\d{8}$/,
     PASSWORD_SIN_ESPACIOS: /^\S+$/,
     PASSWORD_AL_MENOS_UNA_LETRA: /[A-Za-z]/,
     PASSWORD_AL_MENOS_UN_NUMERO: /\d/,
     PASSWORD_AL_MENOS_UN_ESPECIAL: /[^A-Za-z0-9]/,
-    FACTURA_SERIE_PERU: /^[FB][A-Z0-9]{3}$/,
+    FACTURA_SERIE_PERU: /^[FBE][A-Z0-9]{3,5}$/,
     FACTURA_NUMERO_PERU: /^\d{1,8}$/,
     NUMERO_OPERACION_PERU: /^[0-9]{6,20}$/
 }
@@ -28,7 +28,7 @@ export const ERROR_MESSAGES = {
     PASSWORD_AL_MENOS_UNA_LETRA: 'Debe incluir al menos una letra.',
     PASSWORD_AL_MENOS_UN_NUMERO: 'Debe incluir al menos un número.',
     PASSWORD_AL_MENOS_UN_ESPECIAL: 'Debe incluir al menos un carácter especial.',
-    FACTURA_SERIE_INVALIDA: 'Formato de serie inválido (Ej: F001, B001)',
+    FACTURA_SERIE_INVALIDA: 'Serie inválida (Ej: F001, B001, E001...máximo 6 caracteres)',
     FACTURA_NUMERO_INVALIDO: 'El número debe contener solo dígitos (máx. 8)',
     NUMERO_OPERACION_INVALIDO: 'El número de operación debe contener entre 6 y 20 dígitos numéricos'
 }
