@@ -82,6 +82,11 @@ export const addMonthsToDateISO = (months: number, baseDate = new Date()): strin
     date.setMonth(date.getMonth() + months);
     return toInputDate(date);
 };
+export const removeMonthsToDateISO = (months: number, baseDate = new Date()): string => {
+    const date = new Date(baseDate);
+    date.setMonth(date.getMonth() - months);
+    return toInputDate(date);
+};
 
 /**
  * Returns current time in "HH:MM" format using local time
