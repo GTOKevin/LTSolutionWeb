@@ -1,9 +1,9 @@
 import type { CreateViajeDto, Viaje } from '@/entities/viaje/model/types';
-import { addMonthsToDateISO, getCurrentDateISO, removeDaysToDateISO, toInputDate } from '@/shared/utils/date-utils';
+import { addMonthsToDateISO, getCurrentDateISO, removeMonthsToDateISO, toInputDate } from '@/shared/utils/date-utils';
 
 export function getViajeFechaCargaLimits() {
     return {
-        min: removeDaysToDateISO(3),
+        min: removeMonthsToDateISO(12),
         max: addMonthsToDateISO(2),
     };
 }
