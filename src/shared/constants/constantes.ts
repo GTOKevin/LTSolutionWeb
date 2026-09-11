@@ -13,7 +13,8 @@ export const INPUT_VAL = {
     PASSWORD_AL_MENOS_UN_ESPECIAL: /[^A-Za-z0-9]/,
     FACTURA_SERIE_PERU: /^[FBE][A-Z0-9]{3,5}$/,
     FACTURA_NUMERO_PERU: /^\d{1,8}$/,
-    NUMERO_OPERACION_PERU: /^[0-9]{6,20}$/
+    NUMERO_OPERACION_PERU: /^[0-9]{6,20}$/,
+    SERIE_GUIA: /^[a-zA-Z0-9]{3,5}$/
 }
 export const ERROR_MESSAGES = {
     PLACA_INVALIDA: 'Debe ser una placa válida (XXX-1234 o XXX-123)',
@@ -30,7 +31,8 @@ export const ERROR_MESSAGES = {
     PASSWORD_AL_MENOS_UN_ESPECIAL: 'Debe incluir al menos un carácter especial.',
     FACTURA_SERIE_INVALIDA: 'Serie inválida (Ej: F001, B001, E001...máximo 6 caracteres)',
     FACTURA_NUMERO_INVALIDO: 'El número debe contener solo dígitos (máx. 8)',
-    NUMERO_OPERACION_INVALIDO: 'El número de operación debe contener entre 6 y 20 dígitos numéricos'
+    NUMERO_OPERACION_INVALIDO: 'El número de operación debe contener entre 6 y 20 dígitos numéricos',
+    SERIE_GUIA: 'La serie de guía debe tener de 3 a 5 caracteres (solo números o combinación de letras y números, excluyendo la ñ/Ñ y caracteres especiales)'
 }
 
 export const ALPHA_ESPECIAL_ERROR_MSG = 'Caracteres inválidos (Solo letras, números y ,._-/()[]: )';
