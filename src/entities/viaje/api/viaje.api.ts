@@ -6,7 +6,7 @@ export const viajeApi = {
         const params = new URLSearchParams();
         params.append('page', filters.page.toString());
         params.append('size', filters.size.toString());
-        
+
         if (filters.search) params.append('search', filters.search);
         if (filters.fechaInicio) params.append('fechaInicio', filters.fechaInicio);
         if (filters.fechaFin) params.append('fechaFin', filters.fechaFin);
@@ -25,7 +25,7 @@ export const viajeApi = {
         if (params?.clienteId) query.append('clienteId', params.clienteId.toString());
         if (params?.search) query.append('search', params.search);
         if (params?.limit) query.append('limit', params.limit.toString());
-        
+
         const response = await http.get<import('@/shared/model/types').SelectItem[]>(`/viaje/select?${query.toString()}`);
         return response.data;
     },
@@ -73,8 +73,8 @@ export const viajeApi = {
         return response.data;
     },
 
-    getReportList: async (filters: { 
-        fechaInicio: string; 
+    getReportList: async (filters: {
+        fechaInicio: string;
         fechaFin: string;
         clienteID?: number;
         colaboradorID?: number;

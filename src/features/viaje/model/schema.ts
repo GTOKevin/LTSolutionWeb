@@ -107,7 +107,7 @@ export const viajeGastoSchema = z.object({
 
 export const viajeGuiaSchema = z.object({
     tipoGuiaID: z.number().min(1, 'El tipo de guía es requerido'),
-    serie: z.string().min(1, 'Requerido').regex(/^[0-9]{1,20}$/, 'Solo números, máx 20 caracteres'),
+    serie: z.string().min(1, 'Requerido').regex(INPUT_VAL.SERIE_GUIA, ERROR_MESSAGES.SERIE_GUIA),
     numero: z.string().min(1, 'Requerido').regex(/^[0-9]{1,20}$/, 'Solo números, máx 20 caracteres'),
     rutaArchivo: z.string().optional()
 });
@@ -125,9 +125,9 @@ export const viajeMercaderiaSchema = z.object({
     mercaderiaID: z.number().min(1, 'La mercaderia es requerida'),
     descripcion: optionalRegexText(INPUT_VAL.ALPHA_NUMERICO_ESPECIAL, ALPHA_ESPECIAL_ERROR_MSG),
     tipoMedidaID: z.number().min(1, 'El tipo de medida es requerido'),
-    alto: positiveRequiredNumber('El alto'),
-    largo: positiveRequiredNumber('El largo'),
-    ancho: positiveRequiredNumber('El ancho'),
+    alto: z.number().min(0, 'El alto debe ser mayor o igual a cero'),
+    largo: z.number().min(0, 'El largo debe ser mayor o igual a cero'),
+    ancho: z.number().min(0, 'El ancho debe ser mayor o igual a cero'),
     tipoPesoID: z.number().min(1, 'El tipo de peso es requerido'),
     peso: positiveRequiredNumber('El peso')
 });

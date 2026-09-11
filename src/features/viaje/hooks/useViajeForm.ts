@@ -47,10 +47,10 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [pendingData, setPendingData] = useState<CreateViajeDto | null>(null);
     const [createdViajeId, setCreatedViajeId] = useState<number | null>(null);
-    
+
     const queryClient = useQueryClient();
     const { showToast } = useToast();
-    
+
     const options = useViajeOptions(open);
     const { tractos, carretas, viajeEstadoCompletadoId, viajeEstadoDescargandoId } = options;
 
@@ -68,7 +68,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
     });
 
     const { reset, setValue } = methods;
-    
+
     const requiereEscolta = useWatch({ control: methods.control, name: 'requiereEscolta', defaultValue: false });
     const selectedTractoID = useWatch({ control: methods.control, name: 'tractoID', defaultValue: 0 });
     const selectedCarretaID = useWatch({ control: methods.control, name: 'carretaID', defaultValue: 0 });
@@ -78,7 +78,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
         if (selectedTractoID && tractos) {
             const tracto = tractos.find(t => t.id === selectedTractoID);
             if (tracto && tracto.extraTwo !== undefined) {
-                 setValue('ejesTracto', parseInt(tracto.extraTwo));
+                setValue('ejesTracto', parseInt(tracto.extraTwo));
             }
         }
     }, [selectedTractoID, tractos, setValue]);
@@ -88,7 +88,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
         if (selectedCarretaID && carretas) {
             const carreta = carretas.find(c => c.id === selectedCarretaID);
             if (carreta && carreta.extraTwo !== undefined) {
-                 setValue('ejesCarreta', parseInt(carreta.extraTwo));
+                setValue('ejesCarreta', parseInt(carreta.extraTwo));
             }
         }
     }, [selectedCarretaID, carretas, setValue]);
@@ -111,7 +111,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
         onSuccess: (data) => {
             const isUpdate = currentViajeId > 0;
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.lists() });
-            showToast({ 
+            showToast({
                 entity: 'Viaje',
                 action: isUpdate ? 'update' : 'create'
             });
