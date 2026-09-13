@@ -23,7 +23,20 @@ export function getViajeWizardStepFields(step: number): Path<ViajeWizardFormData
         case 1:
             return ['origenID', 'destinoID', 'direccionOrigen', 'direccionDestino'];
         case 2:
-            return ['tractoID', 'carretaID', 'colaboradorID', 'ejesTracto', 'ejesCarreta'];
+            return [
+                'tractoID',
+                'carretaID',
+                'colaboradorID',
+                'esTractoTercero',
+                'esCarretaTercero',
+                'esConductorTercero',
+                'placaTractoTercero',
+                'placaCarretaTercero',
+                'nombreConductorTercero',
+                'empresaTransporte',
+                'ejesTracto',
+                'ejesCarreta',
+            ];
         case 3:
             return ['mercaderias'];
         default:

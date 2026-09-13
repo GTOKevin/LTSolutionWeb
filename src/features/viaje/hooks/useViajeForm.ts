@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { useToast } from '@/shared/components/ui/Toast';
 import { viajeSchema } from '../model/schema';
-import { getCreateViajeDefaultValues, mapViajeToFormValues } from '../model/form-values';
+import { getCreateViajeDefaultValues, mapViajeToFormValues, normalizeViajeRecursos } from '../model/form-values';
 import { useViajeOptions } from './useViajeOptions';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import type { CreateViajeDto, Viaje } from '@/entities/viaje/model/types';
@@ -97,6 +97,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
         mutationFn: (data: CreateViajeDto) => {
             const cleanData = {
                 ...data,
+                ...normalizeViajeRecursos(data),
                 fechaLlegada: data.fechaLlegada || undefined,
                 fechaPartida: data.fechaPartida || undefined,
                 fechaDescarga: data.fechaDescarga || undefined,
@@ -171,6 +172,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
         if (pendingData) {
             const cleanData = {
                 ...pendingData,
+                ...normalizeViajeRecursos(pendingData),
                 fechaLlegada: pendingData.fechaLlegada || undefined,
                 fechaPartida: pendingData.fechaPartida || undefined,
                 fechaDescarga: pendingData.fechaDescarga || undefined,

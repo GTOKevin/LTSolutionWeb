@@ -9,7 +9,7 @@ import { useToast } from '@/shared/components/ui/Toast';
 import { notifyMutationError, type ApiMutationError } from '@/shared/utils/api-errors';
 import { toInputDate } from '@/shared/utils/date-utils';
 import { APP_PATHS, buildAppDetailPath } from '@shared/config/app-routes';
-import { getCreateViajeDefaultValues } from '../../model/form-values';
+import { getCreateViajeDefaultValues, normalizeViajeRecursos } from '../../model/form-values';
 import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
 import { viajeWizardSchema, type ViajeWizardFormData } from '../../model/schema';
 import { getViajeWizardStepFields, VIAJE_WIZARD_STEPS } from '../model/wizard-config';
@@ -28,6 +28,8 @@ export function useViajeWizardController(options: ViajeWizardControllerOptions =
     const defaultValues: DefaultValues<ViajeWizardFormData> = {
         ...getCreateViajeDefaultValues(options.defaultEstadoId),
         cotizacionID: undefined,
+        tractoID: 0,
+        colaboradorID: 0,
         carretaID: 0,
         tipoMedidaID: options.defaultTipoMedidaId ?? 0,
         tipoPesoID: options.defaultTipoPesoId ?? 0,
@@ -65,6 +67,7 @@ export function useViajeWizardController(options: ViajeWizardControllerOptions =
         mutationFn: async (data: CreateViajeDto) => {
             const cleanData: CreateViajeDto = {
                 ...data,
+                ...normalizeViajeRecursos(data),
                 fechaCarga: toInputDate(data.fechaCarga),
                 fechaPartida: data.fechaPartida ? toInputDate(data.fechaPartida) : undefined,
                 fechaLlegada: data.fechaLlegada ? toInputDate(data.fechaLlegada) : undefined,

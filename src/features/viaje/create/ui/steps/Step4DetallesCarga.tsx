@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Box, Typography, Paper, Grid, TextField, Button, IconButton, useTheme, Alert } from '@mui/material';
 import { useFormContext, useFieldArray } from 'react-hook-form';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
+import { ReloadIconButton } from '@/shared/components/ui/ReloadIconButton';
 import { Add, Delete, Inventory2, Straighten, Scale, LibraryAdd, WarningAmber } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeWizardFormData } from '../../../model/schema';
@@ -9,6 +10,8 @@ import type { ViajeWizardFormData } from '../../../model/schema';
 interface Props {
     options: {
         mercaderias?: SelectItem[];
+        refetchMercaderias?: () => Promise<unknown> | unknown;
+        isFetchingMercaderias?: boolean;
         tiposMedida?: SelectItem[];
         tiposPeso?: SelectItem[];
         defaultTipoMedidaId?: number;
@@ -28,6 +31,8 @@ export function Step4DetallesCarga({ options }: Props) {
     } = useFormContext<ViajeWizardFormData>();
     const {
         mercaderias,
+        refetchMercaderias,
+        isFetchingMercaderias,
         tiposMedida,
         tiposPeso,
         defaultTipoMedidaId = 0,
@@ -166,9 +171,18 @@ export function Step4DetallesCarga({ options }: Props) {
 
                             <Grid container spacing={4}>
                                 <Grid size={{ xs: 12, md: 6 }}>
-                                    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 1 }}>
-                                        Tipo de Mercadería <Typography component="span" color="error">*</Typography>
-                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                                        <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                                            Tipo de Mercadería <Typography component="span" color="error">*</Typography>
+                                        </Typography>
+                                        {refetchMercaderias && (
+                                            <ReloadIconButton
+                                                tooltipTitle="Actualizar mercaderías"
+                                                onReload={refetchMercaderias}
+                                                isLoading={isFetchingMercaderias}
+                                            />
+                                        )}
+                                    </Box>
                                     {(() => {
                                         const mercaderiaRegistration = register(`mercaderias.${index}.mercaderiaID`, { valueAsNumber: true });
 

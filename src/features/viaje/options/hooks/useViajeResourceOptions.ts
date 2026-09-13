@@ -6,31 +6,31 @@ import { TIPO_FLOTA_CODES } from '@entities/flota/model/constants';
 import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
 
 export function useViajeResourceOptions(enabled: boolean = true) {
-    const { data: clientes } = useQuery({
+    const { data: clientes, refetch: refetchClientes, isFetching: isFetchingClientes } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.clientes(),
         queryFn: async () => (await clienteApi.getSelect()) ?? [],
         enabled,
     });
 
-    const { data: tractos } = useQuery({
+    const { data: tractos, refetch: refetchTractos, isFetching: isFetchingTractos } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.tractos(),
         queryFn: async () => (await flotaApi.getSelectTipo(TIPO_FLOTA_CODES.CAMIONES, 50)) ?? [],
         enabled,
     });
 
-    const { data: carretas } = useQuery({
+    const { data: carretas, refetch: refetchCarretas, isFetching: isFetchingCarretas } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.carretas(),
         queryFn: async () => (await flotaApi.getSelectTipo(TIPO_FLOTA_CODES.CARRETAS, 50)) ?? [],
         enabled,
     });
 
-    const { data: flotasEscolta } = useQuery({
+    const { data: flotasEscolta, refetch: refetchFlotasEscolta, isFetching: isFetchingFlotasEscolta } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.flotasEscolta(),
         queryFn: async () => (await flotaApi.getSelect(undefined, 100)) ?? [],
         enabled,
     });
 
-    const { data: colaboradores } = useQuery({
+    const { data: colaboradores, refetch: refetchColaboradores, isFetching: isFetchingColaboradores } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.colaboradores(),
         queryFn: async () => (await colaboradorApi.getSelect()) ?? [],
         enabled,
@@ -42,5 +42,15 @@ export function useViajeResourceOptions(enabled: boolean = true) {
         carretas,
         flotasEscolta,
         colaboradores,
+        refetchClientes,
+        isFetchingClientes,
+        refetchTractos,
+        isFetchingTractos,
+        refetchCarretas,
+        isFetchingCarretas,
+        refetchFlotasEscolta,
+        isFetchingFlotasEscolta,
+        refetchColaboradores,
+        isFetchingColaboradores,
     };
 }

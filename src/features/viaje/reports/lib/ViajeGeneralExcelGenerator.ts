@@ -83,6 +83,9 @@ export class ViajeGeneralExcelGenerator {
         addHeaderRow("Cliente:", this.data.cliente, "Viaje #:", this.data.viajeId.toString());
         addHeaderRow("Conductor:", this.data.conductor, "", "");
         addHeaderRow("Tracto:", this.data.tracto, "Carreta:", this.data.carreta);
+        if (this.data.empresaTransporte && this.data.empresaTransporte !== '-') {
+            addHeaderRow("Empresa Transporte:", this.data.empresaTransporte, "", "");
+        }
         addHeaderRow("Origen:", this.data.origen, "Destino:", this.data.destino);
         addHeaderRow("Total Ejes:", this.data.ejesTotales.toString(), "Peso Total:", this.data.pesoTotal);
         addHeaderRow("F. Partida:", this.data.fechaPartida, "F. Llegada:", this.data.fechaLlegada);

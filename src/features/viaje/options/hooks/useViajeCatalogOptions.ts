@@ -26,7 +26,7 @@ export function useViajeCatalogOptions(enabled: boolean = true) {
         enabled,
     });
 
-    const { data: mercaderias } = useQuery({
+    const { data: mercaderias, refetch: refetchMercaderias, isFetching: isFetchingMercaderias } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.mercaderias(),
         queryFn: async () => (await mercaderiaApi.getSelect('', 50)) ?? [],
         enabled,
@@ -61,6 +61,8 @@ export function useViajeCatalogOptions(enabled: boolean = true) {
         tiposPeso,
         tiposGasto,
         mercaderias,
+        refetchMercaderias,
+        isFetchingMercaderias,
         tiposIncidente,
         tiposGuia,
         monedas,

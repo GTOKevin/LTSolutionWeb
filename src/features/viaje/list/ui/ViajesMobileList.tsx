@@ -20,6 +20,7 @@ import {
     ArrowForward as ArrowForwardIcon,
     LocalShipping as TruckIcon,
     Person as PersonIcon,
+    Business as BusinessIcon,
     CalendarToday as CalendarIcon,
     LockOpen as LockOpenIcon,
     Lock as LockIcon,
@@ -265,6 +266,14 @@ export function ViajesMobileList({
                                                 )}
                                             </Stack>
                                         </Box>
+                                        {viaje.empresaTransporte && (viaje.esTractoTercero || viaje.esCarretaTercero || viaje.esConductorTercero) && (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <BusinessIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                                <Typography variant="caption" color="text.secondary" noWrap title={viaje.empresaTransporte}>
+                                                    {viaje.empresaTransporte}
+                                                </Typography>
+                                            </Box>
+                                        )}
                                     </Box>
                                 </Stack>
                             </CardContent>

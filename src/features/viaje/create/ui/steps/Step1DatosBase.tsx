@@ -2,6 +2,7 @@ import { Box, Grid, Typography, Paper } from '@mui/material';
 import { useFormContext } from 'react-hook-form';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
+import { ReloadIconButton } from '@/shared/components/ui/ReloadIconButton';
 import { TextField } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
@@ -10,6 +11,8 @@ import { getViajeFechaCargaLimits } from '@/features/viaje/model/form-values';
 interface Props {
     options: {
         clientes?: SelectItem[];
+        refetchClientes?: () => Promise<unknown> | unknown;
+        isFetchingClientes?: boolean;
         estados?: SelectItem[];
         viajeEstadoAgendadoId?: number;
         flotaDisponibilidad?: {
@@ -22,7 +25,7 @@ interface Props {
 
 export function Step1DatosBase({ options }: Props) {
     const { register, watch, formState: { errors } } = useFormContext();
-    const { clientes, estados, viajeEstadoAgendadoId, flotaDisponibilidad } = options;
+    const { clientes, estados, viajeEstadoAgendadoId, flotaDisponibilidad, refetchClientes, isFetchingClientes } = options;
     const { min: fechaMinima, max: fechaMaxima } = getViajeFechaCargaLimits();
     const estadoId = watch('estadoID');
     const hasResolvedEstado = typeof estadoId === 'number' && estadoId > 0;
@@ -34,9 +37,18 @@ export function Step1DatosBase({ options }: Props) {
             <Paper elevation={0} sx={{ p: 4, borderRadius: 4, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
                 <Grid container spacing={4}>
                     <Grid size={{ xs: 12, md: 6 }}>
-                        <Typography variant="overline" fontWeight={700} color="text.secondary" sx={{ letterSpacing: 1, display: 'block', mb: 1 }}>
-                            Cliente Contratante
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="overline" fontWeight={700} color="text.secondary" sx={{ letterSpacing: 1 }}>
+                                Cliente Contratante
+                            </Typography>
+                            {refetchClientes && (
+                                <ReloadIconButton
+                                    tooltipTitle="Actualizar clientes"
+                                    onReload={refetchClientes}
+                                    isLoading={isFetchingClientes}
+                                />
+                            )}
+                        </Box>
                         <FormSelect
                             label=""
                             registration={register('clienteID', { valueAsNumber: true })}

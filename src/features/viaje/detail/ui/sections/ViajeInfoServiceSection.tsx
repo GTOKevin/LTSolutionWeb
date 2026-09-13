@@ -14,6 +14,7 @@ interface ViajeInfoServiceSectionProps {
 export function ViajeInfoServiceSection({ viaje }: ViajeInfoServiceSectionProps) {
     const theme = useTheme();
     const conductorNombre = viaje.conductorNombreCompleto;
+    const esRecursoTercero = Boolean(viaje.esTractoTercero || viaje.esCarretaTercero || viaje.esConductorTercero);
 
     const items = [
         {
@@ -44,6 +45,15 @@ export function ViajeInfoServiceSection({ viaje }: ViajeInfoServiceSectionProps)
             fallbackTitle: 'Sin carreta',
             emphasized: true,
         },
+        ...(esRecursoTercero && viaje.empresaTransporte
+            ? [{
+                icon: <BusinessIcon fontSize="small" color="action" />,
+                label: 'Empresa Transporte',
+                value: viaje.empresaTransporte,
+                fallbackTitle: 'Sin empresa',
+                emphasized: false,
+            }]
+            : []),
     ];
 
     return (

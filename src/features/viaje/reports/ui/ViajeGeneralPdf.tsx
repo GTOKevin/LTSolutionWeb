@@ -156,6 +156,9 @@ export const ViajeGeneralPdf = ({ data }: Props) => {
                         <View style={styles.infoRow}><Text style={styles.label}>Destino:</Text><Text style={styles.value}>{data.destino}</Text></View>
                         <View style={styles.infoRow}><Text style={styles.label}>Tracto:</Text><Text style={styles.value}>{data.tracto}</Text></View>
                         <View style={styles.infoRow}><Text style={styles.label}>Carreta:</Text><Text style={styles.value}>{data.carreta}</Text></View>
+                        {data.empresaTransporte && data.empresaTransporte !== '-' ? (
+                            <View style={styles.infoRow}><Text style={styles.label}>Empresa:</Text><Text style={styles.value}>{data.empresaTransporte}</Text></View>
+                        ) : null}
                         <View style={styles.infoRow}><Text style={styles.label}>Total Ejes:</Text><Text style={styles.value}>{data.ejesTotales}</Text></View>
                         <View style={styles.infoRow}><Text style={styles.label}>Medidas:</Text><Text style={styles.value}>{data.medidasTotales}</Text></View>
                         <View style={styles.infoRow}><Text style={styles.label}>Peso Total:</Text><Text style={styles.value}>{data.pesoTotal}</Text></View>
