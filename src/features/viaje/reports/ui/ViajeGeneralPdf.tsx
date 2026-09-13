@@ -2,6 +2,7 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { ViajeGeneralReportDto } from '@entities/viaje/model/types';
 import { themePalette } from '@/shared/config/theme/palette';
 import { formatCurrencyAmount, formatDecimalAmount } from '@/shared/utils/format-utils';
+import { hasReportValue } from '../lib/report-value';
 import { isFuelReportExpense } from '../lib/fuel-report-utils';
 
 // Register a standard font (Helvetica is built-in, but good practice to be explicit if using others)
@@ -156,6 +157,9 @@ export const ViajeGeneralPdf = ({ data }: Props) => {
                         <View style={styles.infoRow}><Text style={styles.label}>Destino:</Text><Text style={styles.value}>{data.destino}</Text></View>
                         <View style={styles.infoRow}><Text style={styles.label}>Tracto:</Text><Text style={styles.value}>{data.tracto}</Text></View>
                         <View style={styles.infoRow}><Text style={styles.label}>Carreta:</Text><Text style={styles.value}>{data.carreta}</Text></View>
+                        {hasReportValue(data.empresaTransporte) ? (
+                            <View style={styles.infoRow}><Text style={styles.label}>Empresa:</Text><Text style={styles.value}>{data.empresaTransporte}</Text></View>
+                        ) : null}
                         <View style={styles.infoRow}><Text style={styles.label}>Total Ejes:</Text><Text style={styles.value}>{data.ejesTotales}</Text></View>
                         <View style={styles.infoRow}><Text style={styles.label}>Medidas:</Text><Text style={styles.value}>{data.medidasTotales}</Text></View>
                         <View style={styles.infoRow}><Text style={styles.label}>Peso Total:</Text><Text style={styles.value}>{data.pesoTotal}</Text></View>

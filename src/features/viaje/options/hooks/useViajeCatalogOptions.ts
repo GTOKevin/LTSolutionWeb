@@ -7,6 +7,11 @@ import { estadoApi } from '@entities/estado/api/estado.api';
 import { ESTADO_SECTIONS, TIPO_MAESTRO_SECTIONS } from '@entities/master-data/model/constants';
 import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
 
+/**
+ * M7: `getSelect('', 50)` trunca catalogos grandes (gastos, mercaderias).
+ * Se mantiene el tope para no degradar el wizard; TODO(search): busqueda
+ * remota cuando un catalogo supere 50 elementos.
+ */
 export function useViajeCatalogOptions(enabled: boolean = true) {
     const { data: tiposMedida } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.tiposMedida(),
@@ -26,7 +31,7 @@ export function useViajeCatalogOptions(enabled: boolean = true) {
         enabled,
     });
 
-    const { data: mercaderias } = useQuery({
+    const { data: mercaderias, refetch: refetchMercaderias, isFetching: isFetchingMercaderias } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.mercaderias(),
         queryFn: async () => (await mercaderiaApi.getSelect('', 50)) ?? [],
         enabled,
@@ -61,6 +66,8 @@ export function useViajeCatalogOptions(enabled: boolean = true) {
         tiposPeso,
         tiposGasto,
         mercaderias,
+        refetchMercaderias,
+        isFetchingMercaderias,
         tiposIncidente,
         tiposGuia,
         monedas,

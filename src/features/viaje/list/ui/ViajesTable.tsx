@@ -191,6 +191,11 @@ export function ViajesTable({
                                             </Typography>
                                         )}
                                     </Stack>
+                                    {viaje.empresaTransporte && (viaje.esTractoTercero || viaje.esCarretaTercero || viaje.esConductorTercero) && (
+                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                            {viaje.empresaTransporte}
+                                        </Typography>
+                                    )}
                                 </Box>
                             </Stack>
                         </TableCell>

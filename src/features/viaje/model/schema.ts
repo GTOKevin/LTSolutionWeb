@@ -35,6 +35,19 @@ const optionalNumber = (defaultValue = 0) =>
         z.number()
     );
 
+const optionalMaxRegexText = (pattern: RegExp, message: string, max: number, maxMessage: string) =>
+    z.string()
+        .max(max, maxMessage)
+        .refine((value) => value === '' || pattern.test(value), message)
+        .optional();
+
+const optionalPlacaTercero = optionalMaxRegexText(
+    INPUT_VAL.PLACA_PERU_REGEX,
+    ERROR_MESSAGES.PLACA_INVALIDA,
+    10,
+    'La placa no debe exceder 10 caracteres'
+);
+
 export const viajeEscoltaSchema = z.object({
     tercero: z.boolean().optional(),
     flotaID: z.number().optional(),
@@ -147,15 +160,34 @@ export const viajePermisoSchema = z.object({
 
 export const viajeSchema = z.object({
     clienteID: z.number().min(1, 'El cliente es requerido'),
-    tractoID: z.number().min(1, 'El tracto es requerido'),
-    colaboradorID: z.number().min(1, 'El conductor es requerido'),
+    tractoID: z.number().optional(),
+    colaboradorID: z.number().optional(),
     origenID: z.number().min(1, 'El origen es requerido'),
     destinoID: z.number().min(1, 'El destino es requerido'),
     fechaCarga: z.string().min(1, 'La fecha de carga es requerida'),
     tipoMedidaID: z.number().min(1, 'El tipo de medida es requerido'),
     tipoPesoID: z.number().min(1, 'El tipo de peso es requerido'),
     estadoID: z.number().min(1, 'El estado es requerido'),
-    carretaID: z.number().min(1, 'La carreta es requerida'),
+    carretaID: z.number().optional(),
+
+    // Recursos terceros
+    esTractoTercero: z.boolean().optional().default(false),
+    esCarretaTercero: z.boolean().optional().default(false),
+    esConductorTercero: z.boolean().optional().default(false),
+    placaTractoTercero: optionalPlacaTercero,
+    placaCarretaTercero: optionalPlacaTercero,
+    nombreConductorTercero: optionalMaxRegexText(
+        INPUT_VAL.LETRAS_ESPACIO,
+        ERROR_MESSAGES.LETRAS_ESPACIO,
+        200,
+        'El nombre del conductor no debe exceder 200 caracteres'
+    ),
+    empresaTransporte: optionalMaxRegexText(
+        INPUT_VAL.ALPHA_NUMERICO_ESPECIAL,
+        ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL,
+        200,
+        'La empresa de transporte no debe exceder 200 caracteres'
+    ),
 
     // Optional fields
     cotizacionID: optionalNumber(0),
@@ -192,6 +224,103 @@ export const viajeSchema = z.object({
             message: `La fecha de carga no puede superar ${fechaMaxima}.`,
             path: ['fechaCarga']
         });
+    }
+
+    // Tracto: propio exige selección; tercero exige placa + ejes manuales.
+    if (data.esTractoTercero) {
+        if (data.tractoID && data.tractoID > 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "No debe seleccionar un tracto propio cuando el tracto es de un tercero.",
+                path: ['tractoID']
+            });
+        }
+        if (!data.placaTractoTercero?.trim()) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "La placa del tracto es requerida",
+                path: ['placaTractoTercero']
+            });
+        }
+        if (!data.ejesTracto || data.ejesTracto <= 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Los ejes del tracto deben ser mayores a 0",
+                path: ['ejesTracto']
+            });
+        }
+    } else if (!data.tractoID || data.tractoID <= 0) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "El tracto es requerido",
+            path: ['tractoID']
+        });
+    }
+
+    // Carreta: propio exige selección; tercero exige placa + ejes manuales.
+    if (data.esCarretaTercero) {
+        if (data.carretaID && data.carretaID > 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "No debe seleccionar una carreta propia cuando la carreta es de un tercero.",
+                path: ['carretaID']
+            });
+        }
+        if (!data.placaCarretaTercero?.trim()) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "La placa de la carreta es requerida",
+                path: ['placaCarretaTercero']
+            });
+        }
+        if (!data.ejesCarreta || data.ejesCarreta <= 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Los ejes de la carreta deben ser mayores a 0",
+                path: ['ejesCarreta']
+            });
+        }
+    } else if (!data.carretaID || data.carretaID <= 0) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "La carreta es requerida",
+            path: ['carretaID']
+        });
+    }
+
+    // Conductor: propio exige selección; tercero exige nombre.
+    if (data.esConductorTercero) {
+        if (data.colaboradorID && data.colaboradorID > 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "No debe seleccionar un conductor propio cuando el conductor es de un tercero.",
+                path: ['colaboradorID']
+            });
+        }
+        if (!data.nombreConductorTercero?.trim()) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "El nombre del conductor es requerido",
+                path: ['nombreConductorTercero']
+            });
+        }
+    } else if (!data.colaboradorID || data.colaboradorID <= 0) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "El conductor es requerido",
+            path: ['colaboradorID']
+        });
+    }
+
+    // Empresa de transporte: obligatoria cuando algún recurso es tercero.
+    if (data.esTractoTercero || data.esCarretaTercero || data.esConductorTercero) {
+        if (!data.empresaTransporte?.trim()) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "La empresa de transporte es requerida",
+                path: ['empresaTransporte']
+            });
+        }
     }
 });
 

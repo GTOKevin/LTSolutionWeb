@@ -7,6 +7,7 @@ export interface ViajeListReportDto {
     conductor: string;
     tracto: string;
     carreta: string;
+    empresaTransporte: string;
     origen: string;
     destino: string;
     mercaderia: string;
@@ -95,6 +96,7 @@ export interface ViajeGeneralReportDto {
     destino: string;
     tracto: string;
     carreta: string;
+    empresaTransporte: string;
     fechaPartida: string;
     fechaLlegada: string;
     fechaDescarga: string;
@@ -286,9 +288,16 @@ export interface Viaje {
     cotizacionID: number | null;
     clienteID: number;
     codigo?: string;
-    tractoID: number;
+    tractoID: number | null;
     carretaID: number | null;
-    colaboradorID: number;
+    colaboradorID: number | null;
+    esTractoTercero?: boolean;
+    esCarretaTercero?: boolean;
+    esConductorTercero?: boolean;
+    placaTractoTercero?: string | null;
+    placaCarretaTercero?: string | null;
+    nombreConductorTercero?: string | null;
+    empresaTransporte?: string | null;
     origenID: number;
     destinoID: number;
     direccionOrigen: string | null;
@@ -429,12 +438,19 @@ export interface ViajeDetail {
     cerrado: boolean;
     clienteID: number;
     clienteRazonSocial: string | null;
-    colaboradorID: number;
+    colaboradorID: number | null;
     conductorNombreCompleto: string | null;
-    tractoID: number;
+    tractoID: number | null;
     tractoPlaca: string | null;
     carretaID: number | null;
     carretaPlaca: string | null;
+    esTractoTercero?: boolean;
+    esCarretaTercero?: boolean;
+    esConductorTercero?: boolean;
+    placaTractoTercero?: string | null;
+    placaCarretaTercero?: string | null;
+    nombreConductorTercero?: string | null;
+    empresaTransporte?: string | null;
     origenID: number;
     origenDescripcion: string | null;
     direccionOrigen: string | null;
@@ -523,9 +539,16 @@ export interface CreateViajeEscoltaDto {
 export interface CreateViajeDto {
     cotizacionID?: number | null;
     clienteID: number;
-    tractoID: number;
+    tractoID?: number | null;
     carretaID?: number | null;
-    colaboradorID: number;
+    colaboradorID?: number | null;
+    esTractoTercero?: boolean;
+    esCarretaTercero?: boolean;
+    esConductorTercero?: boolean;
+    placaTractoTercero?: string;
+    placaCarretaTercero?: string;
+    nombreConductorTercero?: string;
+    empresaTransporte?: string;
     origenID: number;
     destinoID: number;
     direccionOrigen?: string;
@@ -592,14 +615,18 @@ export interface ViajeListItem {
     destinoDescripcion: string;
 
     // Conductor
-    colaboradorID: number;
+    colaboradorID: number | null;
     conductorNombreCompleto: string;
+    esConductorTercero?: boolean;
 
     // Recursos
-    tractoID: number;
+    tractoID: number | null;
     tractoPlaca: string;
-    carretaID?: number;
+    carretaID?: number | null;
     carretaPlaca?: string;
+    esTractoTercero?: boolean;
+    esCarretaTercero?: boolean;
+    empresaTransporte?: string | null;
 
     // Estado
     estadoID: number;

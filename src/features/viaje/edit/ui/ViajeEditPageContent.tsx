@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, CircularProgress, Typography, Tooltip, alpha } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Typography, Tooltip, alpha } from '@mui/material';
 import { PlayArrow as PlayArrowIcon } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -18,6 +18,7 @@ import type { ResumenGeneralData } from '../model/viaje-edit-tabs';
 import { ViajeEditShell } from './ViajeEditShell';
 import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
 import { ViajeEditContent } from './ViajeEditContent';
+import { notifyMutationError, type ApiMutationError } from '@/shared/utils/api-errors';
 
 export function ViajeEditPageContent() {
     const { id } = useParams<{ id: string }>();
@@ -67,14 +68,25 @@ export function ViajeEditPageContent() {
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.detail(viajeId) });
             showToast({ entity: 'Viaje', action: 'update' });
         },
-        onError: () => {
-            showToast({ entity: 'Viaje', action: 'update', isError: true });
+        onError: (error: ApiMutationError) => {
+            // L-N6: mensaje real del backend via el estandar del repo (no toast generico).
+            notifyMutationError(showToast, 'Viaje', 'update', error, 'Error updating viaje:');
         }
     });
 
     const handleSave = () => {
         if (!viaje) return;
 
+        // M6 (deuda funcional explicita): el tab Resumen solo edita fechas/km/
+        // dimensiones/escolta/estado. Los recursos terceros y los ejes se preservan
+        // desde el snapshot `viaje` porque aun no hay UI de edicion de terceros en
+        // edit (el wizard de creacion si la tiene). No se reconstruye ni se infiere
+        // nada: si el negocio necesita corregir terceros/ejes en un viaje existente,
+        // hay que exponer esa edicion aqui. Ver nota visible bajo este handler.
+        // TODO(viaje-edit-terceros): exponer edicion de recursos terceros y ejes en
+        // este flujo (wizard/modal de correccion) o abrir issue de alineacion
+        // backend antes de cerrar la deuda; mientras tanto el Alert visible es el
+        // minimo aceptable y esta limitacion no debe volverse silenciosa.
         // Guard explícito: nunca enviar `estadoID: 0`. Si el formulario no proyectó
         // un estado (ni siquiera el del viaje), se bloquea el guardado.
         const estadoID = formData.estadoID || viaje.estadoID;
@@ -87,9 +99,18 @@ export function ViajeEditPageContent() {
             viajeID: viaje.viajeID,
             cotizacionID: viaje.cotizacionID ?? null,
             clienteID: viaje.clienteID,
-            tractoID: viaje.tractoID,
-            carretaID: viaje.carretaID ?? null,
-            colaboradorID: viaje.colaboradorID,
+            tractoID: viaje.esTractoTercero ? null : viaje.tractoID,
+            carretaID: viaje.esCarretaTercero ? null : (viaje.carretaID ?? null),
+            colaboradorID: viaje.esConductorTercero ? null : viaje.colaboradorID,
+            esTractoTercero: viaje.esTractoTercero ?? false,
+            esCarretaTercero: viaje.esCarretaTercero ?? false,
+            esConductorTercero: viaje.esConductorTercero ?? false,
+            placaTractoTercero: viaje.esTractoTercero ? (viaje.placaTractoTercero ?? undefined) : undefined,
+            placaCarretaTercero: viaje.esCarretaTercero ? (viaje.placaCarretaTercero ?? undefined) : undefined,
+            nombreConductorTercero: viaje.esConductorTercero ? (viaje.nombreConductorTercero ?? undefined) : undefined,
+            empresaTransporte: (viaje.esTractoTercero || viaje.esCarretaTercero || viaje.esConductorTercero)
+                ? (viaje.empresaTransporte ?? undefined)
+                : undefined,
             origenID: viaje.origenID,
             destinoID: viaje.destinoID,
             direccionOrigen: viaje.direccionOrigen || undefined,
@@ -143,6 +164,9 @@ export function ViajeEditPageContent() {
     const nextEstadoLabel = getNextEstadoLabel(estadoSource);
     const canShowAdvance =
         canManageViajes && !isViewOnly && !estadoSource.cerrado && Boolean(getNextEstadoAvailable(estadoSource));
+    // M6: nota visible solo cuando el viaje usa recursos terceros (deuda funcional
+    // explicita, ver TODO(viaje-edit-terceros) en `handleSave`).
+    const tieneRecursosTerceros = Boolean(viaje?.esTractoTercero || viaje?.esCarretaTercero || viaje?.esConductorTercero);
 
     return (
         <>
@@ -243,6 +267,12 @@ export function ViajeEditPageContent() {
                     ) : undefined
                 }
             >
+                {tieneRecursosTerceros && activeTab === 0 && (
+                    <Alert severity="info" sx={{ mb: 2 }}>
+                        Este viaje usa recursos terceros o ejes registrados al crearlo. El resumen conserva esos
+                        valores sin permitir su corrección en este flujo.
+                    </Alert>
+                )}
                 <ViajeEditContent
                     activeTab={activeTab}
                     viaje={viaje}
