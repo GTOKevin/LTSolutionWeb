@@ -3,6 +3,7 @@ import { saveAs } from 'file-saver';
 import type { ViajeGeneralReportDto } from '@entities/viaje/model/types';
 import { themePalette } from '@/shared/config/theme/palette';
 import { formatDecimalAmount } from '@/shared/utils/format-utils';
+import { hasReportValue } from '@/features/viaje/model/cargo-limits';
 import { isFuelReportExpense } from './fuel-report-utils';
 
 export class ViajeGeneralExcelGenerator {
@@ -83,7 +84,8 @@ export class ViajeGeneralExcelGenerator {
         addHeaderRow("Cliente:", this.data.cliente, "Viaje #:", this.data.viajeId.toString());
         addHeaderRow("Conductor:", this.data.conductor, "", "");
         addHeaderRow("Tracto:", this.data.tracto, "Carreta:", this.data.carreta);
-        if (this.data.empresaTransporte && this.data.empresaTransporte !== '-') {
+        // L3: la fila se muestra solo si el valor porta informacion (no vacio ni centinela).
+        if (hasReportValue(this.data.empresaTransporte)) {
             addHeaderRow("Empresa Transporte:", this.data.empresaTransporte, "", "");
         }
         addHeaderRow("Origen:", this.data.origen, "Destino:", this.data.destino);

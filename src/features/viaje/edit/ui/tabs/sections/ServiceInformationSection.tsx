@@ -1,11 +1,10 @@
 import { Box, Typography, Grid, Paper, Chip, alpha, useTheme } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import RvHookupOutlinedIcon from '@mui/icons-material/RvHookupOutlined';
 import type { Viaje } from '@/entities/viaje/model/types';
+import { VIAJE_RECURSO_LABELS } from '@/features/viaje/model/viaje-resource-labels';
 
 interface ServiceInformationSectionProps {
     viaje: Viaje;
@@ -13,26 +12,31 @@ interface ServiceInformationSectionProps {
 
 const getConductorNombre = (viaje: Viaje) => {
     if (viaje.esConductorTercero) {
-        return viaje.nombreConductorTercero?.trim() ?? 'Conductor tercero sin registrar';
+        return viaje.nombreConductorTercero?.trim() || VIAJE_RECURSO_LABELS.conductorTerceroSinRegistrar;
     }
     const nombre = [viaje.colaborador?.nombres, viaje.colaborador?.primerApellido, viaje.colaborador?.segundoApellido]
         .filter(Boolean)
         .join(' ')
         .trim();
-    return nombre || 'Sin conductor asignado';
+    return nombre || VIAJE_RECURSO_LABELS.sinConductor;
 };
 
+
 const getTractoPlaca = (viaje: Viaje) =>
-    viaje.esTractoTercero ? (viaje.placaTractoTercero ?? 'Sin placa') : (viaje.tracto?.placa ?? 'Sin placa');
+    viaje.esTractoTercero ? (viaje.placaTractoTercero ?? VIAJE_RECURSO_LABELS.sinPlaca) : (viaje.tracto?.placa ?? VIAJE_RECURSO_LABELS.sinPlaca);
 
 const getCarretaPlaca = (viaje: Viaje) =>
-    viaje.esCarretaTercero ? (viaje.placaCarretaTercero ?? 'Sin placa') : (viaje.carreta?.placa ?? 'Sin placa');
+    viaje.esCarretaTercero ? (viaje.placaCarretaTercero ?? VIAJE_RECURSO_LABELS.sinPlaca) : (viaje.carreta?.placa ?? VIAJE_RECURSO_LABELS.sinPlaca);
 
 const getUbigeoDescripcion = (ubigeo?: Viaje['origen']) =>
     [ubigeo?.departamento, ubigeo?.provincia, ubigeo?.distrito]
         .filter(Boolean)
         .join(', ')
         .trim();
+
+const getTercero = (viaje: Viaje) => {
+    return viaje.esTractoTercero || viaje.esCarretaTercero || viaje.esConductorTercero;
+}
 
 export function ServiceInformationSection({ viaje }: ServiceInformationSectionProps) {
     const theme = useTheme();
@@ -44,8 +48,8 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
     const conductorNombre = getConductorNombre(viaje);
     const tractoPlaca = getTractoPlaca(viaje);
     const carretaPlaca = getCarretaPlaca(viaje);
-    const origenDescripcion = getUbigeoDescripcion(viaje.origen) || 'Origen no registrado';
-    const destinoDescripcion = getUbigeoDescripcion(viaje.destino) || 'Destino no registrado';
+    const origenDescripcion = getUbigeoDescripcion(viaje.origen) || VIAJE_RECURSO_LABELS.origenNoRegistrado;
+    const destinoDescripcion = getUbigeoDescripcion(viaje.destino) || VIAJE_RECURSO_LABELS.destinoNoRegistrado;
 
     const tractoConfig = viaje.ejesTracto ? `${viaje.ejesTracto} Ejes` : 'Unidad de Transporte';
     const carretaConfig = viaje.ejesCarreta ? `Plataforma ${viaje.ejesCarreta} Ejes` : 'Semirremolque';
@@ -98,122 +102,6 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
                 />
             </Box>
 
-            {/* Modalidad Operativa del Viaje */}
-            <Box sx={{ p: 2.5, borderRadius: 2.5, bgcolor: alpha(theme.palette.text.primary, 0.02), border: '1px solid', borderColor: 'divider' }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, color: 'text.secondary', display: 'block', mb: 1.5 }}>
-                    Modalidad Operativa del Viaje
-                </Typography>
-                <Grid container spacing={2}>
-                    {/* Opción 1: Flota Propia */}
-                    <Grid size={{ xs: 12, md: 4 }}>
-                        <Box
-                            sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                border: '2px solid',
-                                borderColor: esPropioTotal ? 'primary.main' : 'divider',
-                                bgcolor: esPropioTotal ? alpha(theme.palette.primary.main, 0.06) : 'background.paper',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1.5,
-                                transition: 'all 0.2s ease',
-                            }}
-                        >
-                            {esPropioTotal ? (
-                                <CheckCircleRoundedIcon color="primary" fontSize="small" />
-                            ) : (
-                                <RadioButtonUncheckedIcon sx={{ color: 'text.disabled' }} fontSize="small" />
-                            )}
-                            <Box sx={{ minWidth: 0, flex: 1 }}>
-                                <Typography variant="body2" sx={{ fontWeight: 700, color: esPropioTotal ? 'primary.main' : 'text.primary', lineHeight: 1.2 }}>
-                                    Flota Propia (100% Interno)
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.2 }}>
-                                    Tracto, Carreta y Chofer propios
-                                </Typography>
-                            </Box>
-                        </Box>
-                    </Grid>
-
-                    {/* Opción 2: Híbrido / Alquiler Parcial */}
-                    <Grid size={{ xs: 12, md: 4 }}>
-                        <Box
-                            sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                border: '2px solid',
-                                borderColor: esHibrido ? 'warning.main' : 'divider',
-                                bgcolor: esHibrido ? alpha(theme.palette.warning.main, 0.08) : 'background.paper',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1.5,
-                                transition: 'all 0.2s ease',
-                            }}
-                        >
-                            {esHibrido ? (
-                                <CheckCircleRoundedIcon color="warning" fontSize="small" />
-                            ) : (
-                                <RadioButtonUncheckedIcon sx={{ color: 'text.disabled' }} fontSize="small" />
-                            )}
-                            <Box sx={{ minWidth: 0, flex: 1 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Typography variant="body2" sx={{ fontWeight: 700, color: esHibrido ? 'warning.dark' : 'text.primary', lineHeight: 1.2 }}>
-                                        Servicio Híbrido / Parcial
-                                    </Typography>
-                                    {esHibrido && (
-                                        <Chip
-                                            label="Activo"
-                                            size="small"
-                                            sx={{
-                                                height: 18,
-                                                fontSize: '0.65rem',
-                                                fontWeight: 800,
-                                                bgcolor: 'warning.main',
-                                                color: '#000',
-                                            }}
-                                        />
-                                    )}
-                                </Box>
-                                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.2 }}>
-                                    Mix de recursos propios y alquilados
-                                </Typography>
-                            </Box>
-                        </Box>
-                    </Grid>
-
-                    {/* Opción 3: Tercerizado Integral */}
-                    <Grid size={{ xs: 12, md: 4 }}>
-                        <Box
-                            sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                border: '2px solid',
-                                borderColor: esTerceroTotal ? 'info.main' : 'divider',
-                                bgcolor: esTerceroTotal ? alpha(theme.palette.info.main, 0.06) : 'background.paper',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1.5,
-                                transition: 'all 0.2s ease',
-                            }}
-                        >
-                            {esTerceroTotal ? (
-                                <CheckCircleRoundedIcon color="info" fontSize="small" />
-                            ) : (
-                                <RadioButtonUncheckedIcon sx={{ color: 'text.disabled' }} fontSize="small" />
-                            )}
-                            <Box sx={{ minWidth: 0, flex: 1 }}>
-                                <Typography variant="body2" sx={{ fontWeight: 700, color: esTerceroTotal ? 'info.main' : 'text.primary', lineHeight: 1.2 }}>
-                                    Tercerizado Integral (100%)
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.2 }}>
-                                    Subcontratación total a proveedor
-                                </Typography>
-                            </Box>
-                        </Box>
-                    </Grid>
-                </Grid>
-            </Box>
-
             {/* Desglose Modular de Recursos Asignados */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -242,7 +130,7 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
                                 gap: 2,
                             }}
                         >
-                            <div>
+                            <Box sx={{ minWidth: 0 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <LocalShippingOutlinedIcon fontSize="small" sx={{ color: 'text.secondary' }} />
@@ -251,7 +139,7 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
                                         </Typography>
                                     </Box>
                                     <Chip
-                                        label={viaje.esTractoTercero ? 'Tercero Alquilado' : 'Propio (Euro Transport)'}
+                                        label={viaje.esTractoTercero ? 'Tercero Alquilado' : VIAJE_RECURSO_LABELS.tractoPropio}
                                         size="small"
                                         color={viaje.esTractoTercero ? 'warning' : 'primary'}
                                         sx={{ fontWeight: 700, fontSize: '0.68rem' }}
@@ -268,9 +156,9 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
                                 </Box>
 
                                 <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.8 }}>
-                                    Pertenencia: {viaje.esTractoTercero ? (viaje.empresaTransporte || 'Proveedor Externo') : 'Flota Central Euro Transport'}
+                                    Pertenencia: {viaje.esTractoTercero ? (viaje.empresaTransporte || VIAJE_RECURSO_LABELS.proveedorExterno) : VIAJE_RECURSO_LABELS.flotaPropia}
                                 </Typography>
-                            </div>
+                            </Box>
 
                             <Box sx={{ pt: 1.5, borderTop: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
@@ -303,7 +191,7 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
                                 gap: 2,
                             }}
                         >
-                            <div>
+                            <Box sx={{ minWidth: 0 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <RvHookupOutlinedIcon fontSize="small" sx={{ color: 'text.secondary' }} />
@@ -312,7 +200,7 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
                                         </Typography>
                                     </Box>
                                     <Chip
-                                        label={viaje.esCarretaTercero ? 'Tercero Alquilado' : 'Propia (Euro Transport)'}
+                                        label={viaje.esCarretaTercero ? 'Tercero Alquilado' : VIAJE_RECURSO_LABELS.carretaPropia}
                                         size="small"
                                         color={viaje.esCarretaTercero ? 'warning' : 'primary'}
                                         sx={{ fontWeight: 700, fontSize: '0.68rem' }}
@@ -329,9 +217,9 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
                                 </Box>
 
                                 <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.8 }}>
-                                    Proveedor: {viaje.esCarretaTercero ? (viaje.empresaTransporte || 'Proveedor Externo') : 'Flota Central Euro Transport'}
+                                    Proveedor: {viaje.esCarretaTercero ? (viaje.empresaTransporte || VIAJE_RECURSO_LABELS.proveedorExterno) : VIAJE_RECURSO_LABELS.flotaPropia}
                                 </Typography>
-                            </div>
+                            </Box>
 
                             <Box sx={{ pt: 1.5, borderTop: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
@@ -364,7 +252,7 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
                                 gap: 2,
                             }}
                         >
-                            <div>
+                            <Box sx={{ minWidth: 0 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <PersonOutlineOutlinedIcon fontSize="small" sx={{ color: 'text.secondary' }} />
@@ -373,7 +261,7 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
                                         </Typography>
                                     </Box>
                                     <Chip
-                                        label={viaje.esConductorTercero ? 'Chofer Tercero' : 'Conductor Titular Propio'}
+                                        label={viaje.esConductorTercero ? 'Tercero' : 'Propio'}
                                         size="small"
                                         color={viaje.esConductorTercero ? 'warning' : 'primary'}
                                         sx={{ fontWeight: 700, fontSize: '0.68rem' }}
@@ -385,16 +273,16 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
                                 </Typography>
 
                                 <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
-                                    {viaje.esConductorTercero ? 'Contratista de transporte' : 'Planilla Euro Transport • SCTR Vigente'}
+                                    {viaje.esConductorTercero ? VIAJE_RECURSO_LABELS.contratistaTransporte : VIAJE_RECURSO_LABELS.personalPropio}
                                 </Typography>
-                            </div>
+                            </Box>
 
                             <Box sx={{ pt: 1.5, borderTop: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                                     Vínculo conductor:
                                 </Typography>
                                 <Chip
-                                    label={viaje.esConductorTercero ? 'Chofer Tercero' : 'Personal Planilla (Propio)'}
+                                    label={viaje.esConductorTercero ? 'Chofer Tercero' : 'Personal Propio'}
                                     size="small"
                                     variant="outlined"
                                     color={viaje.esConductorTercero ? 'warning' : 'default'}
@@ -406,44 +294,9 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
                 </Grid>
             </Box>
 
-            {/* Banner de Trazabilidad Operativa */}
-            <Box
-                sx={{
-                    p: 1.5,
-                    px: 2,
-                    borderRadius: 2,
-                    bgcolor: alpha(theme.palette.text.primary, 0.03),
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    flexWrap: 'wrap',
-                }}
-            >
-                <Chip
-                    label="Trazabilidad Operativa"
-                    size="small"
-                    sx={{
-                        fontWeight: 800,
-                        fontSize: '0.65rem',
-                        textTransform: 'uppercase',
-                        bgcolor: 'background.paper',
-                        border: '1px solid',
-                        borderColor: 'divider',
-                    }}
-                />
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500, flex: 1, minWidth: 260 }}>
-                    Tracto <strong>{viaje.esTractoTercero ? 'Tercero' : 'Propio'} ({tractoPlaca})</strong> + Carreta{' '}
-                    <strong>{viaje.esCarretaTercero ? 'Alquilada' : 'Propia'} ({carretaPlaca})</strong> + Chofer{' '}
-                    <strong>{viaje.esConductorTercero ? 'Tercero' : 'Propio'} ({conductorNombre})</strong>
-                    {viaje.empresaTransporte ? ` | Proveedor: ${viaje.empresaTransporte}` : ''}
-                </Typography>
-            </Box>
-
             {/* Cliente & Empresa Transporte */}
             <Grid container spacing={2.5}>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: (getTercero(viaje) ? 6 : 12) }}>
                     <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
                         Cliente
                     </Typography>
@@ -459,31 +312,31 @@ export function ServiceInformationSection({ viaje }: ServiceInformationSectionPr
                         }}
                     >
                         <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                            {viaje.cliente?.razonSocial || 'Sin cliente asociado'}
+                            {viaje.cliente?.razonSocial || VIAJE_RECURSO_LABELS.sinCliente}
                         </Typography>
                     </Box>
                 </Grid>
-
-                <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
-                        Empresa Transporte (Subcontratista / Razón Social)
-                    </Typography>
-                    <Box
-                        sx={{
-                            width: '100%',
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            borderRadius: 2,
-                            px: 2,
-                            py: 1.25,
-                            bgcolor: alpha(theme.palette.text.primary, 0.02),
-                        }}
-                    >
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                            {viaje.empresaTransporte || 'Euro Transport (Servicio Directo)'}
+                {getTercero(viaje) ? (
+                    <Grid size={{ xs: 12, md: 6 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                            Empresa Transporte (Subcontratista / Razón Social)
                         </Typography>
-                    </Box>
-                </Grid>
+                        <Box
+                            sx={{
+                                width: '100%',
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                borderRadius: 2,
+                                px: 2,
+                                py: 1.25,
+                                bgcolor: alpha(theme.palette.text.primary, 0.02),
+                            }}
+                        >
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                                {viaje.empresaTransporte || VIAJE_RECURSO_LABELS.sinEmpresaRegistrada}
+                            </Typography>
+                        </Box>
+                    </Grid>) : (<></>)}
             </Grid>
 
             {/* Punto de Origen & Destino */}

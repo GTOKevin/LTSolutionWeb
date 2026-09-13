@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, CircularProgress, Typography, Tooltip, alpha } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Typography, Tooltip, alpha } from '@mui/material';
 import { PlayArrow as PlayArrowIcon } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -75,6 +75,12 @@ export function ViajeEditPageContent() {
     const handleSave = () => {
         if (!viaje) return;
 
+        // M6 (pendiente funcional explicito): el tab Resumen solo edita fechas/km/
+        // dimensiones/escolta/estado. Los recursos terceros y los ejes se preservan
+        // desde el snapshot `viaje` porque aun no hay UI de edicion de terceros en
+        // edit (el wizard de creacion si la tiene). No se reconstruye ni se infiere
+        // nada: si el negocio necesita corregir terceros/ejes en un viaje existente,
+        // hay que exponer esa edicion aqui. Ver nota visible bajo este handler.
         // Guard explícito: nunca enviar `estadoID: 0`. Si el formulario no proyectó
         // un estado (ni siquiera el del viaje), se bloquea el guardado.
         const estadoID = formData.estadoID || viaje.estadoID;
@@ -152,6 +158,8 @@ export function ViajeEditPageContent() {
     const nextEstadoLabel = getNextEstadoLabel(estadoSource);
     const canShowAdvance =
         canManageViajes && !isViewOnly && !estadoSource.cerrado && Boolean(getNextEstadoAvailable(estadoSource));
+    // M6: nota visible solo cuando el viaje usa recursos terceros.
+    const tieneRecursosTerceros = Boolean(viaje?.esTractoTercero || viaje?.esCarretaTercero || viaje?.esConductorTercero);
 
     return (
         <>
@@ -252,6 +260,12 @@ export function ViajeEditPageContent() {
                     ) : undefined
                 }
             >
+                {tieneRecursosTerceros && activeTab === 0 && (
+                    <Alert severity="info" sx={{ mb: 2 }}>
+                        Este viaje usa recursos terceros o ejes registrados al crearlo. El resumen conserva esos
+                        valores (pendiente: edicion de terceros/ejes en este flujo).
+                    </Alert>
+                )}
                 <ViajeEditContent
                     activeTab={activeTab}
                     viaje={viaje}

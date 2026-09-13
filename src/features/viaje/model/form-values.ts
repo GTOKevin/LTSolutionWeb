@@ -22,6 +22,11 @@ export interface ViajeRecursosNormalizable {
 }
 
 /**
+ * Dialectos de "vacio" (L4): el formulario trabaja con `0`/`''` (selects e
+ * inputs numericos), mientras el contrato backend espera `null`/`undefined`.
+ * `normalizeViajeRecursos` es el unico punto de conversion; ningun caller debe
+ * replicar el mapeo ID 0 -> undefined ni textos '' -> undefined.
+ *
  * Normaliza los recursos (conductor, tracto, carreta) para el contrato del backend:
  * un recurso tercero no envía el ID propio y exige su texto; un recurso propio
  * limpia los textos de tercero. La empresa de transporte solo viaja si hay terceros.
@@ -127,5 +132,55 @@ export function mapViajeToFormValues(viaje: Viaje): CreateViajeDto {
             tipoPesoID: mercaderia.tipoPesoID,
             peso: mercaderia.peso ?? undefined,
         })),
+    };
+}
+
+/**
+ * Helper unico de payload de creacion (M3): encapsula `normalizeViajeRecursos`
+ * + normalizacion de fechas y mercaderias. Usarlo en el wizard y en el modal;
+ * no replicar la limpieza en cada call site.
+ */
+export function buildCreateViajePayload(data: CreateViajeDto): CreateViajeDto {
+    return {
+        ...data,
+        ...normalizeViajeRecursos(data),
+        fechaCarga: toInputDate(data.fechaCarga),
+        fechaPartida: data.fechaPartida ? toInputDate(data.fechaPartida) : undefined,
+        fechaLlegada: data.fechaLlegada ? toInputDate(data.fechaLlegada) : undefined,
+        fechaDescarga: data.fechaDescarga ? toInputDate(data.fechaDescarga) : undefined,
+        fechaLlegadaBase: data.fechaLlegadaBase ? toInputDate(data.fechaLlegadaBase) : undefined,
+        cotizacionID: data.cotizacionID || undefined,
+        direccionOrigen: data.direccionOrigen || undefined,
+        direccionDestino: data.direccionDestino || undefined,
+        ejesCarreta: data.ejesCarreta || undefined,
+        largo: data.largo ?? undefined,
+        alto: data.alto ?? undefined,
+        ancho: data.ancho ?? undefined,
+        peso: data.peso ?? undefined,
+        kmInicio: data.kmInicio ?? undefined,
+        kmLlegada: data.kmLlegada ?? undefined,
+        kmLlegadaBase: data.kmLlegadaBase ?? undefined,
+        mercaderias: data.mercaderias?.map((mercaderia) => ({
+            ...mercaderia,
+            descripcion: mercaderia.descripcion || undefined,
+            largo: mercaderia.largo ?? undefined,
+            alto: mercaderia.alto ?? undefined,
+            ancho: mercaderia.ancho ?? undefined,
+            peso: mercaderia.peso ?? undefined,
+        })),
+    };
+}
+
+/**
+ * Limpieza compartida del modal crear/editar (M3): recursos + fechas opcionales.
+ */
+export function buildModalViajePayload(data: CreateViajeDto): CreateViajeDto {
+    return {
+        ...data,
+        ...normalizeViajeRecursos(data),
+        fechaLlegada: data.fechaLlegada || undefined,
+        fechaPartida: data.fechaPartida || undefined,
+        fechaDescarga: data.fechaDescarga || undefined,
+        fechaLlegadaBase: data.fechaLlegadaBase || undefined,
     };
 }

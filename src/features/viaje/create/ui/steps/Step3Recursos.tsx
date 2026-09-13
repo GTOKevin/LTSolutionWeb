@@ -34,7 +34,7 @@ type RecursoTerceroFlag = 'esTractoTercero' | 'esCarretaTercero' | 'esConductorT
 
 export function Step3Recursos({ options }: Props) {
     const theme = useTheme();
-    const { register, control, setValue, formState: { errors } } = useFormContext<ViajeWizardFormData>();
+    const { register, control, setValue, getValues, formState: { errors } } = useFormContext<ViajeWizardFormData>();
     const {
         tractos,
         carretas,
@@ -72,30 +72,49 @@ export function Step3Recursos({ options }: Props) {
         }
     };
 
+    // M2: los toggles revalidan (shouldValidate) y limpian el campo espejo completo:
+    // al activar tercero se resetea el ID propio y los ejes (ingreso manual
+    // obligatorio por schema); al desactivar se limpian los textos de tercero y,
+    // si ya no queda ningun recurso tercero, la empresa de transporte.
+    const clearEmpresaIfNoTerceros = () => {
+        const values = getValues();
+        const quedaAlguno = Boolean(values.esTractoTercero || values.esCarretaTercero || values.esConductorTercero);
+        if (!quedaAlguno) {
+            setValue('empresaTransporte', '', { shouldValidate: true, shouldDirty: true });
+        }
+    };
+
     const handleTractoTerceroToggle = (checked: boolean, onChange: (value: boolean) => void) => {
         onChange(checked);
         if (checked) {
-            setValue('tractoID', 0, { shouldDirty: true });
+            setValue('tractoID', 0, { shouldValidate: true, shouldDirty: true });
+            setValue('ejesTracto', 0, { shouldValidate: true, shouldDirty: true });
         } else {
-            setValue('placaTractoTercero', '', { shouldDirty: true });
+            setValue('placaTractoTercero', '', { shouldValidate: true, shouldDirty: true });
+            setValue('ejesTracto', 0, { shouldValidate: true, shouldDirty: true });
+            clearEmpresaIfNoTerceros();
         }
     };
 
     const handleCarretaTerceroToggle = (checked: boolean, onChange: (value: boolean) => void) => {
         onChange(checked);
         if (checked) {
-            setValue('carretaID', 0, { shouldDirty: true });
+            setValue('carretaID', 0, { shouldValidate: true, shouldDirty: true });
+            setValue('ejesCarreta', 0, { shouldValidate: true, shouldDirty: true });
         } else {
-            setValue('placaCarretaTercero', '', { shouldDirty: true });
+            setValue('placaCarretaTercero', '', { shouldValidate: true, shouldDirty: true });
+            setValue('ejesCarreta', 0, { shouldValidate: true, shouldDirty: true });
+            clearEmpresaIfNoTerceros();
         }
     };
 
     const handleConductorTerceroToggle = (checked: boolean, onChange: (value: boolean) => void) => {
         onChange(checked);
         if (checked) {
-            setValue('colaboradorID', 0, { shouldDirty: true });
+            setValue('colaboradorID', 0, { shouldValidate: true, shouldDirty: true });
         } else {
-            setValue('nombreConductorTercero', '', { shouldDirty: true });
+            setValue('nombreConductorTercero', '', { shouldValidate: true, shouldDirty: true });
+            clearEmpresaIfNoTerceros();
         }
     };
 
@@ -194,7 +213,7 @@ export function Step3Recursos({ options }: Props) {
                                                 placeholder="Ej: Juan Pérez"
                                                 inputProps={{ maxLength: 200 }}
                                                 error={!!errors.nombreConductorTercero}
-                                                helperText={errors.nombreConductorTercero?.message as string}
+                                                helperText={errors.nombreConductorTercero?.message?.toString()}
                                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                             />
                                         )}
@@ -206,7 +225,7 @@ export function Step3Recursos({ options }: Props) {
                                         options={colaboradores || []}
                                         defaultValue={0}
                                         error={!!errors.colaboradorID}
-                                        helperText={errors.colaboradorID?.message as string}
+                                        helperText={errors.colaboradorID?.message?.toString()}
                                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                     />
                                 )}
@@ -258,7 +277,7 @@ export function Step3Recursos({ options }: Props) {
                                                     placeholder="Ej: ABC-123"
                                                     inputProps={{ maxLength: 10 }}
                                                     error={!!errors.placaTractoTercero}
-                                                    helperText={errors.placaTractoTercero?.message as string}
+                                                    helperText={errors.placaTractoTercero?.message?.toString()}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                                 />
                                             )}
@@ -282,7 +301,7 @@ export function Step3Recursos({ options }: Props) {
                                                     options={tractos || []}
                                                     value={field.value || 0}
                                                     error={!!errors.tractoID}
-                                                    helperText={errors.tractoID?.message as string}
+                                                    helperText={errors.tractoID?.message?.toString()}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                                 />
                                             )}
@@ -300,7 +319,7 @@ export function Step3Recursos({ options }: Props) {
                                         placeholder={esTractoTercero ? 'Ingreso manual' : 'Automático'}
                                         {...register('ejesTracto', { valueAsNumber: true })}
                                         error={!!errors.ejesTracto}
-                                        helperText={errors.ejesTracto?.message as string}
+                                        helperText={errors.ejesTracto?.message?.toString()}
                                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                     />
                                 </Box>
@@ -348,7 +367,7 @@ export function Step3Recursos({ options }: Props) {
                                                     placeholder="Ej: XYZ-456"
                                                     inputProps={{ maxLength: 10 }}
                                                     error={!!errors.placaCarretaTercero}
-                                                    helperText={errors.placaCarretaTercero?.message as string}
+                                                    helperText={errors.placaCarretaTercero?.message?.toString()}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                                 />
                                             )}
@@ -372,7 +391,7 @@ export function Step3Recursos({ options }: Props) {
                                                     options={carretas || []}
                                                     value={field.value || 0}
                                                     error={!!errors.carretaID}
-                                                    helperText={errors.carretaID?.message as string}
+                                                    helperText={errors.carretaID?.message?.toString()}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                                 />
                                             )}
@@ -390,7 +409,7 @@ export function Step3Recursos({ options }: Props) {
                                         placeholder={esCarretaTercero ? 'Ingreso manual' : 'Automático'}
                                         {...register('ejesCarreta', { valueAsNumber: true })}
                                         error={!!errors.ejesCarreta}
-                                        helperText={errors.ejesCarreta?.message as string}
+                                        helperText={errors.ejesCarreta?.message?.toString()}
                                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                     />
                                 </Box>
@@ -423,7 +442,7 @@ export function Step3Recursos({ options }: Props) {
                                         placeholder="Ej: Transportes del Norte S.A.C."
                                         inputProps={{ maxLength: 200 }}
                                         error={!!errors.empresaTransporte}
-                                        helperText={errors.empresaTransporte?.message as string}
+                                        helperText={errors.empresaTransporte?.message?.toString()}
                                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                     />
                                 )}

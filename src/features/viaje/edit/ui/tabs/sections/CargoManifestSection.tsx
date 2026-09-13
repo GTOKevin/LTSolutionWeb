@@ -16,6 +16,17 @@ import SecurityIcon from '@mui/icons-material/Security';
 import type { Viaje, ViajeMercaderia, CreateViajeMercaderiaDto } from '@/entities/viaje/model/types';
 import type { ResumenGeneralData } from '../../../model/viaje-edit-tabs';
 import {
+    CARGO_LIMITS,
+    displayUnitToKg,
+    getCargoTotalsFromItems,
+    getConvoyCapacity,
+    getCarretaUtilization,
+    isOversizedDimension,
+    kgToDisplayUnit,
+    requiresEscort,
+    type PesoUnit,
+} from '@/features/viaje/model/cargo-limits';
+import {
     useViajeMercaderias,
     useCreateViajeMercaderia,
     useDeleteViajeMercaderia
@@ -39,12 +50,19 @@ export function CargoManifestSection({
     const theme = useTheme();
     const { showToast } = useToast();
 
-    // Sincronización automática con tabla de ítems
+    // Sincronización automática con tabla de ítems.
+    // H2: la sincronizacion sobrescribe dimensiones/peso del formData cuando el
+    // switch esta activo. Es una accion explicita del usuario (toggle), no un
+    // efecto en render; el calculo vive en `getCargoTotalsFromItems` (testeable).
     const [sincronizado, setSincronizado] = useState(true);
-    const [unidadPeso, setUnidadPeso] = useState<'kg' | 'Tn'>('kg');
+    const [unidadPeso, setUnidadPeso] = useState<PesoUnit>('kg');
+    // H2: borrador local del peso para no redondear el valor canonico (kg) al
+    // alternar kg/Tn. Solo se confirma al formData en onChange del input.
+    const [pesoDraft, setPesoDraft] = useState<string | null>(null);
 
-    // Consulta de mercaderías del viaje
-    const { data: mercaderiasPaged, isLoading: isLoadingMercaderias } = useViajeMercaderias(viaje.viajeID, 1, 50);
+    // M4: pagina amplia con aviso de truncado (ver CARGO_LIMITS.MANIFEST_PAGE_SIZE).
+    const { data: mercaderiasPaged, isLoading: isLoadingMercaderias, isSuccess: isMercaderiasSuccess } =
+        useViajeMercaderias(viaje.viajeID, 1, CARGO_LIMITS.MANIFEST_PAGE_SIZE);
     const { mercaderias: catalogoMercaderias } = useViajeCatalogOptions();
 
     // Mutaciones
@@ -59,44 +77,27 @@ export function CargoManifestSection({
     const [itemAncho, setItemAncho] = useState<number | ''>('');
     const [itemAlto, setItemAlto] = useState<number | ''>('');
 
-    // Modal de confirmación de eliminación
-    const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+    // Modal de confirmación de eliminación (M4: undefined = cerrado, nunca Dialog abierto sin salida)
+    const [deleteTargetId, setDeleteTargetId] = useState<number | undefined>(undefined);
 
-    // Lista consolidada de mercaderías (del query o del viaje si el query aún carga)
+    // M4: tras isSuccess la fuente es el query (aunque este vacio); el snapshot
+    // `viaje.viajeMercaderia` solo se usa mientras el query aun no resuelve.
     const items: ViajeMercaderia[] = useMemo(() => {
-        if (mercaderiasPaged?.items && mercaderiasPaged.items.length > 0) {
-            return mercaderiasPaged.items;
+        if (isMercaderiasSuccess) {
+            return mercaderiasPaged?.items ?? [];
         }
         return viaje.viajeMercaderia || [];
-    }, [mercaderiasPaged, viaje.viajeMercaderia]);
+    }, [isMercaderiasSuccess, mercaderiasPaged, viaje.viajeMercaderia]);
 
-    // Totales calculados a partir de los ítems de la tabla
-    const totalsFromItems = useMemo(() => {
-        if (items.length === 0) return null;
-
-        const maxLargo = Math.max(...items.map(m => Number(m.largo) || 0));
-        const maxAncho = Math.max(...items.map(m => Number(m.ancho) || 0));
-        const maxAlto = Math.max(...items.map(m => Number(m.alto) || 0));
-        const totalPeso = items.reduce((acc, m) => acc + (Number(m.peso) || 0), 0);
-
-        const result: {
-            largo: number | '';
-            ancho: number | '';
-            alto: number | '';
-            peso: number | '';
-            requiereEscolta: boolean;
-        } = {
-            largo: maxLargo > 0 ? maxLargo : '',
-            ancho: maxAncho > 0 ? maxAncho : '',
-            alto: maxAlto > 0 ? maxAlto : '',
-            peso: totalPeso > 0 ? totalPeso : '',
-            requiereEscolta: maxAncho >= 3.00,
-        };
-        return result;
-    }, [items]);
+    // H2: totales derivados en `model/cargo-limits.ts` (testeable).
+    const totalsFromItems = useMemo(() => getCargoTotalsFromItems(items), [items]);
+    const totalRegistrado = mercaderiasPaged?.total ?? items.length;
+    const isTruncado = totalRegistrado > items.length;
 
     const handleToggleSincronizado = (checked: boolean) => {
         setSincronizado(checked);
+        // H2: al confirmar desde la tabla se invalida el borrador del peso.
+        setPesoDraft(null);
         if (checked && totalsFromItems) {
             onChange({
                 largo: totalsFromItems.largo !== '' ? totalsFromItems.largo : formData.largo,
@@ -121,15 +122,19 @@ export function CargoManifestSection({
         return '0.0';
     }, [largoNum, anchoNum, altoNum]);
 
-    // Validación de sobredimensión
-    const esSobredimension = anchoNum > 2.60 || altoNum > 4.20 || largoNum > 20.50;
+    // H2: sobredimension y utilizacion derivadas de constantes de dominio y ejes del convoy.
+    const esSobredimension = isOversizedDimension(largoNum, anchoNum, altoNum);
+    const convoyCapacity = useMemo(
+        () => getConvoyCapacity(viaje.ejesTracto, viaje.ejesCarreta),
+        [viaje.ejesTracto, viaje.ejesCarreta]
+    );
+    const capacidadMaxCarreta = convoyCapacity.cargaUtilMaxKg;
+    const porcentajeUtil = getCarretaUtilization(pesoNum, capacidadMaxCarreta);
 
-    // Capacidad útil estimada
-    const capacidadMaxCarreta = 32000;
-    const porcentajeUtil = pesoNum > 0 ? ((pesoNum / capacidadMaxCarreta) * 100).toFixed(1) : '0';
-
-    // Manejador para agregar mercadería
-    const handleAddMercaderia = async () => {
+    // M1: el feedback (success/error) lo emite el hook generico
+    // (createGenericCrudHooks -> useGenericCrud). Aqui solo se valida el input
+    // local y se limpia el formulario en onSuccess; sin try/catch ni toast duplicado.
+    const handleAddMercaderia = () => {
         if (!selectedMercaderiaId) {
             showToast({ entity: 'Mercadería', action: 'create', isError: true, message: 'Seleccione un producto o mercadería del catálogo.' });
             return;
@@ -138,39 +143,37 @@ export function CargoManifestSection({
         const payload: CreateViajeMercaderiaDto = {
             mercaderiaID: Number(selectedMercaderiaId),
             descripcion: itemDescripcion.trim() || undefined,
-            tipoMedidaID: viaje.tipoMedidaID || 1, // Medida en Metros
-            tipoPesoID: viaje.tipoPesoID || 1,     // Peso en Kilogramos
+            tipoMedidaID: viaje.tipoMedidaID || CARGO_LIMITS.DEFAULT_TIPO_MEDIDA_ID,
+            tipoPesoID: viaje.tipoPesoID || CARGO_LIMITS.DEFAULT_TIPO_PESO_ID,
             largo: itemLargo === '' ? undefined : Number(itemLargo),
             ancho: itemAncho === '' ? undefined : Number(itemAncho),
             alto: itemAlto === '' ? undefined : Number(itemAlto),
             peso: itemPeso === '' ? undefined : Number(itemPeso),
         };
 
-        try {
-            await createMercaderiaMutation.mutateAsync({ viajeId: viaje.viajeID, data: payload });
-            showToast({ entity: 'Mercadería', action: 'create' });
-            // Limpiar formulario de entrada rápida
-            setSelectedMercaderiaId('');
-            setItemDescripcion('');
-            setItemPeso('');
-            setItemLargo('');
-            setItemAncho('');
-            setItemAlto('');
-        } catch {
-            showToast({ entity: 'Mercadería', action: 'create', isError: true });
-        }
+        createMercaderiaMutation.mutate(
+            { viajeId: viaje.viajeID, data: payload },
+            {
+                onSuccess: () => {
+                    setSelectedMercaderiaId('');
+                    setItemDescripcion('');
+                    setItemPeso('');
+                    setItemLargo('');
+                    setItemAncho('');
+                    setItemAlto('');
+                },
+            },
+        );
     };
 
-    // Manejador para eliminar mercadería
-    const handleConfirmDelete = async () => {
-        if (!deleteTargetId) return;
-        try {
-            await deleteMercaderiaMutation.mutateAsync({ id: deleteTargetId, viajeId: viaje.viajeID });
-            showToast({ entity: 'Mercadería', action: 'delete' });
-            setDeleteTargetId(null);
-        } catch {
-            showToast({ entity: 'Mercadería', action: 'delete', isError: true });
-        }
+    // M1/M4: sin try/catch local; el hook notifica. Cierra el Dialog solo en exito
+    // para no dejarlo abierto sin salida ante un id indefinido.
+    const handleConfirmDelete = () => {
+        if (deleteTargetId === undefined) return;
+        deleteMercaderiaMutation.mutate(
+            { id: deleteTargetId, viajeId: viaje.viajeID },
+            { onSuccess: () => setDeleteTargetId(undefined) },
+        );
     };
 
     return (
@@ -243,12 +246,6 @@ export function CargoManifestSection({
                         <Typography variant="subtitle2" sx={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, color: 'primary.dark' }}>
                             Configuración de Carga y Dimensiones Generales
                         </Typography>
-                        <Chip
-                            label="Edición Directa Activa"
-                            size="small"
-                            color="success"
-                            sx={{ height: 20, fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase' }}
-                        />
                     </Box>
 
                     {/* Sincronización Switch */}
@@ -303,15 +300,11 @@ export function CargoManifestSection({
                                     fullWidth
                                     size="small"
                                     type="number"
-                                    value={formData.peso === '' ? '' : (unidadPeso === 'Tn' ? (Number(formData.peso) / 1000) : formData.peso)}
+                                    value={pesoDraft ?? kgToDisplayUnit(formData.peso, unidadPeso)}
                                     onChange={(e) => {
                                         const raw = e.target.value;
-                                        if (raw === '') {
-                                            onChange({ peso: '' });
-                                        } else {
-                                            const num = Number(raw);
-                                            onChange({ peso: unidadPeso === 'Tn' ? num * 1000 : num });
-                                        }
+                                        setPesoDraft(raw);
+                                        onChange({ peso: displayUnitToKg(raw, unidadPeso) });
                                     }}
                                     disabled={isViewOnly || (sincronizado && items.length > 0)}
                                     slotProps={{
@@ -327,7 +320,13 @@ export function CargoManifestSection({
                                 <FormControl size="small" sx={{ width: 85 }}>
                                     <Select
                                         value={unidadPeso}
-                                        onChange={(e) => setUnidadPeso(e.target.value as 'kg' | 'Tn')}
+                                        onChange={(e) => {
+                                            const next = e.target.value === 'Tn' ? 'Tn' : 'kg';
+                                            // H2: al cambiar de unidad se descarta el borrador
+                                            // para mostrar la conversion exacta del valor canonico.
+                                            setPesoDraft(null);
+                                            setUnidadPeso(next);
+                                        }}
                                         sx={{ fontWeight: 700, fontSize: '0.8rem' }}
                                     >
                                         <MenuItem value="kg">kg</MenuItem>
@@ -335,9 +334,29 @@ export function CargoManifestSection({
                                     </Select>
                                 </FormControl>
                             </Box>
-                            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.72rem', mt: 'auto' }}>
-                                Capacidad máx. carreta: <strong>32,000 kg</strong> ({porcentajeUtil}% útil)
-                            </Typography>
+                            <Tooltip
+                                title={
+                                    <Box sx={{ p: 0.5 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, display: 'block', mb: 0.5 }}>
+                                            Configuración de Carga ({convoyCapacity.totalEjes} Ejes)
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ display: 'block' }}>
+                                            &bull; <strong>Peso Máx. Permitido (PBV):</strong> {convoyCapacity.pesoBrutoMaximoKg.toLocaleString()} kg ({convoyCapacity.totalEjes} ejes &times; {CARGO_LIMITS.PESO_POR_EJE_KG.toLocaleString()} kg)
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ display: 'block' }}>
+                                            &bull; <strong>Tara estimada convoy:</strong> {convoyCapacity.taraEstimadaKg.toLocaleString()} kg (Tracto: {convoyCapacity.ejesTracto} ejes, Carreta: {convoyCapacity.ejesCarreta} ejes)
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'primary.light', fontWeight: 700 }}>
+                                            &bull; <strong>Carga Útil Real Disponible:</strong> {convoyCapacity.cargaUtilMaxKg.toLocaleString()} kg
+                                        </Typography>
+                                    </Box>
+                                }
+                                arrow
+                            >
+                                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.72rem', mt: 'auto', cursor: 'help' }}>
+                                    Capacidad máx.: <strong>{convoyCapacity.cargaUtilMaxKg.toLocaleString()} kg</strong> ({porcentajeUtil}% útil) &bull; Máx. PBV: <strong>{convoyCapacity.pesoBrutoMaximoKg.toLocaleString()} kg</strong>
+                                </Typography>
+                            </Tooltip>
                         </Box>
                     </Grid>
 
@@ -398,8 +417,8 @@ export function CargoManifestSection({
                                 </Grid>
 
                                 <Grid size={{ xs: 4 }}>
-                                    <Typography variant="caption" sx={{ color: anchoNum > 2.60 ? 'warning.dark' : 'text.secondary', fontWeight: anchoNum > 2.60 ? 700 : 500, display: 'block', mb: 0.5, fontSize: '0.7rem' }}>
-                                        Ancho (m) {anchoNum > 2.60 ? '*' : ''}
+                                    <Typography variant="caption" sx={{ color: anchoNum > CARGO_LIMITS.MAX_NORMAL_WIDTH_M ? 'warning.dark' : 'text.secondary', fontWeight: anchoNum > CARGO_LIMITS.MAX_NORMAL_WIDTH_M ? 700 : 500, display: 'block', mb: 0.5, fontSize: '0.7rem' }}>
+                                        Ancho (m) {anchoNum > CARGO_LIMITS.MAX_NORMAL_WIDTH_M ? '*' : ''}
                                     </Typography>
                                     <TextField
                                         fullWidth
@@ -416,8 +435,8 @@ export function CargoManifestSection({
                                                     fontWeight: 700,
                                                     textAlign: 'center',
                                                     fontSize: '0.85rem',
-                                                    bgcolor: anchoNum > 2.60 ? alpha(theme.palette.warning.main, 0.1) : 'inherit',
-                                                    color: anchoNum > 2.60 ? 'warning.dark' : 'inherit',
+                                                    bgcolor: anchoNum > CARGO_LIMITS.MAX_NORMAL_WIDTH_M ? alpha(theme.palette.warning.main, 0.1) : 'inherit',
+                                                    color: anchoNum > CARGO_LIMITS.MAX_NORMAL_WIDTH_M ? 'warning.dark' : 'inherit',
                                                 }
                                             }
                                         }}
@@ -469,7 +488,7 @@ export function CargoManifestSection({
                         >
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', color: 'text.secondary', letterSpacing: 0.5 }}>
-                                    Volumen Total
+                                    Volumen Teórico
                                 </Typography>
                                 <Chip
                                     label="En Tiempo Real"
@@ -519,16 +538,6 @@ export function CargoManifestSection({
 
                     </Box>
 
-                    {esSobredimension && (
-                        <Chip
-                            icon={<WarningAmberRoundedIcon fontSize="small" />}
-                            label="Ancho excedente (> 2.60 m) o altura especial detectados"
-                            size="small"
-                            color="warning"
-                            variant="outlined"
-                            sx={{ fontWeight: 600, fontSize: '0.72rem' }}
-                        />
-                    )}
                 </Box>
             </Box>
 
@@ -567,7 +576,7 @@ export function CargoManifestSection({
                             <FormControl fullWidth size="small">
                                 <Select
                                     value={selectedMercaderiaId}
-                                    onChange={(e) => setSelectedMercaderiaId(e.target.value as number)}
+                                    onChange={(e) => setSelectedMercaderiaId(Number(e.target.value))}
                                     displayEmpty
                                     sx={{ bgcolor: 'background.paper', fontSize: '0.85rem' }}
                                 >
@@ -704,7 +713,7 @@ export function CargoManifestSection({
                                 const a = Number(item.ancho) || 0;
                                 const h = Number(item.alto) || 0;
                                 const itemVolumen = (l > 0 && a > 0 && h > 0) ? (l * a * h).toFixed(1) : '-';
-                                const itemRequiereEscolta = a >= 3.00;
+                                const itemRequiereEscolta = requiresEscort(a);
 
                                 return (
                                     <TableRow key={item.viajeMercaderiaID || index} hover>
@@ -748,7 +757,11 @@ export function CargoManifestSection({
                                                     <IconButton
                                                         size="small"
                                                         color="error"
-                                                        onClick={() => setDeleteTargetId(item.viajeMercaderiaID)}
+                                                        onClick={() => {
+                                                            if (item.viajeMercaderiaID !== undefined) {
+                                                                setDeleteTargetId(item.viajeMercaderiaID);
+                                                            }
+                                                        }}
                                                     >
                                                         <DeleteOutlineIcon fontSize="small" />
                                                     </IconButton>
@@ -763,16 +776,27 @@ export function CargoManifestSection({
                 </Table>
             </Box>
 
-            {/* Modal de confirmación de eliminación */}
-            <Dialog open={deleteTargetId !== null} onClose={() => setDeleteTargetId(null)}>
+            {isTruncado && (
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    Mostrando {items.length} de {totalRegistrado} ítems (página 1 de {CARGO_LIMITS.MANIFEST_PAGE_SIZE}). Ajuste el tamaño de página en el modelo si el manifiesto crece.
+                </Typography>
+            )}
+
+            {/* Modal de confirmación de eliminación (M4: abierto solo con id definido) */}
+            <Dialog open={deleteTargetId !== undefined} onClose={() => setDeleteTargetId(undefined)}>
                 <DialogTitle sx={{ fontWeight: 800 }}>Eliminar Mercadería</DialogTitle>
                 <DialogContent>
                     <Typography variant="body2">
                         ¿Está seguro de que desea eliminar este ítem del manifiesto de mercadería?
                     </Typography>
+                    {isTruncado && (
+                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>
+                            Mostrando {items.length} de {totalRegistrado} ítems registrados.
+                        </Typography>
+                    )}
                 </DialogContent>
                 <DialogActions sx={{ p: 2 }}>
-                    <Button onClick={() => setDeleteTargetId(null)} color="inherit">
+                    <Button onClick={() => setDeleteTargetId(undefined)} color="inherit">
                         Cancelar
                     </Button>
                     <Button

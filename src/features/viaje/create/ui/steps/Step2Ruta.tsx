@@ -126,7 +126,7 @@ export function Step2Ruta() {
                                         value={field.value}
                                         onChange={field.onChange}
                                         error={!!errors.origenID}
-                                        helperText={errors.origenID?.message as string}
+                                        helperText={errors.origenID?.message?.toString()}
                                         direction="column"
                                     />
                                 )}
@@ -184,7 +184,7 @@ export function Step2Ruta() {
                                         value={field.value}
                                         onChange={field.onChange}
                                         error={!!errors.destinoID}
-                                        helperText={errors.destinoID?.message as string}
+                                        helperText={errors.destinoID?.message?.toString()}
                                         direction="column"
                                     />
                                 )}

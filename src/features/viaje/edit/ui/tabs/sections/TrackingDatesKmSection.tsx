@@ -59,8 +59,8 @@ export function TrackingDatesKmSection({
 
     // Cálculo de distancia recorrida
     const kmInicio = typeof formData.kmInicio === 'number' ? formData.kmInicio : 0;
-    const kmLlegada = typeof formData.kmLlegada === 'number' ? formData.kmLlegada : 0;
-    const distanciaRecorrida = kmLlegada > kmInicio && kmInicio > 0 ? (kmLlegada - kmInicio) : null;
+    const kmLlegadaBase = typeof formData.kmLlegadaBase === 'number' ? formData.kmLlegadaBase : 0;
+    const distanciaRecorrida = kmLlegadaBase > kmInicio && kmInicio > 0 ? (kmLlegadaBase - kmInicio) : null;
 
     const tractoPlaca = viaje.esTractoTercero
         ? (viaje.placaTractoTercero || 'Tercero')
@@ -269,7 +269,7 @@ export function TrackingDatesKmSection({
                             <Grid size={{ xs: 4 }}>
                                 <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: alpha(theme.palette.text.primary, 0.02), border: '1px solid', borderColor: 'divider' }}>
                                     <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', color: 'text.secondary', display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
-                                        Km Retorno
+                                        Km en Base
                                     </Typography>
                                     <TextField
                                         fullWidth

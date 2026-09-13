@@ -196,7 +196,7 @@ export function Step4DetallesCarga({ options }: Props) {
                                             handleMercaderiaChange(field.id, index, Number(event.target.value));
                                         }}
                                         error={!!errors.mercaderias?.[index]?.mercaderiaID}
-                                        helperText={errors.mercaderias?.[index]?.mercaderiaID?.message as string}
+                                        helperText={errors.mercaderias?.[index]?.mercaderiaID?.message?.toString()}
                                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, py: 1 } }}
                                     />
                                         );
@@ -211,7 +211,7 @@ export function Step4DetallesCarga({ options }: Props) {
                                         placeholder="Ej: Repuestos frágiles para maquinaria pesada"
                                         {...register(`mercaderias.${index}.descripcion`)}
                                         error={!!errors.mercaderias?.[index]?.descripcion}
-                                        helperText={errors.mercaderias?.[index]?.descripcion?.message as string}
+                                        helperText={errors.mercaderias?.[index]?.descripcion?.message?.toString()}
                                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                     />
                                 </Grid>
@@ -234,7 +234,7 @@ export function Step4DetallesCarga({ options }: Props) {
                                                     options={tiposMedida || []}
                                                     defaultValue={defaultTipoMedidaId}
                                                     error={!!errors.mercaderias?.[index]?.tipoMedidaID}
-                                                    helperText={errors.mercaderias?.[index]?.tipoMedidaID?.message as string}
+                                                    helperText={errors.mercaderias?.[index]?.tipoMedidaID?.message?.toString()}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' } }}
                                                 />
                                             </Grid>
@@ -246,7 +246,7 @@ export function Step4DetallesCarga({ options }: Props) {
                                                     placeholder="0.00"
                                                     {...register(`mercaderias.${index}.largo`, { valueAsNumber: true })}
                                                     error={!!errors.mercaderias?.[index]?.largo}
-                                                    helperText={errors.mercaderias?.[index]?.largo?.message as string}
+                                                    helperText={errors.mercaderias?.[index]?.largo?.message?.toString()}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' } }}
                                                 />
                                             </Grid>
@@ -258,7 +258,7 @@ export function Step4DetallesCarga({ options }: Props) {
                                                     placeholder="0.00"
                                                     {...register(`mercaderias.${index}.ancho`, { valueAsNumber: true })}
                                                     error={!!errors.mercaderias?.[index]?.ancho}
-                                                    helperText={errors.mercaderias?.[index]?.ancho?.message as string}
+                                                    helperText={errors.mercaderias?.[index]?.ancho?.message?.toString()}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' } }}
                                                 />
                                             </Grid>
@@ -270,7 +270,7 @@ export function Step4DetallesCarga({ options }: Props) {
                                                     placeholder="0.00"
                                                     {...register(`mercaderias.${index}.alto`, { valueAsNumber: true })}
                                                     error={!!errors.mercaderias?.[index]?.alto}
-                                                    helperText={errors.mercaderias?.[index]?.alto?.message as string}
+                                                    helperText={errors.mercaderias?.[index]?.alto?.message?.toString()}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' } }}
                                                 />
                                             </Grid>
@@ -296,7 +296,7 @@ export function Step4DetallesCarga({ options }: Props) {
                                                     options={tiposPeso || []}
                                                     defaultValue={defaultTipoPesoId}
                                                     error={!!errors.mercaderias?.[index]?.tipoPesoID}
-                                                    helperText={errors.mercaderias?.[index]?.tipoPesoID?.message as string}
+                                                    helperText={errors.mercaderias?.[index]?.tipoPesoID?.message?.toString()}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' } }}
                                                 />
                                             </Grid>
@@ -308,7 +308,7 @@ export function Step4DetallesCarga({ options }: Props) {
                                                     placeholder="0.00"
                                                     {...register(`mercaderias.${index}.peso`, { valueAsNumber: true })}
                                                     error={!!errors.mercaderias?.[index]?.peso}
-                                                    helperText={errors.mercaderias?.[index]?.peso?.message as string}
+                                                    helperText={errors.mercaderias?.[index]?.peso?.message?.toString()}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' } }}
                                                 />
                                             </Grid>

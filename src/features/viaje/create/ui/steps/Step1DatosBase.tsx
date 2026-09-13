@@ -55,7 +55,7 @@ export function Step1DatosBase({ options }: Props) {
                             options={clientes || []}
                             defaultValue={0}
                             error={!!errors.clienteID}
-                            helperText={errors.clienteID?.message as string}
+                            helperText={errors.clienteID?.message?.toString()}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, py: 1 } }}
                         />
                     </Grid>
@@ -68,7 +68,7 @@ export function Step1DatosBase({ options }: Props) {
                             placeholder="Ej: COT-2023-044"
                             {...register('cotizacionID', { valueAsNumber: true })}
                             error={!!errors.cotizacionID}
-                            helperText={errors.cotizacionID?.message as string}
+                            helperText={errors.cotizacionID?.message?.toString()}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                         />
                     </Grid>
@@ -82,7 +82,7 @@ export function Step1DatosBase({ options }: Props) {
                             value={estadoAgendadoLabel}
                             disabled
                             error={!!errors.estadoID}
-                            helperText={(errors.estadoID?.message as string) || (
+                            helperText={(errors.estadoID?.message?.toString()) || (
                                 hasResolvedEstado
                                     ? 'El estado inicial se registra automáticamente como Agendado.'
                                     : 'Resolviendo el estado inicial del viaje...'
@@ -99,7 +99,7 @@ export function Step1DatosBase({ options }: Props) {
                             registration={register('fechaCarga')}
                             inputProps={{ min: fechaMinima, max: fechaMaxima }}
                             error={!!errors.fechaCarga}
-                            helperText={(errors.fechaCarga?.message as string) || `Seleccione una fecha entre ${fechaMinima} y ${fechaMaxima}.`}
+                            helperText={(errors.fechaCarga?.message?.toString()) || `Seleccione una fecha entre ${fechaMinima} y ${fechaMaxima}.`}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                         />
                     </Grid>

@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { useToast } from '@/shared/components/ui/Toast';
 import { viajeSchema } from '../model/schema';
-import { getCreateViajeDefaultValues, mapViajeToFormValues, normalizeViajeRecursos } from '../model/form-values';
+import { buildModalViajePayload, getCreateViajeDefaultValues, mapViajeToFormValues } from '../model/form-values';
 import { useViajeOptions } from './useViajeOptions';
 import { viajeApi } from '@/entities/viaje/api/viaje.api';
 import type { CreateViajeDto, Viaje } from '@/entities/viaje/model/types';
@@ -43,6 +43,10 @@ interface UseViajeFormReturn {
 }
 
 export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseViajeFormReturn {
+    // TODO(useCrudFormPageState-debt): este form tabulado (activeTab/createdViajeId/
+    // pendingData/confirm dialog) reensambla el estado que ya cubre el shared
+    // `useCrudFormPageState`. Migracion pendiente: mover activeTab/createdId/error
+    // al hook compartido sin cambiar el contrato de este hook (divergencia M3).
     const [activeTab, setActiveTab] = useState<number>(TAB_INDICES.GENERAL);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [pendingData, setPendingData] = useState<CreateViajeDto | null>(null);
@@ -94,15 +98,9 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
     }, [selectedCarretaID, carretas, setValue]);
 
     const mutation = useMutation<number | void, ApiMutationError, CreateViajeDto>({
+        // M3: limpieza compartida en `model/form-values.ts` (sin replicar normalize).
         mutationFn: (data: CreateViajeDto) => {
-            const cleanData = {
-                ...data,
-                ...normalizeViajeRecursos(data),
-                fechaLlegada: data.fechaLlegada || undefined,
-                fechaPartida: data.fechaPartida || undefined,
-                fechaDescarga: data.fechaDescarga || undefined,
-                fechaLlegadaBase: data.fechaLlegadaBase || undefined,
-            };
+            const cleanData = buildModalViajePayload(data);
 
             if (currentViajeId > 0) {
                 return viajeApi.update(currentViajeId, { ...cleanData, viajeID: currentViajeId });
@@ -170,15 +168,7 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
 
     const handleConfirmSave = () => {
         if (pendingData) {
-            const cleanData = {
-                ...pendingData,
-                ...normalizeViajeRecursos(pendingData),
-                fechaLlegada: pendingData.fechaLlegada || undefined,
-                fechaPartida: pendingData.fechaPartida || undefined,
-                fechaDescarga: pendingData.fechaDescarga || undefined,
-                fechaLlegadaBase: pendingData.fechaLlegadaBase || undefined
-            };
-            mutation.mutate(cleanData);
+            mutation.mutate(buildModalViajePayload(pendingData));
         }
     };
 
