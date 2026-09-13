@@ -8,6 +8,7 @@ import type { Viaje } from '@/entities/viaje/model/types';
 import type { SelectItem } from '@/shared/model/types';
 import type { ResumenGeneralData } from '../../../model/viaje-edit-tabs';
 import { resolveViajeEstadoProyectado } from '@entities/viaje/model/status';
+import { VIAJE_RECURSO_LABELS } from '@/features/viaje/model/viaje-resource-labels';
 
 interface TrackingDatesKmSectionProps {
     viaje: Viaje;
@@ -57,14 +58,19 @@ export function TrackingDatesKmSection({
         onChange(next);
     };
 
-    // Cálculo de distancia recorrida
+    // N2 (decision documentada): en este flujo "recorrida" = ciclo completo hasta
+    // el retorno a base (kmLlegadaBase - kmInicio). El tramo solo hasta destino se
+    // lee en el campo `Km Llegada`.
+    // TODO(backend-contract): confirmar con negocio/backend si la distancia oficial
+    // del viaje es a destino o con retorno, y mover el calculo al contrato si aplica.
     const kmInicio = typeof formData.kmInicio === 'number' ? formData.kmInicio : 0;
     const kmLlegadaBase = typeof formData.kmLlegadaBase === 'number' ? formData.kmLlegadaBase : 0;
     const distanciaRecorrida = kmLlegadaBase > kmInicio && kmInicio > 0 ? (kmLlegadaBase - kmInicio) : null;
 
+    // L-N2: fallbacks neutros del modulo de etiquetas (nunca hardcodes sueltos).
     const tractoPlaca = viaje.esTractoTercero
-        ? (viaje.placaTractoTercero || 'Tercero')
-        : (viaje.tracto?.placa || 'Sin asignar');
+        ? (viaje.placaTractoTercero || VIAJE_RECURSO_LABELS.sinPlaca)
+        : (viaje.tracto?.placa || VIAJE_RECURSO_LABELS.sinPlaca);
 
     return (
         <Paper
@@ -306,7 +312,7 @@ export function TrackingDatesKmSection({
                             }}
                         >
                             <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                                {distanciaRecorrida !== null ? 'Distancia recorrida registrada:' : 'Distancia estimada de ruta:'}
+                                Distancia total con retorno:
                             </Typography>
                             <Typography variant="subtitle2" sx={{ fontFamily: 'monospace', fontWeight: 800, color: 'primary.main' }}>
                                 {distanciaRecorrida !== null ? `${distanciaRecorrida.toLocaleString()} km` : 'En cálculo de odómetro'}

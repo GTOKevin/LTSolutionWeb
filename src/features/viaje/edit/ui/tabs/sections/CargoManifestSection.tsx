@@ -334,27 +334,33 @@ export function CargoManifestSection({
                                     </Select>
                                 </FormControl>
                             </Box>
+                            {/* N1: los valores del convoy son estimaciones frontend no vinculantes
+                                (ver TODO(backend-contract) en `model/cargo-limits.ts`). El tooltip
+                                mantiene el prefijo `est.` / `~` y el aviso referencial. */}
                             <Tooltip
                                 title={
                                     <Box sx={{ p: 0.5 }}>
                                         <Typography variant="caption" sx={{ fontWeight: 800, display: 'block', mb: 0.5 }}>
-                                            Configuración de Carga ({convoyCapacity.totalEjes} Ejes)
+                                            Capacidad estimada del convoy ({convoyCapacity.totalEjes} ejes)
                                         </Typography>
                                         <Typography variant="caption" sx={{ display: 'block' }}>
-                                            &bull; <strong>Peso Máx. Permitido (PBV):</strong> {convoyCapacity.pesoBrutoMaximoKg.toLocaleString()} kg ({convoyCapacity.totalEjes} ejes &times; {CARGO_LIMITS.PESO_POR_EJE_KG.toLocaleString()} kg)
+                                            &bull; <strong>PBV est.:</strong> ~{convoyCapacity.pesoBrutoMaximoKg.toLocaleString()} kg ({convoyCapacity.totalEjes} ejes &times; ~{CARGO_LIMITS.PESO_POR_EJE_KG.toLocaleString()} kg)
                                         </Typography>
                                         <Typography variant="caption" sx={{ display: 'block' }}>
-                                            &bull; <strong>Tara estimada convoy:</strong> {convoyCapacity.taraEstimadaKg.toLocaleString()} kg (Tracto: {convoyCapacity.ejesTracto} ejes, Carreta: {convoyCapacity.ejesCarreta} ejes)
+                                            &bull; <strong>Tara est. convoy:</strong> ~{convoyCapacity.taraEstimadaKg.toLocaleString()} kg (Tracto: {convoyCapacity.ejesTracto} ejes, Carreta: {convoyCapacity.ejesCarreta} ejes)
                                         </Typography>
                                         <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'primary.light', fontWeight: 700 }}>
-                                            &bull; <strong>Carga Útil Real Disponible:</strong> {convoyCapacity.cargaUtilMaxKg.toLocaleString()} kg
+                                            &bull; <strong>Carga útil est. disponible:</strong> ~{convoyCapacity.cargaUtilMaxKg.toLocaleString()} kg
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, fontStyle: 'italic' }}>
+                                            Estimación referencial no vinculante; no sustituye la normativa MTC ni el contrato backend.
                                         </Typography>
                                     </Box>
                                 }
                                 arrow
                             >
                                 <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.72rem', mt: 'auto', cursor: 'help' }}>
-                                    Capacidad máx.: <strong>{convoyCapacity.cargaUtilMaxKg.toLocaleString()} kg</strong> ({porcentajeUtil}% útil) &bull; Máx. PBV: <strong>{convoyCapacity.pesoBrutoMaximoKg.toLocaleString()} kg</strong>
+                                    Capacidad est.: <strong>~{convoyCapacity.cargaUtilMaxKg.toLocaleString()} kg</strong> ({porcentajeUtil}% útil ref.) &bull; PBV est.: <strong>~{convoyCapacity.pesoBrutoMaximoKg.toLocaleString()} kg</strong>
                                 </Typography>
                             </Tooltip>
                         </Box>
@@ -677,7 +683,12 @@ export function CargoManifestSection({
                 </Box>
             )}
 
-            {/* Tabla Interactiva de Ítems */}
+            {/* Tabla Interactiva de Ítems.
+                L-N4 (decision documentada): tabla hand-rolled intencional. `SharedTable`
+                impone paginacion MUI + `PagedResponse` y se oculta en movil (`xs: none`);
+                el manifiesto usa pagina fija (1x100) con aviso de truncado propio y debe
+                ser visible en todos los breakpoints, con celdas mono/chips por item.
+                Reevaluar si `SharedTable` gana render personalizado por columna y modo movil. */}
             <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2.5, overflow: 'hidden' }}>
                 <Table size="small">
                     <TableHead sx={{ bgcolor: alpha(theme.palette.text.primary, 0.03) }}>

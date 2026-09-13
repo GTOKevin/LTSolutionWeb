@@ -12,6 +12,7 @@ import {
 import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { ReloadIconButton } from '@/shared/components/ui/ReloadIconButton';
+import { useToast } from '@/shared/components/ui/Toast';
 import { Badge, Business, LocalShipping, RvHookup, WarningAmber } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeWizardFormData } from '../../../model/schema';
@@ -34,6 +35,7 @@ type RecursoTerceroFlag = 'esTractoTercero' | 'esCarretaTercero' | 'esConductorT
 
 export function Step3Recursos({ options }: Props) {
     const theme = useTheme();
+    const { showToast } = useToast();
     const { register, control, setValue, getValues, formState: { errors } } = useFormContext<ViajeWizardFormData>();
     const {
         tractos,
@@ -51,6 +53,12 @@ export function Step3Recursos({ options }: Props) {
     const esCarretaTercero = useWatch({ control, name: 'esCarretaTercero' });
     const esConductorTercero = useWatch({ control, name: 'esConductorTercero' });
     const hayRecursoTercero = Boolean(esTractoTercero || esCarretaTercero || esConductorTercero);
+
+    // L-N5: los refetch del wizard notifican al usuario con toast (el boton solo
+    // registra con `logger`; sin este handler el fallo seria invisible).
+    const handleReloadError = (message: string) => {
+        showToast({ entity: 'Recursos de viaje', action: 'error', isError: true, message });
+    };
 
     const handleTractoChange = (tractoID: number, onChangeField: (value: number) => void) => {
         onChangeField(tractoID);
@@ -197,6 +205,7 @@ export function Step3Recursos({ options }: Props) {
                                             tooltipTitle="Actualizar conductores"
                                             onReload={refetchColaboradores}
                                             isLoading={isFetchingColaboradores}
+                                            onReloadError={handleReloadError}
                                         />
                                     )}
                                 </Box>
@@ -261,6 +270,7 @@ export function Step3Recursos({ options }: Props) {
                                                 tooltipTitle="Actualizar tractos"
                                                 onReload={refetchTractos}
                                                 isLoading={isFetchingTractos}
+                                                onReloadError={handleReloadError}
                                             />
                                         )}
                                     </Box>
@@ -351,6 +361,7 @@ export function Step3Recursos({ options }: Props) {
                                                 tooltipTitle="Actualizar carretas"
                                                 onReload={refetchCarretas}
                                                 isLoading={isFetchingCarretas}
+                                                onReloadError={handleReloadError}
                                             />
                                         )}
                                     </Box>

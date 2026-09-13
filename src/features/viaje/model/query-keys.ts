@@ -16,11 +16,12 @@ export const VIAJE_QUERY_KEYS = {
     escoltas: (viajeId: number, page?: number, size?: number) => page && size ? ['viaje-escoltas', viajeId, page, size] as const : ['viaje-escoltas', viajeId] as const,
 
     // Options (Selects)
+    // L-N1: sin key `flotasEscolta` — el catalogo general estaba muerto; las
+    // escoltas por viaje usan `escolta(viajeId)`.
     options: {
         clientes: () => ['clientes-select'] as const,
         tractos: () => ['flota-select-tracto'] as const,
         carretas: () => ['flota-select-carreta'] as const,
-        flotasEscolta: () => ['flota-select-escolta'] as const,
         colaboradores: () => ['colaboradores-select'] as const,
         tiposMedida: () => ['maestro-select-medida'] as const,
         tiposPeso: () => ['maestro-select-peso'] as const,

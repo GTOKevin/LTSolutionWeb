@@ -3,7 +3,7 @@ import { saveAs } from 'file-saver';
 import type { ViajeGeneralReportDto } from '@entities/viaje/model/types';
 import { themePalette } from '@/shared/config/theme/palette';
 import { formatDecimalAmount } from '@/shared/utils/format-utils';
-import { hasReportValue } from '@/features/viaje/model/cargo-limits';
+import { hasReportValue } from './report-value';
 import { isFuelReportExpense } from './fuel-report-utils';
 
 export class ViajeGeneralExcelGenerator {

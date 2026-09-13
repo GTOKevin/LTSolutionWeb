@@ -3,30 +3,35 @@ import type { ViajeMercaderia } from '@/entities/viaje/model/types';
 /**
  * Reglas de dominio del manifiesto de carga (H2).
  *
- * Fuente actual: umbrales operativos inferidos de la UI historica.
- * TODO(backend-contract): confirmar con backend si escolta / sobredimension /
- * capacidad maxima de carreta deben venir del contrato (p. ej. desde
- * tipoMedida/tipoPeso o parametros de flota) en lugar de constantes frontend.
- * Hasta entonces estas constantes son la unica fuente y viven aqui (testeables),
- * no dispersas en el JSX.
+ * TODO(backend-contract): escolta / sobredimension / capacidad del convoy
+ * deberian venir del contrato backend (p. ej. desde tipoMedida/tipoPeso o
+ * parametros de flota). Hasta entonces estas constantes son ESTIMACIONES
+ * referenciales no vinculantes del frontend: la UI debe presentarlas con
+ * `estimado` / `~` y nunca como valores normativos exactos.
+ *
+ * Historico UI (N1): los umbrales heredados eran 2.60 m de ancho, 20.50 m de
+ * largo y 32,000 kg de referencia. Los valores actuales (3.0 / 17.5 / 29,000)
+ * son inferencias operativas sin fuente normativa verificada; no volver a
+ * cambiarlos en silencio: cualquier ajuste requiere fuente MTC o contrato
+ * backend y debe declararse en el PR.
  */
 export const CARGO_LIMITS = {
-    /** Ancho (m) a partir del cual se sugiere escolta. */
+    /** Ancho (m) estimado a partir del cual se sugiere escolta. */
     ESCORT_MIN_WIDTH_M: 3.0,
-    /** Ancho (m) maximo de carga normal antes de marcar sobredimension. */
+    /** Ancho (m) maximo estimado de carga normal antes de marcar sobredimension. */
     MAX_NORMAL_WIDTH_M: 3.0,
-    /** Alto (m) maximo de carga normal antes de marcar sobredimension. */
+    /** Alto (m) maximo estimado de carga normal antes de marcar sobredimension. */
     MAX_NORMAL_HEIGHT_M: 4.2,
-    /** Largo (m) maximo de carga normal antes de marcar sobredimension. */
+    /** Largo (m) maximo estimado de carga normal antes de marcar sobredimension. */
     MAX_NORMAL_LENGTH_M: 17.5,
-    /** Capacidad maxima bruta permitida por eje segun normativa MTC (8,000 kg/eje). */
+    /** Supuesto operativo de peso bruto por eje (8,000 kg/eje, referencia habitual MTC sin validar contra norma vigente). */
     PESO_POR_EJE_KG: 8000,
-    /** Tara promedio del tracto (rango habitual: 7,500 - 8,000 kg). */
+    /** Tara promedio estimada del tracto (rango habitual: 7,500 - 8,000 kg). */
     TARA_TRACTO_KG: 8000,
-    /** Tara promedio de la carreta/semirremolque (rango habitual: 10,000 - 12,000 kg). */
+    /** Tara promedio estimada de la carreta/semirremolque (rango habitual: 10,000 - 12,000 kg). */
     TARA_CARRETA_KG: 11000,
     /**
-     * Tara combinada promedio del convoy (rango habitual 18,000 - 20,000 kg, promedio: 19,000 kg).
+     * Tara combinada promedio estimada del convoy (rango habitual 18,000 - 20,000 kg, promedio: 19,000 kg).
      */
     TARA_CONVOY_PROMEDIO_KG: 19000,
     /** Ejes por defecto para tracto en configuracion tipica T3S3. */
@@ -34,9 +39,9 @@ export const CARGO_LIMITS = {
     /** Ejes por defecto para carreta en configuracion tipica T3S3. */
     DEFAULT_EJES_CARRETA: 3,
     /**
-     * Capacidad util estimada de referencia (kg) para configuracion estandar T3S3:
+     * Capacidad util de referencia estimada (kg) para configuracion estandar T3S3:
      * 6 ejes * 8,000 kg/eje = 48,000 kg peso bruto - 19,000 kg tara promedio = 29,000 kg carga util.
-     * (Rango operativo: 28,000 - 30,000 kg).
+     * (Rango operativo: 28,000 - 30,000 kg). Valor referencial, no normativo.
      */
     MAX_CARRETA_KG: 29000,
     /** Kilogramos por tonelada para la conversion visual kg/Tn. */
@@ -124,19 +129,21 @@ export interface ConvoyCapacityResult {
     totalEjes: number;
     ejesTracto: number;
     ejesCarreta: number;
-    /** Peso bruto vehicular maximo permitido por ejes (totalEjes * 8,000 kg). */
+    /** PBV estimado por ejes (totalEjes * 8,000 kg). Referencial, no normativo. */
     pesoBrutoMaximoKg: number;
     /** Tara estimada del convoy (tracto + carreta segun sus ejes). */
     taraEstimadaKg: number;
-    /** Carga util real disponible (pesoBrutoMaximoKg - taraEstimadaKg). */
+    /** Carga util estimada disponible (pesoBrutoMaximoKg - taraEstimadaKg). */
     cargaUtilMaxKg: number;
 }
 
 /**
- * Calcula la capacidad de carga del convoy segun la configuracion de ejes.
+ * Estima la capacidad de carga del convoy segun la configuracion de ejes.
+ * N1: estimacion frontend no vinculante (ver TODO(backend-contract) del
+ * modulo). No presentarla en UI como valor exacto ni normativo.
  *
- * Logica operativa:
- * 1. Cada eje permite 8,000 kg de peso bruto vehicular maximo (PBV):
+ * Supuestos operativos:
+ * 1. Cada eje aporta 8,000 kg de PBV estimado:
  *    - 8 ejes = 64,000 kg
  *    - 7 ejes = 56,000 kg
  *    - 6 ejes = 48,000 kg
@@ -145,7 +152,7 @@ export interface ConvoyCapacityResult {
  * 2. Tara estimada del convoy (tracto + carreta segun sus ejes):
  *    - Tracto: 2 ejes ~7,000 kg; 3 ejes ~8,000 kg; 4+ ejes ~9,500 kg
  *    - Carreta: 2 ejes ~8,000 kg; 3 ejes ~11,000 kg; 4 ejes ~14,000 kg; 5 ejes ~17,000 kg
- * 3. Carga util disponible = Peso bruto vehicular maximo - Tara estimada del convoy.
+ * 3. Carga util estimada disponible = PBV estimado - tara estimada del convoy.
  */
 export function getConvoyCapacity(
     ejesTracto?: number | null,
@@ -172,7 +179,8 @@ export function getConvoyCapacity(
 }
 
 /**
- * Calcula la capacidad util maxima de carga (kg) segun la configuracion de ejes del convoy.
+ * Estima la capacidad util maxima de carga (kg) segun la configuracion de ejes del convoy.
+ * N1: valor estimado no vinculante (ver nota del modulo).
  */
 export function getCapacidadMaxCarreta(
     ejesTracto?: number | null,
@@ -182,7 +190,8 @@ export function getCapacidadMaxCarreta(
 }
 
 /**
- * Retorna el peso bruto vehicular maximo permitido (totalEjes * 8,000 kg).
+ * Retorna el PBV estimado (totalEjes * 8,000 kg). N1: valor estimado no
+ * vinculante (ver nota del modulo).
  */
 export function getPesoBrutoMaximoPermitido(
     ejesTracto?: number | null,
@@ -191,7 +200,7 @@ export function getPesoBrutoMaximoPermitido(
     return getConvoyCapacity(ejesTracto, ejesCarreta).pesoBrutoMaximoKg;
 }
 
-/** % de capacidad util de carreta (0-100+, 1 decimal). */
+/** % de capacidad util estimada de carreta (0-100+, 1 decimal). */
 export function getCarretaUtilization(
     pesoKg: number,
     capacidadMaxKg: number = CARGO_LIMITS.MAX_CARRETA_KG,
@@ -199,13 +208,5 @@ export function getCarretaUtilization(
     if (!(pesoKg > 0) || !(capacidadMaxKg > 0)) return '0';
     return ((pesoKg / capacidadMaxKg) * 100).toFixed(1);
 }
-
-/** Centinela de "sin dato" usado en reportes Excel/PDF (L3). */
-export const VIAJE_SIN_DATO = '-' as const;
-
-/** Indica si un valor de reporte porta informacion (distinto de vacio o del centinela). */
-export function hasReportValue(value: unknown): boolean {
-    if (value === null || value === undefined) return false;
-    const text = String(value).trim();
-    return text.length > 0 && text !== VIAJE_SIN_DATO;
-}
+// L-N3: el centinela de reportes (`VIAJE_SIN_DATO` / `hasReportValue`) vive en
+// `features/viaje/reports/lib/report-value.ts`, no en este modulo de carga.

@@ -140,7 +140,6 @@ export function useViajeForm({ open, onClose, viaje }: UseViajeFormProps): UseVi
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.options.clientes() });
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.options.tractos() });
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.options.carretas() });
-            queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.options.flotasEscolta() });
             queryClient.invalidateQueries({ queryKey: VIAJE_QUERY_KEYS.options.colaboradores() });
 
             if (viaje) {

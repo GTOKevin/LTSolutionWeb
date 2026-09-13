@@ -9,7 +9,7 @@ import { VIAJE_QUERY_KEYS } from '../../model/query-keys';
  * M7: los selects de flota vienen truncados (50/100) porque el backend pagina.
  * TODO(search): anadir busqueda por texto (search-as-you-type) cuando los
  * catalogos superen el limite; hoy se documenta el tope en cada queryFn.
- * `refetchFlotasEscolta` se elimino por estar muerto: el tab de escoltas usa
+ * L-N1: sin query de `flotasEscolta` — el tab de escoltas usa
  * `useViajeEscoltaOptions(viajeId)` (opciones por viaje), no este catalogo.
  */
 export function useViajeResourceOptions(enabled: boolean = true) {
@@ -31,12 +31,6 @@ export function useViajeResourceOptions(enabled: boolean = true) {
         enabled,
     });
 
-    const { data: flotasEscolta, isFetching: isFetchingFlotasEscolta } = useQuery({
-        queryKey: VIAJE_QUERY_KEYS.options.flotasEscolta(),
-        queryFn: async () => (await flotaApi.getSelect(undefined, 100)) ?? [],
-        enabled,
-    });
-
     const { data: colaboradores, refetch: refetchColaboradores, isFetching: isFetchingColaboradores } = useQuery({
         queryKey: VIAJE_QUERY_KEYS.options.colaboradores(),
         queryFn: async () => (await colaboradorApi.getSelect()) ?? [],
@@ -47,7 +41,6 @@ export function useViajeResourceOptions(enabled: boolean = true) {
         clientes,
         tractos,
         carretas,
-        flotasEscolta,
         colaboradores,
         refetchClientes,
         isFetchingClientes,
@@ -55,7 +48,6 @@ export function useViajeResourceOptions(enabled: boolean = true) {
         isFetchingTractos,
         refetchCarretas,
         isFetchingCarretas,
-        isFetchingFlotasEscolta,
         refetchColaboradores,
         isFetchingColaboradores,
     };

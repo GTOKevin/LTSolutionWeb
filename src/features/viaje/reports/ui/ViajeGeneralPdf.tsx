@@ -2,7 +2,7 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { ViajeGeneralReportDto } from '@entities/viaje/model/types';
 import { themePalette } from '@/shared/config/theme/palette';
 import { formatCurrencyAmount, formatDecimalAmount } from '@/shared/utils/format-utils';
-import { hasReportValue } from '@/features/viaje/model/cargo-limits';
+import { hasReportValue } from '../lib/report-value';
 import { isFuelReportExpense } from '../lib/fuel-report-utils';
 
 // Register a standard font (Helvetica is built-in, but good practice to be explicit if using others)

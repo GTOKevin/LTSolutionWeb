@@ -15,6 +15,12 @@ import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 
+// L-N7 (deuda registrada, fuera del alcance del PR): endurecer assets/mapa —
+// (1) vendorizar los iconos de marcador (hoy desde raw.githubusercontent.com /
+// cdnjs, riesgo CSP/offline), (2) podar el import lateral de
+// `leaflet-routing-machine` si el step no lo usa, (3) mover `@keyframes pulse`
+// a `shared/styles/animations.ts`.
+
 type LeafletIconDefaultPrototype = L.Icon.Default & {
     _getIconUrl?: () => string;
 };
