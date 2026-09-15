@@ -169,6 +169,7 @@ export const viajeSchema = z.object({
     tipoPesoID: z.number().min(1, 'El tipo de peso es requerido'),
     estadoID: z.number().min(1, 'El estado es requerido'),
     carretaID: z.number().optional(),
+    sinCarreta: z.boolean().optional().default(false),
 
     // Recursos terceros
     esTractoTercero: z.boolean().optional().default(false),
@@ -257,8 +258,31 @@ export const viajeSchema = z.object({
         });
     }
 
-    // Carreta: propio exige selección; tercero exige placa + ejes manuales.
-    if (data.esCarretaTercero) {
+    // Carreta: sinCarreta prohibe cualquier dato de carreta; tercero exige
+    // placa + ejes manuales; propio exige selección.
+    if (data.sinCarreta) {
+        if (data.carretaID && data.carretaID > 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "No debe seleccionar una carreta cuando el viaje es sin carreta.",
+                path: ['carretaID']
+            });
+        }
+        if (data.placaCarretaTercero?.trim()) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "No debe registrar placa de carreta cuando el viaje es sin carreta.",
+                path: ['placaCarretaTercero']
+            });
+        }
+        if (data.ejesCarreta && data.ejesCarreta > 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "No debe registrar ejes de carreta cuando el viaje es sin carreta.",
+                path: ['ejesCarreta']
+            });
+        }
+    } else if (data.esCarretaTercero) {
         if (data.carretaID && data.carretaID > 0) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -312,8 +336,9 @@ export const viajeSchema = z.object({
         });
     }
 
-    // Empresa de transporte: obligatoria cuando algún recurso es tercero.
-    if (data.esTractoTercero || data.esCarretaTercero || data.esConductorTercero) {
+    // Empresa de transporte: obligatoria cuando algún recurso es tercero
+    // (la carreta tercera no cuenta cuando el viaje es sin carreta).
+    if (data.esTractoTercero || data.esConductorTercero || (data.esCarretaTercero && !data.sinCarreta)) {
         if (!data.empresaTransporte?.trim()) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,

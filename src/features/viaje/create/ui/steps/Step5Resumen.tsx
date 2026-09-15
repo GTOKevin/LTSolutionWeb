@@ -31,6 +31,9 @@ export function Step5Resumen({ options }: Props) {
     const getRecursoLabel = (esTercero: boolean | undefined, textoTercero: string | undefined, items?: SelectItem[], id?: number) =>
         esTercero ? `Tercero: ${textoTercero?.trim() || 'Sin registrar'}` : getLabel(items, id);
 
+    const getCarretaLabel = () =>
+        formData.sinCarreta ? '-' : getRecursoLabel(formData.esCarretaTercero, formData.placaCarretaTercero, options.carretas, formData.carretaID);
+
     const hayRecursoTercero = Boolean(formData.esTractoTercero || formData.esCarretaTercero || formData.esConductorTercero);
 
     const { data: origenDetails } = useUbigeoDetails(formData.origenID);
@@ -86,7 +89,7 @@ export function Step5Resumen({ options }: Props) {
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                             <Box><Typography variant="caption" color="text.secondary">Conductor</Typography><Typography variant="body2" fontWeight={600}>{getRecursoLabel(formData.esConductorTercero, formData.nombreConductorTercero, options.colaboradores, formData.colaboradorID)}</Typography></Box>
                             <Box><Typography variant="caption" color="text.secondary">Tracto Asignado</Typography><Typography variant="body2" fontWeight={600}>{getRecursoLabel(formData.esTractoTercero, formData.placaTractoTercero, options.tractos, formData.tractoID)}</Typography></Box>
-                            <Box><Typography variant="caption" color="text.secondary">Carreta Asignada</Typography><Typography variant="body2" fontWeight={600}>{getRecursoLabel(formData.esCarretaTercero, formData.placaCarretaTercero, options.carretas, formData.carretaID)}</Typography></Box>
+                            <Box><Typography variant="caption" color="text.secondary">Carreta Asignada</Typography><Typography variant="body2" fontWeight={600}>{getCarretaLabel()}</Typography></Box>
                             {hayRecursoTercero && (
                                 <Box><Typography variant="caption" color="text.secondary">Empresa de Transporte</Typography><Typography variant="body2" fontWeight={600}>{formData.empresaTransporte?.trim() || 'No especificada'}</Typography></Box>
                             )}

@@ -102,6 +102,7 @@ export function ViajeEditPageContent() {
             tractoID: viaje.esTractoTercero ? null : viaje.tractoID,
             carretaID: viaje.esCarretaTercero ? null : (viaje.carretaID ?? null),
             colaboradorID: viaje.esConductorTercero ? null : viaje.colaboradorID,
+            sinCarreta: viaje.sinCarreta ?? false,
             esTractoTercero: viaje.esTractoTercero ?? false,
             esCarretaTercero: viaje.esCarretaTercero ?? false,
             esConductorTercero: viaje.esConductorTercero ?? false,

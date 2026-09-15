@@ -17,6 +17,7 @@ export const VIAJE_RECURSO_LABELS = {
     sinEmpresaRegistrada: 'Sin empresa registrada',
     contratistaTransporte: 'Contratista de transporte',
     sinPlaca: 'Sin placa',
+    sinCarreta: 'Sin Carreta',
     sinCliente: 'Sin cliente asociado',
     origenNoRegistrado: 'Origen no registrado',
     destinoNoRegistrado: 'Destino no registrado',

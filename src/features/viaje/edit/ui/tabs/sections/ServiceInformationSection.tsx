@@ -25,8 +25,14 @@ const getConductorNombre = (viaje: Viaje) => {
 const getTractoPlaca = (viaje: Viaje) =>
     viaje.esTractoTercero ? (viaje.placaTractoTercero ?? VIAJE_RECURSO_LABELS.sinPlaca) : (viaje.tracto?.placa ?? VIAJE_RECURSO_LABELS.sinPlaca);
 
-const getCarretaPlaca = (viaje: Viaje) =>
-    viaje.esCarretaTercero ? (viaje.placaCarretaTercero ?? VIAJE_RECURSO_LABELS.sinPlaca) : (viaje.carreta?.placa ?? VIAJE_RECURSO_LABELS.sinPlaca);
+const getCarretaPlaca = (viaje: Viaje) => {
+    if (viaje.esCarretaTercero) {
+        return viaje.placaCarretaTercero ?? VIAJE_RECURSO_LABELS.sinPlaca
+    } else if (!viaje.esCarretaTercero && viaje.sinCarreta) {
+        return VIAJE_RECURSO_LABELS.sinCarreta
+    }
+    return (viaje.carreta?.placa ?? VIAJE_RECURSO_LABELS.sinPlaca)
+}
 
 const getUbigeoDescripcion = (ubigeo?: Viaje['origen']) =>
     [ubigeo?.departamento, ubigeo?.provincia, ubigeo?.distrito]

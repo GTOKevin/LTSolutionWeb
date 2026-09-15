@@ -291,6 +291,7 @@ export interface Viaje {
     tractoID: number | null;
     carretaID: number | null;
     colaboradorID: number | null;
+    sinCarreta?: boolean;
     esTractoTercero?: boolean;
     esCarretaTercero?: boolean;
     esConductorTercero?: boolean;
@@ -444,6 +445,7 @@ export interface ViajeDetail {
     tractoPlaca: string | null;
     carretaID: number | null;
     carretaPlaca: string | null;
+    sinCarreta?: boolean;
     esTractoTercero?: boolean;
     esCarretaTercero?: boolean;
     esConductorTercero?: boolean;
@@ -542,6 +544,7 @@ export interface CreateViajeDto {
     tractoID?: number | null;
     carretaID?: number | null;
     colaboradorID?: number | null;
+    sinCarreta?: boolean;
     esTractoTercero?: boolean;
     esCarretaTercero?: boolean;
     esConductorTercero?: boolean;
@@ -592,6 +595,7 @@ export interface ViajeFilters extends PagedFilters {
     tractoID?: number;
     carretaID?: number;
     estadoID?: number;
+    sinCarreta?: boolean | null;
 }
 
 
@@ -624,6 +628,7 @@ export interface ViajeListItem {
     tractoPlaca: string;
     carretaID?: number | null;
     carretaPlaca?: string;
+    sinCarreta?: boolean;
     esTractoTercero?: boolean;
     esCarretaTercero?: boolean;
     empresaTransporte?: string | null;
