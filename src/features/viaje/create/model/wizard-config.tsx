@@ -27,6 +27,7 @@ export function getViajeWizardStepFields(step: number): Path<ViajeWizardFormData
                 'tractoID',
                 'carretaID',
                 'colaboradorID',
+                'sinCarreta',
                 'esTractoTercero',
                 'esCarretaTercero',
                 'esConductorTercero',

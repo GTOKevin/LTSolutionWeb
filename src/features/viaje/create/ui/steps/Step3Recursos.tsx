@@ -52,7 +52,8 @@ export function Step3Recursos({ options }: Props) {
     const esTractoTercero = useWatch({ control, name: 'esTractoTercero' });
     const esCarretaTercero = useWatch({ control, name: 'esCarretaTercero' });
     const esConductorTercero = useWatch({ control, name: 'esConductorTercero' });
-    const hayRecursoTercero = Boolean(esTractoTercero || esCarretaTercero || esConductorTercero);
+    const sinCarreta = useWatch({ control, name: 'sinCarreta' });
+    const hayRecursoTercero = Boolean(esTractoTercero || esConductorTercero || (esCarretaTercero && !sinCarreta));
 
     // L-N5: los refetch del wizard notifican al usuario con toast (el boton solo
     // registra con `logger`; sin este handler el fallo seria invisible).
@@ -86,9 +87,29 @@ export function Step3Recursos({ options }: Props) {
     // si ya no queda ningun recurso tercero, la empresa de transporte.
     const clearEmpresaIfNoTerceros = () => {
         const values = getValues();
-        const quedaAlguno = Boolean(values.esTractoTercero || values.esCarretaTercero || values.esConductorTercero);
+        const quedaAlguno = Boolean(
+            values.esTractoTercero
+            || values.esConductorTercero
+            || (values.esCarretaTercero && !values.sinCarreta),
+        );
         if (!quedaAlguno) {
             setValue('empresaTransporte', '', { shouldValidate: true, shouldDirty: true });
+        }
+    };
+
+    // Sin carreta (solo create): al activar se limpia todo rastro de carreta
+    // (ID, placa, ejes, flag tercero); al desactivar solo se revalida.
+    const handleSinCarretaToggle = (checked: boolean, onChange: (value: boolean) => void) => {
+        onChange(checked);
+        if (checked) {
+            setValue('esCarretaTercero', false, { shouldValidate: true, shouldDirty: true });
+            setValue('carretaID', 0, { shouldValidate: true, shouldDirty: true });
+            setValue('placaCarretaTercero', '', { shouldValidate: true, shouldDirty: true });
+            setValue('ejesCarreta', 0, { shouldValidate: true, shouldDirty: true });
+            clearEmpresaIfNoTerceros();
+        } else {
+            setValue('carretaID', 0, { shouldValidate: true, shouldDirty: true });
+            setValue('ejesCarreta', 0, { shouldValidate: true, shouldDirty: true });
         }
     };
 
@@ -105,6 +126,8 @@ export function Step3Recursos({ options }: Props) {
     };
 
     const handleCarretaTerceroToggle = (checked: boolean, onChange: (value: boolean) => void) => {
+        // Con sinCarreta activo el toggle tercero se ignora (la UI lo deshabilita).
+        if (getValues('sinCarreta')) return;
         onChange(checked);
         if (checked) {
             setValue('carretaID', 0, { shouldValidate: true, shouldDirty: true });
@@ -129,6 +152,7 @@ export function Step3Recursos({ options }: Props) {
     const renderTerceroToggle = (
         name: RecursoTerceroFlag,
         onToggle: (checked: boolean, onChange: (value: boolean) => void) => void,
+        disabled = false,
     ) => (
         <Controller
             name={name}
@@ -140,6 +164,7 @@ export function Step3Recursos({ options }: Props) {
                             size="small"
                             color="primary"
                             checked={!!field.value}
+                            disabled={disabled}
                             onChange={(_, checked) => onToggle(checked, field.onChange)}
                         />
                     }
@@ -347,16 +372,48 @@ export function Step3Recursos({ options }: Props) {
                                         <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>Remolque / Semirremolque</Typography>
                                     </Box>
                                 </Box>
-                                {renderTerceroToggle('esCarretaTercero', handleCarretaTerceroToggle)}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                    <Controller
+                                        name="sinCarreta"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        size="small"
+                                                        color="warning"
+                                                        checked={!!field.value}
+                                                        onChange={(_, checked) => handleSinCarretaToggle(checked, field.onChange)}
+                                                    />
+                                                }
+                                                label={
+                                                    <Typography
+                                                        variant="caption"
+                                                        fontWeight={700}
+                                                        sx={{
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: 1,
+                                                            color: field.value ? 'warning.dark' : 'text.secondary',
+                                                        }}
+                                                    >
+                                                        Sin carreta
+                                                    </Typography>
+                                                }
+                                                sx={{ m: 0, alignSelf: 'flex-start' }}
+                                            />
+                                        )}
+                                    />
+                                    {renderTerceroToggle('esCarretaTercero', handleCarretaTerceroToggle, Boolean(sinCarreta))}
+                                </Box>
                             </Box>
 
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                 <Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                                         <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                                            {esCarretaTercero ? 'Placa de la Carreta (Tercero)' : 'Placa de la Carreta'} <Typography component="span" color="error">*</Typography>
+                                            {sinCarreta ? 'Placa de la Carreta' : (esCarretaTercero ? 'Placa de la Carreta (Tercero)' : 'Placa de la Carreta')} {!sinCarreta && <Typography component="span" color="error">*</Typography>}
                                         </Typography>
-                                        {!esCarretaTercero && refetchCarretas && (
+                                        {!sinCarreta && !esCarretaTercero && refetchCarretas && (
                                             <ReloadIconButton
                                                 tooltipTitle="Actualizar carretas"
                                                 onReload={refetchCarretas}
@@ -365,7 +422,15 @@ export function Step3Recursos({ options }: Props) {
                                             />
                                         )}
                                     </Box>
-                                    {esCarretaTercero ? (
+                                    {sinCarreta ? (
+                                        <TextField
+                                            fullWidth
+                                            size="medium"
+                                            value="-"
+                                            disabled
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                        />
+                                    ) : esCarretaTercero ? (
                                         <Controller
                                             name="placaCarretaTercero"
                                             control={control}
@@ -411,13 +476,14 @@ export function Step3Recursos({ options }: Props) {
                                 </Box>
                                 <Box>
                                     <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 1 }}>
-                                        Número de Ejes {esCarretaTercero && <Typography component="span" color="error">*</Typography>}
+                                        Número de Ejes {!sinCarreta && esCarretaTercero && <Typography component="span" color="error">*</Typography>}
                                     </Typography>
                                     <TextField
                                         type="number"
                                         fullWidth
                                         size="medium"
-                                        placeholder={esCarretaTercero ? 'Ingreso manual' : 'Automático'}
+                                        disabled={Boolean(sinCarreta)}
+                                        placeholder={sinCarreta ? 'No aplica' : (esCarretaTercero ? 'Ingreso manual' : 'Automático')}
                                         {...register('ejesCarreta', { valueAsNumber: true })}
                                         error={!!errors.ejesCarreta}
                                         helperText={errors.ejesCarreta?.message?.toString()}

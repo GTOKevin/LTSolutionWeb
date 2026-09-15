@@ -12,6 +12,7 @@ export interface ViajeRecursosNormalizable {
     tractoID?: number | null;
     carretaID?: number | null;
     colaboradorID?: number | null;
+    sinCarreta?: boolean;
     esTractoTercero?: boolean;
     esCarretaTercero?: boolean;
     esConductorTercero?: boolean;
@@ -35,15 +36,17 @@ export function normalizeViajeRecursos<T extends ViajeRecursosNormalizable>(
     data: T,
 ): Omit<T, keyof ViajeRecursosNormalizable> & ViajeRecursosNormalizable {
     const esTractoTercero = data.esTractoTercero === true;
-    const esCarretaTercero = data.esCarretaTercero === true;
+    const sinCarreta = data.sinCarreta === true;
+    const esCarretaTercero = sinCarreta ? false : data.esCarretaTercero === true;
     const esConductorTercero = data.esConductorTercero === true;
     const hayRecursosTerceros = esTractoTercero || esCarretaTercero || esConductorTercero;
 
     return {
         ...data,
         tractoID: esTractoTercero ? null : (data.tractoID && data.tractoID > 0 ? data.tractoID : undefined),
-        carretaID: esCarretaTercero ? null : (data.carretaID && data.carretaID > 0 ? data.carretaID : undefined),
+        carretaID: sinCarreta ? null : (esCarretaTercero ? null : (data.carretaID && data.carretaID > 0 ? data.carretaID : undefined)),
         colaboradorID: esConductorTercero ? null : (data.colaboradorID && data.colaboradorID > 0 ? data.colaboradorID : undefined),
+        sinCarreta,
         esTractoTercero,
         esCarretaTercero,
         esConductorTercero,
@@ -65,6 +68,7 @@ export function getCreateViajeDefaultValues(defaultEstadoId: number = 0): Create
         destinoID: 0,
         tractoID: 0,
         carretaID: 0,
+        sinCarreta: false,
         esTractoTercero: false,
         esCarretaTercero: false,
         esConductorTercero: false,
@@ -93,6 +97,7 @@ export function mapViajeToFormValues(viaje: Viaje): CreateViajeDto {
         tractoID: viaje.tractoID ?? 0,
         carretaID: viaje.carretaID ?? 0,
         colaboradorID: viaje.colaboradorID ?? 0,
+        sinCarreta: viaje.sinCarreta ?? false,
         esTractoTercero: viaje.esTractoTercero ?? false,
         esCarretaTercero: viaje.esCarretaTercero ?? false,
         esConductorTercero: viaje.esConductorTercero ?? false,
@@ -152,7 +157,7 @@ export function buildCreateViajePayload(data: CreateViajeDto): CreateViajeDto {
         cotizacionID: data.cotizacionID || undefined,
         direccionOrigen: data.direccionOrigen || undefined,
         direccionDestino: data.direccionDestino || undefined,
-        ejesCarreta: data.ejesCarreta || undefined,
+        ejesCarreta: data.sinCarreta ? undefined : (data.ejesCarreta || undefined),
         largo: data.largo ?? undefined,
         alto: data.alto ?? undefined,
         ancho: data.ancho ?? undefined,

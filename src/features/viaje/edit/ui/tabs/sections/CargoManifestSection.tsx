@@ -125,8 +125,8 @@ export function CargoManifestSection({
     // H2: sobredimension y utilizacion derivadas de constantes de dominio y ejes del convoy.
     const esSobredimension = isOversizedDimension(largoNum, anchoNum, altoNum);
     const convoyCapacity = useMemo(
-        () => getConvoyCapacity(viaje.ejesTracto, viaje.ejesCarreta),
-        [viaje.ejesTracto, viaje.ejesCarreta]
+        () => getConvoyCapacity(viaje.ejesTracto, viaje.ejesCarreta, viaje.sinCarreta),
+        [viaje.ejesTracto, viaje.ejesCarreta, viaje.sinCarreta]
     );
     const capacidadMaxCarreta = convoyCapacity.cargaUtilMaxKg;
     const porcentajeUtil = getCarretaUtilization(pesoNum, capacidadMaxCarreta);

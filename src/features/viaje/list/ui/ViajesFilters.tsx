@@ -153,6 +153,23 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
                         <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ ml: 1, mb: 0.5, display: 'block', textTransform: 'uppercase' }}>
+                            Carreta
+                        </Typography>
+                        <TextField
+                            select
+                            fullWidth
+                            size="small"
+                            value={filters.sinCarreta}
+                            onChange={(e) => onFilterChange('sinCarreta', Number(e.target.value))}
+                            InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
+                        >
+                            <MenuItem value={0}>Todas</MenuItem>
+                            <MenuItem value={1}>Solo con carreta</MenuItem>
+                            <MenuItem value={2}>Solo sin carreta</MenuItem>
+                        </TextField>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
+                        <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ ml: 1, mb: 0.5, display: 'block', textTransform: 'uppercase' }}>
                             Estado
                         </Typography>
                         <TextField

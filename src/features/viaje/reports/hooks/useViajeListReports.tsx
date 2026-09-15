@@ -27,6 +27,7 @@ export function useViajeListReports() {
                 colaboradorID: filters.colaboradorID,
                 tractoID: filters.tractoID,
                 carretaID: filters.carretaID,
+                sinCarreta: filters.sinCarreta ?? undefined,
                 search: filters.search,
             });
 
@@ -54,6 +55,7 @@ export function useViajeListReports() {
                 colaboradorID: filters.colaboradorID,
                 tractoID: filters.tractoID,
                 carretaID: filters.carretaID,
+                sinCarreta: filters.sinCarreta ?? undefined,
                 search: filters.search,
             });
             const blob = await pdf(

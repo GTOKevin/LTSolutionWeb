@@ -15,6 +15,7 @@ export const viajeApi = {
         if (filters.tractoID) params.append('tractoId', filters.tractoID.toString());
         if (filters.carretaID) params.append('carretaId', filters.carretaID.toString());
         if (filters.estadoID) params.append('estadoId', filters.estadoID.toString());
+        if (filters.sinCarreta === true || filters.sinCarreta === false) params.append('sinCarreta', String(filters.sinCarreta));
 
         const response = await http.get<PagedViajes>(`/viaje?${params.toString()}`);
         return response.data;
@@ -80,6 +81,7 @@ export const viajeApi = {
         colaboradorID?: number;
         tractoID?: number;
         carretaID?: number;
+        sinCarreta?: boolean | null;
         search?: string;
     }) => {
         const params = new URLSearchParams();
@@ -89,6 +91,7 @@ export const viajeApi = {
         if (filters.colaboradorID) params.append('colaboradorId', filters.colaboradorID.toString());
         if (filters.tractoID) params.append('tractoId', filters.tractoID.toString());
         if (filters.carretaID) params.append('carretaId', filters.carretaID.toString());
+        if (filters.sinCarreta === true || filters.sinCarreta === false) params.append('sinCarreta', String(filters.sinCarreta));
         if (filters.search) params.append('search', filters.search);
 
         const response = await http.get<import('../model/types').ViajeListReportDto[]>(`/viaje/report/list?${params.toString()}`);

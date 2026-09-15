@@ -157,8 +157,24 @@ export interface ConvoyCapacityResult {
 export function getConvoyCapacity(
     ejesTracto?: number | null,
     ejesCarreta?: number | null,
+    sinCarreta?: boolean | null,
 ): ConvoyCapacityResult {
     const ejesT = (ejesTracto && ejesTracto > 0) ? ejesTracto : CARGO_LIMITS.DEFAULT_EJES_TRACTO;
+    // Sin carreta: tara/max solo del tracto (sin TARA_CARRETA ni DEFAULT_EJES_CARRETA).
+    if (sinCarreta === true) {
+        const pesoBrutoMaximoKg = ejesT * CARGO_LIMITS.PESO_POR_EJE_KG;
+        const taraTracto = ejesT <= 2 ? 7000 : (ejesT === 3 ? CARGO_LIMITS.TARA_TRACTO_KG : 8000 + (ejesT - 3) * 1500);
+        const cargaUtilMaxKg = Math.max(0, pesoBrutoMaximoKg - taraTracto);
+
+        return {
+            totalEjes: ejesT,
+            ejesTracto: ejesT,
+            ejesCarreta: 0,
+            pesoBrutoMaximoKg,
+            taraEstimadaKg: taraTracto,
+            cargaUtilMaxKg,
+        };
+    }
     const ejesC = (ejesCarreta && ejesCarreta > 0) ? ejesCarreta : CARGO_LIMITS.DEFAULT_EJES_CARRETA;
     const totalEjes = ejesT + ejesC;
     const pesoBrutoMaximoKg = totalEjes * CARGO_LIMITS.PESO_POR_EJE_KG;
@@ -185,8 +201,9 @@ export function getConvoyCapacity(
 export function getCapacidadMaxCarreta(
     ejesTracto?: number | null,
     ejesCarreta?: number | null,
+    sinCarreta?: boolean | null,
 ): number {
-    return getConvoyCapacity(ejesTracto, ejesCarreta).cargaUtilMaxKg;
+    return getConvoyCapacity(ejesTracto, ejesCarreta, sinCarreta).cargaUtilMaxKg;
 }
 
 /**
@@ -196,8 +213,9 @@ export function getCapacidadMaxCarreta(
 export function getPesoBrutoMaximoPermitido(
     ejesTracto?: number | null,
     ejesCarreta?: number | null,
+    sinCarreta?: boolean | null,
 ): number {
-    return getConvoyCapacity(ejesTracto, ejesCarreta).pesoBrutoMaximoKg;
+    return getConvoyCapacity(ejesTracto, ejesCarreta, sinCarreta).pesoBrutoMaximoKg;
 }
 
 /** % de capacidad util estimada de carreta (0-100+, 1 decimal). */
