@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ERROR_MESSAGES, INPUT_VAL } from '@/shared/constants/constantes';
-import { IGV_RATE } from '@entities/factura/model/constants';
-import type { CreateFacturaDto, Factura, UpdateFacturaDto } from '@entities/factura/model/types';
+import { FACTURA_DETALLE_CONCEPTOS, IGV_RATE, TIPO_DETALLE_CODES } from '@entities/factura/model/constants';
+import type { CreateFacturaDetalleDto, CreateFacturaDto, Factura, UpdateFacturaDto } from '@entities/factura/model/types';
 import { addMonthsToDateISO, getCurrentDateISO, parseDateOnly, toInputDate } from '@shared/utils/date-utils';
 
 const FACTURA_VENCIMIENTO_DEFAULT_MONTHS = 1;
@@ -137,8 +137,17 @@ export function calculateFacturaDetalleSubtotalFromTotal(total: number, applyIgv
     return roundFacturaDetalleAmount(rawSubtotal, 6);
 }
 
+const detalleConceptoSchema = z.enum(FACTURA_DETALLE_CONCEPTOS);
+
+const optionalIdField = z.number().optional().nullable();
+
 const createFacturaDetalleSchemaBase = z.object({
-    viajeID: z.number().min(1, 'Viaje es requerido'),
+    concepto: detalleConceptoSchema,
+    viajeID: optionalIdField,
+    flotaID: optionalIdField,
+    fechaInicioSobrestadia: optionalStringField,
+    fechaFinSobrestadia: optionalStringField,
+    diasSobrestadia: z.number().optional().nullable(),
     descripcion: optionalStringField.refine(val => !val || INPUT_VAL.ALPHA_NUMERICO_ESPECIAL.test(val), {
         message: ERROR_MESSAGES.ALPHA_NUMERICO_ESPECIAL
     }),
@@ -155,6 +164,75 @@ const createFacturaDetalleSchemaBase = z.object({
             message: 'El total calculado debe ser mayor o igual a 10',
         });
     }
+
+    if (data.concepto === TIPO_DETALLE_CODES.FLETE) {
+        if (!data.viajeID || data.viajeID < 1) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['viajeID'],
+                message: 'Viaje es requerido para el flete por viaje',
+            });
+        }
+        return;
+    }
+
+    if (data.viajeID) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['viajeID'],
+            message: 'La sobreestadía no se liga a un viaje',
+        });
+    }
+
+    if (!data.descripcion || !data.descripcion.trim()) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['descripcion'],
+            message: 'La descripción es requerida para la sobreestadía',
+        });
+    }
+
+    const hasFechaInicio = Boolean(data.fechaInicioSobrestadia);
+    const hasFechaFin = Boolean(data.fechaFinSobrestadia);
+
+    if (hasFechaInicio !== hasFechaFin) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [hasFechaInicio ? 'fechaFinSobrestadia' : 'fechaInicioSobrestadia'],
+            message: 'Debe registrar ambas fechas de sobreestadía',
+        });
+        return;
+    }
+
+    if (!hasFechaInicio || !hasFechaFin) {
+        return;
+    }
+
+    const fechaInicio = parseDateOnly(data.fechaInicioSobrestadia!);
+    const fechaFin = parseDateOnly(data.fechaFinSobrestadia!);
+
+    if (!fechaInicio || !fechaFin) {
+        return;
+    }
+
+    if (fechaFin < fechaInicio) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['fechaFinSobrestadia'],
+            message: 'La fecha fin no puede ser anterior a la fecha inicio',
+        });
+        return;
+    }
+
+    const diasEsperados = calculateSobrestadiaDias(data.fechaInicioSobrestadia, data.fechaFinSobrestadia);
+
+    if (diasEsperados !== null && data.diasSobrestadia !== diasEsperados) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['diasSobrestadia'],
+            message: `Los días de sobreestadía deben ser ${diasEsperados} según las fechas`,
+        });
+    }
 });
 
 export const createFacturaDetalleSchema = createFacturaDetalleSchemaBase.transform((data) => ({
@@ -165,13 +243,56 @@ export const createFacturaDetalleSchema = createFacturaDetalleSchemaBase.transfo
 export type CreateFacturaDetalleForm = z.infer<typeof createFacturaDetalleSchema>;
 export type CreateFacturaDetalleFormInput = z.input<typeof createFacturaDetalleSchema>;
 
+/**
+ * Días de sobreestadía inclusivos (`fin - inicio + 1`).
+ * Devuelve `null` cuando las fechas no son interpretables o son inconsistentes.
+ */
+export function calculateSobrestadiaDias(fechaInicio?: string | null, fechaFin?: string | null): number | null {
+    const inicio = fechaInicio ? parseDateOnly(fechaInicio) : null;
+    const fin = fechaFin ? parseDateOnly(fechaFin) : null;
+
+    if (!inicio || !fin || fin < inicio) {
+        return null;
+    }
+
+    return Math.round((fin.getTime() - inicio.getTime()) / 86_400_000) + 1;
+}
+
 export function buildFacturaDetalleDefaultValues(monedaId: number): CreateFacturaDetalleFormInput {
     return {
+        concepto: TIPO_DETALLE_CODES.FLETE,
         viajeID: 0,
+        flotaID: 0,
+        fechaInicioSobrestadia: '',
+        fechaFinSobrestadia: '',
+        diasSobrestadia: null,
         descripcion: '',
         monedaID: monedaId,
         subTotal: 0,
         igv: true,
+    };
+}
+
+
+export function buildCreateFacturaDetallePayload(
+    data: CreateFacturaDetalleForm,
+    tipoDetalleId: number,
+): CreateFacturaDetalleDto {
+    const isSobrestadia = data.concepto === TIPO_DETALLE_CODES.SOBRESTADIA;
+
+    return {
+        viajeID: isSobrestadia ? null : (data.viajeID ?? null),
+        tipoDetalleID: tipoDetalleId,
+        tipoDetalleCodigo: data.concepto,
+        flotaID: isSobrestadia && data.flotaID ? data.flotaID : null,
+        fechaInicioSobrestadia: isSobrestadia ? (data.fechaInicioSobrestadia || null) : null,
+        fechaFinSobrestadia: isSobrestadia ? (data.fechaFinSobrestadia || null) : null,
+        diasSobrestadia: isSobrestadia ? (data.diasSobrestadia ?? null) : null,
+        descripcion: data.descripcion?.trim() || undefined,
+        monedaID: data.monedaID,
+        subTotal: data.subTotal,
+        igv: data.igv,
+        total: data.total,
     };
 }
 

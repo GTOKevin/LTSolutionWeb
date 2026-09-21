@@ -18,6 +18,7 @@ import {
 } from '@mui/icons-material';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import { IGV_RATE } from '@/entities/factura/model/constants';
+import { isSobrestadiaDetalle } from '@/entities/factura/model/detalle';
 import type { FacturaReporte, FacturaDetalleReporte } from '@/entities/factura/model/types';
 
 interface FacturaLineItemsTableProps {
@@ -112,7 +113,11 @@ export function FacturaLineItemsTable({ factura }: FacturaLineItemsTableProps) {
                         <TableBody>
                             {detalles.map((detalle, index) => {
                                 const isEven = index % 2 === 0;
-                                const ruta = detalle.origen && detalle.destino ? `${detalle.origen} → ${detalle.destino}` : null;
+                                const isSobrestadia = isSobrestadiaDetalle(detalle);
+                                const ruta = !isSobrestadia && detalle.origen && detalle.destino ? `${detalle.origen} → ${detalle.destino}` : null;
+                                const placa = isSobrestadia ? detalle.flotaPlaca : detalle.tractoPlaca;
+                                const dias = isSobrestadia && detalle.diasSobrestadia ? `${detalle.diasSobrestadia} día(s)` : null;
+                                const hasUnidadInfo = Boolean(ruta || placa || dias);
 
                                 return (
                                     <TableRow
@@ -126,7 +131,15 @@ export function FacturaLineItemsTable({ factura }: FacturaLineItemsTableProps) {
                                         <TableCell sx={{ verticalAlign: 'top', py: 2 }}>
                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    {detalle.viajeCodigo ? (
+                                                    {isSobrestadia ? (
+                                                        <Chip
+                                                            label="Sobrestadía"
+                                                            size="small"
+                                                            color="warning"
+                                                            variant="outlined"
+                                                            sx={{ fontWeight: 700, fontSize: '0.7rem', height: 22 }}
+                                                        />
+                                                    ) : detalle.viajeCodigo ? (
                                                         <Chip
                                                             label={`Viaje ${detalle.viajeCodigo}`}
                                                             size="small"
@@ -137,7 +150,7 @@ export function FacturaLineItemsTable({ factura }: FacturaLineItemsTableProps) {
                                                     ) : null}
                                                 </Box>
                                                 <Typography variant="body2" fontWeight={700} color="text.primary">
-                                                    {detalle.descripcion || 'Servicio de Flete'}
+                                                    {detalle.descripcion || (isSobrestadia ? 'Sobrestadía' : 'Servicio de Flete')}
                                                 </Typography>
                                             </Box>
                                         </TableCell>
@@ -148,12 +161,17 @@ export function FacturaLineItemsTable({ factura }: FacturaLineItemsTableProps) {
                                                     {ruta}
                                                 </Typography>
                                             )}
-                                            {detalle.tractoPlaca && (
-                                                <Typography variant="caption" color="text.secondary">
-                                                    Placa: {detalle.tractoPlaca}
+                                            {placa && (
+                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                                    Placa: {placa}
                                                 </Typography>
                                             )}
-                                            {!ruta && !detalle.tractoPlaca && (
+                                            {dias && (
+                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                                    {dias}
+                                                </Typography>
+                                            )}
+                                            {!hasUnidadInfo && (
                                                 <Typography variant="caption" color="text.disabled">
                                                     -
                                                 </Typography>

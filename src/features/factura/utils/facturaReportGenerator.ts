@@ -8,13 +8,39 @@ import {
     resolveCurrencyDisplay,
     resolveCurrencyExcelFormat,
 } from '@/shared/utils/format-utils';
-import type { FacturaReporte } from '@/entities/factura/model/types';
+import type { FacturaDetalleReporte, FacturaReporte } from '@/entities/factura/model/types';
+import { getFacturaDetalleReferencia, isSobrestadiaDetalle } from '@/entities/factura/model/detalle';
 
 type JsPdfWithAutoTable = jsPDF & {
     lastAutoTable?: {
         finalY: number;
     };
 };
+
+function buildDetalleReferencia(detalle: FacturaDetalleReporte): string {
+    const concepto = isSobrestadiaDetalle(detalle) ? 'Sobrestadía' : 'Flete';
+    const referencia = getFacturaDetalleReferencia(detalle, { preferViajeCodigo: true });
+
+    return referencia === '-' ? concepto : `${concepto} · ${referencia}`;
+}
+
+function buildDetalleDescripcion(detalle: FacturaDetalleReporte): string {
+    if (isSobrestadiaDetalle(detalle)) {
+        const fechas = detalle.fechaInicioSobrestadia || detalle.fechaFinSobrestadia
+            ? `Fechas: ${detalle.fechaInicioSobrestadia ? formatDateShort(detalle.fechaInicioSobrestadia) : '-'} - ${detalle.fechaFinSobrestadia ? formatDateShort(detalle.fechaFinSobrestadia) : '-'}`
+            : null;
+        const dias = detalle.diasSobrestadia ? `Días: ${detalle.diasSobrestadia}` : null;
+
+        return [
+            `Placa: ${detalle.flotaPlaca || '-'}`,
+            fechas,
+            dias,
+            detalle.descripcion || '',
+        ].filter((line): line is string => Boolean(line)).join('\n');
+    }
+
+    return `Ruta: ${detalle.origen || '-'} - ${detalle.destino || '-'}\nPlaca: ${detalle.tractoPlaca || '-'}\n${detalle.descripcion || ''}`;
+}
 
 export const generateFacturaPdf = (reportData: FacturaReporte) => {
     const doc = new jsPDF('p', 'pt', 'a4');
@@ -60,10 +86,10 @@ export const generateFacturaPdf = (reportData: FacturaReporte) => {
     
     autoTable(doc, {
         startY: currentY + 10,
-        head: [['Código Viaje', 'Descripción', 'SubTotal', 'IGV', 'Total']],
+        head: [['Concepto', 'Descripción', 'SubTotal', 'IGV', 'Total']],
         body: reportData.detalles.map(d => [
-            d.viajeCodigo || '-',
-            `Ruta: ${d.origen || '-'} - ${d.destino || '-'}\nPlaca: ${d.tractoPlaca || '-'}\n${d.descripcion || ''}`,
+            buildDetalleReferencia(d),
+            buildDetalleDescripcion(d),
             formatCurrencyAmount(d.subTotal, reportData.moneda),
             formatCurrencyAmount(d.igv, reportData.moneda),
             formatCurrencyAmount(d.total, reportData.moneda)
@@ -165,7 +191,7 @@ export const generateFacturaExcel = async (reportData: FacturaReporte) => {
     sheet.getCell(`A${row}`).font = { bold: true, size: 12 };
     
     row++;
-    const detailHeaders = ['Código Viaje', 'Descripción', 'SubTotal', 'IGV', 'Total'];
+    const detailHeaders = ['Concepto', 'Descripción', 'SubTotal', 'IGV', 'Total'];
     detailHeaders.forEach((header, index) => {
         const cell = sheet.getCell(row, index + 1);
         cell.value = header;
@@ -175,8 +201,8 @@ export const generateFacturaExcel = async (reportData: FacturaReporte) => {
 
     row++;
     reportData.detalles.forEach(d => {
-        sheet.getCell(row, 1).value = d.viajeCodigo || '-';
-        sheet.getCell(row, 2).value = `Ruta: ${d.origen || '-'} - ${d.destino || '-'}\nPlaca: ${d.tractoPlaca || '-'}\n${d.descripcion || ''}`;
+        sheet.getCell(row, 1).value = buildDetalleReferencia(d);
+        sheet.getCell(row, 2).value = buildDetalleDescripcion(d);
         sheet.getCell(row, 3).value = d.subTotal;
         sheet.getCell(row, 4).value = d.igv;
         sheet.getCell(row, 5).value = d.total;

@@ -1,14 +1,15 @@
 import { httpClient as http } from '@/shared/api/http';
-import type { 
-    Factura, 
-    FacturaFilters, 
-    PagedFacturas, 
-    CreateFacturaDto, 
+import type {
+    Factura,
+    FacturaFilters,
+    PagedFacturas,
+    CreateFacturaDto,
     UpdateFacturaDto,
     CreateFacturaDetalleDto,
     CreateFacturaPagoDto,
     FacturaDetalle,
     FacturaDetalleViajeOption,
+    FacturaDetalleFlotaOption,
     FacturaGuia,
     FacturaPago,
     FacturaReporte,
@@ -20,7 +21,7 @@ export const facturaApi = {
         const params = new URLSearchParams();
         params.append('page', filters.page.toString());
         params.append('size', filters.size.toString());
-        
+
         if (filters.search) params.append('search', filters.search);
         if (filters.estadoID) params.append('estadoID', filters.estadoID.toString());
         if (filters.fechaInicio) params.append('fechaInicio', filters.fechaInicio);
@@ -57,6 +58,18 @@ export const facturaApi = {
         if (params.limit) query.append('limit', params.limit.toString());
 
         const response = await http.get<FacturaDetalleViajeOption[]>(`/factura/detalle-viajes?${query.toString()}`);
+        return response.data;
+    },
+
+    getDetalleFlotas: async (params?: { search?: string; limit?: number }) => {
+        const query = new URLSearchParams();
+        if (params?.search) query.append('search', params.search);
+        if (params?.limit) query.append('limit', params.limit.toString());
+
+        const queryString = query.toString();
+        const response = await http.get<FacturaDetalleFlotaOption[]>(
+            `/factura/detalle-flotas${queryString ? `?${queryString}` : ''}`
+        );
         return response.data;
     },
 
