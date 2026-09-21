@@ -8,6 +8,11 @@ import type { FacturaDetalle } from './types';
 
 type DetalleConceptoInput = Pick<FacturaDetalle, 'tipoDetalleCodigo' | 'viajeID'> | null | undefined;
 
+type DetalleReferenciaInput = Pick<
+    FacturaDetalle,
+    'tipoDetalleCodigo' | 'viajeID' | 'flotaPlaca' | 'codigo'
+> & { viajeCodigo?: string | null };
+
 
 export function resolveFacturaDetalleConcepto(detalle: DetalleConceptoInput): TipoDetalleCodigo {
     if (matchesCatalogCandidate(detalle?.tipoDetalleCodigo, [TIPO_DETALLE_CODES.FLETE])) {
@@ -29,10 +34,18 @@ export function getFacturaDetalleConceptoLabel(detalle: DetalleConceptoInput): s
     return TIPO_DETALLE_LABELS[resolveFacturaDetalleConcepto(detalle)];
 }
 
-export function getFacturaDetalleReferencia(detalle: FacturaDetalle): string {
+
+export function getFacturaDetalleReferencia(
+    detalle: DetalleReferenciaInput,
+    options?: { preferViajeCodigo?: boolean }
+): string {
     if (isSobrestadiaDetalle(detalle)) {
         return detalle.flotaPlaca || '-';
     }
 
-    return detalle.codigo || '-';
+    const codigo = options?.preferViajeCodigo
+        ? detalle.viajeCodigo || detalle.codigo
+        : detalle.codigo;
+
+    return codigo || '-';
 }

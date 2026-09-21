@@ -141,18 +141,10 @@ export interface FacturaReporte extends Factura {
 
 export type PagedFacturas = PagedResponse<Factura>;
 
-/**
- * Payload para registrar un detalle de factura.
- *
- * - FLETE: `viajeID` requerido, `tipoDetalleID`/`tipoDetalleCodigo` = FLETE.
- * - SOBRESTADIA: `viajeID` en `null`, flota opcional y fechas/días de sobreestadía.
- *
- * `tipoDetalleID` se resuelve por código contra el catálogo maestro; se deja
- * opcional para tolerar latencia de integración (el backend puede inferirlo).
- */
+
 export interface CreateFacturaDetalleDto {
     viajeID: number | null;
-    tipoDetalleID?: number;
+    tipoDetalleID: number;
     tipoDetalleCodigo?: string;
     flotaID?: number | null;
     fechaInicioSobrestadia?: string | null;
@@ -162,6 +154,7 @@ export interface CreateFacturaDetalleDto {
     monedaID: number;
     subTotal: number;
     igv: boolean;
+    total: number;
 }
 
 export interface CreateFacturaPagoDto {

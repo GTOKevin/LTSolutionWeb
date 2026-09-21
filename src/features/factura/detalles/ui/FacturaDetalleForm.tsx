@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState, type MouseEvent } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+    Alert,
     Box,
     Button,
     Grid,
     TextField,
     MenuItem,
-    Checkbox,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -32,22 +32,22 @@ import { useQuery } from '@tanstack/react-query';
 import {
     buildCreateFacturaDetallePayload,
     buildFacturaDetalleDefaultValues,
-    calculateFacturaDetalleIgv,
-    calculateFacturaDetalleSubtotalFromTotal,
-    calculateFacturaDetalleTotal,
     calculateSobrestadiaDias,
     createFacturaDetalleSchema,
-    roundFacturaDetalleAmount,
     type CreateFacturaDetalleForm,
     type CreateFacturaDetalleFormInput,
 } from '../../model/schema';
 import { useCreateFacturaDetalle } from '../../hooks/useFacturaDetalleCrud';
 import { ViajeSelectorModal } from './ViajeSelectorModal';
+import { FacturaDetalleConceptoSelector } from './FacturaDetalleConceptoSelector';
+import { FacturaDetalleLiquidacionSection } from './FacturaDetalleLiquidacionSection';
+import { FacturaDetalleMonedaHeredada } from './FacturaDetalleMonedaHeredada';
+import { FacturaDetalleSectionHeader } from './FacturaDetalleSectionHeader';
 import { useFacturaDetalleFlotaOptions } from '../hooks/useFacturaDetalleFlotaOptions';
 import { useFacturaDetalleTipoOptions } from '../hooks/useFacturaDetalleTipoOptions';
 import type { FacturaDetalleViajeOption } from '@/entities/factura/model/types';
 import type { Moneda } from '@/entities/moneda/model/types';
-import { IGV_RATE, TIPO_DETALLE_CODES, TIPO_DETALLE_LABELS, type TipoDetalleCodigo } from '@entities/factura/model/constants';
+import { TIPO_DETALLE_CODES, TIPO_DETALLE_LABELS, type TipoDetalleCodigo } from '@entities/factura/model/constants';
 import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
 import { handleBackendErrors } from '@/shared/utils/form-validation';
@@ -74,11 +74,7 @@ export function FacturaDetalleForm({
     const createMutation = useCreateFacturaDetalle();
     const [isSelectorOpen, setIsSelectorOpen] = useState(false);
     const [selectedViajeText, setSelectedViajeText] = useState('');
-    const [subtotalInputValue, setSubtotalInputValue] = useState('');
-    const [isEditingSubtotal, setIsEditingSubtotal] = useState(false);
-    const [hasEditedSubtotal, setHasEditedSubtotal] = useState(false);
-    const [totalInputValue, setTotalInputValue] = useState('');
-    const [isEditingTotal, setIsEditingTotal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const defaultValues = useMemo(() => buildFacturaDetalleDefaultValues(monedaId), [monedaId]);
 
     const { control, handleSubmit, reset, setValue, setError, clearErrors, trigger, formState: { errors } } = useForm<CreateFacturaDetalleFormInput, unknown, CreateFacturaDetalleForm>({
@@ -92,29 +88,16 @@ export function FacturaDetalleForm({
     const fechaFinSobrestadia = useWatch({ control, name: 'fechaFinSobrestadia' });
     const diasSobrestadia = useWatch({ control, name: 'diasSobrestadia' });
 
-    const { resolveTipoDetalleId } = useFacturaDetalleTipoOptions();
-    const { options: flotaOptions, isLoading: isLoadingFlotas } = useFacturaDetalleFlotaOptions(open && isSobrestadia);
-
-    const subTotal = useWatch({ control, name: 'subTotal', defaultValue: 0 });
-    const applyIgv = true;
-    const displayTotal = useMemo(
-        () => calculateFacturaDetalleTotal(Number(subTotal) || 0, applyIgv),
-        [applyIgv, subTotal]
+    const { resolveTipoDetalleId, getTipoDetalleLabel, isLoading: isLoadingTipos } = useFacturaDetalleTipoOptions();
+    const getConceptoLabel = useMemo(
+        () => (codigo: TipoDetalleCodigo) => getTipoDetalleLabel(codigo) ?? TIPO_DETALLE_LABELS[codigo],
+        [getTipoDetalleLabel]
     );
-    const displayIgv = useMemo(
-        () => calculateFacturaDetalleIgv(Number(subTotal) || 0, applyIgv),
-        [applyIgv, subTotal]
-    );
-    const displaySubTotal = useMemo(
-        () => roundFacturaDetalleAmount(displayTotal - displayIgv),
-        [displayIgv, displayTotal]
-    );
-    const displayedSubtotalValue = isEditingSubtotal
-        ? subtotalInputValue
-        : (displayTotal === 0 ? '' : displaySubTotal.toFixed(2));
-    const displayedTotalValue = isEditingTotal
-        ? totalInputValue
-        : (displayTotal === 0 ? '' : displayTotal.toFixed(2));
+    const {
+        options: flotaOptions,
+        isLoading: isLoadingFlotas,
+        errorMessage: flotaOptionsError,
+    } = useFacturaDetalleFlotaOptions(open && isSobrestadia);
 
     useEffect(() => {
         if (open) {
@@ -122,11 +105,7 @@ export function FacturaDetalleForm({
 
             const resetUiTimer = window.setTimeout(() => {
                 setSelectedViajeText('');
-                setSubtotalInputValue('');
-                setIsEditingSubtotal(false);
-                setHasEditedSubtotal(false);
-                setTotalInputValue('');
-                setIsEditingTotal(false);
+                setErrorMessage(null);
             }, 0);
 
             return () => {
@@ -160,16 +139,18 @@ export function FacturaDetalleForm({
 
     const formattedCurrencyName = useMemo(() => {
         if (selectedMoneda) {
-            const nombre = selectedMoneda.nombre;
-            const codigo = 'codigo' in selectedMoneda ? selectedMoneda.codigo : undefined;
-            const simbolo = 'simbolo' in selectedMoneda ? selectedMoneda.simbolo : undefined;
-            if (codigo && simbolo) {
-                return `${nombre} (${codigo} - ${simbolo})`;
+            if ('nombre' in selectedMoneda) {
+                const { nombre, codigo, simbolo } = selectedMoneda;
+                if (codigo && simbolo) {
+                    return `${nombre} (${codigo} - ${simbolo})`;
+                }
+                if (simbolo) {
+                    return `${nombre} (${simbolo})`;
+                }
+                return nombre;
             }
-            if (simbolo) {
-                return `${nombre} (${simbolo})`;
-            }
-            return nombre;
+
+            return selectedMoneda.text;
         }
         return resolveCurrencyDisplay(moneda);
     }, [selectedMoneda, moneda]);
@@ -202,8 +183,8 @@ export function FacturaDetalleForm({
         };
     }, [fechaInicioSobrestadia, fechaFinSobrestadia, diasSobrestadia]);
 
-    const handleConceptoChange = (_: MouseEvent<HTMLElement>, next: TipoDetalleCodigo | null) => {
-        if (!next || next === concepto) {
+    const handleConceptoChange = (next: TipoDetalleCodigo) => {
+        if (next === concepto) {
             return;
         }
 
@@ -230,7 +211,17 @@ export function FacturaDetalleForm({
     };
 
     const onSubmit: SubmitHandler<CreateFacturaDetalleForm> = async (data) => {
+        setErrorMessage(null);
+
         const tipoDetalleId = resolveTipoDetalleId(data.concepto);
+        if (!tipoDetalleId) {
+            setErrorMessage(
+                isLoadingTipos
+                    ? 'Cargando tipos de detalle, intente nuevamente en un momento.'
+                    : 'No se pudo resolver el tipo de detalle desde el catálogo. Verifique la configuración del maestro e intente nuevamente.'
+            );
+            return;
+        }
 
         try {
             await createMutation.mutateAsync({
@@ -239,7 +230,10 @@ export function FacturaDetalleForm({
             });
             onClose();
         } catch (error) {
-            handleBackendErrors<CreateFacturaDetalleFormInput>(error, setError);
+            const genericError = handleBackendErrors<CreateFacturaDetalleFormInput>(error, setError);
+            if (genericError) {
+                setErrorMessage(genericError);
+            }
         }
     };
 
@@ -276,13 +270,13 @@ export function FacturaDetalleForm({
                         width: 42,
                         height: 42,
                         borderRadius: 2.5,
-                        bgcolor: isSobrestadia ? '#fffbeb' : alpha(theme.palette.primary.main, 0.08),
+                        bgcolor: isSobrestadia ? alpha(theme.palette.warning.main, 0.12) : alpha(theme.palette.primary.main, 0.08),
                         border: 1,
-                        borderColor: isSobrestadia ? '#fde68a' : alpha(theme.palette.primary.main, 0.2),
+                        borderColor: isSobrestadia ? alpha(theme.palette.warning.main, 0.4) : alpha(theme.palette.primary.main, 0.2),
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: isSobrestadia ? '#d97706' : 'primary.main',
+                        color: isSobrestadia ? theme.palette.warning.dark : 'primary.main',
                         boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
                     }}>
                         {isSobrestadia ? (
@@ -325,70 +319,18 @@ export function FacturaDetalleForm({
                     onSubmit={handleSubmit(onSubmit)}
                     sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}
                 >
+                    {errorMessage && (
+                        <Alert severity="error" onClose={() => setErrorMessage(null)}>
+                            {errorMessage}
+                        </Alert>
+                    )}
+
                     {/* SECTION A: TIPO DE CONCEPTO */}
-                    <Box component="section">
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.25 }}>
-                            <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                                Sección A • Tipo de Concepto
-                            </Typography>
-                            <Typography variant="caption" color="text.disabled">
-                                Selecciona la naturaleza del ítem
-                            </Typography>
-                        </Box>
-                        <Box sx={{
-                            p: 0.75,
-                            bgcolor: alpha(theme.palette.text.primary, 0.04),
-                            borderRadius: 2.5,
-                            border: 1,
-                            borderColor: 'divider',
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gap: 1,
-                        }}>
-                            <Button
-                                type="button"
-                                onClick={(e) => handleConceptoChange(e, TIPO_DETALLE_CODES.FLETE)}
-                                startIcon={<LocalShippingIcon fontSize="small" />}
-                                sx={{
-                                    py: 1.25,
-                                    borderRadius: 2,
-                                    fontWeight: concepto === TIPO_DETALLE_CODES.FLETE ? 700 : 500,
-                                    color: concepto === TIPO_DETALLE_CODES.FLETE ? 'primary.main' : 'text.secondary',
-                                    bgcolor: concepto === TIPO_DETALLE_CODES.FLETE ? 'background.paper' : 'transparent',
-                                    boxShadow: concepto === TIPO_DETALLE_CODES.FLETE ? '0 1px 3px 0 rgba(0, 0, 0, 0.1)' : 'none',
-                                    border: 1,
-                                    borderColor: concepto === TIPO_DETALLE_CODES.FLETE ? alpha(theme.palette.primary.main, 0.25) : 'transparent',
-                                    transition: 'all 0.2s ease',
-                                    '&:hover': {
-                                        bgcolor: concepto === TIPO_DETALLE_CODES.FLETE ? 'background.paper' : 'action.hover',
-                                    }
-                                }}
-                            >
-                                {TIPO_DETALLE_LABELS.FLETE}
-                            </Button>
-                            <Button
-                                type="button"
-                                onClick={(e) => handleConceptoChange(e, TIPO_DETALLE_CODES.SOBRESTADIA)}
-                                startIcon={<ScheduleIcon fontSize="small" />}
-                                sx={{
-                                    py: 1.25,
-                                    borderRadius: 2,
-                                    fontWeight: concepto === TIPO_DETALLE_CODES.SOBRESTADIA ? 700 : 500,
-                                    color: concepto === TIPO_DETALLE_CODES.SOBRESTADIA ? 'primary.main' : 'text.secondary',
-                                    bgcolor: concepto === TIPO_DETALLE_CODES.SOBRESTADIA ? 'background.paper' : 'transparent',
-                                    boxShadow: concepto === TIPO_DETALLE_CODES.SOBRESTADIA ? '0 1px 3px 0 rgba(0, 0, 0, 0.1)' : 'none',
-                                    border: 1,
-                                    borderColor: concepto === TIPO_DETALLE_CODES.SOBRESTADIA ? alpha(theme.palette.primary.main, 0.25) : 'transparent',
-                                    transition: 'all 0.2s ease',
-                                    '&:hover': {
-                                        bgcolor: concepto === TIPO_DETALLE_CODES.SOBRESTADIA ? 'background.paper' : 'action.hover',
-                                    }
-                                }}
-                            >
-                                {TIPO_DETALLE_LABELS.SOBRESTADIA}
-                            </Button>
-                        </Box>
-                    </Box>
+                    <FacturaDetalleConceptoSelector
+                        value={concepto}
+                        onChange={handleConceptoChange}
+                        getLabel={getConceptoLabel}
+                    />
 
                     {/* SECTION B: DATOS OPERATIVOS */}
                     {isSobrestadia ? (
@@ -408,25 +350,7 @@ export function FacturaDetalleForm({
                             }}
                         >
                             {/* Subheader Sección B */}
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, pb: 1.25, borderBottom: 1, borderColor: 'divider' }}>
-                                <Box sx={{
-                                    width: 22,
-                                    height: 22,
-                                    borderRadius: '50%',
-                                    bgcolor: alpha(theme.palette.primary.main, 0.12),
-                                    color: 'primary.main',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 800,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}>
-                                    1
-                                </Box>
-                                <Typography variant="caption" fontWeight={800} color="text.primary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                                    Datos Operativos de la Sobrestadía
-                                </Typography>
-                            </Box>
+                            <FacturaDetalleSectionHeader index={1} title="Datos Operativos de la Sobrestadía" />
 
                             {/* Fila 1: Grid Armonioso 3 Campos (Tracto 50%, Fecha Inicio 25%, Fecha Fin 25%) */}
                             <Grid container spacing={2}>
@@ -469,9 +393,15 @@ export function FacturaDetalleForm({
                                         )}
                                     />
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1 }}>
-                                        <InfoOutlinedIcon sx={{ fontSize: 14, color: 'text.disabled', flexShrink: 0 }} />
-                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.725rem' }}>
-                                            {isLoadingFlotas ? 'Cargando unidades...' : 'Asocie la unidad que sufrió la demora'}
+                                        <InfoOutlinedIcon sx={{ fontSize: 14, color: flotaOptionsError ? 'error.main' : 'text.disabled', flexShrink: 0 }} />
+                                        <Typography
+                                            variant="caption"
+                                            color={flotaOptionsError ? 'error.main' : 'text.secondary'}
+                                            sx={{ fontSize: '0.725rem' }}
+                                        >
+                                            {isLoadingFlotas
+                                                ? 'Cargando unidades...'
+                                                : flotaOptionsError ?? 'Asocie la unidad que sufrió la demora'}
                                         </Typography>
                                     </Box>
                                 </Grid>
@@ -586,22 +516,22 @@ export function FacturaDetalleForm({
                                                 fontWeight: 600,
                                                 bgcolor:
                                                     daysMetricStatus.type === 'success'
-                                                        ? '#ecfdf5'
+                                                        ? alpha(theme.palette.success.main, 0.12)
                                                         : daysMetricStatus.type === 'error'
-                                                            ? '#fef2f2'
+                                                            ? alpha(theme.palette.error.main, 0.08)
                                                             : 'action.hover',
                                                 color:
                                                     daysMetricStatus.type === 'success'
-                                                        ? '#047857'
+                                                        ? theme.palette.success.dark
                                                         : daysMetricStatus.type === 'error'
-                                                            ? '#b91c1c'
+                                                            ? theme.palette.error.dark
                                                             : 'text.secondary',
                                                 border: 1,
                                                 borderColor:
                                                     daysMetricStatus.type === 'success'
-                                                        ? '#a7f3d0'
+                                                        ? alpha(theme.palette.success.main, 0.35)
                                                         : daysMetricStatus.type === 'error'
-                                                            ? '#fecaca'
+                                                            ? alpha(theme.palette.error.main, 0.3)
                                                             : 'divider',
                                             }}
                                         >
@@ -612,9 +542,9 @@ export function FacturaDetalleForm({
                                                     borderRadius: '50%',
                                                     bgcolor:
                                                         daysMetricStatus.type === 'success'
-                                                            ? '#10b981'
+                                                            ? theme.palette.success.main
                                                             : daysMetricStatus.type === 'error'
-                                                                ? '#ef4444'
+                                                                ? theme.palette.error.main
                                                                 : 'text.disabled',
                                                 }}
                                             />
@@ -667,46 +597,7 @@ export function FacturaDetalleForm({
                             </Grid>
 
                             {/* Fila 3: Selector Moneda Heredada */}
-                            <Box
-                                sx={{
-                                    pt: 2,
-                                    borderTop: 1,
-                                    borderColor: 'divider',
-                                    display: 'flex',
-                                    flexDirection: { xs: 'column', sm: 'row' },
-                                    alignItems: { xs: 'flex-start', sm: 'center' },
-                                    justifyContent: 'space-between',
-                                    gap: 1.5,
-                                }}
-                            >
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                        Moneda de Facturación:
-                                    </Typography>
-                                    <Paper
-                                        elevation={0}
-                                        sx={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: 1,
-                                            px: 1.5,
-                                            py: 0.5,
-                                            borderRadius: 2,
-                                            border: 1,
-                                            borderColor: 'divider',
-                                            bgcolor: 'background.paper',
-                                        }}
-                                    >
-                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
-                                        <Typography variant="caption" fontWeight={700} color="text.primary">
-                                            {formattedCurrencyName}
-                                        </Typography>
-                                    </Paper>
-                                </Box>
-                                <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>
-                                    Heredado de la cabecera del comprobante
-                                </Typography>
-                            </Box>
+                            <FacturaDetalleMonedaHeredada currencyName={formattedCurrencyName} />
                         </Paper>
                     ) : (
                         /* SECTION B FLETE: Selección de Viaje y Descripción */
@@ -724,25 +615,7 @@ export function FacturaDetalleForm({
                                 gap: 2.5,
                             }}
                         >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, pb: 1.25, borderBottom: 1, borderColor: 'divider' }}>
-                                <Box sx={{
-                                    width: 22,
-                                    height: 22,
-                                    borderRadius: '50%',
-                                    bgcolor: alpha(theme.palette.primary.main, 0.12),
-                                    color: 'primary.main',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 800,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}>
-                                    1
-                                </Box>
-                                <Typography variant="caption" fontWeight={800} color="text.primary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                                    Datos Operativos del Flete
-                                </Typography>
-                            </Box>
+                            <FacturaDetalleSectionHeader index={1} title="Datos Operativos del Flete" />
 
                             <Grid container spacing={2}>
                                 <Grid size={{ xs: 12 }}>
@@ -818,346 +691,18 @@ export function FacturaDetalleForm({
                             </Grid>
 
                             {/* Moneda heredada */}
-                            <Box
-                                sx={{
-                                    pt: 2,
-                                    borderTop: 1,
-                                    borderColor: 'divider',
-                                    display: 'flex',
-                                    flexDirection: { xs: 'column', sm: 'row' },
-                                    alignItems: { xs: 'flex-start', sm: 'center' },
-                                    justifyContent: 'space-between',
-                                    gap: 1.5,
-                                }}
-                            >
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                        Moneda de Facturación:
-                                    </Typography>
-                                    <Paper
-                                        elevation={0}
-                                        sx={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: 1,
-                                            px: 1.5,
-                                            py: 0.5,
-                                            borderRadius: 2,
-                                            border: 1,
-                                            borderColor: 'divider',
-                                            bgcolor: 'background.paper',
-                                        }}
-                                    >
-                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
-                                        <Typography variant="caption" fontWeight={700} color="text.primary">
-                                            {formattedCurrencyName}
-                                        </Typography>
-                                    </Paper>
-                                </Box>
-                                <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>
-                                    Heredado de la cabecera del comprobante
-                                </Typography>
-                            </Box>
+                            <FacturaDetalleMonedaHeredada currencyName={formattedCurrencyName} />
                         </Paper>
                     )}
 
                     {/* SECTION C: LIQUIDACIÓN ECONÓMICA */}
-                    <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                                <Box sx={{
-                                    width: 22,
-                                    height: 22,
-                                    borderRadius: '50%',
-                                    bgcolor: '#d1fae5',
-                                    color: '#047857',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 800,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}>
-                                    2
-                                </Box>
-                                <Typography variant="caption" fontWeight={800} color="text.primary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                                    Liquidación Económica
-                                </Typography>
-                            </Box>
-                            <Typography variant="caption" color="text.secondary">
-                                Base imponible e impuestos
-                            </Typography>
-                        </Box>
-
-                        {/* Bento Grid de Cálculos Financieros */}
-                        <Grid container spacing={2}>
-                            {/* Card 1: Subtotal (Base Imponible) */}
-                            <Grid size={{ xs: 12, md: 4 }}>
-                                <Paper
-                                    elevation={0}
-                                    sx={{
-                                        p: 2.5,
-                                        height: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'space-between',
-                                        border: 1,
-                                        borderColor: 'divider',
-                                        borderRadius: 3,
-                                        bgcolor: 'background.paper',
-                                        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
-                                        transition: 'border-color 0.2s ease',
-                                        '&:hover': {
-                                            borderColor: 'text.secondary',
-                                        },
-                                    }}
-                                >
-                                    <Box>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                                            <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                                Subtotal
-                                            </Typography>
-                                            <Chip
-                                                label="Sin IGV"
-                                                size="small"
-                                                sx={{ height: 20, fontSize: '0.625rem', fontFamily: 'monospace', fontWeight: 600, bgcolor: 'action.hover', color: 'text.secondary' }}
-                                            />
-                                        </Box>
-                                        <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.725rem' }}>
-                                            Importe neto calculado
-                                        </Typography>
-                                    </Box>
-
-                                    <Box sx={{ mt: 3, pt: 1.5, borderTop: 1, borderColor: 'divider', display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                                        <Typography variant="subtitle1" fontWeight={700} color="text.secondary">
-                                            {currencyDisplay}
-                                        </Typography>
-                                        <Controller
-                                            name="subTotal"
-                                            control={control}
-                                            render={({ fieldState: { error } }) => (
-                                                <TextField
-                                                    type="number"
-                                                    fullWidth
-                                                    variant="standard"
-                                                    error={!!error}
-                                                    value={displayedSubtotalValue}
-                                                    onFocus={() => {
-                                                        setIsEditingSubtotal(true);
-                                                        setHasEditedSubtotal(false);
-                                                        setSubtotalInputValue(displayedSubtotalValue);
-                                                    }}
-                                                    onChange={(event) => {
-                                                        const nextValue = event.target.value;
-                                                        setSubtotalInputValue(nextValue);
-                                                        setHasEditedSubtotal(true);
-
-                                                        if (nextValue === '') {
-                                                            setValue('subTotal', '' as CreateFacturaDetalleFormInput['subTotal'], {
-                                                                shouldDirty: true,
-                                                                shouldValidate: false,
-                                                            });
-                                                            return;
-                                                        }
-
-                                                        const parsedSubtotal = Number(nextValue);
-                                                        if (Number.isNaN(parsedSubtotal)) {
-                                                            return;
-                                                        }
-
-                                                        setValue('subTotal', parsedSubtotal, {
-                                                            shouldDirty: true,
-                                                            shouldValidate: false,
-                                                        });
-                                                    }}
-                                                    onBlur={async () => {
-                                                        setIsEditingSubtotal(false);
-                                                        if (hasEditedSubtotal) {
-                                                            await trigger('subTotal');
-                                                        }
-                                                    }}
-                                                    inputProps={{
-                                                        step: '0.01',
-                                                        min: '0',
-                                                        style: {
-                                                            fontSize: '1.5rem',
-                                                            fontWeight: 700,
-                                                            fontFamily: 'monospace',
-                                                            padding: 0,
-                                                        },
-                                                    }}
-                                                    InputProps={{ disableUnderline: true }}
-                                                />
-                                            )}
-                                        />
-                                    </Box>
-                                </Paper>
-                            </Grid>
-
-                            {/* Card 2: IGV 18% */}
-                            <Grid size={{ xs: 12, md: 4 }}>
-                                <Paper
-                                    elevation={0}
-                                    sx={{
-                                        p: 2.5,
-                                        height: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'space-between',
-                                        border: 1,
-                                        borderColor: 'divider',
-                                        borderRadius: 3,
-                                        bgcolor: 'background.paper',
-                                        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
-                                        transition: 'border-color 0.2s ease',
-                                        '&:hover': {
-                                            borderColor: 'text.secondary',
-                                        },
-                                    }}
-                                >
-                                    <Box>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                                            <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                                IGV ({IGV_RATE * 100}%)
-                                            </Typography>
-                                            <Controller
-                                                name="igv"
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <Checkbox
-                                                        checked={field.value}
-                                                        disabled
-                                                        size="small"
-                                                        sx={{ p: 0 }}
-                                                    />
-                                                )}
-                                            />
-                                        </Box>
-                                        <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.725rem' }}>
-                                            Obligatorio para el detalle de factura
-                                        </Typography>
-                                    </Box>
-
-                                    <Box sx={{ mt: 3, pt: 1.5, borderTop: 1, borderColor: 'divider', display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                                        <Typography variant="subtitle1" fontWeight={700} color="text.secondary">
-                                            {currencyDisplay}
-                                        </Typography>
-                                        <Typography
-                                            variant="h5"
-                                            sx={{
-                                                fontWeight: 700,
-                                                fontFamily: 'monospace',
-                                                color: 'text.primary',
-                                                lineHeight: 1.2,
-                                            }}
-                                        >
-                                            {displayIgv.toFixed(2)}
-                                        </Typography>
-                                    </Box>
-                                </Paper>
-                            </Grid>
-
-                            {/* Card 3: Total Final (Highlight azul primario) */}
-                            <Grid size={{ xs: 12, md: 4 }}>
-                                <Paper
-                                    elevation={0}
-                                    sx={{
-                                        p: 2.5,
-                                        height: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'space-between',
-                                        borderRadius: 3,
-                                        border: 2,
-                                        borderColor: errors.subTotal ? 'error.main' : alpha(theme.palette.primary.main, 0.4),
-                                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                    }}
-                                >
-                                    <Box>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                                            <Typography variant="caption" fontWeight={800} color={errors.subTotal ? 'error.main' : 'primary.main'} sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                                Total Final
-                                            </Typography>
-                                            <Chip
-                                                label="Total a pagar"
-                                                size="small"
-                                                color={errors.subTotal ? 'error' : 'primary'}
-                                                sx={{ height: 20, fontSize: '0.625rem', fontWeight: 700 }}
-                                            />
-                                        </Box>
-                                        <Typography variant="caption" color={errors.subTotal ? 'error.main' : 'primary.main'} sx={{ opacity: 0.8, fontSize: '0.725rem' }}>
-                                            Puedes editar el monto final directamente
-                                        </Typography>
-                                    </Box>
-
-                                    <Box sx={{ mt: 3, pt: 1.5, borderTop: 1, borderColor: alpha(theme.palette.primary.main, 0.2), display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                                        <Typography variant="subtitle1" fontWeight={800} color={errors.subTotal ? 'error.main' : 'primary.main'}>
-                                            {currencyDisplay}
-                                        </Typography>
-                                        <TextField
-                                            type="number"
-                                            fullWidth
-                                            error={!!errors.subTotal}
-                                            variant="standard"
-                                            value={displayedTotalValue}
-                                            onFocus={() => setIsEditingTotal(true)}
-                                            onChange={(event) => {
-                                                const nextValue = event.target.value;
-                                                setTotalInputValue(nextValue);
-
-                                                if (nextValue === '') {
-                                                    setValue('subTotal', '' as CreateFacturaDetalleFormInput['subTotal'], {
-                                                        shouldDirty: true,
-                                                        shouldValidate: false,
-                                                    });
-                                                    return;
-                                                }
-
-                                                const parsedTotal = Number(nextValue);
-                                                if (Number.isNaN(parsedTotal)) {
-                                                    return;
-                                                }
-
-                                                setValue(
-                                                    'subTotal',
-                                                    calculateFacturaDetalleSubtotalFromTotal(parsedTotal, applyIgv),
-                                                    {
-                                                        shouldDirty: true,
-                                                        shouldValidate: false,
-                                                    }
-                                                );
-                                            }}
-                                            onBlur={async () => {
-                                                setIsEditingTotal(false);
-                                                setTotalInputValue(displayTotal === 0 ? '' : displayTotal.toFixed(2));
-                                                await trigger('subTotal');
-                                            }}
-                                            inputProps={{
-                                                step: '0.01',
-                                                min: '0',
-                                                style: {
-                                                    fontSize: '1.625rem',
-                                                    fontWeight: 900,
-                                                    fontFamily: 'monospace',
-                                                    color: errors.subTotal ? theme.palette.error.main : theme.palette.primary.main,
-                                                    padding: 0,
-                                                },
-                                            }}
-                                            InputProps={{ disableUnderline: true }}
-                                        />
-                                    </Box>
-                                </Paper>
-                            </Grid>
-                        </Grid>
-
-                        {errors.subTotal?.message && (
-                            <Typography variant="caption" color="error.main" sx={{ mt: 0.5, display: 'block', fontWeight: 600 }}>
-                                {errors.subTotal.message}
-                            </Typography>
-                        )}
-                    </Box>
+                    <FacturaDetalleLiquidacionSection
+                        control={control}
+                        setValue={setValue}
+                        trigger={trigger}
+                        errors={errors}
+                        currencyDisplay={currencyDisplay}
+                    />
                 </Box>
             </DialogContent>
             {/* END: ModalBody */}

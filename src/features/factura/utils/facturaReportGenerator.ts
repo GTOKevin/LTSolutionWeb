@@ -9,7 +9,7 @@ import {
     resolveCurrencyExcelFormat,
 } from '@/shared/utils/format-utils';
 import type { FacturaDetalleReporte, FacturaReporte } from '@/entities/factura/model/types';
-import { isSobrestadiaDetalle } from '@/entities/factura/model/detalle';
+import { getFacturaDetalleReferencia, isSobrestadiaDetalle } from '@/entities/factura/model/detalle';
 
 type JsPdfWithAutoTable = jsPDF & {
     lastAutoTable?: {
@@ -18,11 +18,10 @@ type JsPdfWithAutoTable = jsPDF & {
 };
 
 function buildDetalleReferencia(detalle: FacturaDetalleReporte): string {
-    if (isSobrestadiaDetalle(detalle)) {
-        return detalle.flotaPlaca ? `Sobrestadía · ${detalle.flotaPlaca}` : 'Sobrestadía';
-    }
+    const concepto = isSobrestadiaDetalle(detalle) ? 'Sobrestadía' : 'Flete';
+    const referencia = getFacturaDetalleReferencia(detalle, { preferViajeCodigo: true });
 
-    return detalle.viajeCodigo ? `Flete · ${detalle.viajeCodigo}` : 'Flete';
+    return referencia === '-' ? concepto : `${concepto} · ${referencia}`;
 }
 
 function buildDetalleDescripcion(detalle: FacturaDetalleReporte): string {

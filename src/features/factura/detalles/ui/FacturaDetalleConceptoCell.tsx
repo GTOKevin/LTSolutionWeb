@@ -1,6 +1,6 @@
 import { Chip, Stack, Typography } from '@mui/material';
 import type { FacturaDetalle } from '@/entities/factura/model/types';
-import { isSobrestadiaDetalle } from '@/entities/factura/model/detalle';
+import { getFacturaDetalleConceptoLabel, isSobrestadiaDetalle } from '@/entities/factura/model/detalle';
 
 interface FacturaDetalleConceptoCellProps {
     detalle: FacturaDetalle;
@@ -11,7 +11,7 @@ export function FacturaDetalleConceptoCell({ detalle }: FacturaDetalleConceptoCe
     if (isSobrestadiaDetalle(detalle)) {
         return (
             <Stack spacing={0.25} sx={{ alignItems: 'flex-start' }}>
-                <Chip label="Sobrestadía" size="small" color="warning" variant="outlined" sx={{ fontWeight: 700 }} />
+                <Chip label={getFacturaDetalleConceptoLabel(detalle)} size="small" color="warning" variant="outlined" sx={{ fontWeight: 700 }} />
                 <Typography variant="caption" color="text.secondary">
                     {detalle.flotaPlaca || 'Sin unidad'}
                 </Typography>

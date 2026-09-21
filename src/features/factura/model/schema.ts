@@ -143,9 +143,6 @@ const optionalIdField = z.number().optional().nullable();
 
 const createFacturaDetalleSchemaBase = z.object({
     concepto: detalleConceptoSchema,
-    // Id del maestro de tipo de detalle; se resuelve por código en runtime y se
-    // deja opcional para tolerar latencia de integración con el backend.
-    tipoDetalleID: z.number().optional(),
     viajeID: optionalIdField,
     flotaID: optionalIdField,
     fechaInicioSobrestadia: optionalStringField,
@@ -179,7 +176,6 @@ const createFacturaDetalleSchemaBase = z.object({
         return;
     }
 
-    // SOBRESTADIA: nunca se liga a viaje, exige descripción y coherencia de fechas/días.
     if (data.viajeID) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -265,7 +261,6 @@ export function calculateSobrestadiaDias(fechaInicio?: string | null, fechaFin?:
 export function buildFacturaDetalleDefaultValues(monedaId: number): CreateFacturaDetalleFormInput {
     return {
         concepto: TIPO_DETALLE_CODES.FLETE,
-        tipoDetalleID: undefined,
         viajeID: 0,
         flotaID: 0,
         fechaInicioSobrestadia: '',
@@ -278,14 +273,10 @@ export function buildFacturaDetalleDefaultValues(monedaId: number): CreateFactur
     };
 }
 
-/**
- * Construye el payload de creación del detalle a partir de los valores del
- * formulario. `tipoDetalleID` se resuelve por código en runtime y se mantiene
- * opcional (tolerante a latencia de integración).
- */
+
 export function buildCreateFacturaDetallePayload(
     data: CreateFacturaDetalleForm,
-    tipoDetalleId?: number,
+    tipoDetalleId: number,
 ): CreateFacturaDetalleDto {
     const isSobrestadia = data.concepto === TIPO_DETALLE_CODES.SOBRESTADIA;
 
@@ -301,6 +292,7 @@ export function buildCreateFacturaDetallePayload(
         monedaID: data.monedaID,
         subTotal: data.subTotal,
         igv: data.igv,
+        total: data.total,
     };
 }
 

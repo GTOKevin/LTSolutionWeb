@@ -61,10 +61,9 @@ export const facturaApi = {
         return response.data;
     },
 
-    getDetalleFlotas: async (params?: { search?: string; tipoFlota?: string; limit?: number }) => {
+    getDetalleFlotas: async (params?: { search?: string; limit?: number }) => {
         const query = new URLSearchParams();
         if (params?.search) query.append('search', params.search);
-        if (params?.tipoFlota) query.append('tipoFlota', params.tipoFlota);
         if (params?.limit) query.append('limit', params.limit.toString());
 
         const queryString = query.toString();
