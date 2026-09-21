@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import type { FacturaDetalle } from '@/entities/factura/model/types';
+import { getFacturaDetalleConceptoLabel, getFacturaDetalleReferencia } from '@/entities/factura/model/detalle';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 
 interface FacturaDetalleMobileListProps {
@@ -40,7 +41,7 @@ export function FacturaDetalleMobileList({
             canDelete={() => !isReadOnly}
             renderHeader={(item) => (
                 <Typography variant="subtitle1" fontWeight="bold">
-                    Viaje: {item.viajeID}
+                    {getFacturaDetalleConceptoLabel(item)} · {getFacturaDetalleReferencia(item)}
                 </Typography>
             )}
             renderBody={(item) => (

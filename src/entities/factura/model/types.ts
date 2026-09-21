@@ -4,12 +4,30 @@ import type { Moneda } from '@/entities/moneda/model/types';
 import type { Estado } from '@/shared/model/estado.types';
 import type { TipoMaestro } from '@/shared/model/maestro.types';
 
+/**
+ * Fila de detalle de factura.
+ *
+ * Soporta dos conceptos:
+ * - `FLETE`: ligado a un viaje (`viajeID` + `codigo` de viaje).
+ * - `SOBRESTADIA`: no ligado a viaje (`viajeID` null), opcionalmente ligado a
+ *   flota (`flotaID`/`flotaPlaca`) con fechas/días.
+ *
+ * Los campos de concepto/flota/fechas se declaran tolerantes (opcionales) porque
+ * el contrato backend puede aterrizar por partes durante la integración.
+ */
 export interface FacturaDetalle {
     facturaDetalleID: number;
     facturaID: number;
-    viajeID: number;
+    viajeID?: number | null;
+    tipoDetalleID?: number | null;
+    tipoDetalleCodigo?: string | null;
+    flotaID?: number | null;
+    flotaPlaca?: string | null;
     descripcion: string | null;
     codigo?: string | null;
+    fechaInicioSobrestadia?: string | null;
+    fechaFinSobrestadia?: string | null;
+    diasSobrestadia?: number | null;
     monedaID: number;
     subTotal: number;
     igv: number;
@@ -27,6 +45,18 @@ export interface FacturaDetalleViajeOption {
     destinoDescripcion: string;
     mercaderiaDescripcion: string;
     descripcionDetalleSugerida: string;
+}
+
+/**
+ * Opción de tracto/carreta para el detalle de sobreestadía.
+ * Contrato tolerante a latencia de integración (campos opcionales).
+ */
+export interface FacturaDetalleFlotaOption {
+    flotaID: number;
+    placa: string;
+    marca?: string | null;
+    tipoFlotaCodigo?: string | null;
+    tipoFlotaNombre?: string | null;
 }
 
 export interface FacturaGuia {
@@ -111,8 +141,23 @@ export interface FacturaReporte extends Factura {
 
 export type PagedFacturas = PagedResponse<Factura>;
 
+/**
+ * Payload para registrar un detalle de factura.
+ *
+ * - FLETE: `viajeID` requerido, `tipoDetalleID`/`tipoDetalleCodigo` = FLETE.
+ * - SOBRESTADIA: `viajeID` en `null`, flota opcional y fechas/días de sobreestadía.
+ *
+ * `tipoDetalleID` se resuelve por código contra el catálogo maestro; se deja
+ * opcional para tolerar latencia de integración (el backend puede inferirlo).
+ */
 export interface CreateFacturaDetalleDto {
-    viajeID: number;
+    viajeID: number | null;
+    tipoDetalleID?: number;
+    tipoDetalleCodigo?: string;
+    flotaID?: number | null;
+    fechaInicioSobrestadia?: string | null;
+    fechaFinSobrestadia?: string | null;
+    diasSobrestadia?: number | null;
     descripcion?: string;
     monedaID: number;
     subTotal: number;

@@ -4,6 +4,7 @@ import { formatCurrencyAmount } from '@/shared/utils/format-utils';
 import type { FacturaDetalle } from '@/entities/factura/model/types';
 import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { TableActions } from '@/shared/components/ui/TableActions';
+import { FacturaDetalleConceptoCell } from './FacturaDetalleConceptoCell';
 
 interface FacturaDetalleListProps {
     items: FacturaDetalle[];
@@ -32,7 +33,7 @@ export function FacturaDetalleList({
 }: FacturaDetalleListProps) {
 
     const columns: Column[] = [
-        { id: 'viaje', label: 'Viaje' },
+        { id: 'concepto', label: 'Concepto' },
         { id: 'descripcion', label: 'Descripción' },
         { id: 'subtotal', label: 'SubTotal', align: 'right' },
         { id: 'igv', label: 'IGV', align: 'right' },
@@ -42,7 +43,7 @@ export function FacturaDetalleList({
 
     const renderRow = (detalle: FacturaDetalle) => (
         <>
-            <TableCell>{detalle.codigo}</TableCell>
+            <TableCell><FacturaDetalleConceptoCell detalle={detalle} /></TableCell>
             <TableCell>{detalle.descripcion || '-'}</TableCell>
             <TableCell align="right">{formatCurrencyAmount(detalle.subTotal, detalle.moneda)}</TableCell>
             <TableCell align="right">{formatCurrencyAmount(detalle.igv, detalle.moneda)}</TableCell>
