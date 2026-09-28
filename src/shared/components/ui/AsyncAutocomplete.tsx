@@ -1,7 +1,17 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type HTMLAttributes,
+  type ReactNode,
+} from 'react';
 import {
   Autocomplete,
   Box,
+  Button,
   CircularProgress,
   Fade,
   LinearProgress,
@@ -17,12 +27,16 @@ import {
   Search as SearchIcon,
   SearchOff as SearchOffIcon,
   Check as CheckIcon,
+  ErrorOutline as ErrorOutlineIcon,
 } from '@mui/icons-material';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { SelectItem } from '@/shared/model/types';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
+import { getErrorMessage } from '@/shared/utils/api-errors';
+import { useToast } from '@/shared/components/ui/Toast';
 import { cacheSelectItem, getCachedSelectItem } from '@/shared/lib/select-item-cache';
+import { ASYNC_AUTOCOMPLETE_QUERY_KEYS } from '@/shared/lib/async-autocomplete-keys';
 
 export interface AsyncAutocompleteProps {
   /** Clave estable del catálogo (namespace de React Query y del cache de labels). */
@@ -35,8 +49,16 @@ export interface AsyncAutocompleteProps {
   /** Opciones preexistentes para mostrar antes de la primera consulta. */
   initialOptions?: SelectItem[];
   placeholder?: string;
+  /** Nombre accesible del input cuando la etiqueta visible se renderiza fuera del control (F8). */
+  ariaLabel?: string;
   error?: boolean;
   helperText?: string;
+  /** Mensaje mostrado cuando falla la carga de opciones (F1). */
+  errorText?: string;
+  /** Callback invocado cuando la consulta de opciones falla (F1). */
+  onError?: (error: unknown) => void;
+  /** Muestra un toast con el error de carga (se deduplica por mensaje). Por defecto true (F1). */
+  showErrorToast?: boolean;
   disabled?: boolean;
   required?: boolean;
   size?: 'small' | 'medium';
@@ -46,6 +68,90 @@ export interface AsyncAutocompleteProps {
   /** Muestra el icono de búsqueda al inicio del input con micro-animación. */
   showSearchIcon?: boolean;
   sx?: SxProps<Theme>;
+}
+
+const DEFAULT_LOAD_ERROR_MESSAGE = 'No se pudieron cargar las opciones. Intente nuevamente.';
+
+/**
+ * Contexto que comparte el estado de carga con el dropdown (PaperComponent).
+ * Permite mantener una identidad estable del Paper (F2) sin perder el
+ * indicador de "cargando nuevos resultados" (F7).
+ */
+const AsyncAutocompleteLoadingContext = createContext(false);
+
+/**
+ * Dropdown de identidad estable (definido fuera del render). Al no depender de
+ * props que cambian en cada tecla, React no lo desmonta/monta en cada render (F2).
+ */
+function AsyncAutocompleteDropdown({ children, ...paperProps }: HTMLAttributes<HTMLElement>) {
+  const isFetching = useContext(AsyncAutocompleteLoadingContext);
+
+  return (
+    <Paper
+      {...paperProps}
+      elevation={6}
+      sx={{
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: 2.5,
+        border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.7)}`,
+        boxShadow: (theme) =>
+          theme.palette.mode === 'dark'
+            ? '0 12px 32px -4px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.4)'
+            : '0 14px 34px -4px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.05)',
+        backdropFilter: 'blur(12px)',
+        animation: 'asyncDropdownSlide 200ms cubic-bezier(0.16, 1, 0.3, 1)',
+        transformOrigin: 'top center',
+        '& .MuiAutocomplete-listbox': {
+          p: 0.75,
+          // F7: atenúa el set previo (keepPreviousData) mientras llegan resultados nuevos.
+          opacity: isFetching ? 0.55 : 1,
+          transition: 'opacity 0.18s ease',
+          '& .MuiAutocomplete-option': {
+            borderRadius: 1.5,
+            my: 0.25,
+            px: 1.25,
+            py: 0.85,
+            transition:
+              'transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.18s ease',
+            '&:hover': {
+              transform: 'translateX(4px)',
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+            },
+            '&[aria-selected="true"]': {
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.12),
+              fontWeight: 600,
+              '&:hover': {
+                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.18),
+              },
+            },
+            '&.Mui-focused': {
+              bgcolor: (theme) => alpha(theme.palette.action.focus, 0.18),
+              transform: 'translateX(4px)',
+            },
+          },
+        },
+      }}
+    >
+      {isFetching && (
+        <LinearProgress
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 2.5,
+            zIndex: 5,
+            bgcolor: (theme) => alpha(theme.palette.primary.main, 0.15),
+            '& .MuiLinearProgress-bar': {
+              borderRadius: 1,
+            },
+          }}
+        />
+      )}
+      {children}
+    </Paper>
+  );
 }
 
 function highlightMatch(text: string, query: string): ReactNode {
@@ -94,8 +200,12 @@ export function AsyncAutocomplete({
   loadOptions,
   initialOptions,
   placeholder,
+  ariaLabel,
   error = false,
   helperText,
+  errorText,
+  onError,
+  showErrorToast = true,
   disabled = false,
   required = false,
   size = 'small',
@@ -108,15 +218,44 @@ export function AsyncAutocomplete({
   const [searchText, setSearchText] = useState('');
   const debouncedSearch = useDebounce(searchText.trim(), 300);
 
+  const { showToast } = useToast();
+  const onErrorRef = useRef(onError);
+  const notifiedErrorRef = useRef<string | null>(null);
+
   const canQuery = open && debouncedSearch.length >= minChars;
 
-  const { data, isFetching } = useQuery({
-    queryKey: ['async-autocomplete', resourceKey, debouncedSearch],
+  const { data, isFetching, isError, error: queryError, refetch } = useQuery({
+    queryKey: ASYNC_AUTOCOMPLETE_QUERY_KEYS.resource(resourceKey, debouncedSearch),
     queryFn: () => loadOptions(debouncedSearch),
     enabled: canQuery,
     placeholderData: keepPreviousData,
     staleTime: 30_000,
   });
+
+  const resolvedLoadErrorMessage =
+    errorText ?? getErrorMessage(queryError, DEFAULT_LOAD_ERROR_MESSAGE);
+
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
+
+  useEffect(() => {
+    if (!isError) {
+      notifiedErrorRef.current = null;
+      return;
+    }
+
+    onErrorRef.current?.(queryError);
+
+    if (!showErrorToast || notifiedErrorRef.current === resolvedLoadErrorMessage) return;
+
+    notifiedErrorRef.current = resolvedLoadErrorMessage;
+    showToast({
+      title: 'Error al buscar opciones',
+      message: resolvedLoadErrorMessage,
+      severity: 'error',
+    });
+  }, [isError, queryError, showErrorToast, resolvedLoadErrorMessage, showToast]);
 
   const selectedOption = useMemo(() => {
     if (!value) return null;
@@ -138,12 +277,15 @@ export function AsyncAutocomplete({
 
   const resolvedNoOptionsText =
     noOptionsText ??
-    (debouncedSearch.length < minChars
-      ? `Escriba al menos ${minChars} caracteres...`
-      : 'Sin resultados');
+    (isError
+      ? resolvedLoadErrorMessage
+      : debouncedSearch.length < minChars
+        ? `Escriba al menos ${minChars} caracteres...`
+        : 'Sin resultados');
 
   return (
-    <Autocomplete
+    <AsyncAutocompleteLoadingContext.Provider value={isFetching}>
+      <Autocomplete
       sx={[
         {
           // Transición suave en el borde y anillo de foco
@@ -252,70 +394,7 @@ export function AsyncAutocomplete({
         setSearchText(newValue?.text ?? '');
         onChange(newValue?.id ?? 0, newValue);
       }}
-      PaperComponent={({ children, ...paperProps }) => (
-        <Paper
-          {...paperProps}
-          elevation={6}
-          sx={{
-            position: 'relative',
-            overflow: 'hidden',
-            borderRadius: 2.5,
-            border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.7)}`,
-            boxShadow: (theme) =>
-              theme.palette.mode === 'dark'
-                ? '0 12px 32px -4px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.4)'
-                : '0 14px 34px -4px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.05)',
-            backdropFilter: 'blur(12px)',
-            animation: 'asyncDropdownSlide 200ms cubic-bezier(0.16, 1, 0.3, 1)',
-            transformOrigin: 'top center',
-            '& .MuiAutocomplete-listbox': {
-              p: 0.75,
-              '& .MuiAutocomplete-option': {
-                borderRadius: 1.5,
-                my: 0.25,
-                px: 1.25,
-                py: 0.85,
-                transition:
-                  'transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.18s ease',
-                '&:hover': {
-                  transform: 'translateX(4px)',
-                  bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
-                },
-                '&[aria-selected="true"]': {
-                  bgcolor: (theme) => alpha(theme.palette.primary.main, 0.12),
-                  fontWeight: 600,
-                  '&:hover': {
-                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.18),
-                  },
-                },
-                '&.Mui-focused': {
-                  bgcolor: (theme) => alpha(theme.palette.action.focus, 0.18),
-                  transform: 'translateX(4px)',
-                },
-              },
-            },
-          }}
-        >
-          {/* Barra de progreso sutil y moderna en la parte superior del desplegable mientras consulta */}
-          {isFetching && (
-            <LinearProgress
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 2.5,
-                zIndex: 5,
-                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.15),
-                '& .MuiLinearProgress-bar': {
-                  borderRadius: 1,
-                },
-              }}
-            />
-          )}
-          {children}
-        </Paper>
-      )}
+      PaperComponent={AsyncAutocompleteDropdown}
       renderOption={(props, option, { selected }) => {
         const { key, ...otherProps } = props;
         return (
@@ -421,48 +500,102 @@ export function AsyncAutocomplete({
         </Box>
       }
       noOptionsText={
-        <Box
-          sx={{
-            py: 3,
-            px: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 1,
-            animation: 'asyncFadeIn 0.25s ease-out',
-          }}
-        >
+        isError ? (
           <Box
             sx={{
-              p: 1,
-              borderRadius: '50%',
-              bgcolor: (theme) => alpha(theme.palette.text.secondary, 0.08),
-              color: 'text.secondary',
+              py: 3,
+              px: 2,
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              animation: 'emptyFloat 2.5s ease-in-out infinite',
+              gap: 1,
+              animation: 'asyncFadeIn 0.25s ease-out',
             }}
           >
-            <SearchOffIcon sx={{ fontSize: 22, opacity: 0.8 }} />
+            <Box
+              sx={{
+                p: 1,
+                borderRadius: '50%',
+                bgcolor: (theme) => alpha(theme.palette.error.main, 0.1),
+                color: 'error.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ErrorOutlineIcon sx={{ fontSize: 22 }} />
+            </Box>
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'error.main',
+                fontWeight: 500,
+                fontSize: '0.85rem',
+                textAlign: 'center',
+              }}
+            >
+              {resolvedLoadErrorMessage}
+            </Typography>
+            <Button
+              size="small"
+              color="primary"
+              onClick={() => {
+                void refetch();
+              }}
+              sx={{ textTransform: 'none', fontWeight: 700 }}
+            >
+              Reintentar
+            </Button>
           </Box>
-          <Typography
-            variant="body2"
+        ) : (
+          <Box
             sx={{
-              color: 'text.secondary',
-              fontWeight: 500,
-              fontSize: '0.85rem',
-              textAlign: 'center',
+              py: 3,
+              px: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1,
+              animation: 'asyncFadeIn 0.25s ease-out',
             }}
           >
-            {resolvedNoOptionsText}
-          </Typography>
-        </Box>
+            <Box
+              sx={{
+                p: 1,
+                borderRadius: '50%',
+                bgcolor: (theme) => alpha(theme.palette.text.secondary, 0.08),
+                color: 'text.secondary',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                animation: 'emptyFloat 2.5s ease-in-out infinite',
+              }}
+            >
+              <SearchOffIcon sx={{ fontSize: 22, opacity: 0.8 }} />
+            </Box>
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+                fontWeight: 500,
+                fontSize: '0.85rem',
+                textAlign: 'center',
+              }}
+            >
+              {resolvedNoOptionsText}
+            </Typography>
+          </Box>
+        )
       }
       renderInput={(params) => (
         <TextField
           {...params}
+          inputProps={{
+            ...params.inputProps,
+            'aria-label': ariaLabel ?? (label || undefined),
+          }}
           label={label}
           placeholder={placeholder}
           size={size}
@@ -518,6 +651,7 @@ export function AsyncAutocomplete({
           }}
         />
       )}
-    />
+      />
+    </AsyncAutocompleteLoadingContext.Provider>
   );
 }

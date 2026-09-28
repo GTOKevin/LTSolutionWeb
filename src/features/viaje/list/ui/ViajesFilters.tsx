@@ -19,7 +19,7 @@ import {
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useViajeListFilterOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
-import { VIAJE_SELECT_KEYS, useViajeResourceSearch } from '@features/viaje/options/hooks/useViajeResourceSearch';
+import { VIAJE_SELECT_KEYS, viajeResourceLoaders } from '@features/viaje/options/hooks/useViajeResourceSearch';
 import { AsyncAutocomplete } from '@shared/components/ui/AsyncAutocomplete';
 import type { ViajeListDraftFilters } from '../model/filters';
 
@@ -35,7 +35,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
     const theme = useTheme();
     const [showFilters, setShowFilters] = useState(true);
     const { clientes, tractos, carretas, colaboradores, estados } = useViajeListFilterOptions();
-    const { loadClientes, loadColaboradores, loadTractos, loadCarretas } = useViajeResourceSearch();
+    const { loadClientes, loadColaboradores, loadTractos, loadCarretas } = viajeResourceLoaders;
 
     return (
         <Paper
@@ -72,6 +72,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                             size="small"
                             value={filters.fechaInicio}
                             onChange={(e) => onFilterChange('fechaInicio', e.target.value)}
+                            inputProps={{ 'aria-label': 'Fecha Inicial (Partida)' }}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                             InputLabelProps={{ shrink: true }}
                         />
@@ -86,6 +87,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                             size="small"
                             value={filters.fechaFin}
                             onChange={(e) => onFilterChange('fechaFin', e.target.value)}
+                            inputProps={{ 'aria-label': 'Fecha Final (Partida)' }}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                             InputLabelProps={{ shrink: true }}
                         />
@@ -97,6 +99,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                         <AsyncAutocomplete
                             resourceKey={VIAJE_SELECT_KEYS.clientes}
                             label=""
+                            ariaLabel="Cliente"
                             placeholder="Todos"
                             value={filters.clienteID}
                             onChange={(value) => onFilterChange('clienteID', value)}
@@ -111,6 +114,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                         <AsyncAutocomplete
                             resourceKey={VIAJE_SELECT_KEYS.colaboradores}
                             label=""
+                            ariaLabel="Conductor"
                             placeholder="Todos"
                             value={filters.colaboradorID}
                             onChange={(value) => onFilterChange('colaboradorID', value)}
@@ -125,6 +129,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                         <AsyncAutocomplete
                             resourceKey={VIAJE_SELECT_KEYS.tractos}
                             label=""
+                            ariaLabel="Tracto"
                             placeholder="Todos"
                             value={filters.tractoID}
                             onChange={(value) => onFilterChange('tractoID', value)}
@@ -139,6 +144,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                         <AsyncAutocomplete
                             resourceKey={VIAJE_SELECT_KEYS.carretas}
                             label=""
+                            ariaLabel="Carreta"
                             placeholder="Todas"
                             value={filters.carretaID}
                             onChange={(value) => onFilterChange('carretaID', value)}
@@ -156,6 +162,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                             size="small"
                             value={filters.sinCarreta}
                             onChange={(e) => onFilterChange('sinCarreta', Number(e.target.value))}
+                            SelectProps={{ inputProps: { 'aria-label': 'Sin carreta' } }}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                         >
                             <MenuItem value={0}>Todas</MenuItem>
@@ -173,6 +180,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                             size="small"
                             value={filters.estadoID}
                             onChange={(e) => onFilterChange('estadoID', Number(e.target.value))}
+                            SelectProps={{ inputProps: { 'aria-label': 'Estado' } }}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                         >
                             <MenuItem value={0}>Todos</MenuItem>

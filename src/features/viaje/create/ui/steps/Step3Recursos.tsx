@@ -13,7 +13,7 @@ import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { AsyncAutocomplete } from '@/shared/components/ui/AsyncAutocomplete';
 import { Badge, Business, LocalShipping, RvHookup, WarningAmber } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
-import { VIAJE_SELECT_KEYS, useViajeResourceSearch } from '@features/viaje/options/hooks/useViajeResourceSearch';
+import { VIAJE_SELECT_KEYS, viajeResourceLoaders } from '@features/viaje/options/hooks/useViajeResourceSearch';
 import type { ViajeWizardFormData } from '../../../model/schema';
 
 interface Props {
@@ -21,12 +21,6 @@ interface Props {
         tractos?: SelectItem[];
         carretas?: SelectItem[];
         colaboradores?: SelectItem[];
-        refetchTractos?: () => Promise<unknown> | unknown;
-        isFetchingTractos?: boolean;
-        refetchCarretas?: () => Promise<unknown> | unknown;
-        isFetchingCarretas?: boolean;
-        refetchColaboradores?: () => Promise<unknown> | unknown;
-        isFetchingColaboradores?: boolean;
     };
 }
 
@@ -36,7 +30,7 @@ export function Step3Recursos({ options }: Props) {
     const theme = useTheme();
     const { register, control, setValue, getValues, formState: { errors } } = useFormContext<ViajeWizardFormData>();
     const { tractos, carretas, colaboradores } = options;
-    const { loadTractos, loadCarretas, loadColaboradores } = useViajeResourceSearch();
+    const { loadTractos, loadCarretas, loadColaboradores } = viajeResourceLoaders;
 
     const esTractoTercero = useWatch({ control, name: 'esTractoTercero' });
     const esCarretaTercero = useWatch({ control, name: 'esCarretaTercero' });
@@ -44,8 +38,10 @@ export function Step3Recursos({ options }: Props) {
     const sinCarreta = useWatch({ control, name: 'sinCarreta' });
     const hayRecursoTercero = Boolean(esTractoTercero || esConductorTercero || (esCarretaTercero && !sinCarreta));
 
-    // M5: la busqueda incremental reemplaza la carga eager truncada a 50. Al
-    // seleccionar un recurso propio se autocompletan los ejes desde `extraTwo`.
+    // M5: la busqueda incremental (AsyncAutocomplete) convive con la carga
+    // eager de `useViajeResourceOptions`, que alimenta `initialOptions` y los
+    // labels de resumen. Al seleccionar un recurso propio se autocompletan los
+    // ejes desde `extraTwo`.
     const handleTractoChange = (tractoID: number, option: SelectItem | null, onChangeField: (value: number) => void) => {
         onChangeField(tractoID);
         if (option?.extraTwo) {
@@ -231,6 +227,7 @@ export function Step3Recursos({ options }: Props) {
                                             <AsyncAutocomplete
                                                 resourceKey={VIAJE_SELECT_KEYS.colaboradores}
                                                 label=""
+                                                ariaLabel="Conductor del Viaje"
                                                 placeholder="Buscar conductor por nombre o documento..."
                                                 value={field.value}
                                                 onChange={(value) => field.onChange(value)}
@@ -297,6 +294,7 @@ export function Step3Recursos({ options }: Props) {
                                                 <AsyncAutocomplete
                                                     resourceKey={VIAJE_SELECT_KEYS.tractos}
                                                     label=""
+                                                    ariaLabel="Unidad Tractora"
                                                     placeholder="Buscar tracto por placa o marca..."
                                                     value={field.value}
                                                     onChange={(value, option) => handleTractoChange(value, option, field.onChange)}
@@ -415,6 +413,7 @@ export function Step3Recursos({ options }: Props) {
                                                 <AsyncAutocomplete
                                                     resourceKey={VIAJE_SELECT_KEYS.carretas}
                                                     label=""
+                                                    ariaLabel="Unidad de Carga"
                                                     placeholder="Buscar carreta por placa o marca..."
                                                     value={field.value}
                                                     onChange={(value, option) => handleCarretaChange(value, option, field.onChange)}

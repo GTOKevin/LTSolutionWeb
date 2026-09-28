@@ -6,14 +6,12 @@ import { TextField } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
 import { getViajeFechaCargaLimits } from '@/features/viaje/model/form-values';
-import { VIAJE_SELECT_KEYS, useViajeResourceSearch } from '@features/viaje/options/hooks/useViajeResourceSearch';
+import { VIAJE_SELECT_KEYS, viajeResourceLoaders } from '@features/viaje/options/hooks/useViajeResourceSearch';
 import type { ViajeWizardFormData } from '../../../model/schema';
 
 interface Props {
     options: {
         clientes?: SelectItem[];
-        refetchClientes?: () => Promise<unknown> | unknown;
-        isFetchingClientes?: boolean;
         estados?: SelectItem[];
         viajeEstadoAgendadoId?: number;
         flotaDisponibilidad?: {
@@ -26,8 +24,8 @@ interface Props {
 
 export function Step1DatosBase({ options }: Props) {
     const { control, register, watch, formState: { errors } } = useFormContext<ViajeWizardFormData>();
-    const { estados, viajeEstadoAgendadoId, flotaDisponibilidad } = options;
-    const { loadClientes } = useViajeResourceSearch();
+    const { clientes, estados, viajeEstadoAgendadoId, flotaDisponibilidad } = options;
+    const { loadClientes } = viajeResourceLoaders;
     const { min: fechaMinima, max: fechaMaxima } = getViajeFechaCargaLimits();
     const estadoId = watch('estadoID');
     const hasResolvedEstado = typeof estadoId === 'number' && estadoId > 0;
@@ -51,11 +49,13 @@ export function Step1DatosBase({ options }: Props) {
                                 <AsyncAutocomplete
                                     resourceKey={VIAJE_SELECT_KEYS.clientes}
                                     label=""
+                                    ariaLabel="Cliente Contratante"
                                     placeholder="Buscar cliente por nombre o documento..."
                                     required
                                     value={field.value}
                                     onChange={(value) => field.onChange(value)}
                                     loadOptions={loadClientes}
+                                    initialOptions={clientes}
                                     error={!!errors.clienteID}
                                     helperText={errors.clienteID?.message?.toString()}
                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, py: 1 } }}
@@ -70,6 +70,7 @@ export function Step1DatosBase({ options }: Props) {
                         <TextField
                             fullWidth
                             placeholder="Ej: COT-2023-044"
+                            inputProps={{ 'aria-label': 'Cotización de Referencia' }}
                             {...register('cotizacionID', { valueAsNumber: true })}
                             error={!!errors.cotizacionID}
                             helperText={errors.cotizacionID?.message?.toString()}
@@ -85,6 +86,7 @@ export function Step1DatosBase({ options }: Props) {
                             fullWidth
                             value={estadoAgendadoLabel}
                             disabled
+                            inputProps={{ 'aria-label': 'Status Inicial' }}
                             error={!!errors.estadoID}
                             helperText={(errors.estadoID?.message?.toString()) || (
                                 hasResolvedEstado
@@ -101,7 +103,7 @@ export function Step1DatosBase({ options }: Props) {
                         <FormDatePicker
                             label=""
                             registration={register('fechaCarga')}
-                            inputProps={{ min: fechaMinima, max: fechaMaxima }}
+                            inputProps={{ min: fechaMinima, max: fechaMaxima, 'aria-label': 'Fecha de Carga' }}
                             error={!!errors.fechaCarga}
                             helperText={(errors.fechaCarga?.message?.toString()) || `Seleccione una fecha entre ${fechaMinima} y ${fechaMaxima}.`}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
