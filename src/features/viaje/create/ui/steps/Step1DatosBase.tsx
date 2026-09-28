@@ -1,12 +1,13 @@
 import { Box, Grid, Typography, Paper } from '@mui/material';
-import { useFormContext } from 'react-hook-form';
-import { FormSelect } from '@/shared/components/ui/FormSelect';
+import { Controller, useFormContext } from 'react-hook-form';
 import { FormDatePicker } from '@/shared/components/ui/FormDatePicker';
-import { ReloadIconButton } from '@/shared/components/ui/ReloadIconButton';
+import { AsyncAutocomplete } from '@/shared/components/ui/AsyncAutocomplete';
 import { TextField } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
 import { getViajeFechaCargaLimits } from '@/features/viaje/model/form-values';
+import { VIAJE_SELECT_KEYS, useViajeResourceSearch } from '@features/viaje/options/hooks/useViajeResourceSearch';
+import type { ViajeWizardFormData } from '../../../model/schema';
 
 interface Props {
     options: {
@@ -24,8 +25,9 @@ interface Props {
 }
 
 export function Step1DatosBase({ options }: Props) {
-    const { register, watch, formState: { errors } } = useFormContext();
-    const { clientes, estados, viajeEstadoAgendadoId, flotaDisponibilidad, refetchClientes, isFetchingClientes } = options;
+    const { control, register, watch, formState: { errors } } = useFormContext<ViajeWizardFormData>();
+    const { estados, viajeEstadoAgendadoId, flotaDisponibilidad } = options;
+    const { loadClientes } = useViajeResourceSearch();
     const { min: fechaMinima, max: fechaMaxima } = getViajeFechaCargaLimits();
     const estadoId = watch('estadoID');
     const hasResolvedEstado = typeof estadoId === 'number' && estadoId > 0;
@@ -41,22 +43,24 @@ export function Step1DatosBase({ options }: Props) {
                             <Typography variant="overline" fontWeight={700} color="text.secondary" sx={{ letterSpacing: 1 }}>
                                 Cliente Contratante
                             </Typography>
-                            {refetchClientes && (
-                                <ReloadIconButton
-                                    tooltipTitle="Actualizar clientes"
-                                    onReload={refetchClientes}
-                                    isLoading={isFetchingClientes}
+                        </Box>
+                        <Controller
+                            name="clienteID"
+                            control={control}
+                            render={({ field }) => (
+                                <AsyncAutocomplete
+                                    resourceKey={VIAJE_SELECT_KEYS.clientes}
+                                    label=""
+                                    placeholder="Buscar cliente por nombre o documento..."
+                                    required
+                                    value={field.value}
+                                    onChange={(value) => field.onChange(value)}
+                                    loadOptions={loadClientes}
+                                    error={!!errors.clienteID}
+                                    helperText={errors.clienteID?.message?.toString()}
+                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, py: 1 } }}
                                 />
                             )}
-                        </Box>
-                        <FormSelect
-                            label=""
-                            registration={register('clienteID', { valueAsNumber: true })}
-                            options={clientes || []}
-                            defaultValue={0}
-                            error={!!errors.clienteID}
-                            helperText={errors.clienteID?.message?.toString()}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, py: 1 } }}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, md: 6 }}>

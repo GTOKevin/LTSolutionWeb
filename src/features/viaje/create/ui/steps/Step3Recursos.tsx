@@ -10,11 +10,10 @@ import {
     useTheme,
 } from '@mui/material';
 import { Controller, useFormContext, useWatch } from 'react-hook-form';
-import { FormSelect } from '@/shared/components/ui/FormSelect';
-import { ReloadIconButton } from '@/shared/components/ui/ReloadIconButton';
-import { useToast } from '@/shared/components/ui/Toast';
+import { AsyncAutocomplete } from '@/shared/components/ui/AsyncAutocomplete';
 import { Badge, Business, LocalShipping, RvHookup, WarningAmber } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
+import { VIAJE_SELECT_KEYS, useViajeResourceSearch } from '@features/viaje/options/hooks/useViajeResourceSearch';
 import type { ViajeWizardFormData } from '../../../model/schema';
 
 interface Props {
@@ -35,19 +34,9 @@ type RecursoTerceroFlag = 'esTractoTercero' | 'esCarretaTercero' | 'esConductorT
 
 export function Step3Recursos({ options }: Props) {
     const theme = useTheme();
-    const { showToast } = useToast();
     const { register, control, setValue, getValues, formState: { errors } } = useFormContext<ViajeWizardFormData>();
-    const {
-        tractos,
-        carretas,
-        colaboradores,
-        refetchTractos,
-        isFetchingTractos,
-        refetchCarretas,
-        isFetchingCarretas,
-        refetchColaboradores,
-        isFetchingColaboradores,
-    } = options;
+    const { tractos, carretas, colaboradores } = options;
+    const { loadTractos, loadCarretas, loadColaboradores } = useViajeResourceSearch();
 
     const esTractoTercero = useWatch({ control, name: 'esTractoTercero' });
     const esCarretaTercero = useWatch({ control, name: 'esCarretaTercero' });
@@ -55,29 +44,19 @@ export function Step3Recursos({ options }: Props) {
     const sinCarreta = useWatch({ control, name: 'sinCarreta' });
     const hayRecursoTercero = Boolean(esTractoTercero || esConductorTercero || (esCarretaTercero && !sinCarreta));
 
-    // L-N5: los refetch del wizard notifican al usuario con toast (el boton solo
-    // registra con `logger`; sin este handler el fallo seria invisible).
-    const handleReloadError = (message: string) => {
-        showToast({ entity: 'Recursos de viaje', action: 'error', isError: true, message });
-    };
-
-    const handleTractoChange = (tractoID: number, onChangeField: (value: number) => void) => {
+    // M5: la busqueda incremental reemplaza la carga eager truncada a 50. Al
+    // seleccionar un recurso propio se autocompletan los ejes desde `extraTwo`.
+    const handleTractoChange = (tractoID: number, option: SelectItem | null, onChangeField: (value: number) => void) => {
         onChangeField(tractoID);
-        if (tractoID && tractos) {
-            const selectedTracto = tractos.find(t => t.id === tractoID);
-            if (selectedTracto?.extraTwo) {
-                setValue('ejesTracto', parseInt(selectedTracto.extraTwo, 10), { shouldValidate: true, shouldDirty: true });
-            }
+        if (option?.extraTwo) {
+            setValue('ejesTracto', parseInt(option.extraTwo, 10), { shouldValidate: true, shouldDirty: true });
         }
     };
 
-    const handleCarretaChange = (carretaID: number, onChangeField: (value: number) => void) => {
+    const handleCarretaChange = (carretaID: number, option: SelectItem | null, onChangeField: (value: number) => void) => {
         onChangeField(carretaID);
-        if (carretaID && carretas) {
-            const selectedCarreta = carretas.find(c => c.id === carretaID);
-            if (selectedCarreta?.extraTwo) {
-                setValue('ejesCarreta', parseInt(selectedCarreta.extraTwo, 10), { shouldValidate: true, shouldDirty: true });
-            }
+        if (option?.extraTwo) {
+            setValue('ejesCarreta', parseInt(option.extraTwo, 10), { shouldValidate: true, shouldDirty: true });
         }
     };
 
@@ -225,14 +204,6 @@ export function Step3Recursos({ options }: Props) {
                                     <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
                                         {esConductorTercero ? 'Nombre del Conductor' : 'Seleccione Conductor'} <Typography component="span" color="error">*</Typography>
                                     </Typography>
-                                    {!esConductorTercero && refetchColaboradores && (
-                                        <ReloadIconButton
-                                            tooltipTitle="Actualizar conductores"
-                                            onReload={refetchColaboradores}
-                                            isLoading={isFetchingColaboradores}
-                                            onReloadError={handleReloadError}
-                                        />
-                                    )}
                                 </Box>
                                 {esConductorTercero ? (
                                     <Controller
@@ -253,14 +224,23 @@ export function Step3Recursos({ options }: Props) {
                                         )}
                                     />
                                 ) : (
-                                    <FormSelect
-                                        label=""
-                                        registration={register('colaboradorID', { valueAsNumber: true })}
-                                        options={colaboradores || []}
-                                        defaultValue={0}
-                                        error={!!errors.colaboradorID}
-                                        helperText={errors.colaboradorID?.message?.toString()}
-                                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                    <Controller
+                                        name="colaboradorID"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <AsyncAutocomplete
+                                                resourceKey={VIAJE_SELECT_KEYS.colaboradores}
+                                                label=""
+                                                placeholder="Buscar conductor por nombre o documento..."
+                                                value={field.value}
+                                                onChange={(value) => field.onChange(value)}
+                                                loadOptions={loadColaboradores}
+                                                initialOptions={colaboradores}
+                                                error={!!errors.colaboradorID}
+                                                helperText={errors.colaboradorID?.message?.toString()}
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                            />
+                                        )}
                                     />
                                 )}
                             </Grid>
@@ -290,14 +270,6 @@ export function Step3Recursos({ options }: Props) {
                                         <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
                                             {esTractoTercero ? 'Placa del Tracto (Tercero)' : 'Placa del Tracto'} <Typography component="span" color="error">*</Typography>
                                         </Typography>
-                                        {!esTractoTercero && refetchTractos && (
-                                            <ReloadIconButton
-                                                tooltipTitle="Actualizar tractos"
-                                                onReload={refetchTractos}
-                                                isLoading={isFetchingTractos}
-                                                onReloadError={handleReloadError}
-                                            />
-                                        )}
                                     </Box>
                                     {esTractoTercero ? (
                                         <Controller
@@ -322,19 +294,14 @@ export function Step3Recursos({ options }: Props) {
                                             name="tractoID"
                                             control={control}
                                             render={({ field }) => (
-                                                <FormSelect
+                                                <AsyncAutocomplete
+                                                    resourceKey={VIAJE_SELECT_KEYS.tractos}
                                                     label=""
-                                                    registration={{
-                                                        name: field.name,
-                                                        onBlur: async () => { field.onBlur(); },
-                                                        onChange: async (e) => {
-                                                            field.onChange(e);
-                                                            handleTractoChange(Number(e.target.value), field.onChange);
-                                                        },
-                                                        ref: field.ref
-                                                    }}
-                                                    options={tractos || []}
-                                                    value={field.value || 0}
+                                                    placeholder="Buscar tracto por placa o marca..."
+                                                    value={field.value}
+                                                    onChange={(value, option) => handleTractoChange(value, option, field.onChange)}
+                                                    loadOptions={loadTractos}
+                                                    initialOptions={tractos}
                                                     error={!!errors.tractoID}
                                                     helperText={errors.tractoID?.message?.toString()}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
@@ -413,14 +380,6 @@ export function Step3Recursos({ options }: Props) {
                                         <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
                                             {sinCarreta ? 'Placa de la Carreta' : (esCarretaTercero ? 'Placa de la Carreta (Tercero)' : 'Placa de la Carreta')} {!sinCarreta && <Typography component="span" color="error">*</Typography>}
                                         </Typography>
-                                        {!sinCarreta && !esCarretaTercero && refetchCarretas && (
-                                            <ReloadIconButton
-                                                tooltipTitle="Actualizar carretas"
-                                                onReload={refetchCarretas}
-                                                isLoading={isFetchingCarretas}
-                                                onReloadError={handleReloadError}
-                                            />
-                                        )}
                                     </Box>
                                     {sinCarreta ? (
                                         <TextField
@@ -453,19 +412,14 @@ export function Step3Recursos({ options }: Props) {
                                             name="carretaID"
                                             control={control}
                                             render={({ field }) => (
-                                                <FormSelect
+                                                <AsyncAutocomplete
+                                                    resourceKey={VIAJE_SELECT_KEYS.carretas}
                                                     label=""
-                                                    registration={{
-                                                        name: field.name,
-                                                        onBlur: async () => { field.onBlur(); },
-                                                        onChange: async (e) => {
-                                                            field.onChange(e);
-                                                            handleCarretaChange(Number(e.target.value), field.onChange);
-                                                        },
-                                                        ref: field.ref
-                                                    }}
-                                                    options={carretas || []}
-                                                    value={field.value || 0}
+                                                    placeholder="Buscar carreta por placa o marca..."
+                                                    value={field.value}
+                                                    onChange={(value, option) => handleCarretaChange(value, option, field.onChange)}
+                                                    loadOptions={loadCarretas}
+                                                    initialOptions={carretas}
                                                     error={!!errors.carretaID}
                                                     helperText={errors.carretaID?.message?.toString()}
                                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}

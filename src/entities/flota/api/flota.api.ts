@@ -29,8 +29,8 @@ export const flotaApi = {
         });
         return data;
     },
-    getSelectTipo: async (tipo?: string, limit: number = 20) => {
-        const { data } = await httpClient.get<SelectItem[]>('/Flota/tipo-select', { params: { tipo, limit } });
+    getSelectTipo: async (tipo?: string, limit: number = 20, search?: string) => {
+        const { data } = await httpClient.get<SelectItem[]>('/Flota/tipo-select', { params: { tipo, limit, search } });
         return data;
     },
     getDisponibilidad: async () => {

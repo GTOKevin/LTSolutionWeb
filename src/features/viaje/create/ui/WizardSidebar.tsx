@@ -2,6 +2,8 @@ import { Box, Typography, Paper, Divider, Stack } from '@mui/material';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { InfoOutlined } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
+import { resolveSelectLabel } from '@/shared/lib/select-item-cache';
+import { VIAJE_SELECT_KEYS } from '@features/viaje/options/hooks/useViajeResourceSearch';
 import type { ViajeWizardFormData } from '../../model/schema';
 
 interface SidebarProps {
@@ -23,8 +25,9 @@ export function WizardSidebar({ activeStep, totalSteps, options }: SidebarProps)
     const estadoID = useWatch({ control, name: 'estadoID', defaultValue: 0 });
     const peso = useWatch({ control, name: 'peso' });
 
-    const clienteSeleccionado = options.clientes?.find(c => c.id === clienteID);
-    const nombreCliente = clienteSeleccionado ? clienteSeleccionado.text : null;
+    const nombreCliente = clienteID
+        ? resolveSelectLabel(VIAJE_SELECT_KEYS.clientes, clienteID, options.clientes, '')
+        : '';
     const estadoSeleccionado = options.estados?.find((estado) => estado.id === estadoID);
     const isAgendado = estadoID === options.viajeEstadoAgendadoId;
     const isTransito = estadoID === options.viajeEstadoTransitoId;
