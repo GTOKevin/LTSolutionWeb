@@ -4,6 +4,8 @@ import { Assignment, RouteOutlined, GroupAdd, Inventory2, CheckCircleOutline } f
 import type { ViajeWizardFormData } from '../../../model/schema';
 import type { SelectItem } from '@/shared/model/types';
 import { useUbigeoDetails } from '@/shared/hooks/useUbigeoDetails';
+import { resolveSelectLabel } from '@/shared/lib/select-item-cache';
+import { VIAJE_SELECT_KEYS } from '@features/viaje/options/hooks/useViajeResourceSearch';
 
 interface Props {
     options: {
@@ -22,17 +24,18 @@ export function Step5Resumen({ options }: Props) {
     const { watch } = useFormContext<ViajeWizardFormData>();
     const formData = watch();
 
-    const getLabel = (items?: SelectItem[], id?: number) => {
+    const getLabel = (items?: SelectItem[], id?: number, resourceKey?: string) => {
+        if (resourceKey) return resolveSelectLabel(resourceKey, id, items);
         if (!items || !id) return 'No especificado';
         const found = items.find(i => i.id === id);
         return found ? found.text : 'No especificado';
     };
 
-    const getRecursoLabel = (esTercero: boolean | undefined, textoTercero: string | undefined, items?: SelectItem[], id?: number) =>
-        esTercero ? `Tercero: ${textoTercero?.trim() || 'Sin registrar'}` : getLabel(items, id);
+    const getRecursoLabel = (esTercero: boolean | undefined, textoTercero: string | undefined, items: SelectItem[] | undefined, id: number | undefined, resourceKey: string) =>
+        esTercero ? `Tercero: ${textoTercero?.trim() || 'Sin registrar'}` : getLabel(items, id, resourceKey);
 
     const getCarretaLabel = () =>
-        formData.sinCarreta ? '-' : getRecursoLabel(formData.esCarretaTercero, formData.placaCarretaTercero, options.carretas, formData.carretaID);
+        formData.sinCarreta ? '-' : getRecursoLabel(formData.esCarretaTercero, formData.placaCarretaTercero, options.carretas, formData.carretaID, VIAJE_SELECT_KEYS.carretas);
 
     const hayRecursoTercero = Boolean(formData.esTractoTercero || formData.esCarretaTercero || formData.esConductorTercero);
 
@@ -54,7 +57,7 @@ export function Step5Resumen({ options }: Props) {
                         </Box>
                         <Divider sx={{ mb: 2 }} />
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                            <Box><Typography variant="caption" color="text.secondary">Cliente Contratante</Typography><Typography variant="body2" fontWeight={600}>{getLabel(options.clientes, formData.clienteID)}</Typography></Box>
+                            <Box><Typography variant="caption" color="text.secondary">Cliente Contratante</Typography><Typography variant="body2" fontWeight={600}>{getLabel(options.clientes, formData.clienteID, VIAJE_SELECT_KEYS.clientes)}</Typography></Box>
                             <Box><Typography variant="caption" color="text.secondary">Estado Inicial</Typography><Typography variant="body2" fontWeight={600}>{getLabel(options.estados, formData.estadoID)}</Typography></Box>
                             <Box><Typography variant="caption" color="text.secondary">Fecha de Carga</Typography><Typography variant="body2" fontWeight={600}>{formData.fechaCarga || 'No especificada'}</Typography></Box>
                             <Box><Typography variant="caption" color="text.secondary">Cotización Referencia</Typography><Typography variant="body2" fontWeight={600}>{formData.cotizacionID || 'Sin cotización asociada'}</Typography></Box>
@@ -87,8 +90,8 @@ export function Step5Resumen({ options }: Props) {
                         </Box>
                         <Divider sx={{ mb: 2 }} />
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                            <Box><Typography variant="caption" color="text.secondary">Conductor</Typography><Typography variant="body2" fontWeight={600}>{getRecursoLabel(formData.esConductorTercero, formData.nombreConductorTercero, options.colaboradores, formData.colaboradorID)}</Typography></Box>
-                            <Box><Typography variant="caption" color="text.secondary">Tracto Asignado</Typography><Typography variant="body2" fontWeight={600}>{getRecursoLabel(formData.esTractoTercero, formData.placaTractoTercero, options.tractos, formData.tractoID)}</Typography></Box>
+                            <Box><Typography variant="caption" color="text.secondary">Conductor</Typography><Typography variant="body2" fontWeight={600}>{getRecursoLabel(formData.esConductorTercero, formData.nombreConductorTercero, options.colaboradores, formData.colaboradorID, VIAJE_SELECT_KEYS.colaboradores)}</Typography></Box>
+                            <Box><Typography variant="caption" color="text.secondary">Tracto Asignado</Typography><Typography variant="body2" fontWeight={600}>{getRecursoLabel(formData.esTractoTercero, formData.placaTractoTercero, options.tractos, formData.tractoID, VIAJE_SELECT_KEYS.tractos)}</Typography></Box>
                             <Box><Typography variant="caption" color="text.secondary">Carreta Asignada</Typography><Typography variant="body2" fontWeight={600}>{getCarretaLabel()}</Typography></Box>
                             {hayRecursoTercero && (
                                 <Box><Typography variant="caption" color="text.secondary">Empresa de Transporte</Typography><Typography variant="body2" fontWeight={600}>{formData.empresaTransporte?.trim() || 'No especificada'}</Typography></Box>

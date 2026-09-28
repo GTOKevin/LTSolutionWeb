@@ -19,6 +19,8 @@ import {
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useViajeListFilterOptions } from '@features/viaje/options/hooks/useViajeScopedOptions';
+import { VIAJE_SELECT_KEYS, viajeResourceLoaders } from '@features/viaje/options/hooks/useViajeResourceSearch';
+import { AsyncAutocomplete } from '@shared/components/ui/AsyncAutocomplete';
 import type { ViajeListDraftFilters } from '../model/filters';
 
 interface Props {
@@ -33,6 +35,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
     const theme = useTheme();
     const [showFilters, setShowFilters] = useState(true);
     const { clientes, tractos, carretas, colaboradores, estados } = useViajeListFilterOptions();
+    const { loadClientes, loadColaboradores, loadTractos, loadCarretas } = viajeResourceLoaders;
 
     return (
         <Paper
@@ -69,6 +72,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                             size="small"
                             value={filters.fechaInicio}
                             onChange={(e) => onFilterChange('fechaInicio', e.target.value)}
+                            inputProps={{ 'aria-label': 'Fecha Inicial (Partida)' }}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                             InputLabelProps={{ shrink: true }}
                         />
@@ -83,6 +87,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                             size="small"
                             value={filters.fechaFin}
                             onChange={(e) => onFilterChange('fechaFin', e.target.value)}
+                            inputProps={{ 'aria-label': 'Fecha Final (Partida)' }}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                             InputLabelProps={{ shrink: true }}
                         />
@@ -91,65 +96,61 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                         <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ ml: 1, mb: 0.5, display: 'block', textTransform: 'uppercase' }}>
                             Cliente
                         </Typography>
-                        <TextField
-                            select
-                            fullWidth
-                            size="small"
+                        <AsyncAutocomplete
+                            resourceKey={VIAJE_SELECT_KEYS.clientes}
+                            label=""
+                            ariaLabel="Cliente"
+                            placeholder="Todos"
                             value={filters.clienteID}
-                            onChange={(e) => onFilterChange('clienteID', Number(e.target.value))}
-                            InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
-                        >
-                            <MenuItem value={0}>Todos</MenuItem>
-                            {clientes?.map(c => <MenuItem key={c.id} value={c.id}>{c.text}</MenuItem>)}
-                        </TextField>
+                            onChange={(value) => onFilterChange('clienteID', value)}
+                            loadOptions={loadClientes}
+                            initialOptions={clientes}
+                        />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
                         <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ ml: 1, mb: 0.5, display: 'block', textTransform: 'uppercase' }}>
                             Conductor
                         </Typography>
-                        <TextField
-                            select
-                            fullWidth
-                            size="small"
+                        <AsyncAutocomplete
+                            resourceKey={VIAJE_SELECT_KEYS.colaboradores}
+                            label=""
+                            ariaLabel="Conductor"
+                            placeholder="Todos"
                             value={filters.colaboradorID}
-                            onChange={(e) => onFilterChange('colaboradorID', Number(e.target.value))}
-                            InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
-                        >
-                            <MenuItem value={0}>Todos</MenuItem>
-                            {colaboradores?.map(c => <MenuItem key={c.id} value={c.id}>{c.text}</MenuItem>)}
-                        </TextField>
+                            onChange={(value) => onFilterChange('colaboradorID', value)}
+                            loadOptions={loadColaboradores}
+                            initialOptions={colaboradores}
+                        />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
                         <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ ml: 1, mb: 0.5, display: 'block', textTransform: 'uppercase' }}>
                             Tracto
                         </Typography>
-                        <TextField
-                            select
-                            fullWidth
-                            size="small"
+                        <AsyncAutocomplete
+                            resourceKey={VIAJE_SELECT_KEYS.tractos}
+                            label=""
+                            ariaLabel="Tracto"
+                            placeholder="Todos"
                             value={filters.tractoID}
-                            onChange={(e) => onFilterChange('tractoID', Number(e.target.value))}
-                            InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
-                        >
-                            <MenuItem value={0}>Todos</MenuItem>
-                            {tractos?.map(t => <MenuItem key={t.id} value={t.id}>{t.text}</MenuItem>)}
-                        </TextField>
+                            onChange={(value) => onFilterChange('tractoID', value)}
+                            loadOptions={loadTractos}
+                            initialOptions={tractos}
+                        />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
                         <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ ml: 1, mb: 0.5, display: 'block', textTransform: 'uppercase' }}>
                             Carreta
                         </Typography>
-                        <TextField
-                            select
-                            fullWidth
-                            size="small"
+                        <AsyncAutocomplete
+                            resourceKey={VIAJE_SELECT_KEYS.carretas}
+                            label=""
+                            ariaLabel="Carreta"
+                            placeholder="Todas"
                             value={filters.carretaID}
-                            onChange={(e) => onFilterChange('carretaID', Number(e.target.value))}
-                            InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
-                        >
-                            <MenuItem value={0}>Todas</MenuItem>
-                            {carretas?.map(c => <MenuItem key={c.id} value={c.id}>{c.text}</MenuItem>)}
-                        </TextField>
+                            onChange={(value) => onFilterChange('carretaID', value)}
+                            loadOptions={loadCarretas}
+                            initialOptions={carretas}
+                        />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
                         <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ ml: 1, mb: 0.5, display: 'block', textTransform: 'uppercase' }}>
@@ -161,6 +162,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                             size="small"
                             value={filters.sinCarreta}
                             onChange={(e) => onFilterChange('sinCarreta', Number(e.target.value))}
+                            SelectProps={{ inputProps: { 'aria-label': 'Sin carreta' } }}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                         >
                             <MenuItem value={0}>Todas</MenuItem>
@@ -178,6 +180,7 @@ export function ViajesFilters({ filters, onFilterChange, onSearch, onReset, isSe
                             size="small"
                             value={filters.estadoID}
                             onChange={(e) => onFilterChange('estadoID', Number(e.target.value))}
+                            SelectProps={{ inputProps: { 'aria-label': 'Estado' } }}
                             InputProps={{ sx: { borderRadius: 2, bgcolor: alpha(theme.palette.background.default, 0.5) } }}
                         >
                             <MenuItem value={0}>Todos</MenuItem>
