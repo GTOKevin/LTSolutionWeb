@@ -55,7 +55,6 @@ export function MantenimientoCrudRouteContent({ mode }: MantenimientoCrudRouteCo
         canEditDetails,
         isEdit,
         createdId,
-        listaFlotas,
         listaTiposServicio,
         listaEstados,
     } = useMantenimientoForm({
@@ -133,7 +132,6 @@ export function MantenimientoCrudRouteContent({ mode }: MantenimientoCrudRouteCo
                         form={form}
                         onSubmit={onSubmit}
                         effectiveId={effectiveId}
-                        listaFlotas={listaFlotas}
                         listaTiposServicio={listaTiposServicio}
                         listaEstados={listaEstados}
                         mantenimientoInfo={mantenimiento ?? null}

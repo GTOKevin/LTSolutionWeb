@@ -1,12 +1,14 @@
-import type { SelectItem } from '@/shared/model/types';
+import type { SelectOption } from '@/shared/model/types';
 
 const MAX_CACHE_ENTRIES = 500;
 
-const cache = new Map<string, SelectItem>();
+type CachedOption = SelectOption<string | number>;
 
-const buildKey = (resourceKey: string, id: number): string => `${resourceKey}:${id}`;
+const cache = new Map<string, CachedOption>();
 
-const touch = (key: string, item: SelectItem): void => {
+const buildKey = (resourceKey: string, id: string | number): string => `${resourceKey}:${id}`;
+
+const touch = (key: string, item: CachedOption): void => {
     cache.delete(key);
     cache.set(key, item);
     if (cache.size > MAX_CACHE_ENTRIES) {
@@ -15,18 +17,21 @@ const touch = (key: string, item: SelectItem): void => {
     }
 };
 
-export function cacheSelectItem(resourceKey: string, item: SelectItem | null | undefined): void {
+export function cacheSelectItem(resourceKey: string, item: CachedOption | null | undefined): void {
     if (!item || !item.id) return;
     touch(buildKey(resourceKey, item.id), item);
 }
 
-export function getCachedSelectItem(resourceKey: string, id?: number | null): SelectItem | null {
+export function getCachedSelectItem<TId extends string | number = number>(
+    resourceKey: string,
+    id?: TId | null,
+): SelectOption<TId> | null {
     if (!id) return null;
     const key = buildKey(resourceKey, id);
     const item = cache.get(key);
     if (!item) return null;
     touch(key, item);
-    return item;
+    return item as SelectOption<TId>;
 }
 
 export function clearSelectItemCache(resourceKey?: string): void {
@@ -43,8 +48,8 @@ export function clearSelectItemCache(resourceKey?: string): void {
 
 export function resolveSelectLabel(
     resourceKey: string,
-    id: number | null | undefined,
-    items?: SelectItem[],
+    id: number | string | null | undefined,
+    items?: ReadonlyArray<SelectOption<string | number>>,
     fallback = 'No especificado',
 ): string {
     if (!id) return fallback;

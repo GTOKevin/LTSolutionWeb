@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { useForm, type Resolver, type SubmitErrorHandler, type SubmitHandler } from 'react-hook-form';
 import { APP_PATHS, buildAppDetailPath } from '@shared/config/app-routes';
-import { clienteApi } from '@entities/cliente/api/cliente.api';
+import type { SelectItem } from '@shared/model/types';
 import { monedaApi } from '@entities/moneda/api/moneda.api';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import { MONEDA_CODES, ESTADO_SECTIONS } from '@entities/master-data/model/constants';
@@ -60,15 +60,18 @@ export function useFacturaCreateEditController({
         }
     }, [factura, form, isEdit]);
 
-    const { data: clientes } = useQuery({
-        queryKey: ['clientes', 'select'],
-        queryFn: () => clienteApi.getSelect('', 50),
-    });
-
     const { data: monedas } = useQuery({
         queryKey: ['monedas', 'select'],
         queryFn: () => monedaApi.getSelect('', 50),
     });
+
+    // Cliente seleccionado (edición/consulta): alimenta el label del
+    // AsyncAutocomplete antes de la primera búsqueda remota.
+    const clienteInitialOptions = useMemo<SelectItem[]>(() => {
+        const cliente = factura?.cliente;
+        if (!cliente) return [];
+        return [{ id: cliente.clienteID, text: cliente.razonSocial }];
+    }, [factura]);
 
     const { data: facturaEstadosResponse } = useQuery({
         queryKey: ['estados', 'factura-select'],
@@ -150,7 +153,7 @@ export function useFacturaCreateEditController({
     return {
         form,
         factura,
-        clientes,
+        clienteInitialOptions,
         monedas,
         isEdit,
         viewOnly,

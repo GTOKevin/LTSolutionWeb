@@ -32,6 +32,7 @@ import {
     useDeleteViajeMercaderia
 } from '@/features/viaje/hooks/useViajeMercaderias';
 import { useViajeCatalogOptions } from '@/features/viaje/options/hooks/useViajeCatalogOptions';
+import { MercaderiaAutocomplete } from '@features/viaje/ui/MercaderiaAutocomplete';
 import { useToast } from '@/shared/components/ui/Toast';
 
 interface CargoManifestSectionProps {
@@ -579,23 +580,17 @@ export function CargoManifestSection({
                             <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5 }}>
                                 Producto / Mercadería
                             </Typography>
-                            <FormControl fullWidth size="small">
-                                <Select
-                                    value={selectedMercaderiaId}
-                                    onChange={(e) => setSelectedMercaderiaId(Number(e.target.value))}
-                                    displayEmpty
-                                    sx={{ bgcolor: 'background.paper', fontSize: '0.85rem' }}
-                                >
-                                    <MenuItem value="" disabled>
-                                        <em>Seleccione producto del catálogo...</em>
-                                    </MenuItem>
-                                    {catalogoMercaderias?.map((m) => (
-                                        <MenuItem key={m.id} value={m.id}>
-                                            {m.text}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                            <MercaderiaAutocomplete
+                                value={selectedMercaderiaId === '' ? null : selectedMercaderiaId}
+                                onChange={(value) => setSelectedMercaderiaId(value)}
+                                initialOptions={catalogoMercaderias ?? []}
+                                description={{
+                                    get: () => itemDescripcion,
+                                    set: (text) => setItemDescripcion(text),
+                                }}
+                                placeholder="Seleccione producto del catálogo..."
+                                sx={{ bgcolor: 'background.paper' }}
+                            />
                         </Grid>
 
                         {/* Descripción / Serie */}

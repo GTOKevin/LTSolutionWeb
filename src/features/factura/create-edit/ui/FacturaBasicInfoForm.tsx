@@ -3,12 +3,14 @@ import { Controller, type UseFormReturn } from 'react-hook-form';
 import { Box, Grid, MenuItem, Paper, TextField, Typography, useTheme, Tooltip } from '@mui/material';
 import { Receipt as ReceiptIcon, InfoOutlined as InfoOutlinedIcon } from '@mui/icons-material';
 import { FormDatePicker } from '@shared/components/ui/FormDatePicker';
+import { AsyncAutocomplete } from '@shared/components/ui/AsyncAutocomplete';
+import { FACTURA_SELECT_KEYS, facturaResourceLoaders } from '@features/factura/options/hooks/useFacturaResourceSearch';
 import type { SelectItem } from '@shared/model/types';
 import type { CreateFacturaSchema } from '../../model/schema';
 
 interface FacturaBasicInfoFormProps {
     form: UseFormReturn<CreateFacturaSchema>;
-    clientes?: SelectItem[];
+    clienteInitialOptions?: SelectItem[];
     monedas?: SelectItem[];
     isEdit: boolean;
     viewOnly: boolean;
@@ -17,7 +19,7 @@ interface FacturaBasicInfoFormProps {
 
 export function FacturaBasicInfoForm({
     form,
-    clientes,
+    clienteInitialOptions,
     monedas,
     isEdit,
     viewOnly,
@@ -25,6 +27,7 @@ export function FacturaBasicInfoForm({
 }: FacturaBasicInfoFormProps) {
     const theme = useTheme();
     const { control, formState: { errors } } = form;
+    const { loadClientes } = facturaResourceLoaders;
 
     return (
         <Paper
@@ -53,24 +56,22 @@ export function FacturaBasicInfoForm({
                             disabled={isEdit || viewOnly}
                             control={control}
                             render={({ field }) => (
-                                <TextField
-                                    {...field}
-                                    select
-                                    fullWidth
+                                <AsyncAutocomplete
+                                    resourceKey={FACTURA_SELECT_KEYS.clientes}
+                                    label=""
+                                    ariaLabel="Cliente"
+                                    placeholder="Buscar cliente por RUC o razón social..."
+                                    size="medium"
+                                    required
+                                    value={field.value}
+                                    onChange={(value) => field.onChange(value)}
+                                    loadOptions={loadClientes}
+                                    initialOptions={clienteInitialOptions}
                                     error={!!errors.clienteID}
-                                    helperText={errors.clienteID?.message}
+                                    helperText={errors.clienteID?.message?.toString()}
                                     disabled={isEdit || viewOnly}
-                                    sx={{ bgcolor: 'background.default', borderRadius: 2 }}
-                                >
-                                    <MenuItem value={0} disabled>
-                                        Seleccione un cliente
-                                    </MenuItem>
-                                    {clientes?.map((cliente) => (
-                                        <MenuItem key={cliente.id} value={cliente.id}>
-                                            {cliente.text}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
+                                    sx={{ bgcolor: 'background.default' }}
+                                />
                             )}
                         />
                     </Grid>

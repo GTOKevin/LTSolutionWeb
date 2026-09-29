@@ -19,6 +19,12 @@ import {
     type CreateMantenimientoDetalleSchema
 } from '../../model/schema';
 import { handleAddressKeyDown } from '@/shared/utils/input-validators';
+import { AsyncAutocomplete } from '@/shared/components/ui/AsyncAutocomplete';
+import {
+    MANTENIMIENTO_SELECT_KEYS,
+    createTiposProductoLoader,
+    loadCategorias,
+} from '@features/mantenimiento/options/hooks/useMantenimientoResourceSearch';
 import { useEffect, useState } from 'react';
 
 interface MantenimientoDetalleFormProps {
@@ -112,7 +118,7 @@ export function MantenimientoDetalleForm({
         queryFn: () => tipoProductoApi.getSelectCategoria()
     });
 
-    const { data: tiposProducto, isLoading: isLoadingProductos } = useQuery({
+    const { data: tiposProducto } = useQuery({
         queryKey: ['tipos-producto', selectedCategoria],
         queryFn: () => tipoProductoApi.getSelect(undefined, undefined, selectedCategoria),
         enabled: !!selectedCategoria
@@ -127,8 +133,7 @@ export function MantenimientoDetalleForm({
     const listaProductos = tiposProducto || [];
     const listaMonedas = monedas || [];
 
-    const handleCategoriaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const categoria = event.target.value;
+    const handleCategoriaChange = (categoria: string) => {
         setSelectedCategoria(categoria);
         setValue('tipoProductoID', 0); // Reset product selection when category changes
     };
@@ -153,47 +158,38 @@ export function MantenimientoDetalleForm({
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: 1 }}>
             <Grid container spacing={2}>
                 <Grid size={{xs:12, sm:6}}>
-                        <TextField
-                            select
+                        <AsyncAutocomplete<string>
+                            resourceKey={MANTENIMIENTO_SELECT_KEYS.categorias}
                             label="Categoría"
-                            fullWidth
-                            value={selectedCategoria}
-                            onChange={handleCategoriaChange}
+                            ariaLabel="Categoría"
+                            placeholder="Seleccione..."
+                            value={selectedCategoria || null}
+                            onChange={(value) => handleCategoriaChange(value)}
+                            loadOptions={loadCategorias}
+                            initialOptions={listaCategorias}
                             disabled={viewOnly}
-                            size="small"
                             helperText="Seleccione primero una categoría"
-                        >
-                            <MenuItem value="" disabled>Seleccione...</MenuItem>
-                            {listaCategorias.map((cat) => (
-                                <MenuItem key={cat.text} value={cat.text}>
-                                    {cat.text}
-                                </MenuItem>
-                            ))}
-                        </TextField>
+                        />
                     </Grid>
 
                     <Grid size={{xs:12, sm:6}}>
                         <Controller
                             name="tipoProductoID"
                             control={control}
-                            render={({ field }) => (
-                                <TextField
-                                    {...field}
-                                    select
+                            render={({ field, fieldState }) => (
+                                <AsyncAutocomplete
+                                    resourceKey={`${MANTENIMIENTO_SELECT_KEYS.tiposProducto}.${selectedCategoria}`}
                                     label="Producto / Servicio"
-                                    fullWidth
-                                    error={!!errors.tipoProductoID}
-                                    helperText={errors.tipoProductoID?.message}
-                                    disabled={viewOnly || !selectedCategoria || isLoadingProductos}
-                                    size="small"
-                                >
-                                    <MenuItem value={0} disabled>Seleccione...</MenuItem>
-                                    {listaProductos.map((item) => (
-                                        <MenuItem key={item.id} value={item.id}>
-                                            {item.text}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
+                                    ariaLabel="Producto / Servicio"
+                                    placeholder={selectedCategoria ? 'Buscar producto...' : 'Seleccione una categoría'}
+                                    value={typeof field.value === 'number' ? field.value : 0}
+                                    onChange={(value) => field.onChange(value)}
+                                    loadOptions={createTiposProductoLoader(selectedCategoria)}
+                                    initialOptions={listaProductos}
+                                    error={!!fieldState.error}
+                                    helperText={fieldState.error?.message?.toString()}
+                                    disabled={viewOnly || !selectedCategoria}
+                                />
                             )}
                         />
                     </Grid>

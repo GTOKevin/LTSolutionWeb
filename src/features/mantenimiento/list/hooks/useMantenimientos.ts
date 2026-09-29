@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
-import { flotaApi } from '@entities/flota/api/flota.api';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import { ESTADO_SECCIONES } from '@entities/master-data/model/constants';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
@@ -45,11 +44,6 @@ export function useMantenimientos() {
 
     // --- Data Fetching ---
     // Catalogs
-    const { data: flotas } = useQuery({
-        queryKey: ['flotas-select'],
-        queryFn: () => flotaApi.getSelect({  })
-    });
-    
     const { data: estados } = useQuery({ 
         queryKey: ['estados-select'], 
         queryFn: () => estadoApi.getSelect(undefined, undefined, ESTADO_SECCIONES.MANTENIMIENTO) 
@@ -216,7 +210,6 @@ export function useMantenimientos() {
         reopenPending: reopenMutation.isPending,
         
         // Catalogs
-        listaFlotas: flotas || [],
         listaEstados: estados || [],
 
         // Setters
