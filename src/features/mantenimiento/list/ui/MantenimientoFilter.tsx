@@ -18,6 +18,8 @@ import {
     Search as SearchIcon,
 } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
+import { AsyncAutocomplete } from '@shared/components/ui/AsyncAutocomplete';
+import { MANTENIMIENTO_SELECT_KEYS, mantenimientoResourceLoaders } from '@features/mantenimiento/options/hooks/useMantenimientoResourceSearch';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import type { MantenimientoListDraftState } from '../model/types';
 
@@ -26,7 +28,6 @@ interface MantenimientoFilterProps {
     onDraftChange: <K extends keyof MantenimientoListDraftState>(field: K, value: MantenimientoListDraftState[K]) => void;
     onSearch: () => void;
     onClear: () => void;
-    flotas: SelectItem[];
     estados: SelectItem[];
     isSearching?: boolean;
 }
@@ -36,11 +37,11 @@ export function MantenimientoFilter({
     onDraftChange,
     onSearch,
     onClear,
-    flotas,
     estados,
     isSearching = false,
 }: MantenimientoFilterProps) {
     const theme = useTheme();
+    const { loadFlotas } = mantenimientoResourceLoaders;
 
     return (
         <Paper 
@@ -86,19 +87,15 @@ export function MantenimientoFilter({
                     
                     <Grid container spacing={2} alignItems="center">
                         <Grid size={{ xs: 12, md: 3 }}>
-                            <TextField
-                                select
+                            <AsyncAutocomplete
+                                resourceKey={MANTENIMIENTO_SELECT_KEYS.flotas}
                                 label="Vehículo"
-                                size="small"
-                                fullWidth
+                                ariaLabel="Vehículo"
+                                placeholder="Todos"
                                 value={draftState.flotaID}
-                                onChange={(e) => onDraftChange('flotaID', Number(e.target.value))}
-                            >
-                                <MenuItem value={0}>Todos</MenuItem>
-                                {flotas.map((item) => (
-                                    <MenuItem key={item.id} value={item.id}>{item.text}</MenuItem>
-                                ))}
-                            </TextField>
+                                onChange={(value) => onDraftChange('flotaID', value)}
+                                loadOptions={loadFlotas}
+                            />
                         </Grid>
                         <Grid size={{ xs: 12, md: 3 }}>
                             <TextField

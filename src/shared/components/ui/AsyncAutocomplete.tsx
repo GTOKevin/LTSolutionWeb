@@ -30,7 +30,7 @@ import {
   ErrorOutline as ErrorOutlineIcon,
 } from '@mui/icons-material';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import type { SelectItem } from '@/shared/model/types';
+import type { SelectOption } from '@/shared/model/types';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import { getErrorMessage } from '@/shared/utils/api-errors';
@@ -38,16 +38,22 @@ import { useToast } from '@/shared/components/ui/Toast';
 import { cacheSelectItem, getCachedSelectItem } from '@/shared/lib/select-item-cache';
 import { ASYNC_AUTOCOMPLETE_QUERY_KEYS } from '@/shared/lib/async-autocomplete-keys';
 
-export interface AsyncAutocompleteProps {
+/**
+ * Opción mostrada por el autocomplete. Compatible con `SelectItem` (id numérico)
+ * y `SelectStringItem` (id string) del modelo compartido.
+ */
+export type AsyncAutocompleteOption<TId extends string | number = number> = SelectOption<TId>;
+
+export interface AsyncAutocompleteProps<TId extends string | number = number> {
   /** Clave estable del catálogo (namespace de React Query y del cache de labels). */
   resourceKey: string;
   label: string;
-  value: number | null | undefined;
-  onChange: (value: number, option: SelectItem | null) => void;
+  value: TId | null | undefined;
+  onChange: (value: TId, option: AsyncAutocompleteOption<TId> | null) => void;
   /** Cargador de opciones paginado por texto. */
-  loadOptions: (search: string) => Promise<SelectItem[]>;
+  loadOptions: (search: string) => Promise<AsyncAutocompleteOption<TId>[]>;
   /** Opciones preexistentes para mostrar antes de la primera consulta. */
-  initialOptions?: SelectItem[];
+  initialOptions?: AsyncAutocompleteOption<TId>[];
   placeholder?: string;
   /** Nombre accesible del input cuando la etiqueta visible se renderiza fuera del control (F8). */
   ariaLabel?: string;
@@ -67,6 +73,8 @@ export interface AsyncAutocompleteProps {
   noOptionsText?: string;
   /** Muestra el icono de búsqueda al inicio del input con micro-animación. */
   showSearchIcon?: boolean;
+  /** Valor emitido al limpiar la selección. Por defecto `0`. */
+  emptyValue?: TId;
   sx?: SxProps<Theme>;
 }
 
@@ -192,7 +200,7 @@ function highlightMatch(text: string, query: string): ReactNode {
 }
 
 
-export function AsyncAutocomplete({
+export function AsyncAutocomplete<TId extends string | number = number>({
   resourceKey,
   label,
   value,
@@ -212,11 +220,14 @@ export function AsyncAutocomplete({
   minChars = 0,
   noOptionsText,
   showSearchIcon = true,
+  emptyValue,
   sx,
-}: AsyncAutocompleteProps) {
+}: AsyncAutocompleteProps<TId>) {
   const [open, setOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const debouncedSearch = useDebounce(searchText.trim(), 300);
+
+  const resolvedEmptyValue = (emptyValue ?? 0) as unknown as TId;
 
   const { showToast } = useToast();
   const onErrorRef = useRef(onError);
@@ -261,7 +272,7 @@ export function AsyncAutocomplete({
     if (!value) return null;
     return (
       (data ?? initialOptions ?? []).find((item) => item.id === value) ??
-      getCachedSelectItem(resourceKey, value)
+      getCachedSelectItem<TId>(resourceKey, value)
     );
   }, [data, initialOptions, value, resourceKey]);
 
@@ -392,7 +403,7 @@ export function AsyncAutocomplete({
       onChange={(_, newValue) => {
         cacheSelectItem(resourceKey, newValue);
         setSearchText(newValue?.text ?? '');
-        onChange(newValue?.id ?? 0, newValue);
+        onChange(newValue?.id ?? resolvedEmptyValue, newValue);
       }}
       PaperComponent={AsyncAutocompleteDropdown}
       renderOption={(props, option, { selected }) => {

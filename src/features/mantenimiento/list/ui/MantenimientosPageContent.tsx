@@ -211,7 +211,6 @@ export function MantenimientosPageContent({ controller }: MantenimientosPageCont
                         onDraftChange={controller.handleDraftChange}
                         onSearch={controller.handleSearch}
                         onClear={controller.handleClear}
-                        flotas={controller.listaFlotas}
                         estados={controller.listaEstados}
                         isSearching={controller.isFetching}
                     />

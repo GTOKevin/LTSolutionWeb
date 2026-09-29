@@ -18,8 +18,10 @@ export const colaboradorApi = {
         return data;
     },
 
-    getSelectAvailable: async (currentColaboradorId?: number) => {
-        const { data } = await httpClient.get<SelectItem[]>('/Colaborador/select-available', { params: { currentColaboradorId } });
+    getSelectAvailable: async (currentColaboradorId?: number, search?: string, limit: number = 20) => {
+        const { data } = await httpClient.get<SelectItem[]>('/Colaborador/select-available', {
+            params: { currentColaboradorId, search, limit },
+        });
         return data;
     },
 

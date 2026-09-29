@@ -1,8 +1,8 @@
-import { useRef } from 'react';
 import { Box, Typography, Paper, Grid, TextField, Button, IconButton, useTheme, Alert } from '@mui/material';
-import { useFormContext, useFieldArray } from 'react-hook-form';
+import { useFormContext, useFieldArray, Controller } from 'react-hook-form';
 import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { ReloadIconButton } from '@/shared/components/ui/ReloadIconButton';
+import { MercaderiaAutocomplete } from '@features/viaje/ui/MercaderiaAutocomplete';
 import { Add, Delete, Inventory2, Straighten, Scale, LibraryAdd, WarningAmber } from '@mui/icons-material';
 import type { SelectItem } from '@/shared/model/types';
 import type { ViajeWizardFormData } from '../../../model/schema';
@@ -21,7 +21,6 @@ interface Props {
 
 export function Step4DetallesCarga({ options }: Props) {
     const theme = useTheme();
-    const autoDescriptionByFieldIdRef = useRef<Record<string, string>>({});
     const {
         control,
         register,
@@ -43,25 +42,6 @@ export function Step4DetallesCarga({ options }: Props) {
         control,
         name: 'mercaderias'
     });
-
-    const handleMercaderiaChange = (fieldId: string, index: number, mercaderiaId: number) => {
-        const mercaderiaBase = mercaderias?.find((item) => item.id === mercaderiaId)?.text ?? '';
-        const descriptionPath = `mercaderias.${index}.descripcion` as const;
-        const currentDescription = getValues(descriptionPath)?.trim() ?? '';
-        const previousAutoDescription = autoDescriptionByFieldIdRef.current[fieldId]?.trim() ?? '';
-        const shouldAutofill = currentDescription.length === 0 || currentDescription === previousAutoDescription;
-
-        autoDescriptionByFieldIdRef.current[fieldId] = mercaderiaBase;
-
-        if (!shouldAutofill) {
-            return;
-        }
-
-        setValue(descriptionPath, mercaderiaBase, {
-            shouldDirty: true,
-            shouldValidate: true,
-        });
-    };
 
     const handleAddMercaderia = () => {
         append({
@@ -183,24 +163,29 @@ export function Step4DetallesCarga({ options }: Props) {
                                             />
                                         )}
                                     </Box>
-                                    {(() => {
-                                        const mercaderiaRegistration = register(`mercaderias.${index}.mercaderiaID`, { valueAsNumber: true });
-
-                                        return (
-                                    <FormSelect
-                                        label=""
-                                        registration={mercaderiaRegistration}
-                                        options={mercaderias || []}
-                                        defaultValue={0}
-                                        onChange={(event) => {
-                                            handleMercaderiaChange(field.id, index, Number(event.target.value));
-                                        }}
-                                        error={!!errors.mercaderias?.[index]?.mercaderiaID}
-                                        helperText={errors.mercaderias?.[index]?.mercaderiaID?.message?.toString()}
-                                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, py: 1 } }}
+                                    <Controller
+                                        name={`mercaderias.${index}.mercaderiaID`}
+                                        control={control}
+                                        render={({ field: controlledField, fieldState }) => (
+                                            <MercaderiaAutocomplete
+                                                identityKey={field.id}
+                                                value={typeof controlledField.value === 'number' ? controlledField.value : 0}
+                                                onChange={(selectedId) => controlledField.onChange(selectedId)}
+                                                initialOptions={mercaderias ?? []}
+                                                error={!!fieldState.error}
+                                                helperText={fieldState.error?.message?.toString()}
+                                                description={{
+                                                    get: () => getValues(`mercaderias.${index}.descripcion`) ?? '',
+                                                    set: (text) =>
+                                                        setValue(`mercaderias.${index}.descripcion`, text, {
+                                                            shouldDirty: true,
+                                                            shouldValidate: true,
+                                                        }),
+                                                }}
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, py: 1 } }}
+                                            />
+                                        )}
                                     />
-                                        );
-                                    })()}
                                 </Grid>
                                 <Grid size={{ xs: 12, md: 6 }}>
                                     <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 1 }}>

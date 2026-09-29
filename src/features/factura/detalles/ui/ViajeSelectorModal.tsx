@@ -17,11 +17,14 @@ import {
     IconButton,
     TableContainer,
     Paper,
+    TextField,
+    InputAdornment,
     Tooltip,
     alpha
 } from '@mui/material';
 import { 
     Close as CloseIcon, 
+    Search as SearchIcon,
     TouchApp,
     LocalShipping as LocalShippingIcon,
     Inventory as InventoryIcon,
@@ -29,9 +32,11 @@ import {
     Flag as FlagIcon,
     RvHookup as RvHookupIcon
 } from '@mui/icons-material';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { facturaApi } from '@/entities/factura/api/factura.api';
 import type { FacturaDetalleViajeOption } from '@/entities/factura/model/types';
+import { useDebounce } from '@/shared/hooks/useDebounce';
+import { handleSanitizeSearchInput } from '@/shared/utils/input-validators';
 import { getErrorMessage } from '@/shared/utils/api-errors';
 
 interface ViajeSelectorModalProps {
@@ -43,36 +48,67 @@ interface ViajeSelectorModalProps {
 
 export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: ViajeSelectorModalProps) {
     const [isSelecting, setIsSelecting] = useState(false);
+    const [searchText, setSearchText] = useState('');
+    const debouncedSearch = useDebounce(searchText.trim(), 300);
 
     const { data, error, isError, isLoading, isFetching, refetch } = useQuery({
-        queryKey: ['factura', 'detalle-viajes', clienteId],
+        queryKey: ['factura', 'detalle-viajes', clienteId, debouncedSearch],
         queryFn: () => facturaApi.getDetalleViajes({
             clienteId,
+            search: debouncedSearch || undefined,
             limit: 100
         }),
-        enabled: open && !!clienteId
+        enabled: open && !!clienteId,
+        placeholderData: keepPreviousData,
     });
 
     const viajesDisponibles = useMemo(() => {
         return data ?? [];
     }, [data]);
 
+    const handleClose = () => {
+        setSearchText('');
+        onClose();
+    };
+
     const handleSelect = async (viaje: FacturaDetalleViajeOption) => {
         setIsSelecting(true);
         onSelect(viaje);
-        onClose();
+        handleClose();
         setIsSelecting(false);
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+        <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
             <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h5" component="span">Seleccionar Viaje</Typography>
-                <IconButton onClick={onClose} size="small" disabled={isSelecting}>
+                <IconButton onClick={handleClose} size="small" disabled={isSelecting}>
                     <CloseIcon />
                 </IconButton>
             </DialogTitle>
             <DialogContent dividers sx={{ p: 2, bgcolor: (theme) => alpha(theme.palette.background.default, 0.4) }}>
+                <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Buscar por código, placa o mercadería..."
+                    value={searchText}
+                    onChange={(event) => setSearchText(handleSanitizeSearchInput(event.target.value))}
+                    inputProps={{ 'aria-label': 'Buscar viajes' }}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon color="action" fontSize="small" />
+                            </InputAdornment>
+                        ),
+                        endAdornment: isFetching ? (
+                            <InputAdornment position="end">
+                                <CircularProgress size={16} thickness={5} color="primary" />
+                            </InputAdornment>
+                        ) : undefined,
+                        sx: { borderRadius: 2, bgcolor: 'background.paper' },
+                    }}
+                    sx={{ mb: 2 }}
+                />
                 {isLoading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                         <CircularProgress />
@@ -106,7 +142,9 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
                                     <TableRow>
                                         <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
                                             <Typography color="text.secondary" variant="body2">
-                                                No hay viajes completados y sin facturar disponibles para este cliente.
+                                                {debouncedSearch
+                                                    ? 'No se encontraron viajes que coincidan con la búsqueda.'
+                                                    : 'No hay viajes completados y sin facturar disponibles para este cliente.'}
                                             </Typography>
                                         </TableCell>
                                     </TableRow>
@@ -188,7 +226,7 @@ export function ViajeSelectorModal({ open, onClose, clienteId, onSelect }: Viaje
                 )}
             </DialogContent>
             <DialogActions sx={{ p: 2, bgcolor: 'background.default' }}>
-                <Button onClick={onClose} disabled={isSelecting}>Cancelar</Button>
+                <Button onClick={handleClose} disabled={isSelecting}>Cancelar</Button>
             </DialogActions>
         </Dialog>
     );

@@ -19,9 +19,13 @@ import {
     Tab
 } from '@mui/material';
 import { Controller } from 'react-hook-form';
+import { useMemo } from 'react';
 import { useUsuarioForm } from '../../hooks/useUsuarioForm';
 import { SectionHeader } from '@shared/components/ui/SectionHeader';
 import { TabPanel } from '@shared/components/ui/TabPanel';
+import { AsyncAutocomplete } from '@shared/components/ui/AsyncAutocomplete';
+import type { SelectItem } from '@shared/model/types';
+import { USUARIO_SELECT_KEYS, createUsuarioColaboradorLoader } from '@features/usuario/options/hooks/useUsuarioResourceSearch';
 import type { Usuario } from '@entities/usuario/model/types';
 import { Visibility, VisibilityOff, LockReset, Info, Close as CloseIcon } from '@mui/icons-material';
 import { handleNoSpacesKeyDown } from '@shared/utils/input-validators';
@@ -54,7 +58,6 @@ export function CreateEditUsuarioModal({ open, onClose, usuarioToEdit, onSuccess
         // Lists
         listaRoles,
         listaEstados,
-        listaColaboradores,
         
         // Password helpers
         showPassword,
@@ -68,6 +71,25 @@ export function CreateEditUsuarioModal({ open, onClose, usuarioToEdit, onSuccess
         onClose,
         open
     });
+
+    const loadColaboradores = useMemo(
+        () => createUsuarioColaboradorLoader(usuarioToEdit?.colaboradorID),
+        [usuarioToEdit?.colaboradorID],
+    );
+
+    // Colaborador preseleccionado (edición/consulta): alimenta el label del
+    // AsyncAutocomplete antes de la primera búsqueda remota.
+    const colaboradorInitialOptions = useMemo<SelectItem[]>(() => {
+        const colaborador = usuarioToEdit?.colaborador;
+        if (!colaborador) return [];
+        const nombreCompleto = [colaborador.nombres, colaborador.primerApellido]
+            .filter(Boolean)
+            .join(' ');
+        return [{
+            id: colaborador.colaboradorID,
+            text: nombreCompleto || `Colaborador ${colaborador.colaboradorID}`,
+        }];
+    }, [usuarioToEdit?.colaborador]);
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
         setActiveTab(newValue);
@@ -310,25 +332,20 @@ export function CreateEditUsuarioModal({ open, onClose, usuarioToEdit, onSuccess
                                         name="colaboradorID"
                                         control={control}
                                         render={({ field }) => (
-                                            <TextField
-                                                {...field}
-                                                select
-                                                fullWidth
+                                            <AsyncAutocomplete
+                                                resourceKey={USUARIO_SELECT_KEYS.colaboradores}
+                                                label=""
+                                                ariaLabel="Vincular a Colaborador"
+                                                placeholder="Buscar colaborador por nombre o documento..."
+                                                size="medium"
+                                                value={field.value ?? 0}
+                                                onChange={(value) => field.onChange(value)}
+                                                loadOptions={loadColaboradores}
+                                                initialOptions={colaboradorInitialOptions}
                                                 error={!!errors.colaboradorID}
-                                                helperText={errors.colaboradorID?.message}
+                                                helperText={errors.colaboradorID?.message?.toString()}
                                                 disabled={viewOnly || (isEdit && !!usuarioToEdit?.colaboradorID)}
-                                                InputProps={{
-                                                    sx: { borderRadius: 2 }
-                                                }}
-                                                onChange={(e) => field.onChange(Number(e.target.value))}
-                                            >
-                                                <MenuItem value={0}>Ninguno</MenuItem>
-                                                {listaColaboradores.map((colab) => (
-                                                    <MenuItem key={colab.id} value={colab.id}>
-                                                        {colab.text}
-                                                    </MenuItem>
-                                                ))}
-                                            </TextField>
+                                            />
                                         )}
                                     />
                                 </Grid>

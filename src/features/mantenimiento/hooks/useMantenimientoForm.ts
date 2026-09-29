@@ -1,7 +1,6 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
-import { flotaApi } from '@entities/flota/api/flota.api';
 import { estadoApi } from '@entities/estado/api/estado.api';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
 import { createMantenimientoSchema, type CreateMantenimientoFormInput, type CreateMantenimientoSchema } from '../model/schema';
@@ -46,12 +45,6 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onCreateS
     });
 
     // --- Queries ---
-    const { data: flotas } = useQuery({
-        queryKey: ['flotas-select'],
-        queryFn: () => flotaApi.getSelect({ search: '', limit: 50 }),
-        enabled: open
-    });
-
     const { data: tiposServicio } = useQuery({
         queryKey: ['tipos-servicio'],
         queryFn: () => maestroApi.getSelect(undefined, TIPO_MAESTRO_SECTIONS.SERVICIO),
@@ -64,7 +57,6 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onCreateS
         enabled: open
     });
 
-    const listaFlotas = flotas || [];
     const listaTiposServicio = tiposServicio || [];
     const listaEstados = estados || [];
     const estadoCompletadoId = resolveMantenimientoCompletadoId(listaEstados);
@@ -195,7 +187,6 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onCreateS
         createdId,
         
         // Catalogs
-        listaFlotas,
         listaTiposServicio,
         listaEstados
     };

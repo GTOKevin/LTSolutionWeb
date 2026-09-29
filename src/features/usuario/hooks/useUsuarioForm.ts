@@ -3,7 +3,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { rolUsuarioApi } from '@entities/rol-usuario/api/rol-usuario.api';
 import { estadoApi } from '@entities/estado/api/estado.api';
-import { colaboradorApi } from '@entities/colaborador/api/colaborador.api';
 import { ESTADO_SECCIONES } from '@entities/master-data/model/constants';
 import { resolveUsuarioActivoId } from '@entities/usuario/model/status';
 import { createUsuarioSchemaFull, editUsuarioSchemaFull, type CreateUsuarioSchema, type UsuarioFormSchema } from '../model/schema';
@@ -39,15 +38,8 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
         enabled: open
     });
 
-    const { data: colaboradores } = useQuery({
-        queryKey: ['colaboradores-select-available', usuarioToEdit?.colaboradorID],
-        queryFn: () => colaboradorApi.getSelectAvailable(usuarioToEdit?.colaboradorID),
-        enabled: open
-    });
-
     const listaRoles = roles || [];
     const listaEstados = estados || [];
-    const listaColaboradores = colaboradores || [];
     const estadoActivoId = resolveUsuarioActivoId(listaEstados);
 
     // --- Form ---
@@ -196,7 +188,6 @@ export function useUsuarioForm({ usuarioToEdit, onSuccess, onClose, open }: UseU
         // Lists
         listaRoles,
         listaEstados,
-        listaColaboradores,
         
         // Password helpers
         showPassword,

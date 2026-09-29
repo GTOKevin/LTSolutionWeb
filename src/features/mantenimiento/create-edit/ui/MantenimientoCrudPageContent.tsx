@@ -6,12 +6,15 @@ import {
     Typography,
     useTheme,
 } from '@mui/material';
+import { useMemo } from 'react';
 import { DirectionsCar as CarIcon, VisibilityOff as HiddenIcon } from '@mui/icons-material';
-import type { UseFormReturn } from 'react-hook-form';
+import { Controller, type UseFormReturn } from 'react-hook-form';
 import type { SelectItem } from '@/shared/model/types';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import { TabPanel } from '@/shared/components/ui/TabPanel';
 import { SectionHeader } from '@/shared/components/ui/SectionHeader';
+import { AsyncAutocomplete } from '@/shared/components/ui/AsyncAutocomplete';
+import { MANTENIMIENTO_SELECT_KEYS, mantenimientoResourceLoaders } from '@features/mantenimiento/options/hooks/useMantenimientoResourceSearch';
 import { resolveMantenimientoCompletadoId } from '@entities/mantenimiento/model/status';
 import { MantenimientoDetalleList } from '../../detalles/ui/MantenimientoDetalleList';
 import type { CreateMantenimientoFormInput, CreateMantenimientoSchema } from '../../model/schema';
@@ -21,7 +24,6 @@ interface MantenimientoCrudPageContentProps {
     form: UseFormReturn<CreateMantenimientoFormInput, unknown, CreateMantenimientoSchema>;
     onSubmit: (data: CreateMantenimientoSchema) => void;
     effectiveId: number | null;
-    listaFlotas: SelectItem[];
     listaTiposServicio: SelectItem[];
     listaEstados: SelectItem[];
     mantenimientoInfo?: Mantenimiento | null;
@@ -35,7 +37,6 @@ export function MantenimientoCrudPageContent({
     form,
     onSubmit,
     effectiveId,
-    listaFlotas,
     listaTiposServicio,
     listaEstados,
     mantenimientoInfo,
@@ -45,11 +46,21 @@ export function MantenimientoCrudPageContent({
 }: MantenimientoCrudPageContentProps) {
     const theme = useTheme();
     const {
+        control,
         register,
         handleSubmit,
         formState: { errors },
     } = form;
     const completadoEstadoId = resolveMantenimientoCompletadoId(listaEstados);
+    const { loadFlotas } = mantenimientoResourceLoaders;
+
+    // Unidad preseleccionada (edición/consulta): alimenta el label del
+    // AsyncAutocomplete antes de la primera búsqueda remota.
+    const flotaInitialOptions = useMemo<SelectItem[]>(() => {
+        const flota = mantenimientoInfo?.flota;
+        if (!flota) return [];
+        return [{ id: flota.flotaID, text: flota.placa }];
+    }, [mantenimientoInfo]);
 
     return (
         <>
@@ -75,25 +86,27 @@ export function MantenimientoCrudPageContent({
                             </Typography>
                             <Grid container spacing={3}>
                                 <Grid size={{ xs: 12, md: 6 }}>
-                                    <TextField
-                                        select
-                                        label="Unidad"
-                                        fullWidth
-                                        {...register('flotaID')}
-                                        defaultValue={mantenimientoInfo?.flotaID ?? 0}
-                                        error={!!errors.flotaID}
-                                        helperText={errors.flotaID?.message}
-                                        disabled={viewOnly}
-                                    >
-                                        <MenuItem value={0} disabled>
-                                            Seleccione una unidad...
-                                        </MenuItem>
-                                        {listaFlotas.map((item) => (
-                                            <MenuItem key={item.id} value={item.id}>
-                                                {item.text}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
+                                    <Controller
+                                        name="flotaID"
+                                        control={control}
+                                        render={({ field, fieldState: { error } }) => (
+                                            <AsyncAutocomplete
+                                                resourceKey={MANTENIMIENTO_SELECT_KEYS.flotas}
+                                                label="Unidad"
+                                                ariaLabel="Unidad"
+                                                placeholder="Buscar por placa, marca o modelo..."
+                                                size="medium"
+                                                required
+                                                value={typeof field.value === 'number' ? field.value : 0}
+                                                onChange={(value) => field.onChange(value)}
+                                                loadOptions={loadFlotas}
+                                                initialOptions={flotaInitialOptions}
+                                                error={!!error}
+                                                helperText={error?.message?.toString()}
+                                                disabled={viewOnly}
+                                            />
+                                        )}
+                                    />
                                 </Grid>
                                 <Grid size={{ xs: 12, md: 6 }}>
                                     <TextField

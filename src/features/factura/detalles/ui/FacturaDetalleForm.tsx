@@ -5,7 +5,6 @@ import {
     Button,
     Grid,
     TextField,
-    MenuItem,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -23,7 +22,6 @@ import {
     LocalShipping as LocalShippingIcon,
     Schedule as ScheduleIcon,
     Close as CloseIcon,
-    InfoOutlined as InfoOutlinedIcon,
     CheckCircleOutline as CheckCircleOutlineIcon,
 } from '@mui/icons-material';
 import { useForm, Controller, useWatch, type SubmitHandler } from 'react-hook-form';
@@ -43,8 +41,9 @@ import { FacturaDetalleConceptoSelector } from './FacturaDetalleConceptoSelector
 import { FacturaDetalleLiquidacionSection } from './FacturaDetalleLiquidacionSection';
 import { FacturaDetalleMonedaHeredada } from './FacturaDetalleMonedaHeredada';
 import { FacturaDetalleSectionHeader } from './FacturaDetalleSectionHeader';
-import { useFacturaDetalleFlotaOptions } from '../hooks/useFacturaDetalleFlotaOptions';
 import { useFacturaDetalleTipoOptions } from '../hooks/useFacturaDetalleTipoOptions';
+import { AsyncAutocomplete } from '@shared/components/ui/AsyncAutocomplete';
+import { FACTURA_SELECT_KEYS, facturaResourceLoaders } from '@features/factura/options/hooks/useFacturaResourceSearch';
 import type { FacturaDetalleViajeOption } from '@/entities/factura/model/types';
 import type { Moneda } from '@/entities/moneda/model/types';
 import { TIPO_DETALLE_CODES, TIPO_DETALLE_LABELS, type TipoDetalleCodigo } from '@entities/factura/model/constants';
@@ -93,11 +92,7 @@ export function FacturaDetalleForm({
         () => (codigo: TipoDetalleCodigo) => getTipoDetalleLabel(codigo) ?? TIPO_DETALLE_LABELS[codigo],
         [getTipoDetalleLabel]
     );
-    const {
-        options: flotaOptions,
-        isLoading: isLoadingFlotas,
-        errorMessage: flotaOptionsError,
-    } = useFacturaDetalleFlotaOptions(open && isSobrestadia);
+    const { loadFlotas } = facturaResourceLoaders;
 
     useEffect(() => {
         if (open) {
@@ -368,42 +363,20 @@ export function FacturaDetalleForm({
                                         name="flotaID"
                                         control={control}
                                         render={({ field, fieldState: { error } }) => (
-                                            <TextField
-                                                {...field}
-                                                value={field.value ?? 0}
-                                                select
-                                                fullWidth
-                                                size="small"
+                                            <AsyncAutocomplete
+                                                resourceKey={FACTURA_SELECT_KEYS.flotas}
+                                                label=""
+                                                ariaLabel="Tracto / Carreta"
+                                                placeholder="Buscar unidad por placa o tipo..."
+                                                value={field.value}
+                                                onChange={(value) => field.onChange(value)}
+                                                loadOptions={loadFlotas}
                                                 error={!!error}
-                                                disabled={isLoadingFlotas}
-                                                sx={{
-                                                    bgcolor: 'background.paper',
-                                                    '& .MuiOutlinedInput-root': {
-                                                        borderRadius: 2,
-                                                    }
-                                                }}
-                                            >
-                                                <MenuItem value={0}>Sin asignar</MenuItem>
-                                                {flotaOptions.map((flota) => (
-                                                    <MenuItem key={flota.id} value={flota.id}>
-                                                        {flota.text}
-                                                    </MenuItem>
-                                                ))}
-                                            </TextField>
+                                                helperText={error?.message ?? 'Asocie la unidad que sufrió la demora'}
+                                                sx={{ bgcolor: 'background.paper' }}
+                                            />
                                         )}
                                     />
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1 }}>
-                                        <InfoOutlinedIcon sx={{ fontSize: 14, color: flotaOptionsError ? 'error.main' : 'text.disabled', flexShrink: 0 }} />
-                                        <Typography
-                                            variant="caption"
-                                            color={flotaOptionsError ? 'error.main' : 'text.secondary'}
-                                            sx={{ fontSize: '0.725rem' }}
-                                        >
-                                            {isLoadingFlotas
-                                                ? 'Cargando unidades...'
-                                                : flotaOptionsError ?? 'Asocie la unidad que sufrió la demora'}
-                                        </Typography>
-                                    </Box>
                                 </Grid>
 
                                 {/* Campo 2: Fecha Inicio (25% = 3 cols) */}

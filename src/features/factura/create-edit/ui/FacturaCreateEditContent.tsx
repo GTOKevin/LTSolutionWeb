@@ -14,7 +14,7 @@ export function FacturaCreateEditContent({ controller }: FacturaCreateEditConten
     const {
         form,
         factura,
-        clientes,
+        clienteInitialOptions,
         monedas,
         isEdit,
         viewOnly,
@@ -78,7 +78,7 @@ export function FacturaCreateEditContent({ controller }: FacturaCreateEditConten
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                         <FacturaBasicInfoForm
                             form={form}
-                            clientes={clientes}
+                            clienteInitialOptions={clienteInitialOptions}
                             monedas={monedas}
                             isEdit={isEdit}
                             viewOnly={viewOnly}
