@@ -37,6 +37,7 @@ export interface User {
     roleId: string;
     role: string;
     permissions: string[];
+    esColaborador: boolean;
     name: string | null;
     email: string | null;
 }

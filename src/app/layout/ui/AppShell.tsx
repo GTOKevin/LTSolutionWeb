@@ -24,11 +24,7 @@ export function AppShell() {
     const user = useAuthStore((state) => state.user);
     const pageTitle = useLayoutStore((state) => state.pageTitle);
     const toggleSidebar = useLayoutStore((state) => state.toggleSidebar);
-    const { isEmployee, isEmployeeLoading } = useEmployeeAssociation();
-    // Mientras la query de perfil no resuelve, se renderiza la nav completa
-    // (con items del portal) para evitar que los menús aparezcan/desaparezcan
-    // post-mount. Al resolver, se filtra por el estado real del usuario.
-    const effectiveIsEmployee = isEmployeeLoading ? true : isEmployee;
+    const { isEmployee } = useEmployeeAssociation();
     const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
     useSignalR();
@@ -41,7 +37,7 @@ export function AppShell() {
         (item) =>
             item.context === bottomNavContext &&
             hasPermission(user, item.permission) &&
-            (!item.requiresEmployee || effectiveIsEmployee),
+            (!item.requiresEmployee || isEmployee),
     ).map((item) => ({
         label: item.label,
         icon: item.icon,
@@ -69,7 +65,7 @@ export function AppShell() {
                 title={routeTitle}
                 sectionTitle={routeSectionTitle}
                 sidebarMenu={APP_SIDEBAR_MENU}
-                isEmployee={effectiveIsEmployee}
+                isEmployee={isEmployee}
                 bottomNavItems={bottomNavItems}
                 bottomNavValue={bottomNavValue}
                 onRequestChangePassword={() => setChangePasswordOpen(true)}

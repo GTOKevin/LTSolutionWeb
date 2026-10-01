@@ -1,8 +1,9 @@
 interface JWTPayload {
-    sub: string; // UserId
+    sub: string;
     roleId: string;
     role: string;
-    permissions?: string; // JWT usually sends this as JSON string if serialized
+    permissions?: string;
+    esColaborador?: string | boolean;
     exp: number;
     iss?: string;
     aud?: string;
@@ -38,6 +39,12 @@ export function isTokenExpired(token: string): boolean {
     return payload.exp < now;
 }
 
+function resolveBooleanClaim(value: string | boolean | undefined): boolean {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value.trim().toLowerCase() === 'true';
+    return false;
+}
+
 export function getUserFromToken(token: string) {
     const payload = parseJWT(token);
     if (!payload) return null;
@@ -46,8 +53,8 @@ export function getUserFromToken(token: string) {
     if (payload.permissions) {
         try {
             // It might come as a JSON string from backend or array depending on claim type
-            permissions = typeof payload.permissions === 'string' 
-                ? JSON.parse(payload.permissions) 
+            permissions = typeof payload.permissions === 'string'
+                ? JSON.parse(payload.permissions)
                 : payload.permissions;
         } catch {
             permissions = [];
@@ -59,6 +66,7 @@ export function getUserFromToken(token: string) {
         roleId: payload.roleId,
         role: payload.role,
         permissions,
+        esColaborador: resolveBooleanClaim(payload.esColaborador),
         name: payload.name || null,
         email: payload.email || null
     };
