@@ -27,6 +27,7 @@ const FlotasPage = lazy(() => import('@pages/flotas').then(module => ({ default:
 const FlotaNuevoPage = lazy(() => import('@pages/flotas/nuevo').then(module => ({ default: module.FlotaNuevoPage })));
 const FlotaEditarPage = lazy(() => import('@pages/flotas/editar').then(module => ({ default: module.FlotaEditarPage })));
 const FlotaVerPage = lazy(() => import('@pages/flotas/ver').then(module => ({ default: module.FlotaVerPage })));
+const FlotaExpedientePage = lazy(() => import('@pages/flotas/expediente').then(module => ({ default: module.FlotaExpedientePage })));
 const HealthCheckPage = lazy(() => import('@pages/health-check').then(module => ({ default: module.HealthCheckPage })));
 const ForgotPasswordPage = lazy(() => import('@pages/forgot-password').then(module => ({ default: module.ForgotPasswordPage })));
 const ResetPasswordPage = lazy(() => import('@pages/reset-password').then(module => ({ default: module.ResetPasswordPage })));
@@ -168,6 +169,7 @@ const GUARDED_APP_ROUTES: GuardedAppRoute[] = [
         element: <FlotaEditarPage />,
     },
     { path: `${APP_ROUTE_SEGMENTS.flotas}/:id/ver`, permission: PERMISSIONS.FLOTA.VER, element: <FlotaVerPage /> },
+    { path: `${APP_ROUTE_SEGMENTS.flotas}/:id/expediente`, permission: PERMISSIONS.FLOTA.VER, element: <FlotaExpedientePage /> },
     { path: APP_ROUTE_SEGMENTS.colaboradores, permission: PERMISSIONS.COLABORADORES.VER, element: <ColaboradoresPage /> },
     {
         path: APP_ROUTE_SEGMENTS.colaboradorSolicitudesDocumentos,

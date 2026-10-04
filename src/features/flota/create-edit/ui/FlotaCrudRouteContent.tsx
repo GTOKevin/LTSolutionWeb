@@ -52,6 +52,7 @@ export function FlotaCrudRouteContent({ mode }: FlotaCrudRouteContentProps) {
         listaPeso,
         listaMedida,
         listaCombustible,
+        listaConfigEjes,
     } = useFlotaForm({
         flotaToEdit: flota ?? null,
         onSuccess: () => undefined,
@@ -125,10 +126,12 @@ export function FlotaCrudRouteContent({ mode }: FlotaCrudRouteContentProps) {
                     form={form}
                     onSubmit={onSubmit}
                     effectiveFlotaId={effectiveFlotaId}
+                    flotaId={shouldLoadFlota ? flotaId : null}
                     listaFlota={listaFlota}
                     listaPeso={listaPeso}
                     listaMedida={listaMedida}
                     listaCombustible={listaCombustible}
+                    listaConfigEjes={listaConfigEjes}
                     viewOnly={viewOnly}
                 />
             )}

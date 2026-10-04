@@ -2,7 +2,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
-import { createFlotaSchema, type CreateFlotaSchema } from '../model/schema';
+import {
+    createFlotaSchema,
+    FLOTA_FORM_DEFAULTS,
+    mapFlotaToFormValues,
+    type CreateFlotaInput,
+    type CreateFlotaSchema,
+} from '../model/schema';
 import { useEffect } from 'react';
 import type { Flota } from '@entities/flota/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
@@ -65,33 +71,22 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
         enabled: open
     });
 
+    const { data: configuracionesEjes } = useQuery({
+        queryKey: ['configuraciones-ejes'],
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.CONFIG_EJES),
+        enabled: open
+    });
+
     const listaFlota = tiposFlota || [];
     const listaPeso = tiposPeso || [];
     const listaMedida = tiposMedida || [];
     const listaCombustible = tiposCombustible || [];
+    const listaConfigEjes = configuracionesEjes || [];
 
     // --- Form ---
     const form = useForm({
         resolver: zodResolver(createFlotaSchema),
-        defaultValues: {
-            activo: true,
-            tipoFlota: 0,
-            marca: '',
-            modelo: '',
-            placa: '',
-            anio: new Date().getFullYear(),
-            color: '',
-            ejes: 0,
-            tipoPesoID: 0,
-            pesoBruto: 0,
-            pesoNeto: 0,
-            cargaUtil: 0,
-            tipoMedidaID: 0,
-            largo: 0,
-            alto: 0,
-            ancho: 0,
-            tipoCombustibleID: 0,
-        }
+        defaultValues: FLOTA_FORM_DEFAULTS,
     });
 
     const { reset, setError } = form;
@@ -100,45 +95,9 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
     useEffect(() => {
         if (open) {
             if (flotaToEdit) {
-                reset({
-                    tipoFlota: flotaToEdit.tipoFlota,
-                    marca: flotaToEdit.marca || '',
-                    modelo: flotaToEdit.modelo || '',
-                    placa: flotaToEdit.placa,
-                    anio: flotaToEdit.anio,
-                    color: flotaToEdit.color || '',
-                    ejes: flotaToEdit.ejes,
-                    tipoPesoID: flotaToEdit.tipoPesoID,
-                    pesoBruto: flotaToEdit.pesoBruto,
-                    pesoNeto: flotaToEdit.pesoNeto,
-                    cargaUtil: flotaToEdit.cargaUtil,
-                    tipoMedidaID: flotaToEdit.tipoMedidaID,
-                    largo: flotaToEdit.largo,
-                    alto: flotaToEdit.alto,
-                    ancho: flotaToEdit.ancho,
-                    tipoCombustibleID: flotaToEdit.tipoCombustibleID,
-                    activo: flotaToEdit.estado
-                });
+                reset(mapFlotaToFormValues(flotaToEdit));
             } else {
-                reset({
-                    tipoFlota: 0,
-                    marca: '',
-                    modelo: '',
-                    placa: '',
-                    anio: new Date().getFullYear(),
-                    color: '',
-                    ejes: 0,
-                    tipoPesoID: 0,
-                    pesoBruto: 0,
-                    pesoNeto: 0,
-                    cargaUtil: 0,
-                    tipoMedidaID: 0,
-                    largo: 0,
-                    alto: 0,
-                    ancho: 0,
-                    tipoCombustibleID: 0,
-                    activo: true,
-                });
+                reset(FLOTA_FORM_DEFAULTS);
             }
 
             return resetUiState();
@@ -193,11 +152,13 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
         isEdit,
         createdFlotaId: createdId,
         isSubmitting: createMutation.isPending || updateMutation.isPending,
-        
+        defaults: FLOTA_FORM_DEFAULTS as CreateFlotaInput,
+
         // Catalogs
         listaFlota,
         listaPeso,
         listaMedida,
-        listaCombustible
+        listaCombustible,
+        listaConfigEjes,
     };
 }

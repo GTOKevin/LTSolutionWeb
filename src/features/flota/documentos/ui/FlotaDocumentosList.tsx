@@ -25,7 +25,7 @@ import {
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
-import type { CreateFlotaDocumentoSchema } from '../../model/schema';
+import { mapFlotaDocumentoToFormValues, type CreateFlotaDocumentoSchema } from '../../model/schema';
 import { useState, useRef } from 'react';
 import type { FlotaDocumento } from '@entities/flota/model/types';
 import { formatDateLong } from '@/shared/utils/date-utils';
@@ -144,14 +144,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
 
     const handleEdit = (doc: FlotaDocumento) => {
         setEditingId(doc.flotaDocumentoID);
-        setEditingDoc({
-            tipoDocumentoID: doc.tipoDocumentoID,
-            numeroDocumento: doc.numeroDocumento,
-            rutaArchivo: doc.rutaArchivo || '',
-            fechaEmision: doc.fechaEmision,
-            fechaVencimiento: doc.fechaVencimiento,
-            activo: doc.estado
-        });
+        setEditingDoc(mapFlotaDocumentoToFormValues(doc));
         setIsFormExpanded(true);
         setTimeout(() => {
             formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -204,6 +197,7 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
 
     const columns: Column[] = [
         { id: 'documento', label: 'Documento', minWidth: 250 },
+        { id: 'entidad', label: 'Entidad Emisora', minWidth: 180 },
         { id: 'vencimiento', label: 'Vencimiento', minWidth: 150 },
         { id: 'acciones', label: 'Acciones', align: 'center', width: 120 }
     ];
@@ -352,6 +346,11 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
                                                 </Typography>
                                             </Box>
                                         </Box>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Typography variant="body2" color={doc.entidadEmisora ? 'text.primary' : 'text.secondary'}>
+                                            {doc.entidadEmisora || '—'}
+                                        </Typography>
                                     </TableCell>
                                     <TableCell>
                                         <Stack spacing={0.5}>

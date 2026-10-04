@@ -112,3 +112,64 @@ export const formatBytes = (bytes: number): string => {
     const value = bytes / Math.pow(1024, index);
     return `${value.toFixed(index === 0 ? 0 : 2)} ${units[index]}`;
 };
+
+/* -------------------------------------------------------------------------- */
+/* Unit helpers (peso y longitud) — centralizados para evitar conversión       */
+/* dispersa en los formularios. La fuente canónica es KG y METROS.            */
+/* -------------------------------------------------------------------------- */
+
+export type WeightUnit = 'KG' | 'TN' | 'LB';
+export type LengthUnit = 'M' | 'FT';
+
+export const WEIGHT_UNITS: { value: WeightUnit; label: string }[] = [
+    { value: 'KG', label: 'KG' },
+    { value: 'TN', label: 'TN' },
+    { value: 'LB', label: 'LB' },
+];
+
+export const LENGTH_UNITS: { value: LengthUnit; label: string }[] = [
+    { value: 'M', label: 'm' },
+    { value: 'FT', label: 'ft' },
+];
+
+const KG_PER_TON = 1000;
+const KG_PER_POUND = 0.45359237;
+const METERS_PER_FOOT = 0.3048;
+
+/** Convierte un valor canónico en kilogramos a la unidad solicitada. */
+export const convertWeightFromKg = (valueKg: number, unit: WeightUnit): number => {
+    switch (unit) {
+        case 'TN':
+            return valueKg / KG_PER_TON;
+        case 'LB':
+            return valueKg / KG_PER_POUND;
+        default:
+            return valueKg;
+    }
+};
+
+/** Convierte un valor en la unidad indicada a kilogramos (canónico). */
+export const convertWeightToKg = (value: number, unit: WeightUnit): number => {
+    switch (unit) {
+        case 'TN':
+            return value * KG_PER_TON;
+        case 'LB':
+            return value * KG_PER_POUND;
+        default:
+            return value;
+    }
+};
+
+/** Convierte un valor canónico en metros a la unidad solicitada. */
+export const convertLengthFromMeters = (valueMeters: number, unit: LengthUnit): number => {
+    return unit === 'FT' ? valueMeters / METERS_PER_FOOT : valueMeters;
+};
+
+/** Convierte un valor en la unidad indicada a metros (canónico). */
+export const convertLengthToMeters = (value: number, unit: LengthUnit): number => {
+    return unit === 'FT' ? value * METERS_PER_FOOT : value;
+};
+
+/** Redondea a 2 decimales para presentación en inputs. */
+export const round2 = (value: number): number => Math.round(value * 100) / 100;
+

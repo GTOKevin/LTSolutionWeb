@@ -3,14 +3,21 @@ import {
     TextField,
     Grid,
     Box,
-    Typography
+    Typography,
+    Chip
 } from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createFlotaDocumentoSchema, type CreateFlotaDocumentoSchema } from '../../model/schema';
+import {
+    createFlotaDocumentoSchema,
+    FLOTA_DOCUMENTO_FORM_DEFAULTS,
+    type CreateFlotaDocumentoSchema,
+} from '../../model/schema';
 import { ImageUpload } from '@shared/components/ui/ImageUpload';
 import { TipoDocumentoSelect } from '@shared/components/ui/TipoDocumentoSelect';
+import { FormDatePicker } from '@shared/components/ui/FormDatePicker';
 import { useEffect } from 'react';
+import { getDocumentVigenciaMetaByExpirationDate } from '@shared/utils/document-vigencia';
 
 interface FlotaDocumentosFormProps {
     defaultValues?: CreateFlotaDocumentoSchema;
@@ -39,42 +46,27 @@ export function FlotaDocumentosForm({
     } = useForm({
         resolver: zodResolver(createFlotaDocumentoSchema),
         defaultValues: {
-            tipoDocumentoID: 0,
-            numeroDocumento: '',
-            rutaArchivo: '',
-            fechaEmision: '',
-            fechaVencimiento: '',
-            activo: true,
+            ...FLOTA_DOCUMENTO_FORM_DEFAULTS,
             ...defaultValues
         }
     });
 
     useEffect(() => {
-        if (defaultValues) {
-            reset(defaultValues);
-        } else {
-            reset({
-                tipoDocumentoID: 0,
-                numeroDocumento: '',
-                rutaArchivo: '',
-                fechaEmision: '',
-                fechaVencimiento: '',
-                activo: true
-            });
-        }
+        reset({
+            ...FLOTA_DOCUMENTO_FORM_DEFAULTS,
+            ...(defaultValues ?? {}),
+        });
     }, [defaultValues, reset]);
 
     const handleCancel = () => {
-        reset({
-            tipoDocumentoID: 0,
-            numeroDocumento: '',
-            rutaArchivo: '',
-            fechaEmision: '',
-            fechaVencimiento: '',
-            activo: true
-        });
+        reset(FLOTA_DOCUMENTO_FORM_DEFAULTS);
         onCancel();
     };
+
+    const fechaVencimiento = useWatch({ control, name: 'fechaVencimiento' });
+    const vigencia = fechaVencimiento
+        ? getDocumentVigenciaMetaByExpirationDate(fechaVencimiento)
+        : null;
 
     return (
         <Box
@@ -113,28 +105,52 @@ export function FlotaDocumentosForm({
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
-                        label="Fecha Emisión"
-                        type="date"
+                        label="Entidad Emisora"
                         fullWidth
-                        InputLabelProps={{ shrink: true }}
-                        {...register('fechaEmision')}
+                        {...register('entidadEmisora')}
+                        error={!!errors.entidadEmisora}
+                        helperText={errors.entidadEmisora?.message}
+                        disabled={viewOnly}
+                    />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                    <FormDatePicker
+                        label="Fecha Emisión"
+                        registration={register('fechaEmision')}
                         error={!!errors.fechaEmision}
                         helperText={errors.fechaEmision?.message}
                         disabled={viewOnly}
                     />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
+                    <FormDatePicker
                         label="Fecha Vencimiento"
-                        type="date"
-                        fullWidth
-                        InputLabelProps={{ shrink: true }}
-                        {...register('fechaVencimiento')}
+                        registration={register('fechaVencimiento')}
                         error={!!errors.fechaVencimiento}
                         helperText={errors.fechaVencimiento?.message}
                         disabled={viewOnly}
                     />
                 </Grid>
+                {vigencia && vigencia.key !== 'desconocido' && (
+                    <Grid size={{ xs: 12, md: 6 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, height: '100%' }}>
+                            <Typography variant="body2" color="text.secondary">
+                                Vigencia:
+                            </Typography>
+                            <Chip
+                                label={vigencia.label}
+                                color={vigencia.chipColor}
+                                size="small"
+                                variant={vigencia.chipColor === 'default' ? 'outlined' : 'filled'}
+                            />
+                            {vigencia.daysLeft != null && (
+                                <Typography variant="caption" color="text.secondary">
+                                    ({vigencia.daysLeft} días)
+                                </Typography>
+                            )}
+                        </Box>
+                    </Grid>
+                )}
 
                 <Grid size={{ xs: 12 }}>
                     <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>

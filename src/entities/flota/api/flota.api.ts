@@ -1,14 +1,20 @@
 import { httpClient } from '@shared/api/http';
 import type { PagedResponse, SelectItem } from '@/shared/model/types';
-import type { 
-    Flota, 
-    FlotaDocumento, 
-    CreateFlotaDto, 
-    CreateFlotaDocumentoDto, 
-    FlotaParams, 
-    FlotaDocumentoParams, 
-    FlotaParamsSelect
+import type {
+    Flota,
+    FlotaDocumento,
+    CreateFlotaDto,
+    CreateFlotaDocumentoDto,
+    FlotaParams,
+    FlotaDocumentoParams,
+    FlotaParamsSelect,
+    FlotaResumen,
+    FlotaExpediente,
+    FlotaHistorialViajesPaged,
+    FlotaHistorialViajesParams,
 } from '../model/types';
+
+export type FlotaReportFormat = 'excel' | 'pdf';
 
 export const flotaApi = {
     getById: async (id: number) => {
@@ -18,6 +24,21 @@ export const flotaApi = {
 
     getAll: async (params: FlotaParams) => {
         const { data } = await httpClient.get<PagedResponse<Flota>>('/Flota', { params });
+        return data;
+    },
+
+    getResumen: async () => {
+        const { data } = await httpClient.get<FlotaResumen>('/Flota/resumen');
+        return data;
+    },
+
+    getExpediente: async (id: number) => {
+        const { data } = await httpClient.get<FlotaExpediente>(`/Flota/${id}/expediente`);
+        return data;
+    },
+
+    getHistorialViajes: async (id: number, params: FlotaHistorialViajesParams) => {
+        const { data } = await httpClient.get<FlotaHistorialViajesPaged>(`/Flota/${id}/historial-viajes`, { params });
         return data;
     },
 
@@ -56,4 +77,21 @@ export const flotaApi = {
         httpClient.put<void>(`/Flota/documentos/${documentoId}`, data),
 
     removeDocumento: (documentoId: number) => httpClient.delete<void>(`/Flota/documentos/${documentoId}`),
+
+    /** Descarga el reporte de inventario (Excel/PDF) generado por el backend. */
+    downloadReporteInventario: async (format: FlotaReportFormat, params?: FlotaParams) => {
+        const { data } = await httpClient.get<Blob>(`/Flota/reporte/inventario/${format}`, {
+            params,
+            responseType: 'blob',
+        });
+        return data;
+    },
+
+    /** Descarga la ficha técnica PDF de una unidad generada por el backend. */
+    downloadFichaPdf: async (id: number) => {
+        const { data } = await httpClient.get<Blob>(`/Flota/${id}/reporte/pdf`, {
+            responseType: 'blob',
+        });
+        return data;
+    },
 };
