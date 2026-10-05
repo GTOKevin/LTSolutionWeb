@@ -1,6 +1,7 @@
 import {
     Button,
     Box,
+    Grid,
     useTheme,
     IconButton,
     Typography,
@@ -204,6 +205,120 @@ export function FlotaDocumentosList({ flotaId, viewOnly = false }: FlotaDocument
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+            {/* Strip de métricas de Legajo Digital (Stitch S4) */}
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                    <Box
+                        sx={{
+                            p: 2,
+                            borderRadius: 2.5,
+                            bgcolor: alpha(theme.palette.success.main, 0.08),
+                            border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 2,
+                                bgcolor: alpha(theme.palette.success.main, 0.16),
+                                color: 'success.main',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <CheckIcon />
+                        </Box>
+                        <Box>
+                            <Typography variant="h5" fontWeight={800} sx={{ lineHeight: 1 }}>
+                                {items.filter(d => getDocumentVigenciaMetaByExpirationDate(d.fechaVencimiento).key === 'vigente').length}
+                            </Typography>
+                            <Typography variant="caption" fontWeight={700} color="success.main" sx={{ display: 'block', mt: 0.5 }}>
+                                Documentos Vigentes
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 4 }}>
+                    <Box
+                        sx={{
+                            p: 2,
+                            borderRadius: 2.5,
+                            bgcolor: alpha(theme.palette.warning.main, 0.08),
+                            border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 2,
+                                bgcolor: alpha(theme.palette.warning.main, 0.16),
+                                color: 'warning.main',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <WarningIcon />
+                        </Box>
+                        <Box>
+                            <Typography variant="h5" fontWeight={800} sx={{ lineHeight: 1 }}>
+                                {items.filter(d => getDocumentVigenciaMetaByExpirationDate(d.fechaVencimiento).key === 'por_vencer').length}
+                            </Typography>
+                            <Typography variant="caption" fontWeight={700} color="warning.main" sx={{ display: 'block', mt: 0.5 }}>
+                                Próximos a Vencer (&lt; 15 días)
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 4 }}>
+                    <Box
+                        sx={{
+                            p: 2,
+                            borderRadius: 2.5,
+                            bgcolor: theme.palette.mode === 'dark' ? alpha('#1E293B', 0.5) : '#F1F5F9',
+                            border: `1px solid ${theme.palette.divider}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 2,
+                                bgcolor: alpha(theme.palette.primary.main, 0.12),
+                                color: 'primary.main',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <FileIcon />
+                        </Box>
+                        <Box>
+                            <Typography variant="h5" fontWeight={800} sx={{ lineHeight: 1 }}>
+                                {totalItems}
+                            </Typography>
+                            <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                Total en Legajo Digital
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Grid>
+            </Grid>
+
             {!viewOnly && (
                 <Paper
                     ref={formRef}

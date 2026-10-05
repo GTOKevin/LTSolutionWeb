@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
     Box,
+    Chip,
     Grid,
-    LinearProgress,
     TextField,
     ToggleButton,
     ToggleButtonGroup,
@@ -18,6 +18,8 @@ import { FlotaDocumentosList } from '../../documentos/ui/FlotaDocumentosList';
 import type { CreateFlotaSchema } from '../../model/schema';
 import type { useFlotaForm } from '../../hooks/useFlotaForm';
 import { buildCodigoInterno, CONFIG_EJES_APLICA } from '@entities/flota/model/constants';
+import { PeruvianPlate } from '../../shared/ui/PeruvianPlate';
+import { FlotaBalanzaBar } from '../../shared/ui/FlotaBalanzaBar';
 import { WeightField } from './WeightField';
 import { LengthField } from './LengthField';
 import {
@@ -72,7 +74,6 @@ export function FlotaCrudPageContent({
     const pesoBruto = Number(watch('pesoBruto')) || 0;
     const pesoNeto = Number(watch('pesoNeto')) || 0;
     const cargaUtil = Math.max(0, pesoBruto - pesoNeto);
-    const distribucion = pesoBruto > 0 ? Math.min(100, (cargaUtil / pesoBruto) * 100) : 0;
     const configEjesVisible = CONFIG_EJES_APLICA.includes(tipoFlota);
     const codigoInterno = flotaId ? buildCodigoInterno(tipoFlota, flotaId) : 'Se generará al guardar';
 
@@ -105,14 +106,23 @@ export function FlotaCrudPageContent({
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 4 }}>
-                                <TextField
-                                    label="Placa"
-                                    fullWidth
-                                    {...register('placa')}
-                                    error={!!errors.placa}
-                                    helperText={errors.placa?.message}
-                                    disabled={viewOnly}
-                                />
+                                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                                    <TextField
+                                        label="Placa de Rodaje"
+                                        fullWidth
+                                        {...register('placa')}
+                                        error={!!errors.placa}
+                                        helperText={errors.placa?.message || 'Oficial MTC (ej. 3B5-693)'}
+                                        disabled={viewOnly}
+                                        inputProps={{
+                                            style: { textTransform: 'uppercase', fontFamily: 'monospace', fontWeight: 700 },
+                                            maxLength: 8,
+                                        }}
+                                    />
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                                        <PeruvianPlate placa={watch('placa')} size="md" />
+                                    </Box>
+                                </Box>
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 4 }}>
@@ -230,15 +240,34 @@ export function FlotaCrudPageContent({
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 4 }}>
-                                <TextField
-                                    label="Ejes"
-                                    type="number"
-                                    fullWidth
-                                    {...register('ejes')}
-                                    error={!!errors.ejes}
-                                    helperText={errors.ejes?.message}
-                                    disabled={viewOnly}
-                                />
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                                    <TextField
+                                        label="Número de Ejes"
+                                        type="number"
+                                        fullWidth
+                                        {...register('ejes')}
+                                        error={!!errors.ejes}
+                                        helperText={errors.ejes?.message}
+                                        disabled={viewOnly}
+                                    />
+                                    <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem', fontWeight: 600 }}>
+                                            Rápidos:
+                                        </Typography>
+                                        {[2, 3, 4].map((num) => (
+                                            <Chip
+                                                key={num}
+                                                label={`${num} Ejes`}
+                                                size="small"
+                                                clickable={!viewOnly}
+                                                color={Number(watch('ejes')) === num ? 'primary' : 'default'}
+                                                variant={Number(watch('ejes')) === num ? 'filled' : 'outlined'}
+                                                onClick={() => !viewOnly && setValue('ejes', num, { shouldDirty: true, shouldValidate: true })}
+                                                sx={{ height: 20, fontSize: '0.68rem', fontWeight: 600 }}
+                                            />
+                                        ))}
+                                    </Box>
+                                </Box>
                             </Grid>
 
                             <Grid size={{ xs: 12 }}>
@@ -319,22 +348,14 @@ export function FlotaCrudPageContent({
                                 />
                             </Grid>
 
-                            <Grid size={{ xs: 12, md: 4 }}>
-                                <Box sx={{ pt: 1 }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                        <Typography variant="caption" color="text.secondary">
-                                            Distribución de carga
-                                        </Typography>
-                                        <Typography variant="caption" fontWeight={700}>
-                                            {distribucion.toFixed(0)}%
-                                        </Typography>
-                                    </Box>
-                                    <LinearProgress
-                                        variant="determinate"
-                                        value={distribucion}
-                                        sx={{ height: 8, borderRadius: 4 }}
-                                    />
-                                </Box>
+                            <Grid size={{ xs: 12 }}>
+                                <FlotaBalanzaBar
+                                    pesoBruto={pesoBruto}
+                                    pesoNeto={pesoNeto}
+                                    cargaUtil={cargaUtil}
+                                    mode="detailed"
+                                    unit={weightUnit === 'TN' ? 'TN' : 'KG'}
+                                />
                             </Grid>
 
                             <Grid size={{ xs: 12 }}>

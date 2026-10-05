@@ -4,12 +4,14 @@ import {
     Card,
     CardActions,
     CardContent,
+    Chip,
     Divider,
     Grid,
     IconButton,
     TablePagination,
     Tooltip,
     Typography,
+    alpha,
     useTheme,
 } from '@mui/material';
 import {
@@ -17,6 +19,9 @@ import {
     Build as BuildIcon,
     Visibility as VisibilityIcon,
     Delete as DeleteIcon,
+    Person as PersonIcon,
+    Speed as OdometerIcon,
+    AltRoute as RouteIcon,
 } from '@mui/icons-material';
 import type { Flota } from '@entities/flota/model/types';
 import type { PagedResponse } from '@/shared/model/types';
@@ -25,6 +30,8 @@ import { TableLoading } from '@shared/components/ui/TableLoading';
 import { FlotaEstadoOperativoChip } from '@entities/flota/ui/FlotaEstadoOperativoChip';
 import { FlotaDocumentoVigenciaChip } from '@entities/flota/ui/FlotaDocumentoVigenciaChip';
 import { buildCodigoInterno } from '@entities/flota/model/constants';
+import { PeruvianPlate } from '../../shared/ui/PeruvianPlate';
+import { FlotaBalanzaBar } from '../../shared/ui/FlotaBalanzaBar';
 
 interface FlotaCardsViewProps {
     data?: PagedResponse<Flota>;
@@ -37,19 +44,6 @@ interface FlotaCardsViewProps {
     onEdit?: (flota: Flota) => void;
     onScheduleWorkshop?: (flota: Flota) => void;
     onDelete?: (flota: Flota) => void;
-}
-
-function InfoLine({ label, value }: { label: string; value: React.ReactNode }) {
-    return (
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
-            <Typography variant="caption" color="text.secondary">
-                {label}
-            </Typography>
-            <Typography variant="body2" fontWeight={600} textAlign="right">
-                {value}
-            </Typography>
-        </Box>
-    );
 }
 
 export function FlotaCardsView({
@@ -74,108 +68,204 @@ export function FlotaCardsView({
     if (items.length === 0) {
         return (
             <Box sx={{ p: 6, textAlign: 'center', color: 'text.secondary' }}>
-                No se encontraron vehículos
+                No se encontraron vehículos registrados en la flota
             </Box>
         );
     }
 
     return (
         <Box>
-            <Grid container spacing={2}>
-                {items.map((flota) => (
-                    <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={flota.flotaID}>
-                        <Card
-                            elevation={0}
-                            sx={{
-                                height: '100%',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                border: `1px solid ${theme.palette.divider}`,
-                                borderRadius: 3,
-                            }}
-                        >
-                            <CardContent sx={{ flex: 1, pb: 1 }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                                    <Box>
-                                        <Typography variant="subtitle1" fontWeight={800} fontFamily="monospace">
-                                            {flota.placa}
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            {flota.codigoInterno ?? buildCodigoInterno(flota.tipoFlota, flota.flotaID)}
-                                        </Typography>
+            <Grid container spacing={2.5}>
+                {items.map((flota) => {
+                    const codigo = flota.codigoInterno ?? buildCodigoInterno(flota.tipoFlota, flota.flotaID);
+                    return (
+                        <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={flota.flotaID}>
+                            <Card
+                                elevation={0}
+                                sx={{
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    border: `1px solid ${theme.palette.divider}`,
+                                    borderRadius: 3,
+                                    bgcolor: theme.palette.background.paper,
+                                    transition: 'all 0.25s ease',
+                                    '&:hover': {
+                                        boxShadow: theme.shadows[3],
+                                        borderColor: 'primary.main',
+                                        transform: 'translateY(-2px)',
+                                    },
+                                }}
+                            >
+                                <CardContent sx={{ flex: 1, p: 2.5, pb: 1.5 }}>
+                                    {/* Cabecera de la Card: Placa MTC + Estado operativo */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                            <PeruvianPlate placa={flota.placa} size="md" />
+                                            <Typography
+                                                variant="caption"
+                                                sx={{
+                                                    fontFamily: 'monospace',
+                                                    fontWeight: 700,
+                                                    color: 'text.secondary',
+                                                }}
+                                            >
+                                                {codigo}
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
+                                            <FlotaEstadoOperativoChip estado={flota.estadoOperativo} active={flota.estado} />
+                                            {flota.viajeActivoCodigo ? (
+                                                <Chip
+                                                    icon={<RouteIcon sx={{ fontSize: '13px !important' }} />}
+                                                    label={`#${flota.viajeActivoCodigo}`}
+                                                    size="small"
+                                                    color="info"
+                                                    variant="outlined"
+                                                    sx={{
+                                                        height: 20,
+                                                        fontSize: '0.7rem',
+                                                        fontWeight: 700,
+                                                    }}
+                                                />
+                                            ) : null}
+                                        </Box>
                                     </Box>
-                                    <FlotaEstadoOperativoChip estado={flota.estadoOperativo} active={flota.estado} />
-                                </Box>
 
-                                <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5 }}>
-                                    {flota.marca} {flota.modelo}
-                                    {flota.tipoFlotaNavigation?.nombre ? ` · ${flota.tipoFlotaNavigation.nombre}` : ''}
-                                </Typography>
+                                    {/* Nombre, marca y modelo */}
+                                    <Typography variant="subtitle1" fontWeight={700} sx={{ lineHeight: 1.2, mb: 0.5 }}>
+                                        {flota.marca} {flota.modelo}
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mb: 1.5 }}>
+                                        <Chip
+                                            label={flota.tipoFlotaNavigation?.nombre || `Tipo ${flota.tipoFlota}`}
+                                            size="small"
+                                            sx={{ height: 22, fontSize: '0.7rem', fontWeight: 600 }}
+                                        />
+                                        <Chip
+                                            label={`${flota.ejes} Ejes`}
+                                            size="small"
+                                            variant="outlined"
+                                            sx={{ height: 22, fontSize: '0.7rem' }}
+                                        />
+                                        {flota.configuracionEjes?.nombre ? (
+                                            <Chip
+                                                label={flota.configuracionEjes.nombre}
+                                                size="small"
+                                                color="primary"
+                                                variant="outlined"
+                                                sx={{ height: 22, fontSize: '0.7rem' }}
+                                            />
+                                        ) : null}
+                                    </Box>
 
-                                <Divider sx={{ mb: 1.5 }} />
+                                    <Divider sx={{ my: 1.5 }} />
 
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                                    <InfoLine
-                                        label="Configuración"
-                                        value={`${flota.ejes} ejes${flota.configuracionEjes?.nombre ? ` · ${flota.configuracionEjes.nombre}` : ''}`}
-                                    />
-                                    <InfoLine
-                                        label="Capacidad Balanza"
-                                        value={flota.cargaUtil != null ? `${flota.cargaUtil} kg` : '—'}
-                                    />
-                                    <InfoLine
-                                        label="Doc. Vigencia"
-                                        value={<FlotaDocumentoVigenciaChip documento={flota.documentoCritico} />}
-                                    />
-                                    {flota.conductorAsignado ? (
-                                        <InfoLine label="Conductor" value={flota.conductorAsignado} />
-                                    ) : null}
-                                </Box>
-                            </CardContent>
+                                    {/* Capacidad y Balanza */}
+                                    <Box sx={{ mb: 1.5 }}>
+                                        <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ display: 'block', mb: 0.5 }}>
+                                            Capacidad Balanza
+                                        </Typography>
+                                        <FlotaBalanzaBar
+                                            pesoBruto={flota.pesoBruto}
+                                            pesoNeto={flota.pesoNeto}
+                                            cargaUtil={flota.cargaUtil}
+                                            mode="compact"
+                                        />
+                                    </Box>
 
-                            <CardActions sx={{ justifyContent: 'flex-end', px: 1, pb: 1 }}>
-                                <Tooltip title="Ver expediente">
-                                    <IconButton size="small" onClick={() => onView(flota)}>
-                                        <VisibilityIcon fontSize="small" />
-                                    </IconButton>
-                                </Tooltip>
-                                {onScheduleWorkshop ? (
-                                    <Tooltip title="Programar Taller">
-                                        <IconButton size="small" color="warning" onClick={() => onScheduleWorkshop(flota)}>
-                                            <BuildIcon fontSize="small" />
+                                    {/* Documento y conductor */}
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <Typography variant="caption" color="text.secondary">
+                                                Doc. Vigente
+                                            </Typography>
+                                            <FlotaDocumentoVigenciaChip documento={flota.documentoCritico} />
+                                        </Box>
+
+                                        {flota.conductorAsignado ? (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 0.75, borderRadius: 1.5, bgcolor: alpha(theme.palette.text.primary, 0.04) }}>
+                                                <PersonIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                                <Typography variant="caption" fontWeight={600} noWrap>
+                                                    {flota.conductorAsignado}
+                                                </Typography>
+                                            </Box>
+                                        ) : null}
+
+                                        {flota.odometroActual != null ? (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                                <OdometerIcon sx={{ fontSize: 15, color: 'text.secondary' }} />
+                                                <Typography variant="caption" color="text.secondary">
+                                                    Odómetro: <strong style={{ fontFamily: 'monospace' }}>{flota.odometroActual.toLocaleString('es-PE')} km</strong>
+                                                </Typography>
+                                            </Box>
+                                        ) : null}
+                                    </Box>
+                                </CardContent>
+
+                                <CardActions
+                                    sx={{
+                                        justifyContent: 'space-between',
+                                        px: 2,
+                                        py: 1.25,
+                                        borderTop: `1px solid ${theme.palette.divider}`,
+                                        bgcolor: alpha(theme.palette.background.default, 0.4),
+                                    }}
+                                >
+                                    <Tooltip title="Ver detalles y expediente">
+                                        <IconButton size="small" onClick={() => onView(flota)} color="primary">
+                                            <VisibilityIcon fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
-                                ) : null}
-                                {onEdit ? (
-                                    <Tooltip title="Editar">
-                                        <IconButton size="small" color="primary" onClick={() => onEdit(flota)}>
-                                            <EditIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                ) : null}
-                                {onDelete ? (
-                                    <Tooltip title="Eliminar">
-                                        <IconButton size="small" color="error" onClick={() => onDelete(flota)}>
-                                            <DeleteIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                ) : null}
-                            </CardActions>
-                        </Card>
-                    </Grid>
-                ))}
+
+                                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                        {onScheduleWorkshop ? (
+                                            <Tooltip title="Programar Taller">
+                                                <IconButton
+                                                    size="small"
+                                                    color="warning"
+                                                    onClick={() => onScheduleWorkshop(flota)}
+                                                >
+                                                    <BuildIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        ) : null}
+                                        {onEdit ? (
+                                            <Tooltip title="Editar vehículo">
+                                                <IconButton size="small" color="default" onClick={() => onEdit(flota)}>
+                                                    <EditIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        ) : null}
+                                        {onDelete ? (
+                                            <Tooltip title="Eliminar vehículo">
+                                                <IconButton size="small" color="error" onClick={() => onDelete(flota)}>
+                                                    <DeleteIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        ) : null}
+                                    </Box>
+                                </CardActions>
+                            </Card>
+                        </Grid>
+                    );
+                })}
             </Grid>
 
-            <TablePagination
-                component="div"
-                count={data?.total ?? 0}
-                page={page}
-                onPageChange={onPageChange}
-                rowsPerPage={rowsPerPage}
-                onRowsPerPageChange={onRowsPerPageChange}
-                rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
-                labelRowsPerPage="Filas por página"
-            />
+            {data && (
+                <TablePagination
+                    rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
+                    component="div"
+                    count={data.total}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={onPageChange}
+                    onRowsPerPageChange={onRowsPerPageChange}
+                    labelRowsPerPage="Vehículos por página:"
+                    labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count !== -1 ? count : `más de ${to}`}`}
+                    sx={{ mt: 2 }}
+                />
+            )}
         </Box>
     );
 }

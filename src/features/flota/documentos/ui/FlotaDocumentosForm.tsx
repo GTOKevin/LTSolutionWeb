@@ -4,7 +4,8 @@ import {
     Grid,
     Box,
     Typography,
-    Chip
+    Chip,
+    alpha,
 } from '@mui/material';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -133,21 +134,39 @@ export function FlotaDocumentosForm({
                 </Grid>
                 {vigencia && vigencia.key !== 'desconocido' && (
                     <Grid size={{ xs: 12, md: 6 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, height: '100%' }}>
-                            <Typography variant="body2" color="text.secondary">
-                                Vigencia:
-                            </Typography>
+                        <Box
+                            sx={{
+                                p: 1.5,
+                                borderRadius: 2,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                                bgcolor: (theme) => {
+                                    if (vigencia.chipColor === 'error') return alpha(theme.palette.error.main, 0.1);
+                                    if (vigencia.chipColor === 'warning') return alpha(theme.palette.warning.main, 0.1);
+                                    return alpha(theme.palette.success.main, 0.1);
+                                },
+                                border: '1px solid',
+                                borderColor: (theme) => {
+                                    if (vigencia.chipColor === 'error') return alpha(theme.palette.error.main, 0.3);
+                                    if (vigencia.chipColor === 'warning') return alpha(theme.palette.warning.main, 0.3);
+                                    return alpha(theme.palette.success.main, 0.3);
+                                },
+                            }}
+                        >
                             <Chip
                                 label={vigencia.label}
                                 color={vigencia.chipColor}
                                 size="small"
-                                variant={vigencia.chipColor === 'default' ? 'outlined' : 'filled'}
+                                sx={{ fontWeight: 700 }}
                             />
-                            {vigencia.daysLeft != null && (
-                                <Typography variant="caption" color="text.secondary">
-                                    ({vigencia.daysLeft} días)
-                                </Typography>
-                            )}
+                            <Typography variant="body2" fontWeight={600}>
+                                {vigencia.daysLeft != null
+                                    ? vigencia.daysLeft > 0
+                                        ? `Vence en ${vigencia.daysLeft} días a partir de hoy`
+                                        : `El documento venció hace ${Math.abs(vigencia.daysLeft)} días`
+                                    : 'Sin fecha de vencimiento'}
+                            </Typography>
                         </Box>
                     </Grid>
                 )}
