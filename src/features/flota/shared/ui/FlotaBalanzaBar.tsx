@@ -1,12 +1,12 @@
 import { Box, Tooltip, Typography, useTheme, alpha } from '@mui/material';
-import { Equalizer as EqualizerIcon } from '@mui/icons-material';
+import { Equalizer as EqualizerIcon, Speed } from '@mui/icons-material';
 
 interface FlotaBalanzaBarProps {
     pesoBruto?: number | null;
     pesoNeto?: number | null;
     cargaUtil?: number | null;
     mode?: 'compact' | 'detailed';
-    unit?: 'KG' | 'TN';
+    unit?: 'KG' | 'TN' | 'LB';
 }
 
 export function FlotaBalanzaBar({
@@ -27,8 +27,10 @@ export function FlotaBalanzaBar({
 
     const formatWeight = (val: number) => {
         if (unit === 'TN') {
-            const tn = val / 1000;
-            return `${tn.toLocaleString('es-PE', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} TN`;
+            return `${val.toLocaleString('es-PE', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} TN`;
+        }
+        if (unit === 'LB') {
+            return `${val.toLocaleString('es-PE', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} LB`;
         }
         return `${Math.round(val).toLocaleString('es-PE')} KG`;
     };
@@ -164,24 +166,25 @@ export function FlotaBalanzaBar({
             </Box>
 
             {/* Leyenda */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, pt: 0.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1.5, pt: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, flexWrap: 'wrap' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                         <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#64748B' }} />
                         <Typography variant="caption" color="text.secondary">
-                            Tara: <strong>{formatWeight(tara)}</strong> ({taraPct.toFixed(1)}%)
+                            Tara de Unidad: <strong style={{ color: theme.palette.text.primary }}>{formatWeight(tara)}</strong> ({taraPct.toFixed(1)}%)
                         </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#00C482' }} />
-                        <Typography variant="caption" sx={{ color: '#00C482' }}>
-                            Carga Útil: <strong>{formatWeight(flete)}</strong> ({fletePct.toFixed(1)}%)
+                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: theme.palette.primary.main }} />
+                        <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 600 }}>
+                            Carga Comercial Máx: <strong>{formatWeight(flete)}</strong> ({fletePct.toFixed(1)}%)
                         </Typography>
                     </Box>
                 </Box>
-                <Typography variant="caption" color="text.secondary">
-                    Flete útil disponible (PBV − Tara)
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#10B981', fontWeight: 600, fontSize: '0.75rem' }}>
+                    <Speed sx={{ fontSize: 16 }} />
+                    Eficiencia volumétrica óptima de flete
+                </Box>
             </Box>
         </Box>
     );

@@ -48,6 +48,7 @@ export const createFlotaSchema = z
         largo: optionalDecimal(),
         alto: optionalDecimal(),
         ancho: optionalDecimal(),
+        camaUtil: optionalDecimal(),
         tipoCombustibleID: z.coerce.number().min(1, 'Tipo de Combustible es requerido'),
         activo: z.boolean().default(true),
     })
@@ -97,6 +98,7 @@ export const FLOTA_FORM_DEFAULTS: CreateFlotaInput = {
     largo: 0,
     alto: 0,
     ancho: 0,
+    camaUtil: 0,
     tipoCombustibleID: 0,
     activo: true,
 };
@@ -132,6 +134,7 @@ export function mapFlotaToFormValues(flota: Flota): CreateFlotaInput {
         largo: flota.largo ?? 0,
         alto: flota.alto ?? 0,
         ancho: flota.ancho ?? 0,
+        camaUtil: flota.camaUtil ?? 0,
         tipoCombustibleID: flota.tipoCombustibleID,
         activo: flota.estado,
     };

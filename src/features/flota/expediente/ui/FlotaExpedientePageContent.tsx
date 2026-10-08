@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Button } from '@mui/material';
+import { Button } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { APP_PATHS } from '@shared/config/app-routes';
@@ -10,9 +10,9 @@ import { CrudTabbedPageShell } from '@shared/components/ui/CrudTabbedPageShell';
 import { TabPanel } from '@shared/components/ui/TabPanel';
 import { LoadingModal } from '@shared/components/ui/LoadingModal';
 import { FlotaFichaTab } from './tabs/FlotaFichaTab';
-import { FlotaHistorialViajesTab } from './tabs/FlotaHistorialViajesTab';
-import { FlotaTallerTab } from './tabs/FlotaTallerTab';
-import { FlotaDocumentosList } from '../../documentos/ui/FlotaDocumentosList';
+import { FlotaExpedienteDocumentosTab } from './tabs/FlotaExpedienteDocumentosTab';
+import { FlotaExpedienteViajesTab } from './tabs/FlotaExpedienteViajesTab';
+import { FlotaExpedienteTallerTab } from './tabs/FlotaExpedienteTallerTab';
 import { PERMISSIONS } from '@shared/constants/permissions';
 import { usePermission } from '@shared/lib/hooks/usePermission';
 import { buildCodigoInterno } from '@entities/flota/model/constants';
@@ -105,15 +105,25 @@ export function FlotaExpedientePageContent() {
                             <FlotaFichaTab expediente={data} />
                         </TabPanel>
                         <TabPanel value={activeTab} index={1} name="expediente">
-                            <Box sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
-                                <FlotaDocumentosList flotaId={flotaId} viewOnly={!canManageFlotas} />
-                            </Box>
+                            <FlotaExpedienteDocumentosTab
+                                flotaId={flotaId}
+                                canManage={canManageFlotas}
+                                initialDocumentos={data.documentos}
+                            />
                         </TabPanel>
                         <TabPanel value={activeTab} index={2} name="expediente">
-                            <FlotaHistorialViajesTab flotaId={flotaId} />
+                            <FlotaExpedienteViajesTab
+                                flotaId={flotaId}
+                                placa={data.flota.placa}
+                            />
                         </TabPanel>
                         <TabPanel value={activeTab} index={3} name="expediente">
-                            <FlotaTallerTab flotaId={flotaId} resumen={data.taller} />
+                            <FlotaExpedienteTallerTab
+                                flotaId={flotaId}
+                                resumen={data.taller}
+                                odometroActual={data.flota.odometroActual ?? data.odometroActual}
+                                canManage={canManageFlotas}
+                            />
                         </TabPanel>
                     </>
                 ) : null}

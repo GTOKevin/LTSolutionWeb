@@ -1,11 +1,6 @@
 import { TextField } from '@mui/material';
 import { Controller, type Control, type FieldPath, type FieldValues } from 'react-hook-form';
-import {
-    convertLengthFromMeters,
-    convertLengthToMeters,
-    round2,
-    type LengthUnit,
-} from '@shared/utils/format-utils';
+import { LENGTH_UNIT_SUFFIX, type LengthUnit } from '@shared/utils/format-utils';
 
 interface LengthFieldProps<TFieldValues extends FieldValues = FieldValues> {
     control: Control<TFieldValues>;
@@ -18,8 +13,8 @@ interface LengthFieldProps<TFieldValues extends FieldValues = FieldValues> {
 }
 
 /**
- * Campo de longitud que almacena el valor canónico en metros y lo presenta en la
- * unidad seleccionada, centralizando la conversión en `format-utils`.
+ * Campo de longitud que almacena y muestra el número tal cual en la unidad
+ * seleccionada (según el `TipoMaestro`), sin convertir a una unidad canónica.
  */
 export function LengthField<TFieldValues extends FieldValues = FieldValues>({
     control,
@@ -34,28 +29,22 @@ export function LengthField<TFieldValues extends FieldValues = FieldValues>({
         <Controller
             name={name}
             control={control}
-            render={({ field }) => {
-                const meters = Number(field.value) || 0;
-                const displayValue = round2(convertLengthFromMeters(meters, unit));
-
-                return (
-                    <TextField
-                        label={`${label} (${unit === 'M' ? 'm' : 'ft'})`}
-                        type="number"
-                        fullWidth
-                        value={displayValue}
-                        onChange={(event) => {
-                            const raw = event.target.value;
-                            const parsed = raw === '' ? 0 : Number(raw);
-                            field.onChange(round2(convertLengthToMeters(parsed, unit)));
-                        }}
-                        error={error}
-                        helperText={helperText}
-                        disabled={disabled}
-                        slotProps={{ htmlInput: { step: '0.01' } }}
-                    />
-                );
-            }}
+            render={({ field }) => (
+                <TextField
+                    label={`${label} (${LENGTH_UNIT_SUFFIX[unit]})`}
+                    type="number"
+                    fullWidth
+                    value={Number(field.value) || 0}
+                    onChange={(event) => {
+                        const raw = event.target.value;
+                        field.onChange(raw === '' ? 0 : Number(raw));
+                    }}
+                    error={error}
+                    helperText={helperText}
+                    disabled={disabled}
+                    slotProps={{ htmlInput: { step: '0.01' } }}
+                />
+            )}
         />
     );
 }

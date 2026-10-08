@@ -53,6 +53,7 @@ export interface Flota {
     largo?: number;
     alto?: number;
     ancho?: number;
+    camaUtil?: number;
     tipoCombustibleID: number;
     estado: boolean;
     flotaDocumentos: FlotaDocumento[];
@@ -89,6 +90,7 @@ export interface CreateFlotaDto {
     largo?: number;
     alto?: number;
     ancho?: number;
+    camaUtil?: number;
     tipoCombustibleID: number;
     activo: boolean;
 }

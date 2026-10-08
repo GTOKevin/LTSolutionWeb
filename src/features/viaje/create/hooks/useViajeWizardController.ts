@@ -90,7 +90,13 @@ export function useViajeWizardController(options: ViajeWizardControllerOptions =
         const isStepValid = await trigger(getViajeWizardStepFields(activeStep));
         if (isStepValid) {
             setActiveStep((prev) => prev + 1);
+            return;
         }
+
+        showToast({
+            message: 'Revise los campos marcados antes de continuar',
+            severity: 'warning',
+        });
     };
 
     const handleBack = () => {

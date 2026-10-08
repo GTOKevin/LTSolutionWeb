@@ -2,7 +2,7 @@ import { Box, Typography, Paper, TextField, useTheme } from '@mui/material';
 import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { LocationOn, SportsScore, Map as MapIcon, Flag, South } from '@mui/icons-material';
 import { UbigeoSelect } from '@/shared/components/ui/UbigeoSelect';
-import { handleAddressKeyDown } from '@/shared/utils/input-validators';
+import { handleDireccionKeyDown } from '@/shared/utils/input-validators';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -152,7 +152,9 @@ export function Step2Ruta() {
                                 }}
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.default' } }}
                                 {...register('direccionOrigen')}
-                                onKeyDown={handleAddressKeyDown}
+                                onKeyDown={handleDireccionKeyDown}
+                                error={!!errors.direccionOrigen}
+                                helperText={errors.direccionOrigen?.message?.toString()}
                             />
                         </Box>
                     </Box>
@@ -210,7 +212,9 @@ export function Step2Ruta() {
                                 }}
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.default' } }}
                                 {...register('direccionDestino')}
-                                onKeyDown={handleAddressKeyDown}
+                                onKeyDown={handleDireccionKeyDown}
+                                error={!!errors.direccionDestino}
+                                helperText={errors.direccionDestino?.message?.toString()}
                             />
                         </Box>
                     </Box>

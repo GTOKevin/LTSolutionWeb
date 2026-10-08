@@ -1,3 +1,4 @@
+import type { SelectItem } from '@shared/model/types';
 import type { FlotaEstadoOperativo, FlotaEstadoVigencia } from './types';
 
 export const TIPO_FLOTA_CODES = {
@@ -19,6 +20,20 @@ export const TIPO_FLOTA_PREFIX: Record<number, string> = {
 
 /** Tipos de flota que aplican a configuración de ejes (solo Tracto). */
 export const CONFIG_EJES_APLICA: number[] = [101];
+
+/**
+ * Indica si el tipo de unidad es una carreta (`O4`: cama baja, cama cuna,
+ * plataforma o cisterna), donde aplica la longitud de "Cama Útil".
+ * Se resuelve por código del catálogo VEHICULO, sin hardcodear ids.
+ */
+export function isCarretaO4(tipoFlotaId?: number | null, listaFlota: SelectItem[] = []): boolean {
+    if (!tipoFlotaId) {
+        return false;
+    }
+
+    const item = listaFlota.find((option) => option.id === tipoFlotaId);
+    return item?.extra === TIPO_FLOTA_CODES.CARRETAS;
+}
 
 /**
  * Genera el código interno derivado `{PREFIJO}-{FlotaID}`.

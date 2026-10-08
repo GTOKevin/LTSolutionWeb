@@ -40,6 +40,7 @@ export const MONEDA_CODES = {
 export const TIPO_MAESTRO_CODES = {
     MEDIDA_METRO: 'M',
     PESO_KILOGRAMO: 'Kg',
+    COMBUSTIBLE_DIESEL: 'DIESEL',
 } as const;
 
 export const ESTADO_SECCIONES = ESTADO_SECTIONS;

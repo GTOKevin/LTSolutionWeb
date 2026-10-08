@@ -12,7 +12,8 @@ import {
 import { useEffect } from 'react';
 import type { Flota } from '@entities/flota/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
-import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
+import { SECCION_MAESTRO, TIPO_MAESTRO_CODES } from '@entities/master-data/model/constants';
+import { getSelectItemId } from '@entities/master-data/lib/catalog-utils';
 import { useCreateFlota, useUpdateFlota } from './useFlotaCrud';
 import { useCrudFormPageState } from '@shared/hooks/useCrudFormPageState';
 
@@ -89,7 +90,7 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
         defaultValues: FLOTA_FORM_DEFAULTS,
     });
 
-    const { reset, setError } = form;
+    const { reset, setError, setValue, getValues } = form;
 
     // --- Effects ---
     useEffect(() => {
@@ -103,6 +104,27 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
             return resetUiState();
         }
     }, [open, flotaToEdit, reset, resetUiState]);
+
+    // En modo crear (sin edición ni creación previa), precarga los catálogos por código.
+    useEffect(() => {
+        if (!open || flotaToEdit || createdId) {
+            return;
+        }
+
+        const defaultTipoPesoID = getSelectItemId(tiposPeso, [TIPO_MAESTRO_CODES.PESO_KILOGRAMO]);
+        const defaultTipoMedidaID = getSelectItemId(tiposMedida, [TIPO_MAESTRO_CODES.MEDIDA_METRO]);
+        const defaultTipoCombustibleID = getSelectItemId(tiposCombustible, [TIPO_MAESTRO_CODES.COMBUSTIBLE_DIESEL]);
+
+        if (!(Number(getValues('tipoPesoID')) > 0) && defaultTipoPesoID) {
+            setValue('tipoPesoID', defaultTipoPesoID);
+        }
+        if (!(Number(getValues('tipoMedidaID')) > 0) && defaultTipoMedidaID) {
+            setValue('tipoMedidaID', defaultTipoMedidaID);
+        }
+        if (!(Number(getValues('tipoCombustibleID')) > 0) && defaultTipoCombustibleID) {
+            setValue('tipoCombustibleID', defaultTipoCombustibleID);
+        }
+    }, [open, flotaToEdit, createdId, tiposPeso, tiposMedida, tiposCombustible, setValue, getValues]);
 
     // --- Mutations ---
     const handleError = (error: unknown) => {

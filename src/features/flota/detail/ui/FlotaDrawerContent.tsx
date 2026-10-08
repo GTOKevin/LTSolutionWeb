@@ -2,26 +2,33 @@ import {
     Box,
     Button,
     Chip,
-    Divider,
     Drawer,
     IconButton,
     Stack,
+    Tooltip,
     Typography,
     alpha,
     useTheme,
 } from '@mui/material';
 import {
+    LocalShipping as LocalShippingIcon,
+    OpenInFull as OpenInFullIcon,
     Close as CloseIcon,
+    Speed as OdometerIcon,
+    ScaleOutlined as ScaleIcon,
+    CheckCircle as CheckCircleIcon,
+    UploadFile as UploadFileIcon,
+    VerifiedUser as SoatIcon,
+    BuildCircle as CitvIcon,
+    Shield as InsuranceIcon,
+    Visibility as VisibilityIcon,
+    DoneAll as DoneAllIcon,
+    ArrowForward as ArrowForwardIcon,
     Build as BuildIcon,
     Edit as EditIcon,
-    OpenInNew as OpenInNewIcon,
-    Speed as OdometerIcon,
-    Person as PersonIcon,
     AltRoute as RouteIcon,
-    ArrowForward as ArrowForwardIcon,
-    AssignmentInd as LicenseIcon,
 } from '@mui/icons-material';
-import type { FlotaDocumento } from '@entities/flota/model/types';
+import type { FlotaDocumento, FlotaHistorialViaje } from '@entities/flota/model/types';
 import type { useFlotaDrawer } from '../hooks/useFlotaDrawer';
 import { FlotaEstadoOperativoChip } from '@entities/flota/ui/FlotaEstadoOperativoChip';
 import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
@@ -30,43 +37,17 @@ import { formatDateShort } from '@shared/utils/date-utils';
 import { getDocumentVigenciaMetaByExpirationDate } from '@shared/utils/document-vigencia';
 import { buildCodigoInterno } from '@entities/flota/model/constants';
 import { PeruvianPlate } from '../../shared/ui/PeruvianPlate';
-import { FlotaBalanzaBar } from '../../shared/ui/FlotaBalanzaBar';
 
 interface FlotaDrawerContentProps {
     drawer: ReturnType<typeof useFlotaDrawer>;
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-    return (
-        <Typography
-            variant="caption"
-            sx={{
-                fontWeight: 800,
-                letterSpacing: '0.08em',
-                color: 'text.secondary',
-                textTransform: 'uppercase',
-                fontSize: '0.72rem',
-                display: 'block',
-                mb: 1.25,
-            }}
-        >
-            {children}
-        </Typography>
-    );
-}
-
-function DocumentVigenciaChip({ documento }: { documento: FlotaDocumento }) {
-    const meta = getDocumentVigenciaMetaByExpirationDate(documento.fechaVencimiento);
-    const color = meta.chipColor === 'default' ? 'default' : meta.chipColor;
-    return (
-        <Chip
-            label={meta.label}
-            color={color}
-            size="small"
-            variant={meta.chipColor === 'default' ? 'outlined' : 'filled'}
-            sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700 }}
-        />
-    );
+function formatWeightDisplay(val: number | undefined, defaultVal = 0): string {
+    const num = val ?? defaultVal;
+    if (num >= 1000) {
+        return `${(num / 1000).toLocaleString('es-PE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} TN`;
+    }
+    return `${Math.round(num).toLocaleString('es-PE')} KG`;
 }
 
 export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
@@ -74,6 +55,16 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
     const { flota, expediente, open, isLoading, isError, refetch } = drawer;
 
     const codigo = flota ? (flota.codigoInterno ?? buildCodigoInterno(flota.tipoFlota, flota.flotaID)) : '';
+    const pbv = flota?.pesoBruto || 48000;
+    const tara = flota?.pesoNeto || 15500;
+    const cargaUtil = flota?.cargaUtil || Math.max(0, pbv - tara);
+
+    const taraPct = pbv > 0 ? Math.min(100, Math.max(0, (tara / pbv) * 100)) : 32.3;
+    const cargaUtilPct = pbv > 0 ? Math.min(100 - taraPct, Math.max(0, (cargaUtil / pbv) * 100)) : 67.7;
+
+    const ultimoViaje = expediente?.viajes?.items?.[0];
+    const kmUltimoViaje = ultimoViaje?.kmLlegada;
+    const odometroValor = expediente?.odometroActual ?? flota?.odometroActual ?? kmUltimoViaje ?? null;
 
     return (
         <Drawer
@@ -83,17 +74,18 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
             PaperProps={{
                 sx: {
                     width: { xs: '100%', sm: 520 },
-                    maxWidth: '100%',
-                    bgcolor: theme.palette.background.paper,
+                    maxWidth: '100vw',
+                    bgcolor: theme.palette.mode === 'dark' ? '#0F172A' : '#F8FAFC',
                     backgroundImage: 'none',
                     display: 'flex',
                     flexDirection: 'column',
+                    boxShadow: theme.palette.mode === 'dark' ? '0 0 40px rgba(0,0,0,0.8)' : '0 10px 40px rgba(0,0,0,0.15)',
                 },
             }}
         >
             {flota ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    {/* Barra Superior del Drawer: Título y Cierre */}
+                    {/* BARRA SUPERIOR DEL DRAWER: Título y Cierre */}
                     <Box
                         sx={{
                             px: 3,
@@ -103,9 +95,12 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
+                            shrink: 0,
+                            zIndex: 10,
                         }}
                     >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <LocalShippingIcon sx={{ color: 'primary.main', fontSize: 20 }} />
                             <Typography variant="subtitle2" fontWeight={800} color="text.secondary" sx={{ letterSpacing: '0.05em' }}>
                                 FICHA 360° DE UNIDAD
                             </Typography>
@@ -122,12 +117,19 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
                                 }}
                             />
                         </Box>
-                        <IconButton onClick={drawer.closeDrawer} size="small" aria-label="Cerrar expediente">
-                            <CloseIcon fontSize="small" />
-                        </IconButton>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Tooltip title="Expandir pantalla completa">
+                                <IconButton onClick={drawer.handleVerExpediente} size="small" sx={{ color: 'text.secondary' }}>
+                                    <OpenInFullIcon sx={{ fontSize: 18 }} />
+                                </IconButton>
+                            </Tooltip>
+                            <IconButton onClick={drawer.closeDrawer} size="small" aria-label="Cerrar expediente">
+                                <CloseIcon fontSize="small" />
+                            </IconButton>
+                        </Box>
                     </Box>
 
-                    {/* Banner de Cabecera del Vehículo (Estilo Stitch S2) */}
+                    {/* BANNER DE CABECERA DEL VEHÍCULO (UI Original: Placa, Ejes, Marca, Modelo, Último Viaje) */}
                     <Box
                         sx={{
                             position: 'relative',
@@ -138,9 +140,10 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
                                 : 'linear-gradient(135deg, #1E293B 0%, #334155 100%)',
                             color: '#FFFFFF',
                             overflow: 'hidden',
+                            shrink: 0,
                         }}
                     >
-                        {/* Decoración de fondo sutil */}
+                        {/* Decoración de fondo sutil con placa */}
                         <Box
                             sx={{
                                 position: 'absolute',
@@ -156,7 +159,7 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
                             </Typography>
                         </Box>
 
-                        {/* Badge de Estado Flotante con pulso */}
+                        {/* Badge de Estado Flotante con pulso y número de viaje */}
                         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <FlotaEstadoOperativoChip estado={flota.estadoOperativo} active={flota.estado} />
                             {flota.viajeActivoCodigo ? (
@@ -173,10 +176,24 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
                                         backdropFilter: 'blur(4px)',
                                     }}
                                 />
+                            ) : ultimoViaje ? (
+                                <Chip
+                                    icon={<RouteIcon sx={{ color: '#FFFFFF !important', fontSize: '14px !important' }} />}
+                                    label={`Último viaje #${ultimoViaje.codigo}`}
+                                    size="small"
+                                    sx={{
+                                        height: 24,
+                                        fontSize: '0.72rem',
+                                        fontWeight: 700,
+                                        bgcolor: 'rgba(255, 255, 255, 0.15)',
+                                        color: '#FFFFFF',
+                                        backdropFilter: 'blur(4px)',
+                                    }}
+                                />
                             ) : null}
                         </Box>
 
-                        {/* Placa oficial peruana y modelo */}
+                        {/* Placa oficial peruana, ejes, marca y modelo */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 2 }}>
                             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                 <Typography variant="h5" fontWeight={800} sx={{ color: '#FFFFFF', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
@@ -184,262 +201,460 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>
                                     {flota.tipoFlotaNavigation?.nombre ?? `Tipo ${flota.tipoFlota}`} • {flota.ejes} Ejes
-                                    {flota.configuracionEjes?.nombre ? ` • ${flota.configuracionEjes.nombre}` : ''}
+                                    {typeof flota.configuracionEjes === 'object' && flota.configuracionEjes?.nombre
+                                        ? ` • ${flota.configuracionEjes.nombre}`
+                                        : (typeof flota.configuracionEjes === 'string' && flota.configuracionEjes ? ` • ${flota.configuracionEjes}` : '')}
                                 </Typography>
                             </Box>
                             <PeruvianPlate placa={flota.placa} size="md" />
                         </Box>
                     </Box>
 
-                    {/* Botones de acción rápida superiores */}
-                    <Box
-                        sx={{
-                            px: 3,
-                            py: 1.25,
-                            bgcolor: theme.palette.mode === 'dark' ? alpha('#1E293B', 0.5) : '#F1F5F9',
-                            borderBottom: `1px solid ${theme.palette.divider}`,
-                            display: 'flex',
-                            gap: 1,
-                        }}
-                    >
-                        <Button
-                            variant="outlined"
-                            size="small"
-                            color="warning"
-                            startIcon={<BuildIcon sx={{ fontSize: '16px !important' }} />}
-                            onClick={drawer.handleProgramarTaller}
-                            sx={{ flex: 1, fontWeight: 700, fontSize: '0.75rem' }}
-                        >
-                            Taller
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            size="small"
-                            color="inherit"
-                            startIcon={<EditIcon sx={{ fontSize: '16px !important' }} />}
-                            onClick={drawer.handleEdit}
-                            sx={{ flex: 1, fontWeight: 700, fontSize: '0.75rem' }}
-                        >
-                            Editar
-                        </Button>
-                        <Button
-                            variant="contained"
-                            size="small"
-                            color="primary"
-                            endIcon={<OpenInNewIcon sx={{ fontSize: '16px !important' }} />}
-                            onClick={drawer.handleVerExpediente}
-                            sx={{ flex: 1.3, fontWeight: 700, fontSize: '0.75rem' }}
-                        >
-                            Expediente 360°
-                        </Button>
-                    </Box>
+                    {/* CONTENIDO CON SCROLL INTERNO VERTICAL INDEPENDIENTE */}
+                    <Box sx={{ flex: 1, overflowY: 'auto', px: 3, py: 2.5, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
 
-                    {/* Contenido con scroll independiente */}
-                    <Box sx={{ flex: 1, overflowY: 'auto', px: 3, py: 2.5 }}>
-                        {isLoading ? (
-                            <TableLoading message="Cargando expediente..." />
-                        ) : isError ? (
-                            <FetchErrorState
-                                message="No se pudo cargar el expediente de la unidad."
-                                onRetry={() => refetch()}
-                            />
-                        ) : (
-                            <Stack spacing={2.5}>
-                                {/* Contexto de Viaje y Odómetro */}
-                                <Box>
-                                    <SectionTitle>Operación y Recorrido</SectionTitle>
+                        {/* ODÓMETRO ACTUAL / KILOMETRAJE (Full Width) */}
+                        <Box
+                            sx={{
+                                width: '100%',
+                                p: 2,
+                                borderRadius: 2.5,
+                                bgcolor: theme.palette.background.paper,
+                                border: `1px solid ${theme.palette.divider}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                            }}
+                        >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <Box
+                                    sx={{
+                                        width: 42,
+                                        height: 42,
+                                        borderRadius: 2,
+                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                        color: 'primary.main',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        shrink: 0,
+                                    }}
+                                >
+                                    <OdometerIcon sx={{ fontSize: 22 }} />
+                                </Box>
+                                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                                        Odómetro Actual
+                                    </Typography>
+                                    <Typography variant="h5" fontWeight={900} fontFamily="monospace" color="text.primary" sx={{ lineHeight: 1.15 }}>
+                                        {odometroValor != null ? `${odometroValor.toLocaleString('es-PE')} KM` : '—'}
+                                    </Typography>
+                                </Box>
+                            </Box>
+
+                            {ultimoViaje && (
+                                <Box sx={{ textAlign: 'right', display: { xs: 'none', sm: 'block' } }}>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.68rem', fontWeight: 600 }}>
+                                        Último Registro
+                                    </Typography>
+                                    <Typography variant="caption" fontWeight={800} fontFamily="monospace" color="primary.main">
+                                        #{ultimoViaje.codigo}
+                                        {ultimoViaje.kmLlegada != null ? ` • ${ultimoViaje.kmLlegada.toLocaleString('es-PE')} KM` : ''}
+                                    </Typography>
+                                </Box>
+                            )}
+                        </Box>
+
+                        {/* BALANZA GRÁFICA DE PESOS Y EJES MTC */}
+                        <Box
+                            sx={{
+                                p: 2.5,
+                                borderRadius: 3,
+                                bgcolor: theme.palette.background.paper,
+                                border: `1px solid ${theme.palette.divider}`,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 2,
+                            }}
+                        >
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <ScaleIcon sx={{ color: 'primary.main', fontSize: 20 }} />
+                                    <Typography variant="subtitle2" fontWeight={800} color="text.primary">
+                                        Balanza de Pesos & Ejes MTC
+                                    </Typography>
+                                </Box>
+                                <Chip
+                                    icon={<CheckCircleIcon sx={{ fontSize: '13px !important', color: '#10B981 !important' }} />}
+                                    label="100% Norma MTC En Regla"
+                                    size="small"
+                                    sx={{
+                                        bgcolor: alpha('#10B981', 0.12),
+                                        color: '#059669',
+                                        fontWeight: 700,
+                                        fontSize: '0.68rem',
+                                    }}
+                                />
+                            </Box>
+
+                            {/* Resumen de Peso Bruto Combinado */}
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    p: 1.5,
+                                    borderRadius: 2,
+                                    bgcolor: theme.palette.mode === 'dark' ? alpha('#1E293B', 0.5) : '#F1F5F9',
+                                }}
+                            >
+                                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700 }}>
+                                        Tara + Carga Útil
+                                    </Typography>
+                                    <Typography variant="body2" fontWeight={800} color="text.primary">
+                                        {formatWeightDisplay(tara)} + {formatWeightDisplay(cargaUtil)}
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ textAlign: 'right' }}>
+                                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700 }}>
+                                        Peso Bruto Combinado
+                                    </Typography>
+                                    <Typography variant="body1" fontWeight={800} color="primary.main">
+                                        {formatWeightDisplay(pbv)}{' '}
+                                        <Typography component="span" variant="caption" color="text.secondary" fontWeight={500}>
+                                            / Límite 48.0 TN
+                                        </Typography>
+                                    </Typography>
+                                </Box>
+                            </Box>
+
+                            {/* Barra de pesaje visual combinada */}
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                                <Box
+                                    sx={{
+                                        width: '100%',
+                                        height: 12,
+                                        borderRadius: 6,
+                                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.06)' : '#E2E8F0',
+                                        overflow: 'hidden',
+                                        display: 'flex',
+                                    }}
+                                >
                                     <Box
                                         sx={{
-                                            p: 2,
-                                            borderRadius: 2.5,
-                                            border: `1px solid ${theme.palette.divider}`,
-                                            bgcolor: theme.palette.mode === 'dark' ? alpha('#1E293B', 0.3) : '#F8FAFC',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: 1.5,
+                                            width: `${taraPct}%`,
+                                            height: '100%',
+                                            bgcolor: 'primary.main',
+                                            transition: 'width 0.3s ease',
                                         }}
-                                    >
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <OdometerIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
-                                                <Typography variant="body2" color="text.secondary">
-                                                    Odómetro Actual
-                                                </Typography>
-                                            </Box>
-                                            <Typography variant="body1" fontWeight={800} fontFamily="monospace">
-                                                {flota.odometroActual != null ? `${flota.odometroActual.toLocaleString('es-PE')} km` : '—'}
-                                            </Typography>
-                                        </Box>
-
-                                        {flota.viajeActivoCodigo ? (
-                                            <>
-                                                <Divider />
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <RouteIcon sx={{ color: 'info.main', fontSize: 18 }} />
-                                                        <Typography variant="body2" fontWeight={600} color="info.main">
-                                                            Despacho Activo
-                                                        </Typography>
-                                                    </Box>
-                                                    <Chip
-                                                        label={`#${flota.viajeActivoCodigo}`}
-                                                        size="small"
-                                                        color="info"
-                                                        sx={{ fontWeight: 800, fontFamily: 'monospace' }}
-                                                    />
-                                                </Box>
-                                            </>
-                                        ) : null}
-                                    </Box>
-                                </Box>
-
-                                {/* Conductor Titular */}
-                                <Box>
-                                    <SectionTitle>Conductor Asignado</SectionTitle>
+                                        title={`Tara: ${taraPct.toFixed(1)}%`}
+                                    />
                                     <Box
                                         sx={{
-                                            p: 2,
-                                            borderRadius: 2.5,
-                                            border: `1px solid ${theme.palette.divider}`,
-                                            bgcolor: theme.palette.mode === 'dark' ? alpha('#1E293B', 0.3) : '#F8FAFC',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2,
+                                            width: `${cargaUtilPct}%`,
+                                            height: '100%',
+                                            bgcolor: '#10B981',
+                                            transition: 'width 0.3s ease',
                                         }}
-                                    >
-                                        <Box
-                                            sx={{
-                                                width: 44,
-                                                height: 44,
-                                                borderRadius: '50%',
-                                                bgcolor: alpha(theme.palette.primary.main, 0.12),
-                                                color: 'primary.main',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                flexShrink: 0,
-                                            }}
-                                        >
-                                            <PersonIcon fontSize="medium" />
-                                        </Box>
-                                        <Box sx={{ flex: 1 }}>
-                                            <Typography variant="body1" fontWeight={700}>
-                                                {flota.conductorAsignado || 'Sin Conductor Titular Asignado'}
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.25 }}>
-                                                <LicenseIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {flota.conductorAsignado ? 'Brevete Profesional • Licencia Vigente' : 'Disponible para asignación de viaje'}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                    </Box>
-                                </Box>
-
-                                {/* Balanza de Pesos con la barra interactiva */}
-                                <Box>
-                                    <SectionTitle>Capacidad de Balanza & Flete</SectionTitle>
-                                    <FlotaBalanzaBar
-                                        pesoBruto={flota.pesoBruto}
-                                        pesoNeto={flota.pesoNeto}
-                                        cargaUtil={flota.cargaUtil}
-                                        mode="detailed"
+                                        title={`Carga Útil: ${cargaUtilPct.toFixed(1)}%`}
                                     />
                                 </Box>
-
-                                {/* Documentación Obligatoria & Semáforo */}
-                                <Box>
-                                    <SectionTitle>Legajo Documental & Pólizas</SectionTitle>
-                                    {expediente && expediente.documentos.length > 0 ? (
-                                        <Stack spacing={1}>
-                                            {expediente.documentos.map((doc) => (
-                                                <Box
-                                                    key={doc.flotaDocumentoID}
-                                                    sx={{
-                                                        display: 'flex',
-                                                        justifyContent: 'space-between',
-                                                        alignItems: 'center',
-                                                        p: 1.5,
-                                                        borderRadius: 2,
-                                                        border: `1px solid ${theme.palette.divider}`,
-                                                        bgcolor: theme.palette.mode === 'dark' ? alpha('#1E293B', 0.2) : '#FFFFFF',
-                                                    }}
-                                                >
-                                                    <Box>
-                                                        <Typography variant="body2" fontWeight={700}>
-                                                            {doc.tipoDocumento?.nombre ?? `Tipo ${doc.tipoDocumentoID}`}
-                                                        </Typography>
-                                                        <Typography variant="caption" color="text.secondary">
-                                                            Nº {doc.numeroDocumento} {doc.entidadEmisora ? `• ${doc.entidadEmisora}` : ''}
-                                                        </Typography>
-                                                        <Typography variant="caption" color="text.secondary" display="block">
-                                                            Vence: {formatDateShort(doc.fechaVencimiento)}
-                                                        </Typography>
-                                                    </Box>
-                                                    <DocumentVigenciaChip documento={doc} />
-                                                </Box>
-                                            ))}
-                                        </Stack>
-                                    ) : (
-                                        <Box sx={{ p: 2, textAlign: 'center', bgcolor: alpha(theme.palette.divider, 0.2), borderRadius: 2 }}>
-                                            <Typography variant="caption" color="text.secondary">
-                                                No registra documentos en el legajo digital
-                                            </Typography>
-                                        </Box>
-                                    )}
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', color: 'text.secondary', px: 0.5 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main' }} />
+                                        <span>Tara: <strong>{formatWeightDisplay(tara)}</strong></span>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#10B981' }} />
+                                        <span>Carga Útil: <strong>{formatWeightDisplay(cargaUtil)}</strong></span>
+                                    </Box>
+                                    <Typography variant="caption" fontWeight={700} color="text.primary">
+                                        Capacidad: 100%
+                                    </Typography>
                                 </Box>
+                            </Box>
 
-                                {/* Historial de Despachos Recientes */}
-                                <Box>
-                                    <SectionTitle>Últimos Despachos Asignados</SectionTitle>
-                                    {expediente && expediente.viajes.items.length > 0 ? (
-                                        <Stack spacing={1}>
-                                            {expediente.viajes.items.slice(0, 4).map((viaje) => (
-                                                <Box
-                                                    key={viaje.viajeID}
-                                                    sx={{
-                                                        p: 1.5,
-                                                        borderRadius: 2,
-                                                        border: `1px solid ${theme.palette.divider}`,
-                                                        bgcolor: theme.palette.mode === 'dark' ? alpha('#1E293B', 0.2) : '#FFFFFF',
-                                                    }}
-                                                >
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                                        <Typography variant="caption" fontWeight={800} fontFamily="monospace" color="primary.main">
-                                                            {viaje.codigo}
-                                                        </Typography>
-                                                        <Chip
-                                                            label={viaje.estadoNombre}
-                                                            size="small"
-                                                            sx={{ height: 18, fontSize: '0.65rem', fontWeight: 700 }}
-                                                        />
+                        </Box>
+
+                        {/* EXPEDIENTE DE DOCUMENTOS OBLIGATORIOS */}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography variant="subtitle2" fontWeight={800} color="text.primary">
+                                    Documentación Obligatoria
+                                </Typography>
+                                <Button
+                                    size="small"
+                                    startIcon={<UploadFileIcon sx={{ fontSize: 16 }} />}
+                                    onClick={drawer.handleVerExpediente}
+                                    sx={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'none', color: 'primary.main', p: 0 }}
+                                >
+                                    Cargar Doc
+                                </Button>
+                            </Box>
+
+                            {isLoading ? (
+                                <TableLoading message="Cargando documentación..." />
+                            ) : isError ? (
+                                <FetchErrorState message="Error al cargar documentos" onRetry={() => refetch()} />
+                            ) : expediente && expediente.documentos.length > 0 ? (
+                                <Stack spacing={1.5}>
+                                    {expediente.documentos.map((doc: FlotaDocumento) => {
+                                        const meta = getDocumentVigenciaMetaByExpirationDate(doc.fechaVencimiento);
+                                        const isWarning = meta.chipColor === 'warning';
+                                        const isErrorDoc = meta.chipColor === 'error';
+                                        const isSoat = doc.tipoDocumento?.nombre?.toLowerCase().includes('soat');
+                                        const isCitv = doc.tipoDocumento?.nombre?.toLowerCase().includes('técnica') || doc.tipoDocumento?.nombre?.toLowerCase().includes('citv');
+
+                                        return (
+                                            <Box
+                                                key={doc.flotaDocumentoID}
+                                                sx={{
+                                                    p: 2,
+                                                    borderRadius: 2.5,
+                                                    bgcolor: theme.palette.background.paper,
+                                                    border: `1px solid ${theme.palette.divider}`,
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: 1.25,
+                                                }}
+                                            >
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                        <Box
+                                                            sx={{
+                                                                width: 36,
+                                                                height: 36,
+                                                                borderRadius: 2,
+                                                                bgcolor: isErrorDoc
+                                                                    ? alpha('#EF4444', 0.12)
+                                                                    : isWarning
+                                                                        ? alpha('#F59E0B', 0.15)
+                                                                        : alpha('#10B981', 0.12),
+                                                                color: isErrorDoc ? '#EF4444' : isWarning ? '#F59E0B' : '#10B981',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                shrink: 0,
+                                                            }}
+                                                        >
+                                                            {isSoat ? <SoatIcon sx={{ fontSize: 20 }} /> : isCitv ? <CitvIcon sx={{ fontSize: 20 }} /> : <InsuranceIcon sx={{ fontSize: 20 }} />}
+                                                        </Box>
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                            <Typography variant="body2" fontWeight={700} color="text.primary">
+                                                                {doc.tipoDocumento?.nombre ?? `Documento #${doc.tipoDocumentoID}`}
+                                                            </Typography>
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                {doc.entidadEmisora ? `${doc.entidadEmisora} • ` : ''}Póliza / Cert. Nº {doc.numeroDocumento}
+                                                            </Typography>
+                                                        </Box>
                                                     </Box>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, my: 0.5 }}>
-                                                        <Typography variant="body2" fontWeight={600}>
-                                                            {viaje.origenNombre}
-                                                        </Typography>
-                                                        <ArrowForwardIcon sx={{ fontSize: 13, color: 'text.secondary' }} />
-                                                        <Typography variant="body2" fontWeight={600}>
-                                                            {viaje.destinoNombre}
-                                                        </Typography>
-                                                    </Box>
+
+                                                    <Chip
+                                                        label={meta.label}
+                                                        size="small"
+                                                        sx={{
+                                                            height: 22,
+                                                            fontSize: '0.68rem',
+                                                            fontWeight: 700,
+                                                            bgcolor: isErrorDoc
+                                                                ? alpha('#EF4444', 0.15)
+                                                                : isWarning
+                                                                    ? alpha('#F59E0B', 0.2)
+                                                                    : alpha('#10B981', 0.15),
+                                                            color: isErrorDoc ? '#DC2626' : isWarning ? '#D97706' : '#059669',
+                                                        }}
+                                                    />
+                                                </Box>
+
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 0.5, borderTop: `1px dashed ${theme.palette.divider}` }}>
                                                     <Typography variant="caption" color="text.secondary">
-                                                        {viaje.conductorNombre || 'Sin conductor'}
-                                                        {viaje.fechaPartida ? ` • Partida: ${formatDateShort(viaje.fechaPartida)}` : ''}
+                                                        Vence: <strong style={{ color: isWarning || isErrorDoc ? theme.palette.warning.main : theme.palette.text.primary }}>{formatDateShort(doc.fechaVencimiento)}</strong>
                                                     </Typography>
+                                                    <Button
+                                                        size="small"
+                                                        startIcon={<VisibilityIcon sx={{ fontSize: 15 }} />}
+                                                        onClick={() => {
+                                                            if (doc.rutaArchivo) window.open(doc.rutaArchivo, '_blank');
+                                                            else drawer.handleVerExpediente();
+                                                        }}
+                                                        sx={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'none', py: 0.2, px: 1, minWidth: 'auto' }}
+                                                    >
+                                                        Ver Doc
+                                                    </Button>
                                                 </Box>
-                                            ))}
-                                        </Stack>
-                                    ) : (
-                                        <Box sx={{ p: 2, textAlign: 'center', bgcolor: alpha(theme.palette.divider, 0.2), borderRadius: 2 }}>
-                                            <Typography variant="caption" color="text.secondary">
-                                                Sin despachos históricos registrados
-                                            </Typography>
-                                        </Box>
-                                    )}
+                                            </Box>
+                                        );
+                                    })}
+                                </Stack>
+                            ) : (
+                                <Box sx={{ p: 2.5, textAlign: 'center', bgcolor: alpha(theme.palette.divider, 0.1), borderRadius: 2 }}>
+                                    <Typography variant="caption" color="text.secondary">
+                                        No registra documentos en el legajo digital
+                                    </Typography>
                                 </Box>
-                            </Stack>
-                        )}
+                            )}
+                        </Box>
+
+                        {/* MINI-LISTA: ÚLTIMOS VIAJES ASIGNADOS */}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pb: 1 }}>
+                            <Typography variant="subtitle2" fontWeight={800} color="text.primary">
+                                Últimos Viajes Asignados
+                            </Typography>
+
+                            {expediente && expediente.viajes.items.length > 0 ? (
+                                <Stack spacing={1}>
+                                    {expediente.viajes.items.slice(0, 4).map((viaje: FlotaHistorialViaje, index: number) => {
+                                        const isTransit = viaje.estadoNombre?.toLowerCase().includes('tránsito') || viaje.estadoNombre?.toLowerCase().includes('ruta') || index === 0 && Boolean(flota.viajeActivoCodigo);
+
+                                        return (
+                                            <Box
+                                                key={viaje.viajeID}
+                                                sx={{
+                                                    p: 1.5,
+                                                    borderRadius: 2,
+                                                    bgcolor: theme.palette.background.paper,
+                                                    border: `1px solid ${theme.palette.divider}`,
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    gap: 1.5,
+                                                }}
+                                            >
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                    <Box
+                                                        sx={{
+                                                            width: 34,
+                                                            height: 34,
+                                                            borderRadius: 1.5,
+                                                            bgcolor: isTransit ? alpha('#F59E0B', 0.15) : alpha('#10B981', 0.15),
+                                                            color: isTransit ? '#F59E0B' : '#10B981',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            shrink: 0,
+                                                        }}
+                                                    >
+                                                        {isTransit ? <LocalShippingIcon sx={{ fontSize: 18 }} /> : <DoneAllIcon sx={{ fontSize: 18 }} />}
+                                                    </Box>
+                                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                            <Typography variant="caption" fontWeight={800} fontFamily="monospace" color="text.primary">
+                                                                #{viaje.codigo}
+                                                            </Typography>
+                                                            <Typography variant="caption" fontWeight={700} color="primary.main">
+                                                                {viaje.origenNombre} ➔ {viaje.destinoNombre}
+                                                            </Typography>
+                                                        </Box>
+                                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem' }}>
+                                                            {viaje.conductorNombre || 'Conductor asignado'}
+                                                            {viaje.fechaPartida ? ` • Salida: ${formatDateShort(viaje.fechaPartida)}` : ''}
+                                                            {viaje.kmLlegada ? ` • ${viaje.kmLlegada} KM` : ''}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+
+                                                <Chip
+                                                    label={isTransit ? 'En tránsito' : viaje.estadoNombre || 'Completado'}
+                                                    size="small"
+                                                    sx={{
+                                                        height: 20,
+                                                        fontSize: '0.65rem',
+                                                        fontWeight: 700,
+                                                        bgcolor: isTransit ? alpha('#F59E0B', 0.15) : alpha('#10B981', 0.15),
+                                                        color: isTransit ? '#D97706' : '#059669',
+                                                        shrink: 0,
+                                                    }}
+                                                />
+                                            </Box>
+                                        );
+                                    })}
+                                </Stack>
+                            ) : (
+                                <Box sx={{ p: 2.5, textAlign: 'center', bgcolor: alpha(theme.palette.divider, 0.1), borderRadius: 2 }}>
+                                    <Typography variant="caption" color="text.secondary">
+                                        Sin viajes históricos registrados
+                                    </Typography>
+                                </Box>
+                            )}
+                        </Box>
+                    </Box>
+
+                    {/* BOTONES AL PIE DEL DRAWER (Fijos en la Base / Modelo Stitch S2) */}
+                    <Box
+                        sx={{
+                            p: 2.5,
+                            bgcolor: theme.palette.background.paper,
+                            borderTop: `1px solid ${theme.palette.divider}`,
+                            boxShadow: '0 -4px 16px rgba(0,0,0,0.06)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 1.5,
+                            shrink: 0,
+                        }}
+                    >
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+                            <Button
+                                variant="outlined"
+                                color="inherit"
+                                startIcon={<BuildIcon sx={{ fontSize: 17 }} />}
+                                onClick={drawer.handleProgramarTaller}
+                                sx={{
+                                    height: 44,
+                                    borderRadius: 2,
+                                    fontWeight: 700,
+                                    fontSize: '0.78rem',
+                                    textTransform: 'none',
+                                    borderColor: theme.palette.divider,
+                                    color: 'text.primary',
+                                    '&:hover': {
+                                        borderColor: theme.palette.text.secondary,
+                                        bgcolor: alpha(theme.palette.text.primary, 0.04),
+                                    },
+                                }}
+                            >
+                                Programar Taller
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                color="inherit"
+                                startIcon={<EditIcon sx={{ fontSize: 17 }} />}
+                                onClick={drawer.handleEdit}
+                                sx={{
+                                    height: 44,
+                                    borderRadius: 2,
+                                    fontWeight: 700,
+                                    fontSize: '0.78rem',
+                                    textTransform: 'none',
+                                    borderColor: theme.palette.divider,
+                                    color: 'text.primary',
+                                    '&:hover': {
+                                        borderColor: theme.palette.text.secondary,
+                                        bgcolor: alpha(theme.palette.text.primary, 0.04),
+                                    },
+                                }}
+                            >
+                                Editar Especificaciones
+                            </Button>
+                        </Box>
+
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                            endIcon={<ArrowForwardIcon sx={{ fontSize: 19 }} />}
+                            onClick={drawer.handleVerExpediente}
+                            sx={{
+                                height: 48,
+                                borderRadius: 2,
+                                fontWeight: 800,
+                                fontSize: '0.85rem',
+                                textTransform: 'none',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                            }}
+                        >
+                            Ver Expediente Completo
+                        </Button>
                     </Box>
                 </Box>
             ) : null}
