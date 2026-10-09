@@ -23,4 +23,11 @@ export const FLOTA_QUERY_KEYS = {
     expediente: (flotaId: number) => [...FLOTA_QUERY_KEYS.all, 'expediente', flotaId] as const,
     historialViajes: (flotaId: number, page: number, size: number) =>
         [...FLOTA_QUERY_KEYS.all, 'historial-viajes', flotaId, page, size] as const,
+    /** Prefijo de todas las páginas de documentos de una unidad (para invalidar). */
+    documentosAll: (flotaId: number) => [...FLOTA_QUERY_KEYS.all, 'documentos', flotaId] as const,
+    documentos: (flotaId: number, page: number, size: number) =>
+        [...FLOTA_QUERY_KEYS.documentosAll(flotaId), page, size] as const,
+    taller: (flotaId: number, page: number, size: number) =>
+        [...FLOTA_QUERY_KEYS.all, 'taller', flotaId, page, size] as const,
+    configuracionesEjes: () => ['configuraciones-ejes'] as const,
 };

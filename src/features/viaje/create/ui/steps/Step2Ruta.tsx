@@ -132,7 +132,7 @@ export function Step2Ruta() {
                                         value={field.value}
                                         onChange={field.onChange}
                                         error={!!errors.origenID}
-                                        helperText={errors.origenID?.message?.toString()}
+                                        helperText={errors.origenID?.message}
                                         direction="column"
                                     />
                                 )}
@@ -154,7 +154,7 @@ export function Step2Ruta() {
                                 {...register('direccionOrigen')}
                                 onKeyDown={handleDireccionKeyDown}
                                 error={!!errors.direccionOrigen}
-                                helperText={errors.direccionOrigen?.message?.toString()}
+                                helperText={errors.direccionOrigen?.message}
                             />
                         </Box>
                     </Box>
@@ -192,7 +192,7 @@ export function Step2Ruta() {
                                         value={field.value}
                                         onChange={field.onChange}
                                         error={!!errors.destinoID}
-                                        helperText={errors.destinoID?.message?.toString()}
+                                        helperText={errors.destinoID?.message}
                                         direction="column"
                                     />
                                 )}
@@ -214,7 +214,7 @@ export function Step2Ruta() {
                                 {...register('direccionDestino')}
                                 onKeyDown={handleDireccionKeyDown}
                                 error={!!errors.direccionDestino}
-                                helperText={errors.direccionDestino?.message?.toString()}
+                                helperText={errors.direccionDestino?.message}
                             />
                         </Box>
                     </Box>

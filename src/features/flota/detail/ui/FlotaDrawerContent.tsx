@@ -16,18 +16,16 @@ import {
     Close as CloseIcon,
     Speed as OdometerIcon,
     ScaleOutlined as ScaleIcon,
-    CheckCircle as CheckCircleIcon,
     UploadFile as UploadFileIcon,
-    VerifiedUser as SoatIcon,
-    BuildCircle as CitvIcon,
-    Shield as InsuranceIcon,
     Visibility as VisibilityIcon,
     DoneAll as DoneAllIcon,
     ArrowForward as ArrowForwardIcon,
     Build as BuildIcon,
     Edit as EditIcon,
     AltRoute as RouteIcon,
+    Description as DescriptionIcon,
 } from '@mui/icons-material';
+import { useQuery } from '@tanstack/react-query';
 import type { FlotaDocumento, FlotaHistorialViaje } from '@entities/flota/model/types';
 import type { useFlotaDrawer } from '../hooks/useFlotaDrawer';
 import { FlotaEstadoOperativoChip } from '@entities/flota/ui/FlotaEstadoOperativoChip';
@@ -36,18 +34,24 @@ import { TableLoading } from '@shared/components/ui/TableLoading';
 import { formatDateShort } from '@shared/utils/date-utils';
 import { getDocumentVigenciaMetaByExpirationDate } from '@shared/utils/document-vigencia';
 import { buildCodigoInterno } from '@entities/flota/model/constants';
+import { resolveViajeStatusId } from '@entities/viaje/model/status';
+import { estadoApi } from '@entities/estado/api/estado.api';
+import { VIAJE_QUERY_KEYS } from '@features/viaje/model/query-keys';
+import { ESTADO_SECTIONS } from '@entities/master-data/model/constants';
 import { PeruvianPlate } from '../../shared/ui/PeruvianPlate';
 
 interface FlotaDrawerContentProps {
     drawer: ReturnType<typeof useFlotaDrawer>;
 }
 
-function formatWeightDisplay(val: number | undefined, defaultVal = 0): string {
-    const num = val ?? defaultVal;
-    if (num >= 1000) {
-        return `${(num / 1000).toLocaleString('es-PE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} TN`;
+function formatWeightDisplay(val?: number | null): string {
+    if (val == null) {
+        return '—';
     }
-    return `${Math.round(num).toLocaleString('es-PE')} KG`;
+    if (val >= 1000) {
+        return `${(val / 1000).toLocaleString('es-PE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} TN`;
+    }
+    return `${Math.round(val).toLocaleString('es-PE')} KG`;
 }
 
 export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
@@ -55,12 +59,22 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
     const { flota, expediente, open, isLoading, isError, refetch } = drawer;
 
     const codigo = flota ? (flota.codigoInterno ?? buildCodigoInterno(flota.tipoFlota, flota.flotaID)) : '';
-    const pbv = flota?.pesoBruto || 48000;
-    const tara = flota?.pesoNeto || 15500;
-    const cargaUtil = flota?.cargaUtil || Math.max(0, pbv - tara);
+    const pbv = flota?.pesoBruto ?? null;
+    const tara = flota?.pesoNeto ?? null;
+    const cargaUtil = flota?.cargaUtil ?? (pbv != null && tara != null ? Math.max(0, pbv - tara) : null);
+    const hasWeightData = pbv != null || tara != null || cargaUtil != null;
 
-    const taraPct = pbv > 0 ? Math.min(100, Math.max(0, (tara / pbv) * 100)) : 32.3;
-    const cargaUtilPct = pbv > 0 ? Math.min(100 - taraPct, Math.max(0, (cargaUtil / pbv) * 100)) : 67.7;
+    const taraPct = pbv != null && pbv > 0 && tara != null ? Math.min(100, Math.max(0, (tara / pbv) * 100)) : 0;
+    const cargaUtilPct =
+        pbv != null && pbv > 0 && cargaUtil != null ? Math.min(100 - taraPct, Math.max(0, (cargaUtil / pbv) * 100)) : 0;
+
+    // Catálogo de estados de viaje (comparte caché con el módulo viaje) para
+    // clasificar por `estadoID` en vez de inferir por el nombre visible.
+    const { data: viajeEstados } = useQuery({
+        queryKey: VIAJE_QUERY_KEYS.options.estados(),
+        queryFn: async () => (await estadoApi.getSelect('', 20, ESTADO_SECTIONS.VIAJE)) ?? [],
+        enabled: open,
+    });
 
     const ultimoViaje = expediente?.viajes?.items?.[0];
     const kmUltimoViaje = ultimoViaje?.kmLlegada;
@@ -281,99 +295,111 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <ScaleIcon sx={{ color: 'primary.main', fontSize: 20 }} />
                                     <Typography variant="subtitle2" fontWeight={800} color="text.primary">
-                                        Balanza de Pesos & Ejes MTC
+                                        Balanza de Pesos & Ejes
                                     </Typography>
                                 </Box>
-                                <Chip
-                                    icon={<CheckCircleIcon sx={{ fontSize: '13px !important', color: '#10B981 !important' }} />}
-                                    label="100% Norma MTC En Regla"
-                                    size="small"
-                                    sx={{
-                                        bgcolor: alpha('#10B981', 0.12),
-                                        color: '#059669',
-                                        fontWeight: 700,
-                                        fontSize: '0.68rem',
-                                    }}
-                                />
+                                {hasWeightData ? (
+                                    <Chip
+                                        label={`Tara ${taraPct.toFixed(0)}% · Carga ${cargaUtilPct.toFixed(0)}%`}
+                                        size="small"
+                                        sx={{
+                                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                            color: 'primary.main',
+                                            fontWeight: 700,
+                                            fontSize: '0.68rem',
+                                        }}
+                                    />
+                                ) : (
+                                    <Chip
+                                        label="Sin datos de pesaje"
+                                        size="small"
+                                        variant="outlined"
+                                        sx={{ fontWeight: 600, fontSize: '0.68rem' }}
+                                    />
+                                )}
                             </Box>
 
-                            {/* Resumen de Peso Bruto Combinado */}
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    p: 1.5,
-                                    borderRadius: 2,
-                                    bgcolor: theme.palette.mode === 'dark' ? alpha('#1E293B', 0.5) : '#F1F5F9',
-                                }}
-                            >
-                                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700 }}>
-                                        Tara + Carga Útil
-                                    </Typography>
-                                    <Typography variant="body2" fontWeight={800} color="text.primary">
-                                        {formatWeightDisplay(tara)} + {formatWeightDisplay(cargaUtil)}
-                                    </Typography>
-                                </Box>
-                                <Box sx={{ textAlign: 'right' }}>
-                                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700 }}>
-                                        Peso Bruto Combinado
-                                    </Typography>
-                                    <Typography variant="body1" fontWeight={800} color="primary.main">
-                                        {formatWeightDisplay(pbv)}{' '}
-                                        <Typography component="span" variant="caption" color="text.secondary" fontWeight={500}>
-                                            / Límite 48.0 TN
-                                        </Typography>
-                                    </Typography>
-                                </Box>
-                            </Box>
+                            {hasWeightData ? (
+                                <>
+                                    {/* Resumen de Peso Bruto Combinado */}
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            p: 1.5,
+                                            borderRadius: 2,
+                                            bgcolor: theme.palette.mode === 'dark' ? alpha('#1E293B', 0.5) : '#F1F5F9',
+                                        }}
+                                    >
+                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700 }}>
+                                                Tara + Carga Útil
+                                            </Typography>
+                                            <Typography variant="body2" fontWeight={800} color="text.primary">
+                                                {formatWeightDisplay(tara)} + {formatWeightDisplay(cargaUtil)}
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ textAlign: 'right' }}>
+                                            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', textTransform: 'uppercase', fontWeight: 700 }}>
+                                                Peso Bruto Combinado
+                                            </Typography>
+                                            <Typography variant="body1" fontWeight={800} color="primary.main">
+                                                {formatWeightDisplay(pbv)}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
 
-                            {/* Barra de pesaje visual combinada */}
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        height: 12,
-                                        borderRadius: 6,
-                                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.06)' : '#E2E8F0',
-                                        overflow: 'hidden',
-                                        display: 'flex',
-                                    }}
-                                >
-                                    <Box
-                                        sx={{
-                                            width: `${taraPct}%`,
-                                            height: '100%',
-                                            bgcolor: 'primary.main',
-                                            transition: 'width 0.3s ease',
-                                        }}
-                                        title={`Tara: ${taraPct.toFixed(1)}%`}
-                                    />
-                                    <Box
-                                        sx={{
-                                            width: `${cargaUtilPct}%`,
-                                            height: '100%',
-                                            bgcolor: '#10B981',
-                                            transition: 'width 0.3s ease',
-                                        }}
-                                        title={`Carga Útil: ${cargaUtilPct.toFixed(1)}%`}
-                                    />
-                                </Box>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', color: 'text.secondary', px: 0.5 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main' }} />
-                                        <span>Tara: <strong>{formatWeightDisplay(tara)}</strong></span>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#10B981' }} />
-                                        <span>Carga Útil: <strong>{formatWeightDisplay(cargaUtil)}</strong></span>
-                                    </Box>
-                                    <Typography variant="caption" fontWeight={700} color="text.primary">
-                                        Capacidad: 100%
-                                    </Typography>
-                                </Box>
-                            </Box>
+                                    {/* Barra de pesaje visual combinada */}
+                                    {pbv != null && pbv > 0 ? (
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                                            <Box
+                                                sx={{
+                                                    width: '100%',
+                                                    height: 12,
+                                                    borderRadius: 6,
+                                                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.06)' : '#E2E8F0',
+                                                    overflow: 'hidden',
+                                                    display: 'flex',
+                                                }}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        width: `${taraPct}%`,
+                                                        height: '100%',
+                                                        bgcolor: 'primary.main',
+                                                        transition: 'width 0.3s ease',
+                                                    }}
+                                                    title={`Tara: ${taraPct.toFixed(1)}%`}
+                                                />
+                                                <Box
+                                                    sx={{
+                                                        width: `${cargaUtilPct}%`,
+                                                        height: '100%',
+                                                        bgcolor: '#10B981',
+                                                        transition: 'width 0.3s ease',
+                                                    }}
+                                                    title={`Carga Útil: ${cargaUtilPct.toFixed(1)}%`}
+                                                />
+                                            </Box>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', color: 'text.secondary', px: 0.5 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main' }} />
+                                                    <span>Tara: <strong>{formatWeightDisplay(tara)}</strong></span>
+                                                </Box>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#10B981' }} />
+                                                    <span>Carga Útil: <strong>{formatWeightDisplay(cargaUtil)}</strong></span>
+                                                </Box>
+                                            </Box>
+                                        </Box>
+                                    ) : null}
+                                </>
+                            ) : (
+                                <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
+                                    Sin datos de pesaje registrados para esta unidad.
+                                </Typography>
+                            )}
 
                         </Box>
 
@@ -403,8 +429,6 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
                                         const meta = getDocumentVigenciaMetaByExpirationDate(doc.fechaVencimiento);
                                         const isWarning = meta.chipColor === 'warning';
                                         const isErrorDoc = meta.chipColor === 'error';
-                                        const isSoat = doc.tipoDocumento?.nombre?.toLowerCase().includes('soat');
-                                        const isCitv = doc.tipoDocumento?.nombre?.toLowerCase().includes('técnica') || doc.tipoDocumento?.nombre?.toLowerCase().includes('citv');
 
                                         return (
                                             <Box
@@ -438,7 +462,7 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
                                                                 shrink: 0,
                                                             }}
                                                         >
-                                                            {isSoat ? <SoatIcon sx={{ fontSize: 20 }} /> : isCitv ? <CitvIcon sx={{ fontSize: 20 }} /> : <InsuranceIcon sx={{ fontSize: 20 }} />}
+                                                            <DescriptionIcon sx={{ fontSize: 20 }} />
                                                         </Box>
                                                         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                                             <Typography variant="body2" fontWeight={700} color="text.primary">
@@ -505,7 +529,10 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
                             {expediente && expediente.viajes.items.length > 0 ? (
                                 <Stack spacing={1}>
                                     {expediente.viajes.items.slice(0, 4).map((viaje: FlotaHistorialViaje, index: number) => {
-                                        const isTransit = viaje.estadoNombre?.toLowerCase().includes('tránsito') || viaje.estadoNombre?.toLowerCase().includes('ruta') || index === 0 && Boolean(flota.viajeActivoCodigo);
+                                        const estadoKey = resolveViajeStatusId(viaje.estadoID, viajeEstados);
+                                        const isTransit =
+                                            estadoKey === 'transito' || (index === 0 && Boolean(flota.viajeActivoCodigo));
+                                        const isCompletado = estadoKey === 'completado';
 
                                         return (
                                             <Box
@@ -522,21 +549,31 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
                                                 }}
                                             >
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                    <Box
-                                                        sx={{
-                                                            width: 34,
-                                                            height: 34,
-                                                            borderRadius: 1.5,
-                                                            bgcolor: isTransit ? alpha('#F59E0B', 0.15) : alpha('#10B981', 0.15),
-                                                            color: isTransit ? '#F59E0B' : '#10B981',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            shrink: 0,
-                                                        }}
-                                                    >
-                                                        {isTransit ? <LocalShippingIcon sx={{ fontSize: 18 }} /> : <DoneAllIcon sx={{ fontSize: 18 }} />}
-                                                    </Box>
+                                                <Box
+                                                    sx={{
+                                                        width: 34,
+                                                        height: 34,
+                                                        borderRadius: 1.5,
+                                                        bgcolor: isTransit
+                                                            ? alpha('#F59E0B', 0.15)
+                                                            : isCompletado
+                                                                ? alpha('#10B981', 0.15)
+                                                                : alpha(theme.palette.text.primary, 0.08),
+                                                        color: isTransit ? '#F59E0B' : isCompletado ? '#10B981' : theme.palette.text.secondary,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        shrink: 0,
+                                                    }}
+                                                >
+                                                    {isTransit ? (
+                                                        <LocalShippingIcon sx={{ fontSize: 18 }} />
+                                                    ) : isCompletado ? (
+                                                        <DoneAllIcon sx={{ fontSize: 18 }} />
+                                                    ) : (
+                                                        <RouteIcon sx={{ fontSize: 18 }} />
+                                                    )}
+                                                </Box>
                                                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                             <Typography variant="caption" fontWeight={800} fontFamily="monospace" color="text.primary">
@@ -555,14 +592,18 @@ export function FlotaDrawerContent({ drawer }: FlotaDrawerContentProps) {
                                                 </Box>
 
                                                 <Chip
-                                                    label={isTransit ? 'En tránsito' : viaje.estadoNombre || 'Completado'}
+                                                    label={viaje.estadoNombre || 'Sin estado'}
                                                     size="small"
                                                     sx={{
                                                         height: 20,
                                                         fontSize: '0.65rem',
                                                         fontWeight: 700,
-                                                        bgcolor: isTransit ? alpha('#F59E0B', 0.15) : alpha('#10B981', 0.15),
-                                                        color: isTransit ? '#D97706' : '#059669',
+                                                        bgcolor: isTransit
+                                                            ? alpha('#F59E0B', 0.15)
+                                                            : isCompletado
+                                                                ? alpha('#10B981', 0.15)
+                                                                : alpha(theme.palette.text.primary, 0.08),
+                                                        color: isTransit ? '#D97706' : isCompletado ? '#059669' : 'text.secondary',
                                                         shrink: 0,
                                                     }}
                                                 />

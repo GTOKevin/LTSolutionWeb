@@ -16,6 +16,7 @@ import { SECCION_MAESTRO, TIPO_MAESTRO_CODES } from '@entities/master-data/model
 import { getSelectItemId } from '@entities/master-data/lib/catalog-utils';
 import { useCreateFlota, useUpdateFlota } from './useFlotaCrud';
 import { useCrudFormPageState } from '@shared/hooks/useCrudFormPageState';
+import { FLOTA_QUERY_KEYS } from '../model/query-keys';
 
 interface UseFlotaFormProps {
     flotaToEdit?: Flota | null;
@@ -73,7 +74,7 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
     });
 
     const { data: configuracionesEjes } = useQuery({
-        queryKey: ['configuraciones-ejes'],
+        queryKey: FLOTA_QUERY_KEYS.configuracionesEjes(),
         queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.CONFIG_EJES),
         enabled: open
     });

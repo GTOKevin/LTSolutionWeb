@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { INPUT_VAL, ERROR_MESSAGES } from '@/shared/constants/constantes';
 import type { Flota, FlotaDocumento } from '@entities/flota/model/types';
+import { CONFIG_EJES_APLICA } from '@entities/flota/model/constants';
 
 const currentYear = new Date().getFullYear();
 
@@ -23,7 +24,7 @@ export const createFlotaSchema = z
         tipoFlota: z.coerce.number().min(1, 'Tipo de Flota es requerido'),
         vin: optionalSafeText(25),
         homologacionMtc: optionalSafeText(50),
-        // Solo aplica a Tracto (101). Normaliza '' / 0 a null.
+        // Solo aplica a los tipos con configuración de ejes (ver `CONFIG_EJES_APLICA`).
         configuracionEjesID: z.preprocess(
             (val) => (val === '' || val === null || val === undefined || val === 0 ? null : Number(val)),
             z.number().nullable(),
@@ -53,8 +54,8 @@ export const createFlotaSchema = z
         activo: z.boolean().default(true),
     })
     .superRefine((data, ctx) => {
-        // Configuración de ejes es obligatoria únicamente para Tracto (101).
-        if (data.tipoFlota === 101 && !data.configuracionEjesID) {
+        // Configuración de ejes obligatoria solo para los tipos que la aplican.
+        if (CONFIG_EJES_APLICA.includes(data.tipoFlota) && !data.configuracionEjesID) {
             ctx.addIssue({
                 code: 'custom',
                 path: ['configuracionEjesID'],

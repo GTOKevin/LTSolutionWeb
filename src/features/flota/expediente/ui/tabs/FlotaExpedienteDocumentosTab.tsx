@@ -16,17 +16,13 @@ import {
 import {
     CloudUpload as CloudUploadIcon,
     FactCheck as FactCheckIcon,
-    HealthAndSafety as HealthAndSafetyIcon,
-    ChecklistRtl as ChecklistRtlIcon,
-    Badge as BadgeIcon,
-    Warning as WarningIcon,
     Description as DescriptionIcon,
-    Verified as VerifiedIcon,
+    PictureAsPdf as PdfIcon,
     Visibility as VisibilityIcon,
     Close as CloseIcon,
     Autorenew as AutorenewIcon,
 } from '@mui/icons-material';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { flotaApi } from '@entities/flota/api/flota.api';
 import type { FlotaDocumento } from '@entities/flota/model/types';
 import { FLOTA_QUERY_KEYS } from '@features/flota/model/query-keys';
@@ -37,6 +33,8 @@ import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDia
 import { buildInternalFileUrl } from '@/shared/config/env';
 import { formatDateShort } from '@/shared/utils/date-utils';
 import { getDocumentVigenciaMetaByExpirationDate } from '@/shared/utils/document-vigencia';
+import { FlotaDocumentoVigenciaBadge } from '@entities/flota/ui/FlotaDocumentoVigenciaBadge';
+import { getFlotaDocumentoVigenciaVisual } from '@entities/flota/lib/documento-vigencia';
 
 interface FlotaExpedienteDocumentosTabProps {
     flotaId: number;
@@ -44,42 +42,8 @@ interface FlotaExpedienteDocumentosTabProps {
     initialDocumentos?: FlotaDocumento[];
 }
 
-function getDocumentVisuals(nombre?: string) {
-    const text = (nombre ?? '').toLowerCase();
-    if (text.includes('soat')) {
-        return {
-            icon: <HealthAndSafetyIcon sx={{ fontSize: 22 }} />,
-            color: '#10b981',
-            defaultVerification: 'Firma digital SUTRAN verificada',
-        };
-    }
-    if (text.includes('revis') || text.includes('citv') || text.includes('tecnic')) {
-        return {
-            icon: <ChecklistRtlIcon sx={{ fontSize: 22 }} />,
-            color: '#10b981',
-            defaultVerification: 'Frenos y emisiones aprobados',
-        };
-    }
-    if (text.includes('tarjeta') || text.includes('propiedad') || text.includes('identificaci') || text.includes('sunarp')) {
-        return {
-            icon: <BadgeIcon sx={{ fontSize: 22 }} />,
-            color: '#0284c7',
-            defaultVerification: 'Inscripción registral definitiva',
-        };
-    }
-    if (text.includes('poliza') || text.includes('seguro') || text.includes('rc') || text.includes('carga')) {
-        return {
-            icon: <WarningIcon sx={{ fontSize: 22 }} />,
-            color: '#f59e0b',
-            defaultVerification: 'Póliza y endoso registrados',
-        };
-    }
-    return {
-        icon: <DescriptionIcon sx={{ fontSize: 22 }} />,
-        color: '#2563eb',
-        defaultVerification: 'Documento técnico auditado',
-    };
-}
+const isPdfPath = (rutaArchivo?: string) =>
+    Boolean(rutaArchivo && /\.pdf$/i.test(rutaArchivo)) || Boolean(rutaArchivo?.toLowerCase().includes('pdf'));
 
 export function FlotaExpedienteDocumentosTab({
     flotaId,
@@ -87,13 +51,12 @@ export function FlotaExpedienteDocumentosTab({
     initialDocumentos,
 }: FlotaExpedienteDocumentosTabProps) {
     const theme = useTheme();
-    const queryClient = useQueryClient();
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [openModal, setOpenModal] = useState(false);
     const [documentoToRenew, setDocumentoToRenew] = useState<FlotaDocumento | null>(null);
 
     const { data: documentosResponse, isLoading } = useQuery({
-        queryKey: ['flota-documentos', flotaId],
+        queryKey: FLOTA_QUERY_KEYS.documentos(flotaId, 1, 50),
         queryFn: () => flotaApi.getDocumentos({ flotaId, size: 50 }),
         enabled: flotaId > 0,
     });
@@ -114,30 +77,15 @@ export function FlotaExpedienteDocumentosTab({
     };
 
     const handleFormSubmit = (formData: CreateFlotaDocumentoSchema) => {
+        const onSuccess = () => {
+            setOpenModal(false);
+            setDocumentoToRenew(null);
+        };
+
         if (documentoToRenew) {
-            updateMutation.mutate(
-                { id: documentoToRenew.flotaDocumentoID, data: formData },
-                {
-                    onSuccess: () => {
-                        setOpenModal(false);
-                        setDocumentoToRenew(null);
-                        queryClient.invalidateQueries({ queryKey: ['flota-documentos', flotaId] });
-                        queryClient.invalidateQueries({ queryKey: FLOTA_QUERY_KEYS.expediente(flotaId) });
-                    },
-                }
-            );
+            updateMutation.mutate({ id: documentoToRenew.flotaDocumentoID, data: formData }, { onSuccess });
         } else {
-            createMutation.mutate(
-                { flotaId, data: formData },
-                {
-                    onSuccess: () => {
-                        setOpenModal(false);
-                        setDocumentoToRenew(null);
-                        queryClient.invalidateQueries({ queryKey: ['flota-documentos', flotaId] });
-                        queryClient.invalidateQueries({ queryKey: FLOTA_QUERY_KEYS.expediente(flotaId) });
-                    },
-                }
-            );
+            createMutation.mutate({ flotaId, data: formData }, { onSuccess });
         }
     };
 
@@ -153,7 +101,7 @@ export function FlotaExpedienteDocumentosTab({
 
     return (
         <Box sx={{ px: { xs: 2, md: 3 }, pb: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* Header Barra Contextual Stitch S3 */}
+            {/* Header Barra Contextual */}
             <Paper
                 elevation={0}
                 sx={{
@@ -189,14 +137,14 @@ export function FlotaExpedienteDocumentosTab({
                             Legajo Técnico & Pólizas Obligatorias
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                            Auditado y validado en tiempo real con Plataforma Digital SUTRAN
+                            Vigencia calculada a partir de las fechas de vencimiento registradas
                         </Typography>
                     </Box>
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, alignSelf: { xs: 'stretch', sm: 'auto' } }}>
                     <Chip
-                        label={`${vigentesCount} / ${items.length} Documentos Vigentes SUTRAN/MTC`}
+                        label={`${vigentesCount} / ${items.length} Documentos Vigentes`}
                         size="small"
                         sx={{
                             bgcolor: alpha(theme.palette.success.main, 0.12),
@@ -226,7 +174,7 @@ export function FlotaExpedienteDocumentosTab({
                 </Box>
             </Paper>
 
-            {/* Grid de Tarjetas Stitch S3 */}
+            {/* Grid de Tarjetas */}
             {items.length === 0 && !isLoading ? (
                 <Paper
                     elevation={0}
@@ -260,37 +208,11 @@ export function FlotaExpedienteDocumentosTab({
                 <Grid container spacing={2.5}>
                     {items.map((doc) => {
                         const docNombre = doc.tipoDocumento?.nombre || 'Documento Técnico';
-                        const visuals = getDocumentVisuals(docNombre);
-                        const vigenciaMeta = getDocumentVigenciaMetaByExpirationDate(doc.fechaVencimiento);
-
-                        let badgeLabel = 'Vigente';
-                        let badgeBg = alpha(theme.palette.success.main, 0.12);
-                        let badgeColor = theme.palette.success.main;
-
-                        if (!doc.fechaVencimiento) {
-                            badgeLabel = 'Permanente';
-                            badgeBg = alpha(theme.palette.primary.main, 0.12);
-                            badgeColor = theme.palette.primary.main;
-                        } else if (vigenciaMeta.key === 'vencido') {
-                            const days = vigenciaMeta.daysLeft != null ? Math.abs(vigenciaMeta.daysLeft) : 0;
-                            badgeLabel = days > 0 ? `Vencido hace ${days}d` : 'Vencido';
-                            badgeBg = alpha(theme.palette.error.main, 0.12);
-                            badgeColor = theme.palette.error.main;
-                        } else if (vigenciaMeta.key === 'por_vencer') {
-                            const days = vigenciaMeta.daysLeft ?? 0;
-                            badgeLabel = `Vence en ${days} días`;
-                            badgeBg = alpha(theme.palette.warning.main, 0.15);
-                            badgeColor = theme.palette.warning.dark;
-                        } else {
-                            const days = vigenciaMeta.daysLeft ?? 0;
-                            if (days > 365) {
-                                badgeLabel = `Vigente • ${(days / 365).toFixed(1)} años`;
-                            } else {
-                                badgeLabel = `Vigente • ${days} días`;
-                            }
-                        }
-
+                        const vigenciaVisual = getFlotaDocumentoVigenciaVisual(doc.fechaVencimiento);
+                        const needsRenewal = vigenciaVisual.key === 'vencido' || vigenciaVisual.key === 'por_vencer';
+                        const showRenovar = canManage && needsRenewal;
                         const hasFile = Boolean(doc.rutaArchivo);
+                        const isPdf = isPdfPath(doc.rutaArchivo);
 
                         return (
                             <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={doc.flotaDocumentoID}>
@@ -308,7 +230,7 @@ export function FlotaExpedienteDocumentosTab({
                                         transition: 'all 0.2s ease-in-out',
                                         '&:hover': {
                                             boxShadow: theme.shadows[3],
-                                            borderColor: alpha(visuals.color, 0.4),
+                                            borderColor: alpha(theme.palette.primary.main, 0.4),
                                         },
                                     }}
                                 >
@@ -320,27 +242,18 @@ export function FlotaExpedienteDocumentosTab({
                                                     width: 40,
                                                     height: 40,
                                                     borderRadius: 2,
-                                                    bgcolor: alpha(visuals.color, 0.12),
-                                                    color: visuals.color,
+                                                    bgcolor: isPdf
+                                                        ? alpha(theme.palette.error.main, 0.12)
+                                                        : alpha(theme.palette.primary.main, 0.12),
+                                                    color: isPdf ? 'error.main' : 'primary.main',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
                                                 }}
                                             >
-                                                {visuals.icon}
+                                                {isPdf ? <PdfIcon sx={{ fontSize: 22 }} /> : <DescriptionIcon sx={{ fontSize: 22 }} />}
                                             </Box>
-                                            <Chip
-                                                label={badgeLabel}
-                                                size="small"
-                                                sx={{
-                                                    bgcolor: badgeBg,
-                                                    color: badgeColor,
-                                                    fontWeight: 700,
-                                                    fontSize: '0.72rem',
-                                                    height: 22,
-                                                    borderRadius: 999,
-                                                }}
-                                            />
+                                            <FlotaDocumentoVigenciaBadge fechaVencimiento={doc.fechaVencimiento} />
                                         </Box>
 
                                         {/* Título y Entidad Emisora */}
@@ -348,7 +261,7 @@ export function FlotaExpedienteDocumentosTab({
                                             {docNombre}
                                         </Typography>
                                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
-                                            {doc.entidadEmisora || 'Entidad Oficial / Reguladora'}
+                                            {doc.entidadEmisora || '—'}
                                         </Typography>
 
                                         {/* Cajetín con Metadatos */}
@@ -381,7 +294,7 @@ export function FlotaExpedienteDocumentosTab({
                                                 <Typography
                                                     variant="caption"
                                                     fontWeight={700}
-                                                    color={vigenciaMeta.key === 'vencido' ? 'error.main' : 'text.primary'}
+                                                    color={vigenciaVisual.key === 'vencido' ? 'error.main' : 'text.primary'}
                                                 >
                                                     {doc.fechaVencimiento
                                                         ? formatDateShort(doc.fechaVencimiento)
@@ -389,87 +302,59 @@ export function FlotaExpedienteDocumentosTab({
                                                 </Typography>
                                             </Box>
                                         </Box>
-
-                                        {/* Verificación SUTRAN */}
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 2 }}>
-                                            {vigenciaMeta.key === 'vencido' ? (
-                                                <WarningIcon sx={{ fontSize: 15, color: theme.palette.error.main }} />
-                                            ) : (
-                                                <VerifiedIcon sx={{ fontSize: 15, color: theme.palette.success.main }} />
-                                            )}
-                                            <Typography
-                                                variant="caption"
-                                                sx={{
-                                                    fontSize: '0.72rem',
-                                                    color: vigenciaMeta.key === 'vencido' ? 'error.main' : 'text.secondary',
-                                                    fontWeight: 500,
-                                                }}
-                                            >
-                                                {vigenciaMeta.key === 'vencido'
-                                                    ? 'Requiere renovación urgente'
-                                                    : visuals.defaultVerification}
-                                            </Typography>
-                                        </Box>
                                     </Box>
 
                                     {/* Botones de Acción: Ver Documento y Renovar */}
-                                    {(() => {
-                                        const needsRenewal = vigenciaMeta.key === 'vencido' || vigenciaMeta.key === 'por_vencer';
-                                        const showRenovar = canManage && needsRenewal;
+                                    <Box
+                                        sx={{
+                                            pt: 1.5,
+                                            borderTop: `1px solid ${alpha(theme.palette.divider, 0.4)}`,
+                                            display: 'flex',
+                                            gap: 1,
+                                        }}
+                                    >
+                                        <Button
+                                            fullWidth
+                                            size="small"
+                                            variant={hasFile ? 'outlined' : 'text'}
+                                            disabled={!hasFile}
+                                            startIcon={hasFile ? <VisibilityIcon /> : <DescriptionIcon />}
+                                            onClick={() => handleOpenPreview(doc.rutaArchivo)}
+                                            sx={{
+                                                textTransform: 'none',
+                                                fontWeight: 700,
+                                                borderRadius: 2,
+                                                py: 0.75,
+                                                fontSize: '0.78rem',
+                                            }}
+                                        >
+                                            {hasFile ? 'Ver Documento' : 'Sin Archivo'}
+                                        </Button>
 
-                                        return (
-                                            <Box
+                                        {showRenovar ? (
+                                            <Button
+                                                fullWidth
+                                                size="small"
+                                                variant="contained"
+                                                color={vigenciaVisual.key === 'vencido' ? 'error' : 'warning'}
+                                                startIcon={<AutorenewIcon />}
+                                                onClick={() => handleOpenRenovar(doc)}
                                                 sx={{
-                                                    pt: 1.5,
-                                                    borderTop: `1px solid ${alpha(theme.palette.divider, 0.4)}`,
-                                                    display: 'flex',
-                                                    gap: 1,
+                                                    textTransform: 'none',
+                                                    fontWeight: 700,
+                                                    borderRadius: 2,
+                                                    py: 0.75,
+                                                    fontSize: '0.78rem',
+                                                    boxShadow: 'none',
+                                                    '&:hover': {
+                                                        boxShadow: theme.shadows[2],
+                                                    },
                                                 }}
                                             >
-                                                <Button
-                                                    fullWidth
-                                                    size="small"
-                                                    variant={hasFile ? 'outlined' : 'text'}
-                                                    disabled={!hasFile}
-                                                    startIcon={hasFile ? <VisibilityIcon /> : <DescriptionIcon />}
-                                                    onClick={() => handleOpenPreview(doc.rutaArchivo)}
-                                                    sx={{
-                                                        textTransform: 'none',
-                                                        fontWeight: 700,
-                                                        borderRadius: 2,
-                                                        py: 0.75,
-                                                        fontSize: '0.78rem',
-                                                    }}
-                                                >
-                                                    {hasFile ? 'Ver Documento' : 'Sin Archivo'}
-                                                </Button>
-
-                                                {showRenovar ? (
-                                                    <Button
-                                                        fullWidth
-                                                        size="small"
-                                                        variant="contained"
-                                                        color={vigenciaMeta.key === 'vencido' ? 'error' : 'warning'}
-                                                        startIcon={<AutorenewIcon />}
-                                                        onClick={() => handleOpenRenovar(doc)}
-                                                        sx={{
-                                                            textTransform: 'none',
-                                                            fontWeight: 700,
-                                                            borderRadius: 2,
-                                                            py: 0.75,
-                                                            fontSize: '0.78rem',
-                                                            boxShadow: 'none',
-                                                            '&:hover': {
-                                                                boxShadow: theme.shadows[2],
-                                                            },
-                                                        }}
-                                                    >
-                                                        Renovar
-                                                    </Button>
-                                                ) : null}
-                                            </Box>
-                                        );
-                                    })()}
+                                                Renovar
+                                            </Button>
+                                        ) : null}
+                                    </Box>
                                 </Paper>
                             </Grid>
                         );

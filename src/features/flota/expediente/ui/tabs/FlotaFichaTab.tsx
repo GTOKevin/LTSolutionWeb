@@ -4,6 +4,7 @@ import { FlotaEstadoOperativoChip } from '@entities/flota/ui/FlotaEstadoOperativ
 import { SectionHeader } from '@shared/components/ui/SectionHeader';
 import { buildCodigoInterno } from '@entities/flota/model/constants';
 import { formatDateShort } from '@shared/utils/date-utils';
+import { resolveWeightUnitFromCode, WEIGHT_UNIT_SUFFIX } from '@shared/utils/format-utils';
 import { PeruvianPlate } from '../../../shared/ui/PeruvianPlate';
 import { FlotaBalanzaBar } from '../../../shared/ui/FlotaBalanzaBar';
 import { VehicleSchematicDiagram } from '../VehicleSchematicDiagram';
@@ -25,15 +26,18 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
     );
 }
 
-const formatNumber = (value?: number | null, suffix = '') =>
-    value == null ? '—' : `${value}${suffix}`;
-
 export function FlotaFichaTab({ expediente }: FlotaFichaTabProps) {
     const theme = useTheme();
     const { flota } = expediente;
     const ultimoViaje: FlotaHistorialViaje | undefined = expediente.viajes.items[0];
 
     const codigo = flota.codigoInterno ?? buildCodigoInterno(flota.tipoFlota, flota.flotaID);
+
+    // Unidad de peso derivada del código del catálogo (no fija "KG").
+    const cargaUnit = resolveWeightUnitFromCode(flota.tipoPeso?.codigo);
+    const cargaUnitSuffix = cargaUnit ? ` ${WEIGHT_UNIT_SUFFIX[cargaUnit]}` : '';
+    const formatCargaUtil = (value?: number | null) =>
+        value == null ? '—' : `${value.toLocaleString('es-PE')}${cargaUnitSuffix}`;
 
     return (
         <Box sx={{ px: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -86,7 +90,7 @@ export function FlotaFichaTab({ expediente }: FlotaFichaTabProps) {
                     <Grid size={{ xs: 6, md: 3 }}>
                         <Field
                             label="CARGA ÚTIL NETA"
-                            value={flota.cargaUtil != null ? `${flota.cargaUtil.toLocaleString('es-PE')} KG (${(flota.cargaUtil / 1000).toFixed(1)} TN)` : '—'}
+                            value={formatCargaUtil(flota.cargaUtil)}
                         />
                     </Grid>
                     <Grid size={{ xs: 6, md: 3 }}>
@@ -158,7 +162,7 @@ export function FlotaFichaTab({ expediente }: FlotaFichaTabProps) {
                             <Field label="Combustible Primario" value={flota.tipoCombustibleNavigation?.nombre || '—'} />
                         </Grid>
                         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <Field label="Carga Útil Declarada" value={formatNumber(flota.cargaUtil, ' kg')} />
+                            <Field label="Carga Útil Declarada" value={formatCargaUtil(flota.cargaUtil)} />
                         </Grid>
                     </Grid>
                 </Paper>

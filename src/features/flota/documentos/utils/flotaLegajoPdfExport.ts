@@ -160,12 +160,12 @@ export function exportFlotaLegajoPdf({
 
     const finalY = (doc as JsPdfWithAutoTable).lastAutoTable?.finalY ?? currentY + 120;
 
-    // Pie de página de auditoría
+    // Pie de página: la vigencia se calcula con las fechas registradas en el sistema.
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(114, 119, 130);
     doc.text(
-        'Legajo auditado y sincronizado con el Registro Nacional de Transporte Terrestre (RNAT - MTC) • Documento de uso pericial interno EURO TRANSPORT.',
+        'Reporte generado a partir de los documentos registrados en el sistema EURO TRANSPORT. La vigencia se calcula con las fechas de vencimiento almacenadas.',
         40,
         Math.min(finalY + 24, doc.internal.pageSize.getHeight() - 20)
     );

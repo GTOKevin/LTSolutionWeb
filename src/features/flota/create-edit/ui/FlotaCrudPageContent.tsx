@@ -14,10 +14,8 @@ import {
     useTheme,
 } from '@mui/material';
 import {
-    ArrowBack,
     BadgeOutlined,
     CalendarTodayOutlined,
-    CheckCircle,
     FitScreenOutlined,
     InfoOutlined,
     LocalGasStationOutlined,
@@ -170,27 +168,6 @@ export function FlotaCrudPageContent({
                                     }}
                                 />
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-
-                                {onCancel ? (
-                                    <Button
-                                        size="small"
-                                        variant="outlined"
-                                        color="inherit"
-                                        startIcon={<ArrowBack sx={{ fontSize: '18px !important' }} />}
-                                        onClick={onCancel}
-                                        sx={{
-                                            borderRadius: 2,
-                                            fontWeight: 600,
-                                            fontSize: '0.8rem',
-                                            textTransform: 'none',
-                                        }}
-                                    >
-                                        Volver a la Flota
-                                    </Button>
-                                ) : null}
-                            </Box>
                         </Box>
 
                         {/* Header Banner Section */}
@@ -245,7 +222,7 @@ export function FlotaCrudPageContent({
                                         />
                                     </Box>
                                     <Typography variant="body2" color="text.secondary">
-                                        Actualice las características mecánicas, configuración de ejes y balance de carga homologado por el MTC.
+                                        Actualice las características mecánicas, configuración de ejes y balance de carga de la unidad.
                                     </Typography>
                                 </Box>
                             </Box>
@@ -668,18 +645,6 @@ export function FlotaCrudPageContent({
                                     <Typography variant="h6" fontWeight={700} color="text.primary">
                                         Capacidad de Flete y Balanza de Pesos
                                     </Typography>
-                                    <Chip
-                                        icon={<CheckCircle sx={{ fontSize: '14px !important', color: '#10B981 !important' }} />}
-                                        label="Normativa MTC Conforme"
-                                        size="small"
-                                        sx={{
-                                            bgcolor: alpha('#10B981', 0.1),
-                                            color: '#059669',
-                                            fontWeight: 700,
-                                            fontSize: '0.72rem',
-                                            border: `1px solid ${alpha('#10B981', 0.25)}`,
-                                        }}
-                                    />
                                 </Box>
 
                                 {/* Toggle de Unidades de Peso */}

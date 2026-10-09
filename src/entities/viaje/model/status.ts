@@ -99,6 +99,27 @@ export function resolveViajeCompletadoId(items: SelectItem[] | undefined) {
     return items?.find((item) => matchesCatalogCandidate(item.extra, VIAJE_STATUS_CODES.COMPLETADO) || matchesCatalogCandidate(item.text, VIAJE_STATUS_CODES.COMPLETADO))?.id;
 }
 
+export type ViajeStatusKey = 'agendado' | 'transito' | 'descargando' | 'completado';
+
+/**
+ * Clasifica un viaje por su `estadoID` (dato del backend) contra los ids del
+ * catálogo de estados de viaje resueltos por código. Evita inferir reglas de
+ * negocio desde el `estadoNombre` visible.
+ */
+export function resolveViajeStatusId(
+    estadoID: number | null | undefined,
+    items: SelectItem[] | undefined,
+): ViajeStatusKey | null {
+    if (estadoID == null || !items?.length) {
+        return null;
+    }
+    if (estadoID === resolveViajeAgendadoId(items)) return 'agendado';
+    if (estadoID === resolveViajeTransitoId(items)) return 'transito';
+    if (estadoID === resolveViajeDescargandoId(items)) return 'descargando';
+    if (estadoID === resolveViajeCompletadoId(items)) return 'completado';
+    return null;
+}
+
 export interface ViajeEstadoProyectado {
     estadoID: number;
     estadoNombre: string;

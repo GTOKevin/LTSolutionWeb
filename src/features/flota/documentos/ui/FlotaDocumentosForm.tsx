@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect } from 'react';
 import {
     Box,
     Button,
     CircularProgress,
     Grid,
-    IconButton,
     TextField,
     Typography,
     alpha,
@@ -12,34 +11,21 @@ import {
 } from '@mui/material';
 import {
     Tag as TagIcon,
-    CalendarToday as CalendarTodayIcon,
-    EventRepeat as EventRepeatIcon,
-    PictureAsPdf as PdfIcon,
-    Verified as VerifiedIcon,
-    SwapHoriz as SwapHorizIcon,
-    DeleteOutline as DeleteIcon,
-    UploadFile as UploadFileIcon,
-    Visibility as ViewIcon,
     Save as SaveIcon,
     CheckCircle as CheckCircleIcon,
     Alarm as AlarmIcon,
     ErrorOutline as ErrorIcon,
-    Description as FileDefaultIcon,
 } from '@mui/icons-material';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import imageCompression from 'browser-image-compression';
 import {
     createFlotaDocumentoSchema,
     FLOTA_DOCUMENTO_FORM_DEFAULTS,
     type CreateFlotaDocumentoSchema,
 } from '../../model/schema';
 import { TipoDocumentoSelect } from '@shared/components/ui/TipoDocumentoSelect';
-import { archivoApi } from '@shared/api/archivo.api';
-import { buildInternalFileUrl } from '@/shared/config/env';
-import { DocumentPreviewDialog } from '@/shared/components/ui/DocumentPreviewDialog';
-import { useToast } from '@/shared/components/ui/Toast';
-import { getErrorMessage } from '@/shared/utils/api-errors';
+import { FormDatePicker } from '@shared/components/ui/FormDatePicker';
+import { ImageUpload } from '@shared/components/ui/ImageUpload';
 import { getDocumentVigenciaMetaByExpirationDate } from '@shared/utils/document-vigencia';
 
 interface FlotaDocumentosFormProps {
@@ -75,12 +61,6 @@ function formatRemainingDuration(daysLeft?: number): string {
     return `${daysLeft} días`;
 }
 
-function getFileNameFromPath(path?: string): string {
-    if (!path) return '';
-    const parts = path.split('/');
-    return parts[parts.length - 1] || 'documento_cargado.pdf';
-}
-
 export function FlotaDocumentosForm({
     defaultValues,
     onSubmit,
@@ -90,11 +70,6 @@ export function FlotaDocumentosForm({
     viewOnly = false,
 }: FlotaDocumentosFormProps) {
     const theme = useTheme();
-    const { showToast } = useToast();
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const [uploading, setUploading] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     const {
         register,
@@ -129,50 +104,6 @@ export function FlotaDocumentosForm({
     const vigencia = fechaVencimiento
         ? getDocumentVigenciaMetaByExpirationDate(fechaVencimiento)
         : null;
-
-    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        try {
-            setUploading(true);
-            const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
-            let fileToUpload: File = file;
-
-            if (!isPdf) {
-                const options = {
-                    maxSizeMB: 0.8,
-                    maxWidthOrHeight: 1920,
-                    useWebWorker: true,
-                    fileType: file.type,
-                };
-                const compressedBlob = await imageCompression(file, options);
-                fileToUpload = new File([compressedBlob], file.name, {
-                    type: compressedBlob.type,
-                    lastModified: Date.now(),
-                });
-            }
-
-            const response = await archivoApi.upload(fileToUpload, 'flotas');
-            setValue('rutaArchivo', response.url, { shouldDirty: true, shouldValidate: true });
-            showToast({ message: 'Documento cargado correctamente', severity: 'success' });
-        } catch (error) {
-            const message = getErrorMessage(error, 'No se pudo subir el archivo.');
-            showToast({ message, severity: 'error' });
-        } finally {
-            setUploading(false);
-            if (event.target) event.target.value = '';
-        }
-    };
-
-    const handleRemoveFile = async () => {
-        setValue('rutaArchivo', '', { shouldDirty: true, shouldValidate: true });
-        showToast({ message: 'Archivo desvinculado', severity: 'info' });
-    };
-
-    const isPdfFile =
-        Boolean(rutaArchivo && /\.pdf$/i.test(rutaArchivo)) ||
-        Boolean(rutaArchivo && rutaArchivo.toLowerCase().includes('pdf'));
 
     return (
         <Box
@@ -235,7 +166,7 @@ export function FlotaDocumentosForm({
                             )}
                         />
                         <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-                            Requerido por la SUTRAN para unidades en tránsito interprovincial
+                            Clasificación del documento dentro del legajo de la unidad
                         </Typography>
                     </Box>
                 </Grid>
@@ -348,7 +279,7 @@ export function FlotaDocumentosForm({
                             }}
                         />
                         <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-                            Organismo emisor o aseguradora autorizada por el MTC
+                            Organismo emisor o aseguradora que emitió el documento
                         </Typography>
                     </Box>
                 </Grid>
@@ -356,39 +287,13 @@ export function FlotaDocumentosForm({
                 {/* Field 4: Fecha de Emisión */}
                 <Grid size={{ xs: 12, md: 6 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                        <Typography
-                            variant="caption"
-                            sx={{
-                                fontWeight: 700,
-                                fontSize: '0.875rem',
-                                color: 'text.primary',
-                            }}
-                        >
-                            Fecha de Emisión
-                        </Typography>
-                        <TextField
-                            fullWidth
-                            type="date"
-                            {...register('fechaEmision')}
+                        <FormDatePicker
+                            label="Fecha de Emisión"
+                            size="medium"
+                            registration={register('fechaEmision')}
                             error={!!errors.fechaEmision}
                             helperText={errors.fechaEmision?.message}
                             disabled={viewOnly}
-                            slotProps={{
-                                input: {
-                                    startAdornment: (
-                                        <CalendarTodayIcon
-                                            sx={{
-                                                fontSize: 20,
-                                                color: 'text.secondary',
-                                                mr: 1,
-                                            }}
-                                        />
-                                    ),
-                                    style: {
-                                        fontFamily: 'monospace',
-                                    },
-                                },
-                            }}
                             sx={{
                                 '& .MuiOutlinedInput-root': {
                                     borderRadius: 2,
@@ -411,7 +316,7 @@ export function FlotaDocumentosForm({
                             }}
                         />
                         <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-                            Inicio del período de cobertura reglamentaria
+                            Inicio del período de cobertura registrado
                         </Typography>
                     </Box>
                 </Grid>
@@ -419,16 +324,6 @@ export function FlotaDocumentosForm({
                 {/* Field 5: Fecha de Vencimiento con Semáforo Integrado (Ancho completo) */}
                 <Grid size={{ xs: 12 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                        <Typography
-                            variant="caption"
-                            sx={{
-                                fontWeight: 700,
-                                fontSize: '0.875rem',
-                                color: 'text.primary',
-                            }}
-                        >
-                            Fecha de Vencimiento
-                        </Typography>
                         <Box
                             sx={{
                                 display: 'flex',
@@ -437,29 +332,13 @@ export function FlotaDocumentosForm({
                                 gap: 1.5,
                             }}
                         >
-                            <TextField
-                                fullWidth
-                                type="date"
-                                {...register('fechaVencimiento')}
+                            <FormDatePicker
+                                label="Fecha de Vencimiento"
+                                size="medium"
+                                registration={register('fechaVencimiento')}
                                 error={!!errors.fechaVencimiento}
                                 helperText={errors.fechaVencimiento?.message}
                                 disabled={viewOnly}
-                                slotProps={{
-                                    input: {
-                                        startAdornment: (
-                                            <EventRepeatIcon
-                                                sx={{
-                                                    fontSize: 20,
-                                                    color: 'text.secondary',
-                                                    mr: 1,
-                                                }}
-                                            />
-                                        ),
-                                        style: {
-                                            fontFamily: 'monospace',
-                                        },
-                                    },
-                                }}
                                 sx={{
                                     flex: 1,
                                     '& .MuiOutlinedInput-root': {
@@ -533,179 +412,16 @@ export function FlotaDocumentosForm({
                 </Grid>
             </Grid>
 
-            {/* Dropzone Panorámico Stitch (Loaded File Card Preview / Dropzone) */}
-            <Box
-                sx={{
-                    p: { xs: 2, sm: 2.5 },
-                    borderRadius: 3,
-                    bgcolor: (theme) =>
-                        theme.palette.mode === 'dark'
-                            ? alpha(theme.palette.background.default, 0.5)
-                            : '#f0f3ff',
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 2,
-                }}
-            >
-                {rutaArchivo ? (
-                    /* Tarjeta de Archivo Cargado Stitch */
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                            bgcolor: theme.palette.background.paper,
-                            p: 1.5,
-                            borderRadius: 2,
-                            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-                            width: { xs: '100%', md: 'auto' },
-                            minWidth: { md: 340 },
-                        }}
-                    >
-                        <Box
-                            onClick={() => setPreviewUrl(buildInternalFileUrl(rutaArchivo) || null)}
-                            sx={{
-                                width: 44,
-                                height: 44,
-                                borderRadius: 2,
-                                bgcolor: isPdfFile
-                                    ? alpha(theme.palette.error.main, 0.12)
-                                    : alpha(theme.palette.primary.main, 0.12),
-                                color: isPdfFile ? 'error.main' : 'primary.main',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                shrink: 0,
-                                cursor: 'pointer',
-                            }}
-                        >
-                            {isPdfFile ? (
-                                <PdfIcon sx={{ fontSize: 24 }} />
-                            ) : (
-                                <FileDefaultIcon sx={{ fontSize: 24 }} />
-                            )}
-                        </Box>
-
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <Typography
-                                    variant="body2"
-                                    fontWeight={700}
-                                    noWrap
-                                    title={getFileNameFromPath(rutaArchivo)}
-                                    sx={{ color: 'text.primary' }}
-                                >
-                                    {getFileNameFromPath(rutaArchivo)}
-                                </Typography>
-                                <VerifiedIcon sx={{ fontSize: 16, color: 'success.main', shrink: 0 }} />
-                            </Box>
-                            <Typography
-                                variant="caption"
-                                sx={{
-                                    fontFamily: 'monospace',
-                                    color: 'text.secondary',
-                                    display: 'block',
-                                    fontSize: '0.75rem',
-                                }}
-                            >
-                                Archivo digital verificado • Repositorio pericial
-                            </Typography>
-                        </Box>
-
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            <IconButton
-                                size="small"
-                                onClick={() => setPreviewUrl(buildInternalFileUrl(rutaArchivo) || null)}
-                                title="Ver archivo"
-                                sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-                            >
-                                <ViewIcon fontSize="small" />
-                            </IconButton>
-                            {!viewOnly && (
-                                <>
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => fileInputRef.current?.click()}
-                                        title="Reemplazar archivo"
-                                        disabled={uploading}
-                                        sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-                                    >
-                                        <SwapHorizIcon fontSize="small" />
-                                    </IconButton>
-                                </>
-                            )}
-                        </Box>
-                    </Box>
-                ) : (
-                    /* Texto Informativo Stitch cuando no hay archivo */
-                    <Box sx={{ flex: 1, minWidth: 0, textAlign: { xs: 'center', md: 'left' } }}>
-                        <Typography variant="body2" fontWeight={700} sx={{ color: 'text.primary' }}>
-                            Formatos permitidos: PDF, JPG o PNG de alta resolución
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.25 }}>
-                            Tamaño máximo 5 MB. El archivo queda encriptado en el repositorio pericial de EURO TRANSPORT.
-                        </Typography>
-                    </Box>
-                )}
-
-                {/* Botón de Carga de Archivo */}
-                {!viewOnly && (
-                    <Box sx={{ alignSelf: { xs: 'stretch', md: 'auto' } }}>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            hidden
-                            accept=".pdf,.jpg,.jpeg,.png"
-                            onChange={handleFileUpload}
-                            disabled={uploading}
-                        />
-                        <Button
-                            variant="contained"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploading}
-                            startIcon={
-                                uploading ? (
-                                    <CircularProgress size={18} color="inherit" />
-                                ) : (
-                                    <UploadFileIcon sx={{ fontSize: 20 }} />
-                                )
-                            }
-                            sx={{
-                                height: 48,
-                                px: 3,
-                                borderRadius: 2,
-                                fontWeight: 700,
-                                textTransform: 'none',
-                                whiteSpace: 'nowrap',
-                                bgcolor: (theme) =>
-                                    theme.palette.mode === 'dark'
-                                        ? alpha(theme.palette.primary.main, 0.2)
-                                        : '#d8e3fb',
-                                color: (theme) =>
-                                    theme.palette.mode === 'dark'
-                                        ? theme.palette.primary.light
-                                        : '#004580',
-                                boxShadow: 'none',
-                                '&:hover': {
-                                    bgcolor: (theme) =>
-                                        theme.palette.mode === 'dark'
-                                            ? alpha(theme.palette.primary.main, 0.3)
-                                            : '#c3d5f8',
-                                    boxShadow: 'none',
-                                },
-                            }}
-                        >
-                            {uploading
-                                ? 'Subiendo Archivo...'
-                                : rutaArchivo
-                                    ? 'Cargar Otro Archivo'
-                                    : 'Cargar Nuevo Archivo'}
-                        </Button>
-                    </Box>
-                )}
-            </Box>
+            {/* Archivo del documento (componente shared ImageUpload: PDF/imagen + preview) */}
+            <ImageUpload
+                value={rutaArchivo || ''}
+                onChange={(url) => setValue('rutaArchivo', url, { shouldDirty: true, shouldValidate: true })}
+                folder="flotas"
+                label="Archivo del documento (PDF, JPG o PNG)"
+                helperText="Formatos permitidos: PDF, JPG o PNG."
+                disabled={viewOnly}
+                viewOnly={viewOnly}
+            />
 
             {/* Acciones del Formulario Stitch */}
             {!viewOnly && (
@@ -721,7 +437,7 @@ export function FlotaDocumentosForm({
                     <Button
                         type="button"
                         onClick={handleCancel}
-                        disabled={isSubmitting || uploading}
+                        disabled={isSubmitting}
                         sx={{
                             height: 48,
                             px: 3,
@@ -740,7 +456,7 @@ export function FlotaDocumentosForm({
                     <Button
                         type="submit"
                         variant="contained"
-                        disabled={isSubmitting || uploading || (isEditing && !isDirty)}
+                        disabled={isSubmitting || (isEditing && !isDirty)}
                         startIcon={
                             isSubmitting ? (
                                 <CircularProgress size={18} color="inherit" />
@@ -770,13 +486,6 @@ export function FlotaDocumentosForm({
                     </Button>
                 </Box>
             )}
-
-            {/* Modal de Previsualización de Archivo */}
-            <DocumentPreviewDialog
-                open={!!previewUrl}
-                onClose={() => setPreviewUrl(null)}
-                previewUrl={previewUrl}
-            />
         </Box>
     );
 }

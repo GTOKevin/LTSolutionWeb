@@ -8,18 +8,37 @@ export const TIPO_FLOTA_CODES = {
     TODOS: '',
 } as const;
 
-/** Prefijo de código interno por `TipoMaestroID` de la sección VEHICULO. */
-export const TIPO_FLOTA_PREFIX: Record<number, string> = {
-    101: 'TR',
-    102: 'CB',
-    103: 'CC',
-    104: 'PL',
-    105: 'CI',
-    106: 'CA',
-};
+/**
+ * Único punto de verdad de los `TipoMaestroID` de la sección VEHICULO que la UI
+ * necesita como fallback (prefijo de código interno y configuración de ejes).
+ * No pueden derivarse de forma sincrónica desde el catálogo (es async) y el
+ * backend no expone todavía el código de cada tipo, por lo que se centralizan
+ * aquí y se documenta la dependencia. NO duplicar estos ids en otros módulos.
+ *
+ * TODO(catalog): migrar a derivación por catálogo (`maestroApi.getSelect` con
+ * sección VEHICULO) cuando el backend publique el código de cada tipo de flota.
+ */
+export const TIPO_FLOTA_MAESTRO = {
+    TRACTO: { id: 101, prefix: 'TR', configEjes: true },
+    CAMA_BAJA: { id: 102, prefix: 'CB', configEjes: false },
+    CAMA_CUNA: { id: 103, prefix: 'CC', configEjes: false },
+    PLATAFORMA: { id: 104, prefix: 'PL', configEjes: false },
+    CISTERNA: { id: 105, prefix: 'CI', configEjes: false },
+    ESCOLTA_LIVIANO: { id: 106, prefix: 'CA', configEjes: false },
+} as const;
 
-/** Tipos de flota que aplican a configuración de ejes (solo Tracto). */
-export const CONFIG_EJES_APLICA: number[] = [101];
+/** Prefijo de código interno por `TipoMaestroID`, derivado de `TIPO_FLOTA_MAESTRO`. */
+export const TIPO_FLOTA_PREFIX: Record<number, string> = Object.values(TIPO_FLOTA_MAESTRO).reduce<
+    Record<number, string>
+>((acc, tipo) => {
+    acc[tipo.id] = tipo.prefix;
+    return acc;
+}, {});
+
+/** Tipos de flota que aplican a configuración de ejes, derivado de `TIPO_FLOTA_MAESTRO`. */
+export const CONFIG_EJES_APLICA: number[] = Object.values(TIPO_FLOTA_MAESTRO)
+    .filter((tipo) => tipo.configEjes)
+    .map((tipo) => tipo.id);
 
 /**
  * Indica si el tipo de unidad es una carreta (`O4`: cama baja, cama cuna,
@@ -84,12 +103,12 @@ export interface FlotaTipoTab {
 
 export const FLOTA_TABS: FlotaTipoTab[] = [
     { value: null, label: 'Todas' },
-    { value: 101, label: 'Tractocamiones' },
-    { value: 102, label: 'Cama Baja' },
-    { value: 103, label: 'Cama Cuna' },
-    { value: 104, label: 'Plataforma' },
-    { value: 105, label: 'Cisterna' },
-    { value: 106, label: 'Escoltas / Livianos' },
+    { value: TIPO_FLOTA_MAESTRO.TRACTO.id, label: 'Tractocamiones' },
+    { value: TIPO_FLOTA_MAESTRO.CAMA_BAJA.id, label: 'Cama Baja' },
+    { value: TIPO_FLOTA_MAESTRO.CAMA_CUNA.id, label: 'Cama Cuna' },
+    { value: TIPO_FLOTA_MAESTRO.PLATAFORMA.id, label: 'Plataforma' },
+    { value: TIPO_FLOTA_MAESTRO.CISTERNA.id, label: 'Cisterna' },
+    { value: TIPO_FLOTA_MAESTRO.ESCOLTA_LIVIANO.id, label: 'Escoltas / Livianos' },
 ];
 
 /** Opciones de filtro de estado operativo. `activo` se resuelve como filtro booleano. */

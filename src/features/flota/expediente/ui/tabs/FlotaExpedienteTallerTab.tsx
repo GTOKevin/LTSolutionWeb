@@ -2,16 +2,9 @@ import { useState } from 'react';
 import {
     Box,
     Button,
-    Chip,
     Grid,
     Paper,
-    Table,
-    TableBody,
     TableCell,
-    TableContainer,
-    TableHead,
-    TablePagination,
-    TableRow,
     Typography,
     alpha,
     useTheme,
@@ -19,16 +12,16 @@ import {
 import {
     Build as BuildIcon,
     Payments as PaymentsIcon,
-    Check as CheckIcon,
     Add as AddIcon,
-    Engineering as EngineeringIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
 import type { Mantenimiento } from '@entities/mantenimiento/model/types';
 import type { FlotaTallerResumen } from '@entities/flota/model/types';
+import type { PagedResponse } from '@/shared/model/types';
 import { FLOTA_QUERY_KEYS } from '@features/flota/model/query-keys';
+import { SharedTable, type Column } from '@shared/components/ui/SharedTable';
 import { FetchErrorState } from '@shared/components/ui/FetchErrorState';
 import { formatDateShort } from '@shared/utils/date-utils';
 import { formatDecimalAmount } from '@shared/utils/format-utils';
@@ -40,6 +33,15 @@ interface FlotaExpedienteTallerTabProps {
     odometroActual?: number;
     canManage?: boolean;
 }
+
+const columns: Column[] = [
+    { id: 'ot', label: 'Orden de Trabajo', minWidth: 140 },
+    { id: 'tipo', label: 'Tipo de Servicio & Alcance', minWidth: 260 },
+    { id: 'km', label: 'Lectura Odómetro', minWidth: 140 },
+    { id: 'fecha', label: 'Fecha Ejecución', minWidth: 150 },
+    { id: 'inversion', label: 'Inversión', minWidth: 120 },
+    { id: 'diagnostico', label: 'Diagnóstico', align: 'right', minWidth: 160 },
+];
 
 const getInversion = (item: Mantenimiento): number =>
     item.mantenimientoDetalles?.reduce((sum, detalle) => sum + (detalle.total ?? 0), 0) ?? 0;
@@ -56,16 +58,17 @@ export function FlotaExpedienteTallerTab({
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: [...FLOTA_QUERY_KEYS.all, 'taller', flotaId, page, rowsPerPage],
+        queryKey: FLOTA_QUERY_KEYS.taller(flotaId, page, rowsPerPage),
         queryFn: () => mantenimientoApi.getAll({ flotaID: flotaId, page: page + 1, size: rowsPerPage }),
         enabled: flotaId > 0,
     });
 
-    const items: Mantenimiento[] = data?.items ?? [];
-    const totalCount = data?.total ?? 0;
+    const tableData: PagedResponse<Mantenimiento> | undefined = data
+        ? { ...data, totalPages: data.size > 0 ? Math.ceil(data.total / data.size) : 0 }
+        : undefined;
 
-    // Cálculo del próximo mantenimiento
-    const proximoKm = resumen.proximoMantenimientoKm ?? (odometroActual ? odometroActual + 10000 : null);
+    // Próximo mantenimiento: solo se muestra si el backend lo reporta.
+    const proximoKm = resumen.proximoMantenimientoKm ?? null;
     const kmFaltantes = proximoKm != null && odometroActual != null ? Math.max(0, proximoKm - odometroActual) : null;
 
     if (isError) {
@@ -81,7 +84,7 @@ export function FlotaExpedienteTallerTab({
 
     return (
         <Box sx={{ px: { xs: 2, md: 3 }, pb: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* Banner Resumen Ejecutivo 360° Stitch S3 */}
+            {/* Banner Resumen Ejecutivo 360° */}
             <Paper
                 elevation={0}
                 sx={{
@@ -153,7 +156,7 @@ export function FlotaExpedienteTallerTab({
                                 </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
                                     <Typography variant="h6" fontWeight={800} fontFamily="monospace">
-                                        {proximoKm != null ? `${proximoKm.toLocaleString('es-PE')} KM` : 'Por Programar'}
+                                        {proximoKm != null ? `${proximoKm.toLocaleString('es-PE')} KM` : 'Sin datos'}
                                     </Typography>
                                     {kmFaltantes != null && (
                                         <Typography
@@ -166,13 +169,13 @@ export function FlotaExpedienteTallerTab({
                                     )}
                                 </Box>
                                 <Typography variant="caption" color="text.secondary">
-                                    Odómetro actual: {odometroActual ? `${odometroActual.toLocaleString('es-PE')} KM` : '—'}
+                                    Odómetro actual: {odometroActual != null ? `${odometroActual.toLocaleString('es-PE')} KM` : '—'}
                                 </Typography>
                             </Box>
                         </Box>
                     </Grid>
 
-                    {/* Sección 3: Taller Responsable Asignado + Botón Nueva OT */}
+                    {/* Sección 3: Botón Nueva OT */}
                     <Grid size={{ xs: 12, md: 4 }}>
                         <Box
                             sx={{
@@ -183,8 +186,6 @@ export function FlotaExpedienteTallerTab({
                                 gap: 2,
                             }}
                         >
-
-
                             {canManage ? (
                                 <Button
                                     variant="contained"
@@ -213,7 +214,7 @@ export function FlotaExpedienteTallerTab({
                 </Grid>
             </Paper>
 
-            {/* Tabla de Órdenes de Trabajo Stitch S3 */}
+            {/* Tabla de Órdenes de Trabajo (SharedTable) */}
             <Paper
                 elevation={0}
                 sx={{
@@ -228,159 +229,67 @@ export function FlotaExpedienteTallerTab({
                         Órdenes de Trabajo de Taller
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                        Historial y trazabilidad de servicios preventivos y correctivos efectuados a la unidad
+                        Historial y trazabilidad de servicios preventivos y correctivos registrados para la unidad
                     </Typography>
                 </Box>
 
-                <TableContainer>
-                    <Table sx={{ minWidth: 800 }}>
-                        <TableHead>
-                            <TableRow sx={{ bgcolor: theme.palette.mode === 'dark' ? alpha('#0f172a', 0.4) : '#f8fafc' }}>
-                                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', py: 1.5 }}>
-                                    Orden de Trabajo
-                                </TableCell>
-                                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', py: 1.5 }}>
-                                    Tipo de Servicio & Alcance
-                                </TableCell>
-                                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', py: 1.5 }}>
-                                    Lectura Odómetro
-                                </TableCell>
-                                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', py: 1.5 }}>
-                                    Fecha Ejecución
-                                </TableCell>
-                                <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', py: 1.5 }}>
-                                    Inversión
-                                </TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', py: 1.5 }}>
-                                    Diagnóstico Técnico
-                                </TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {isLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Cargando órdenes de taller...
-                                        </Typography>
-                                    </TableCell>
-                                </TableRow>
-                            ) : items.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                                        <EngineeringIcon sx={{ fontSize: 40, color: 'text.secondary', opacity: 0.5, mb: 1 }} />
-                                        <Typography variant="subtitle2" fontWeight={600}>
-                                            Sin órdenes de taller registradas
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            No se han realizado intervenciones mecánicas para este vehículo.
-                                        </Typography>
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                items.map((item) => (
-                                    <TableRow
-                                        key={item.mantenimientoID}
-                                        hover
-                                        sx={{
-                                            transition: 'background-color 0.15s',
-                                            '&:last-child td': { border: 0 },
-                                        }}
-                                    >
-                                        {/* Orden de Trabajo */}
-                                        <TableCell sx={{ py: 2 }}>
-                                            <Typography
-                                                variant="body2"
-                                                fontWeight={800}
-                                                fontFamily="monospace"
-                                                sx={{ color: theme.palette.primary.main }}
-                                            >
-                                                #MNT-{item.mantenimientoID.toString().padStart(5, '0')}
-                                            </Typography>
-                                        </TableCell>
-
-                                        {/* Tipo de Servicio & Alcance */}
-                                        <TableCell sx={{ py: 2 }}>
-                                            <Typography variant="body2" fontWeight={700}>
-                                                {item.tipoServicio?.nombre || 'Mantenimiento General'}
-                                            </Typography>
-                                            <Typography
-                                                variant="caption"
-                                                color="text.secondary"
-                                                sx={{
-                                                    display: 'block',
-                                                    mt: 0.25,
-                                                    maxWidth: 320,
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                    whiteSpace: 'nowrap',
-                                                }}
-                                            >
-                                                {item.motivoIngreso || item.diagnosticoMecanico || 'Inspección técnica general'}
-                                            </Typography>
-                                        </TableCell>
-
-                                        {/* Lectura Odómetro */}
-                                        <TableCell sx={{ py: 2, fontFamily: 'monospace', fontSize: '0.8rem', color: 'text.secondary' }}>
-                                            <Box>In: {item.kmIngreso?.toLocaleString('es-PE')} KM</Box>
-                                            {item.kmSalida != null && (
-                                                <Box sx={{ color: 'text.primary', fontWeight: 600 }}>
-                                                    Out: {item.kmSalida.toLocaleString('es-PE')} KM
-                                                </Box>
-                                            )}
-                                        </TableCell>
-
-                                        {/* Fecha Ejecución */}
-                                        <TableCell sx={{ py: 2, fontFamily: 'monospace', color: 'text.secondary', fontSize: '0.85rem' }}>
-                                            {formatDateShort(item.fechaIngreso)}
-                                            {item.fechaSalida ? ` → ${formatDateShort(item.fechaSalida)}` : ''}
-                                        </TableCell>
-
-                                        {/* Inversión */}
-                                        <TableCell sx={{ py: 2 }}>
-                                            <Typography variant="body2" fontWeight={800} fontFamily="monospace">
-                                                S/. {formatDecimalAmount(getInversion(item))}
-                                            </Typography>
-                                        </TableCell>
-
-                                        {/* Diagnóstico Técnico */}
-                                        <TableCell align="right" sx={{ py: 2 }}>
-                                            <Chip
-                                                icon={<CheckIcon sx={{ fontSize: '14px !important' }} />}
-                                                label={item.diagnosticoMecanico ? 'Diagnóstico OK' : 'Aprobado sin obs.'}
-                                                size="small"
-                                                sx={{
-                                                    bgcolor: alpha(theme.palette.success.main, 0.12),
-                                                    color: theme.palette.success.main,
-                                                    fontWeight: 700,
-                                                    fontSize: '0.72rem',
-                                                    height: 24,
-                                                    borderRadius: 999,
-                                                }}
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-
-                {/* Paginación */}
-                <TablePagination
-                    component="div"
-                    count={totalCount}
+                <SharedTable
+                    data={tableData}
+                    isLoading={isLoading}
                     page={page}
-                    onPageChange={(_, next) => setPage(next)}
                     rowsPerPage={rowsPerPage}
-                    onRowsPerPageChange={(e) => {
-                        setRowsPerPage(parseInt(e.target.value, 10));
+                    onPageChange={(_, next) => setPage(next)}
+                    onRowsPerPageChange={(event) => {
+                        setRowsPerPage(Number.parseInt(event.target.value, 10));
                         setPage(0);
                     }}
-                    rowsPerPageOptions={[5, 10, 20]}
-                    labelRowsPerPage="Filas por página:"
-                    labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`}
-                    sx={{ borderTop: `1px solid ${theme.palette.divider}` }}
+                    columns={columns}
+                    keyExtractor={(item) => item.mantenimientoID}
+                    variant="flat"
+                    containerSx={{ border: 'none', borderRadius: 0 }}
+                    emptyMessage="Sin órdenes de taller registradas para esta unidad."
+                    renderRow={(item) => (
+                        <>
+                            <TableCell>
+                                <Typography variant="body2" fontWeight="bold" fontFamily="monospace">
+                                    #MNT-{item.mantenimientoID.toString().padStart(5, '0')}
+                                </Typography>
+                            </TableCell>
+                            <TableCell>
+                                <Typography variant="body2" fontWeight={700}>
+                                    {item.tipoServicio?.nombre || '—'}
+                                </Typography>
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{
+                                        display: 'block',
+                                        mt: 0.25,
+                                        maxWidth: 320,
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    {item.motivoIngreso || item.diagnosticoMecanico || '—'}
+                                </Typography>
+                            </TableCell>
+                            <TableCell>
+                                <Box>In: {item.kmIngreso?.toLocaleString('es-PE') ?? '—'}</Box>
+                                {item.kmSalida != null ? (
+                                    <Box sx={{ color: 'text.primary', fontWeight: 600 }}>
+                                        Out: {item.kmSalida.toLocaleString('es-PE')}
+                                    </Box>
+                                ) : null}
+                            </TableCell>
+                            <TableCell>
+                                {formatDateShort(item.fechaIngreso)}
+                                {item.fechaSalida ? ` → ${formatDateShort(item.fechaSalida)}` : ''}
+                            </TableCell>
+                            <TableCell sx={{ fontFamily: 'monospace' }}>{formatDecimalAmount(getInversion(item))}</TableCell>
+                            <TableCell align="right">{item.diagnosticoMecanico || '—'}</TableCell>
+                        </>
+                    )}
                 />
             </Paper>
         </Box>

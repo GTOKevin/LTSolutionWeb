@@ -9,17 +9,21 @@ interface VehicleSchematicDiagramProps {
 }
 
 export function VehicleSchematicDiagram({
-    largo = 11.6,
-    ancho = 2.6,
-    alto = 1.0,
-    tipoNombre = 'Carreta Cama Baja',
-    ejes = 3,
+    largo,
+    ancho,
+    alto,
+    tipoNombre,
+    ejes,
 }: VehicleSchematicDiagramProps) {
     const theme = useTheme();
 
-    const formattedLargo = largo != null ? `${Number(largo).toFixed(2)} m` : '11.60 m';
-    const formattedAlto = alto != null ? `${Number(alto).toFixed(2)} m` : '1.00 m';
-    const formattedAncho = ancho != null ? `${Number(ancho).toFixed(2)} m` : '2.60 m';
+    const formatDimension = (value?: number | null) =>
+        value != null ? `${Number(value).toFixed(2)} m` : '—';
+
+    const formattedLargo = formatDimension(largo);
+    const formattedAlto = formatDimension(alto);
+    const formattedAncho = formatDimension(ancho);
+    const ejesLabel = ejes != null ? `${ejes} EJES` : 'EJES SIN DATO';
 
     const isDark = theme.palette.mode === 'dark';
     const blueprintBg = isDark ? alpha('#0F172A', 0.8) : '#F1F5F9';
@@ -56,7 +60,7 @@ export function VehicleSchematicDiagram({
                             fontSize: '0.75rem',
                         }}
                     >
-                        ESQUEMA TÉCNICO DIMENSIONAL • {tipoNombre?.toUpperCase()} ({ejes || 3} EJES)
+                        ESQUEMA TÉCNICO DIMENSIONAL • {tipoNombre?.toUpperCase() ?? 'UNIDAD'} ({ejesLabel})
                     </Typography>
                 </Box>
 
@@ -156,7 +160,7 @@ export function VehicleSchematicDiagram({
                         PLATAFORMA REBAJADA DE CARGA
                     </text>
                     <text x="510" y="148" fill={dimensionColor} fontSize="8.5" fontFamily="monospace" textAnchor="middle">
-                        TREN TRÍDEM POSTERIOR ({ejes || 3} EJES)
+                        TREN TRÍDEM POSTERIOR ({ejesLabel})
                     </text>
                 </svg>
             </Box>

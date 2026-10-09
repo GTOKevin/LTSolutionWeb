@@ -16,6 +16,7 @@ import { MobileListShell } from '@/shared/components/ui/MobileListShell';
 import { FlotaEstadoOperativoChip } from '@entities/flota/ui/FlotaEstadoOperativoChip';
 import { FlotaDocumentoVigenciaChip } from '@entities/flota/ui/FlotaDocumentoVigenciaChip';
 import { buildCodigoInterno } from '@entities/flota/model/constants';
+import { resolveWeightUnitFromCode, WEIGHT_UNIT_SUFFIX } from '@shared/utils/format-utils';
 
 interface FlotaMobileListProps {
     data?: PagedResponse<Flota>;
@@ -89,7 +90,9 @@ export function FlotaMobileList({
                         </Box>
                     </Box>
                 )}
-                renderBody={(flota) => (
+                renderBody={(flota) => {
+                    const cargaUnit = resolveWeightUnitFromCode(flota.tipoPeso?.codigo);
+                    return (
                     <Stack spacing={1}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Typography variant="body2" color="text.secondary">
@@ -113,7 +116,9 @@ export function FlotaMobileList({
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Typography variant="caption" color="text.secondary">Capacidad</Typography>
                                 <Typography variant="body2" fontWeight={600}>
-                                    {flota.cargaUtil != null ? `${flota.cargaUtil} kg` : '—'}
+                                    {flota.cargaUtil != null
+                                        ? `${flota.cargaUtil.toLocaleString('es-PE')}${cargaUnit ? ` ${WEIGHT_UNIT_SUFFIX[cargaUnit]}` : ''}`
+                                        : '—'}
                                 </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -136,7 +141,8 @@ export function FlotaMobileList({
                             ) : null}
                         </Box>
                     </Stack>
-                )}
+                    );
+                }}
             />
         </Box>
     );

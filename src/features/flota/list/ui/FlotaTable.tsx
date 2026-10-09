@@ -8,6 +8,7 @@ import { SharedTable, type Column } from '@/shared/components/ui/SharedTable';
 import { FlotaEstadoOperativoChip } from '@entities/flota/ui/FlotaEstadoOperativoChip';
 import { FlotaDocumentoVigenciaChip } from '@entities/flota/ui/FlotaDocumentoVigenciaChip';
 import { buildCodigoInterno } from '@entities/flota/model/constants';
+import { resolveLengthUnitFromCode, LENGTH_UNIT_SUFFIX } from '@shared/utils/format-utils';
 import { PeruvianPlate } from '../../shared/ui/PeruvianPlate';
 import { FlotaBalanzaBar } from '../../shared/ui/FlotaBalanzaBar';
 
@@ -24,9 +25,9 @@ interface FlotaTableProps {
     onScheduleWorkshop?: (flota: Flota) => void;
 }
 
-const formatDimensiones = (largo?: number, ancho?: number, alto?: number) => {
+const formatDimensiones = (largo?: number, ancho?: number, alto?: number, unitSuffix?: string) => {
     if (largo == null && ancho == null && alto == null) return '—';
-    return `${largo ?? '—'} × ${ancho ?? '—'} × ${alto ?? '—'} m`;
+    return `${largo ?? '—'} × ${ancho ?? '—'} × ${alto ?? '—'}${unitSuffix ? ` ${unitSuffix}` : ''}`;
 };
 
 export function FlotaTable({
@@ -65,6 +66,8 @@ export function FlotaTable({
             emptyMessage="No se encontraron vehículos registrados en la flota"
             renderRow={(flota) => {
                 const codigo = flota.codigoInterno ?? buildCodigoInterno(flota.tipoFlota, flota.flotaID);
+                const lengthUnit = resolveLengthUnitFromCode(flota.tipoMedida?.codigo);
+                const lengthUnitSuffix = lengthUnit ? LENGTH_UNIT_SUFFIX[lengthUnit] : '';
                 return (
                     <>
                         <TableCell>
@@ -131,7 +134,7 @@ export function FlotaTable({
 
                         <TableCell>
                             <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                                {formatDimensiones(flota.largo, flota.ancho, flota.alto)}
+                                {formatDimensiones(flota.largo, flota.ancho, flota.alto, lengthUnitSuffix)}
                             </Typography>
                         </TableCell>
 
