@@ -46,21 +46,10 @@ export function resolveVehicleDiagramVariant(flota: FlotaDiagramSource): Vehicle
         if (isFlotaDiagramCode(rawCodigo)) return rawCodigo;
     }
 
-    // Fallback por tipoFlota en catálogo maestro
+    // Fallback por tipoFlota en catálogo maestro (id estable, no por label visible).
     const maestro = getTipoFlotaMaestro(flota.tipoFlota);
     if (maestro) {
         return maestro.diagram;
-    }
-
-    // Fallback por nombre del tipo de flota si existe
-    const nombre = normalizeCodigo((flota.tipoFlotaNavigation as { nombre?: string })?.nombre);
-    if (nombre) {
-        if (nombre.includes('TRACT')) return 'TRACTO';
-        if (nombre.includes('PLATAFORM')) return 'PLATAFORMA';
-        if (nombre.includes('CISTERN')) return 'CISTERNA';
-        if (nombre.includes('CUNA')) return 'CAMA_CUNA';
-        if (nombre.includes('BAJA')) return 'CAMA_BAJA';
-        if (nombre.includes('CAMIONET')) return 'CAMIONETA';
     }
 
     return 'GENERIC';

@@ -15,9 +15,9 @@ interface TractoSchematicProps {
 }
 
 /**
- * Diagrama técnico dimensional de Tractocamión / Volvo FH Globetrotter XL.
- * Basado en la especificación visual de ingeniería de Google Stitch ("Diagrama Tracto").
- * Soporta configuración de ejes dinámica (6x4 tándem motriz o 4x2) y cotas reales.
+ * Diagrama técnico dimensional de Tractocamión (vista lateral referencial).
+ * La configuración de ejes se deriva del dato real de la unidad: no asume
+ * tándem 6x4 ni dibuja ejes cuando la configuración no está registrada.
  */
 export function TractoSchematic({
     largo,
@@ -31,16 +31,19 @@ export function TractoSchematic({
     const isDark = palette.isDark;
 
     const axleCount = resolveAxleCount(configuracionEjesCodigo, ejes);
+    const hasAxleData = axleCount > 0;
+    // Tándem solo si el dato real indica 3+ ejes; nunca por defecto.
+    const isTandem = axleCount >= 3;
     const axlePositions = distributeAxles(axleCount - 1, 600, 700);
-    const isTandem = axleCount >= 3 || (configuracionEjesCodigo?.includes('6') ?? true);
-    const configLabel = configuracionEjesNombre ?? configuracionEjesCodigo ?? (isTandem ? '6x4' : '4x2');
+    const configLabel =
+        configuracionEjesNombre
+        ?? configuracionEjesCodigo
+        ?? (hasAxleData ? (isTandem ? '6x4' : '4x2') : 'NO REGISTRADA');
 
     const largoStr = formatLengthValue(largo, lengthUnit);
     const altoStr = formatLengthValue(alto, lengthUnit);
 
-
-
-    const primaryColor = isDark ? '#38BDF8' : '#004580';
+    const primaryColor = palette.primary;
     const outlineColor = isDark ? '#64748B' : '#727782';
     const gridColor = isDark ? '#1E293B' : '#d8e3fb';
     const windowFill = isDark ? 'rgba(56, 189, 248, 0.25)' : '#dee8ff';
@@ -51,7 +54,7 @@ export function TractoSchematic({
                 <pattern id="tractoGrid" patternUnits="userSpaceOnUse" width="20" height="20">
                     <path d="M 20 0 L 0 0 0 20" fill="none" stroke={gridColor} strokeDasharray="2 2" strokeWidth="0.75" />
                 </pattern>
-                <linearGradient id="cabGrad" x1="0" y1="0" x2="1" y2="1">
+                <linearGradient id="tractoCabGrad" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0%" stopColor={primaryColor} stopOpacity={isDark ? 0.28 : 0.18} />
                     <stop offset="100%" stopColor={primaryColor} stopOpacity={isDark ? 0.1 : 0.05} />
                 </linearGradient>
@@ -95,46 +98,44 @@ export function TractoSchematic({
                 end={350}
                 cross={35}
                 label={`ALTO: ${altoStr}`}
-                color="#ba1a1a"
-                txtColor="#ba1a1a"
+                color={palette.danger}
+                txtColor={palette.danger}
                 background="bg"
 
             />
 
             {/* ================= CHASIS Y ESTRUCTURA METÁLICA ================= */}
-            {/* Largueros de acero ASTM A572 */}
+            {/* Largueros de acero (geometría referencial) */}
             <rect x="220" y="270" width="530" height="24" rx="2" fill={isDark ? '#1E293B' : '#263143'} />
             <rect x="230" y="274" width="510" height="4" fill={outlineColor} opacity="0.4" />
 
             {/* Línea guía de voladizo posterior */}
             <line x1="750" y1="270" x2="750" y2="330" stroke={outlineColor} strokeDasharray="3 3" strokeWidth="1.5" />
 
-            {/* Tanque de combustible de aluminio (650L) */}
+            {/* Tanque de combustible (geometría referencial) */}
             <rect x="360" y="266" width="130" height="44" rx="8" fill={isDark ? '#334155' : '#5a5f62'} stroke={isDark ? '#0F172A' : '#263143'} strokeWidth="2" />
             <line x1="385" y1="266" x2="385" y2="310" stroke={isDark ? '#0F172A' : '#263143'} strokeWidth="2" />
             <line x1="465" y1="266" x2="465" y2="310" stroke={isDark ? '#0F172A' : '#263143'} strokeWidth="2" />
-            <text x="425" y="292" fill="#ffffff" fontFamily="Inter, monospace" fontSize="9" fontWeight="700" textAnchor="middle">
-                DIÉSEL
+            <text x="425" y="292" fill={palette.calloutText} fontFamily="Inter, monospace" fontSize="9" fontWeight="700" textAnchor="middle">
+                COMBUSTIBLE
             </text>
 
             {/* Caja de baterías y depósitos de aire comprimido */}
             <rect x="500" y="280" width="46" height="24" rx="3" fill={isDark ? '#1E293B' : '#414751'} stroke={isDark ? '#0F172A' : '#263143'} strokeWidth="1.5" />
 
-            {/* ================= QUINTA RUEDA (FIFTH WHEEL JOST) ================= */}
-            <path d="M 590 270 L 610 248 L 650 248 L 670 270 Z" fill="#713300" stroke="#ffb68b" strokeWidth="1.5" />
-            <rect x="600" y="244" width="60" height="6" rx="2" fill="#ffc9ab" stroke="#713300" strokeWidth="1.5" />
-            <circle cx="630" cy="247" r="3" fill="#ffffff" />
+            {/* ================= QUINTA RUEDA (plato de acople) ================= */}
+            <path d="M 590 270 L 610 248 L 650 248 L 670 270 Z" fill={palette.callout} stroke="#ffb68b" strokeWidth="1.5" />
+            <rect x="600" y="244" width="60" height="6" rx="2" fill="#ffc9ab" stroke={palette.callout} strokeWidth="1.5" />
+            <circle cx="630" cy="247" r="3" fill={palette.calloutText} />
 
-
-
-            {/* Callout: Quinta Rueda Jost */}
-            <rect x="540" y="100" width="180" height="20" rx="4" fill="#713300" />
-            <text x="630" y="112" fill="#ffffff" fontFamily="Inter, monospace" fontSize="9" fontWeight="700" textAnchor="middle">
+            {/* Callout: leyenda referencial */}
+            <rect x="540" y="100" width="180" height="20" rx="4" fill={palette.callout} />
+            <text x="630" y="112" fill={palette.calloutText} fontFamily="Inter, monospace" fontSize="9" fontWeight="700" textAnchor="middle">
                 DIAGRAMA REFERENCIAL
             </text>
 
-            {/* ================= CABINA VOLVO FH GLOBETROTTER XL ================= */}
-            <path d="M 120 310 L 120 180 L 160 120 L 210 90 L 310 90 L 325 90 L 325 310 Z" fill="url(#cabGrad)" stroke={primaryColor} strokeWidth="3" />
+            {/* ================= CABINA ================= */}
+            <path d="M 120 310 L 120 180 L 160 120 L 210 90 L 310 90 L 325 90 L 325 310 Z" fill="url(#tractoCabGrad)" stroke={primaryColor} strokeWidth="3" />
 
             {/* Deflector aerodinámico superior */}
             <path d="M 190 90 L 330 70 L 330 90 Z" fill={primaryColor} fillOpacity="0.35" stroke={primaryColor} strokeWidth="2" />
@@ -166,14 +167,13 @@ export function TractoSchematic({
             <rect x="330" y="100" width="12" height="170" rx="2" fill={outlineColor} stroke={isDark ? '#0F172A' : '#263143'} strokeWidth="1.5" />
             <path d="M 330 100 Q 336 82 346 80 L 346 95 Z" fill={isDark ? '#1E293B' : '#414751'} />
 
-            {/* Callout: Cabina Globetrotter */}
-
-
             {/* ================= RUEDAS Y EJES ================= */}
-            {/* 1. EJE DELANTERO DIRECTRIZ */}
-            <Neumatico key={200} cx={200} cy={320} radius={40} showSuspension={false} />
+            {hasAxleData ? (
+                <>
+                    {/* 1. EJE DELANTERO DIRECTRIZ */}
+                    <Neumatico key={200} cx={200} cy={320} radius={40} showSuspension={false} />
 
-            {/* 2. EJES TRASEROS SEGÚN CONFIGURACIÓN (Tándem 6x4 o Simple 4x2) */}
+                    {/* 2. EJES TRASEROS SEGÚN CONFIGURACIÓN (Tándem o Simple) */}
             {isTandem ? (
                 <>
 
@@ -203,8 +203,16 @@ export function TractoSchematic({
                     </text>
                 </>
             )}
-
-
+                </>
+            ) : (
+                <>
+                    {/* Sin dato de ejes: no se dibujan ruedas ni se inventa configuración */}
+                    <rect x="400" y="200" width="280" height="18" rx="3" fill={isDark ? alpha(primaryColor, 0.2) : '#e7eeff'} stroke={primaryColor} strokeWidth="1" />
+                    <text x="540" y="212" fill={primaryColor} fontFamily="Inter, monospace" fontSize="9" fontWeight="700" textAnchor="middle">
+                        CONFIGURACIÓN DE EJES NO REGISTRADA
+                    </text>
+                </>
+            )}
         </g>
     );
 }

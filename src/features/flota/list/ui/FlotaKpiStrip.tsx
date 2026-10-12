@@ -44,7 +44,7 @@ export function FlotaKpiStrip({ resumen, isLoading }: FlotaKpiStripProps) {
                     </Typography>
                     <Typography variant="caption" sx={{ color: 'text.secondary' }}>•</Typography>
                     <Typography variant="caption" sx={{ color: 'text.secondary', fontFamily: 'monospace' }}>
-                        Escoltas: <strong>{resumen?.totalEscoltas ?? 0}</strong>
+                        Camionetas: <strong>{resumen?.totalCamionetas ?? 0}</strong>
                     </Typography>
                 </Box>
             ),

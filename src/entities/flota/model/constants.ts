@@ -1,4 +1,3 @@
-import type { SelectItem } from '@shared/model/types';
 import type { FlotaEstadoOperativo, FlotaEstadoVigencia } from './types';
 
 export const TIPO_FLOTA_CODES = {
@@ -23,13 +22,13 @@ export type FlotaDiagramCode =
 /**
  * Único punto de verdad de los `TipoMaestroID` de la sección VEHICULO que la UI
  * necesita como fallback (prefijo de código interno, configuración de ejes,
- * variante de diagrama y aplicabilidad de Cama Útil). No pueden derivarse de
- * forma sincrónica desde el catálogo (es async) y el backend no expone todavía
- * el código de cada tipo, por lo que se centralizan aquí y se documenta la
- * dependencia. NO duplicar estos ids en otros módulos.
+ * variante de diagrama y aplicabilidad de Cama Útil). El backend ya expone el
+ * `codigoEspecifico` de cada tipo (VEHICULO) y la resolución primaria del
+ * diagrama usa ese código; estos ids permanecen como fallback síncrono y de
+ * prefijo de código interno. NO duplicar estos ids en otros módulos.
  *
- * TODO(catalog): migrar a derivación por catálogo (`maestroApi.getSelect` con
- * sección VEHICULO) cuando el backend publique el `codigoEspecifico` de cada tipo.
+ * Contrato compartido: los valores de `diagram` deben coincidir con
+ * `MaestroConstants.VehiculoID.CodigoEspecifico` en el backend.
  */
 export const TIPO_FLOTA_MAESTRO = {
     TRACTO: { id: 101, prefix: 'TR', configEjes: true, diagram: 'TRACTO', camaUtil: false },
@@ -66,21 +65,6 @@ export const TIPO_FLOTA_PREFIX: Record<number, string> = Object.values(TIPO_FLOT
 export const CONFIG_EJES_APLICA: number[] = Object.values(TIPO_FLOTA_MAESTRO)
     .filter((tipo) => tipo.configEjes)
     .map((tipo) => tipo.id);
-
-/**
- * Indica si el tipo de unidad es una carreta de categoría `O4` (cama baja,
- * cama cuna, plataforma o cisterna). Es una clasificación de categoría, no la
- * regla de Cama Útil — para eso usar `resolveCamaUtilAplica` (excluye cisterna).
- * Se resuelve por código del catálogo VEHICULO, sin hardcodear ids.
- */
-export function isCarretaO4(tipoFlotaId?: number | null, listaFlota: SelectItem[] = []): boolean {
-    if (!tipoFlotaId) {
-        return false;
-    }
-
-    const item = listaFlota.find((option) => option.id === tipoFlotaId);
-    return item?.extra === TIPO_FLOTA_CODES.CARRETAS;
-}
 
 /**
  * Genera el código interno derivado `{PREFIJO}-{FlotaID}`.

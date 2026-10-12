@@ -150,7 +150,7 @@ export interface FlotaResumen {
     totalTractos: number;
     totalCarretas: number;
     totalRigidos: number;
-    totalEscoltas: number;
+    totalCamionetas: number;
     disponibilidadTractos: FlotaDisponibilidad;
     unidadesEnRuta: number;
     vencimientosProximos: number;

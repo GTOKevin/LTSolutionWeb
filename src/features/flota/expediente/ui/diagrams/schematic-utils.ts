@@ -12,6 +12,20 @@ export interface BlueprintPalette {
     wheelHub: string;
     accent: string;
     deckFill: string;
+    /** Trazo primario de estructura/cabina. */
+    primary: string;
+    /** Relleno sólido primario. */
+    primaryFill: string;
+    /** Cotas/avisos de riesgo (p. ej. cota de altura, HAZMAT, paragolpes). */
+    danger: string;
+    /** Fondo de callouts (cajas de leyenda). */
+    callout: string;
+    /** Texto sobre callouts. */
+    calloutText: string;
+    /** Estructura metálica oscura. */
+    metal: string;
+    /** Detalle metálico claro. */
+    metalLight: string;
 }
 
 export function useBlueprintPalette(): BlueprintPalette {
@@ -28,6 +42,13 @@ export function useBlueprintPalette(): BlueprintPalette {
         wheelHub: '#94A3B8',
         accent: '#F59E0B',
         deckFill: isDark ? alpha('#38BDF8', 0.18) : alpha('#0284C7', 0.1),
+        primary: isDark ? '#38BDF8' : '#004580',
+        primaryFill: isDark ? '#0284C7' : '#004580',
+        danger: isDark ? '#FF8A8A' : '#ba1a1a',
+        callout: '#713300',
+        calloutText: '#ffffff',
+        metal: isDark ? '#0F172A' : '#263143',
+        metalLight: isDark ? '#38BDF8' : '#a4c9ff',
     };
 }
 

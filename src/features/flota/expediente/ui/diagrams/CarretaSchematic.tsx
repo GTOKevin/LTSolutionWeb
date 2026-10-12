@@ -18,7 +18,8 @@ interface CarretaSchematicProps {
  */
 export function CarretaSchematic({ label, largo, alto, ejes, camaUtil, lengthUnit }: CarretaSchematicProps) {
     const palette = useBlueprintPalette();
-    const axleCount = ejes && ejes > 0 ? ejes : 3;
+    // Sin dato de ejes no se dibuja tren rodante (evita inventar un trídem).
+    const axleCount = ejes && ejes > 0 ? ejes : 0;
     const axlePositions = distributeAxles(axleCount, 460, 545);
 
     return (
