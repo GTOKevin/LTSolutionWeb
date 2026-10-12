@@ -1,7 +1,6 @@
 import {
     Alert,
     Button,
-    CircularProgress,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -52,6 +51,7 @@ export function FlotaCrudRouteContent({ mode }: FlotaCrudRouteContentProps) {
         listaPeso,
         listaMedida,
         listaCombustible,
+        listaConfigEjes,
     } = useFlotaForm({
         flotaToEdit: flota ?? null,
         onSuccess: () => undefined,
@@ -71,7 +71,6 @@ export function FlotaCrudRouteContent({ mode }: FlotaCrudRouteContentProps) {
         ? 'No se pudo cargar el vehículo solicitado. Reintente la consulta o vuelva al listado.'
         : null;
     const tabs = getFlotaCrudTabs(canEditDocs);
-    const isDirty = form.formState.isDirty;
     const viewOnly = mode === 'view';
 
     return (
@@ -84,36 +83,21 @@ export function FlotaCrudRouteContent({ mode }: FlotaCrudRouteContentProps) {
             loading={mode === 'create' ? false : isLoading}
             errorMessage={loadErrorMessage ?? (activeTab === 0 ? errorMessage : null)}
             onDismissError={() => setErrorMessage(null)}
-            footer={(
-                <>
+            footer={
+                loadErrorMessage ? (
+                    <Button onClick={() => refetch()} variant="outlined">
+                        Reintentar
+                    </Button>
+                ) : activeTab === 1 || viewOnly ? (
                     <Button
                         onClick={() => navigate(APP_PATHS.flotas)}
                         variant="outlined"
                         color="inherit"
-                        disabled={isSubmitting}
                     >
-                        {viewOnly || activeTab === 1 ? 'Cerrar' : 'Cancelar'}
+                        Cerrar
                     </Button>
-
-                    {loadErrorMessage ? (
-                        <Button onClick={() => refetch()} variant="outlined">
-                            Reintentar
-                        </Button>
-                    ) : null}
-
-                    {!viewOnly && activeTab === 0 && !loadErrorMessage ? (
-                        <Button
-                            type="submit"
-                            form="flota-form"
-                            variant="contained"
-                            disabled={isSubmitting || (isEdit && !isDirty)}
-                            startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
-                        >
-                            {isEdit || createdFlotaId ? 'Guardar Cambios' : 'Crear Vehículo'}
-                        </Button>
-                    ) : null}
-                </>
-            )}
+                ) : null
+            }
         >
             {loadErrorMessage ? (
                 <Alert severity="error" sx={{ m: 3 }}>
@@ -125,11 +109,16 @@ export function FlotaCrudRouteContent({ mode }: FlotaCrudRouteContentProps) {
                     form={form}
                     onSubmit={onSubmit}
                     effectiveFlotaId={effectiveFlotaId}
+                    flotaId={shouldLoadFlota ? flotaId : null}
                     listaFlota={listaFlota}
                     listaPeso={listaPeso}
                     listaMedida={listaMedida}
                     listaCombustible={listaCombustible}
+                    listaConfigEjes={listaConfigEjes}
                     viewOnly={viewOnly}
+                    onCancel={() => navigate(APP_PATHS.flotas)}
+                    isSubmitting={isSubmitting}
+                    isEdit={Boolean(isEdit || createdFlotaId)}
                 />
             )}
         </CrudTabbedPageShell>

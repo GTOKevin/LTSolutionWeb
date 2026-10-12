@@ -7,13 +7,16 @@ import {
 } from '@mui/material';
 import {
     LocalShipping as TruckIcon,
-    CalendarToday as CalendarIcon,
-    LocalGasStation as FuelIcon
+    Speed as OdometerIcon,
+    Person as PersonIcon
 } from '@mui/icons-material';
 import type { Flota } from '@entities/flota/model/types';
 import type { PagedResponse } from '@/shared/model/types';
-import { StatusChip } from '@shared/components/ui/StatusChip';
 import { MobileListShell } from '@/shared/components/ui/MobileListShell';
+import { FlotaEstadoOperativoChip } from '@entities/flota/ui/FlotaEstadoOperativoChip';
+import { FlotaDocumentoVigenciaChip } from '@entities/flota/ui/FlotaDocumentoVigenciaChip';
+import { buildCodigoInterno } from '@entities/flota/model/constants';
+import { resolveWeightUnitFromCode, WEIGHT_UNIT_SUFFIX } from '@shared/utils/format-utils';
 
 interface FlotaMobileListProps {
     data?: PagedResponse<Flota>;
@@ -25,6 +28,7 @@ interface FlotaMobileListProps {
     onView: (flota: Flota) => void;
     onEdit?: (flota: Flota) => void;
     onDelete?: (flota: Flota) => void;
+    onScheduleWorkshop?: (flota: Flota) => void;
 }
 
 export function FlotaMobileList({
@@ -36,7 +40,8 @@ export function FlotaMobileList({
     onRowsPerPageChange,
     onView,
     onEdit,
-    onDelete
+    onDelete,
+    onScheduleWorkshop
 }: FlotaMobileListProps) {
     const theme = useTheme();
 
@@ -58,6 +63,9 @@ export function FlotaMobileList({
                 onView={onView}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onPrimaryAction={onScheduleWorkshop}
+                canPrimaryAction={() => Boolean(onScheduleWorkshop)}
+                getPrimaryActionLabel={() => 'Programar Taller'}
                 renderHeader={(flota) => (
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                         <Box sx={{ 
@@ -76,46 +84,65 @@ export function FlotaMobileList({
                             <Typography variant="subtitle1" fontWeight={700} fontFamily="monospace">
                                 {flota.placa}
                             </Typography>
-                            <Typography variant="body2" color="text.primary">
-                                {flota.marca} {flota.modelo}
+                            <Typography variant="caption" color="text.secondary">
+                                {flota.codigoInterno ?? buildCodigoInterno(flota.tipoFlota, flota.flotaID)}
                             </Typography>
                         </Box>
                     </Box>
                 )}
-                renderBody={(flota) => (
+                renderBody={(flota) => {
+                    const cargaUnit = resolveWeightUnitFromCode(flota.tipoPeso?.codigo);
+                    return (
                     <Stack spacing={1}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <TruckIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                                <Typography variant="body2" color="text.secondary">
-                                    {flota.tipoFlotaNavigation?.nombre || `Tipo ${flota.tipoFlota}`}
-                                </Typography>
-                            </Box>
-                            <StatusChip active={flota.estado} />
+                            <Typography variant="body2" color="text.secondary">
+                                {flota.tipoFlotaNavigation?.nombre || `Tipo ${flota.tipoFlota}`} · {flota.marca} {flota.modelo}
+                            </Typography>
+                            <FlotaEstadoOperativoChip estado={flota.estadoOperativo} active={flota.estado} />
                         </Box>
-                        
-                        <Box sx={{ 
-                            p: 1.5, 
+
+                        <Box sx={{
+                            p: 1.5,
                             bgcolor: alpha(theme.palette.background.default, 0.5),
                             borderRadius: 2,
                             display: 'flex',
-                            gap: 2
+                            flexDirection: 'column',
+                            gap: 1
                         }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <CalendarIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                <Typography variant="body2" color="text.secondary">
-                                    {flota.anio}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography variant="caption" color="text.secondary">Doc. Vigencia</Typography>
+                                <FlotaDocumentoVigenciaChip documento={flota.documentoCritico} />
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography variant="caption" color="text.secondary">Capacidad</Typography>
+                                <Typography variant="body2" fontWeight={600}>
+                                    {flota.cargaUtil != null
+                                        ? `${flota.cargaUtil.toLocaleString('es-PE')}${cargaUnit ? ` ${WEIGHT_UNIT_SUFFIX[cargaUnit]}` : ''}`
+                                        : '—'}
                                 </Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <FuelIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                <Typography variant="body2" color="text.secondary">
-                                    {flota.tipoCombustibleNavigation?.nombre || `Combustible ${flota.tipoCombustibleID}`}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <OdometerIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                    <Typography variant="caption" color="text.secondary">Odómetro</Typography>
+                                </Box>
+                                <Typography variant="body2" fontWeight={600}>
+                                    {flota.odometroActual != null ? `${flota.odometroActual} km` : '—'}
                                 </Typography>
                             </Box>
+                            {flota.conductorAsignado ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        <PersonIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                        <Typography variant="caption" color="text.secondary">Conductor</Typography>
+                                    </Box>
+                                    <Typography variant="body2" fontWeight={600}>{flota.conductorAsignado}</Typography>
+                                </Box>
+                            ) : null}
                         </Box>
                     </Stack>
-                )}
+                    );
+                }}
             />
         </Box>
     );

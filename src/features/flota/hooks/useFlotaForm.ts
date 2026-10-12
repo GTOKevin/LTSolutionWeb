@@ -2,13 +2,21 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { maestroApi } from '@entities/tipo-maestro/api/tipo-maestro.api';
-import { createFlotaSchema, type CreateFlotaSchema } from '../model/schema';
+import {
+    createFlotaSchema,
+    FLOTA_FORM_DEFAULTS,
+    mapFlotaToFormValues,
+    type CreateFlotaInput,
+    type CreateFlotaSchema,
+} from '../model/schema';
 import { useEffect } from 'react';
 import type { Flota } from '@entities/flota/model/types';
 import { handleBackendErrors } from '@shared/utils/form-validation';
-import { SECCION_MAESTRO } from '@entities/master-data/model/constants';
+import { SECCION_MAESTRO, TIPO_MAESTRO_CODES } from '@entities/master-data/model/constants';
+import { getSelectItemId } from '@entities/master-data/lib/catalog-utils';
 import { useCreateFlota, useUpdateFlota } from './useFlotaCrud';
 import { useCrudFormPageState } from '@shared/hooks/useCrudFormPageState';
+import { FLOTA_QUERY_KEYS } from '../model/query-keys';
 
 interface UseFlotaFormProps {
     flotaToEdit?: Flota | null;
@@ -65,85 +73,59 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
         enabled: open
     });
 
+    const { data: configuracionesEjes } = useQuery({
+        queryKey: FLOTA_QUERY_KEYS.configuracionesEjes(),
+        queryFn: () => maestroApi.getSelect(undefined, SECCION_MAESTRO.CONFIG_EJES),
+        enabled: open
+    });
+
     const listaFlota = tiposFlota || [];
     const listaPeso = tiposPeso || [];
     const listaMedida = tiposMedida || [];
     const listaCombustible = tiposCombustible || [];
+    const listaConfigEjes = configuracionesEjes || [];
 
     // --- Form ---
     const form = useForm({
         resolver: zodResolver(createFlotaSchema),
-        defaultValues: {
-            activo: true,
-            tipoFlota: 0,
-            marca: '',
-            modelo: '',
-            placa: '',
-            anio: new Date().getFullYear(),
-            color: '',
-            ejes: 0,
-            tipoPesoID: 0,
-            pesoBruto: 0,
-            pesoNeto: 0,
-            cargaUtil: 0,
-            tipoMedidaID: 0,
-            largo: 0,
-            alto: 0,
-            ancho: 0,
-            tipoCombustibleID: 0,
-        }
+        defaultValues: FLOTA_FORM_DEFAULTS,
     });
 
-    const { reset, setError } = form;
+    const { reset, setError, setValue, getValues } = form;
 
     // --- Effects ---
     useEffect(() => {
         if (open) {
             if (flotaToEdit) {
-                reset({
-                    tipoFlota: flotaToEdit.tipoFlota,
-                    marca: flotaToEdit.marca || '',
-                    modelo: flotaToEdit.modelo || '',
-                    placa: flotaToEdit.placa,
-                    anio: flotaToEdit.anio,
-                    color: flotaToEdit.color || '',
-                    ejes: flotaToEdit.ejes,
-                    tipoPesoID: flotaToEdit.tipoPesoID,
-                    pesoBruto: flotaToEdit.pesoBruto,
-                    pesoNeto: flotaToEdit.pesoNeto,
-                    cargaUtil: flotaToEdit.cargaUtil,
-                    tipoMedidaID: flotaToEdit.tipoMedidaID,
-                    largo: flotaToEdit.largo,
-                    alto: flotaToEdit.alto,
-                    ancho: flotaToEdit.ancho,
-                    tipoCombustibleID: flotaToEdit.tipoCombustibleID,
-                    activo: flotaToEdit.estado
-                });
+                reset(mapFlotaToFormValues(flotaToEdit));
             } else {
-                reset({
-                    tipoFlota: 0,
-                    marca: '',
-                    modelo: '',
-                    placa: '',
-                    anio: new Date().getFullYear(),
-                    color: '',
-                    ejes: 0,
-                    tipoPesoID: 0,
-                    pesoBruto: 0,
-                    pesoNeto: 0,
-                    cargaUtil: 0,
-                    tipoMedidaID: 0,
-                    largo: 0,
-                    alto: 0,
-                    ancho: 0,
-                    tipoCombustibleID: 0,
-                    activo: true,
-                });
+                reset(FLOTA_FORM_DEFAULTS);
             }
 
             return resetUiState();
         }
     }, [open, flotaToEdit, reset, resetUiState]);
+
+    // En modo crear (sin edición ni creación previa), precarga los catálogos por código.
+    useEffect(() => {
+        if (!open || flotaToEdit || createdId) {
+            return;
+        }
+
+        const defaultTipoPesoID = getSelectItemId(tiposPeso, [TIPO_MAESTRO_CODES.PESO_KILOGRAMO]);
+        const defaultTipoMedidaID = getSelectItemId(tiposMedida, [TIPO_MAESTRO_CODES.MEDIDA_METRO]);
+        const defaultTipoCombustibleID = getSelectItemId(tiposCombustible, [TIPO_MAESTRO_CODES.COMBUSTIBLE_DIESEL]);
+
+        if (!(Number(getValues('tipoPesoID')) > 0) && defaultTipoPesoID) {
+            setValue('tipoPesoID', defaultTipoPesoID);
+        }
+        if (!(Number(getValues('tipoMedidaID')) > 0) && defaultTipoMedidaID) {
+            setValue('tipoMedidaID', defaultTipoMedidaID);
+        }
+        if (!(Number(getValues('tipoCombustibleID')) > 0) && defaultTipoCombustibleID) {
+            setValue('tipoCombustibleID', defaultTipoCombustibleID);
+        }
+    }, [open, flotaToEdit, createdId, tiposPeso, tiposMedida, tiposCombustible, setValue, getValues]);
 
     // --- Mutations ---
     const handleError = (error: unknown) => {
@@ -193,11 +175,13 @@ export function useFlotaForm({ flotaToEdit, onSuccess, onClose, open }: UseFlota
         isEdit,
         createdFlotaId: createdId,
         isSubmitting: createMutation.isPending || updateMutation.isPending,
-        
+        defaults: FLOTA_FORM_DEFAULTS as CreateFlotaInput,
+
         // Catalogs
         listaFlota,
         listaPeso,
         listaMedida,
-        listaCombustible
+        listaCombustible,
+        listaConfigEjes,
     };
 }
