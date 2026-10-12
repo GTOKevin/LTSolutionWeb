@@ -2,6 +2,8 @@ export interface TipoMaestro {
     tipoMaestroID: number;
     nombre: string;
     codigo?: string;
+    /** Código de negocio específico del catálogo (p. ej. `TRACTO`, `CAMA_BAJA`). */
+    codigoEspecifico?: string;
     seccion?: string;
     activo: boolean;
 }

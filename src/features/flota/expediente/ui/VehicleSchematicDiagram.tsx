@@ -1,169 +1,139 @@
-import { Box, Typography, useTheme, alpha } from '@mui/material';
+import type { LengthUnit } from '@shared/utils/format-utils';
+import {
+    resolveAxleCount,
+    resolveCamaUtilAplica,
+    type VehicleDiagramVariant,
+} from '@entities/flota/model/diagram';
+import { SchematicFrame } from './diagrams/SchematicFrame';
+import { formatLengthValue } from './diagrams/schematic-utils';
+import { TractoSchematic } from './diagrams/TractoSchematic';
+import { CarretaSchematic } from './diagrams/CarretaSchematic';
+import { PlataformaSchematic } from './diagrams/PlataformaSchematic';
+import { CisternaSchematic } from './diagrams/CisternaSchematic';
+import { CamionetaSchematic } from './diagrams/CamionetaSchematic';
+import { GenericSchematic } from './diagrams/GenericSchematic';
 
-interface VehicleSchematicDiagramProps {
+export interface VehicleSchematicDiagramProps {
+    variant: VehicleDiagramVariant;
+    tipoNombre?: string | null;
+    ejes?: number | null;
     largo?: number | null;
     ancho?: number | null;
     alto?: number | null;
-    tipoNombre?: string | null;
-    ejes?: number | null;
+    camaUtil?: number | null;
+    configuracionEjesCodigo?: string | null;
+    configuracionEjesNombre?: string | null;
+    codigoEspecifico?: string | null;
+    tipoFlotaId?: number | null;
+    lengthUnit?: LengthUnit;
 }
 
+/**
+ * Dispatcher del esquema técnico dimensional. Selecciona el diagrama blueprint
+ * según la variante resuelta del tipo de unidad y dibuja la cota de Cama Útil
+ * solo cuando aplica y existe el dato.
+ */
 export function VehicleSchematicDiagram({
+    variant,
+    tipoNombre,
+    ejes,
     largo,
     ancho,
     alto,
-    tipoNombre,
-    ejes,
+    camaUtil,
+    configuracionEjesCodigo,
+    configuracionEjesNombre,
+    codigoEspecifico,
+    tipoFlotaId,
+    lengthUnit,
 }: VehicleSchematicDiagramProps) {
-    const theme = useTheme();
+    const axleCount = resolveAxleCount(configuracionEjesCodigo, ejes);
+    const ejesLabel = axleCount > 0 ? `${axleCount} EJES` : 'EJES SIN DATO';
+    const showCamaUtil = resolveCamaUtilAplica(codigoEspecifico, tipoFlotaId) && camaUtil != null;
+    const camaUtilValue = showCamaUtil ? camaUtil : null;
 
-    const formatDimension = (value?: number | null) =>
-        value != null ? `${Number(value).toFixed(2)} m` : '—';
+    const frameConfig = (() => {
+        switch (variant) {
+            case 'TRACTO':
+                return { viewBox: '0 0 860 420', minWidth: 640, maxHeight: 350, showDefaultGroundLine: false };
+            case 'PLATAFORMA':
+                return { viewBox: '0 0 960 380', minWidth: 680, maxHeight: 330, showDefaultGroundLine: false };
+            case 'CISTERNA':
+                return { viewBox: '0 0 1020 420', minWidth: 720, maxHeight: 350, showDefaultGroundLine: false };
+            case 'CAMA_BAJA':
+            case 'CAMA_CUNA':
+            default:
+                return { viewBox: '0 0 600 160', minWidth: 480, maxHeight: 180, showDefaultGroundLine: true };
+        }
+    })();
 
-    const formattedLargo = formatDimension(largo);
-    const formattedAlto = formatDimension(alto);
-    const formattedAncho = formatDimension(ancho);
-    const ejesLabel = ejes != null ? `${ejes} EJES` : 'EJES SIN DATO';
-
-    const isDark = theme.palette.mode === 'dark';
-    const blueprintBg = isDark ? alpha('#0F172A', 0.8) : '#F1F5F9';
-    const strokeColor = isDark ? '#38BDF8' : '#0284C7';
-    const chassisFill = isDark ? alpha('#0284C7', 0.4) : alpha('#0284C7', 0.2);
-    const dimensionColor = isDark ? '#94A3B8' : '#475569';
+    const renderVariant = () => {
+        switch (variant) {
+            case 'TRACTO':
+                return (
+                    <TractoSchematic
+                        largo={largo}
+                        alto={alto}
+                        ejes={ejes}
+                        configuracionEjesCodigo={configuracionEjesCodigo}
+                        configuracionEjesNombre={configuracionEjesNombre}
+                        lengthUnit={lengthUnit}
+                    />
+                );
+            case 'CAMA_BAJA':
+            case 'CAMA_CUNA':
+                return (
+                    <CarretaSchematic
+                        label={variant === 'CAMA_CUNA' ? 'CAMA CUNA' : 'CAMA BAJA'}
+                        largo={largo}
+                        alto={alto}
+                        ejes={ejes}
+                        camaUtil={camaUtilValue}
+                        lengthUnit={lengthUnit}
+                    />
+                );
+            case 'PLATAFORMA':
+                return (
+                    <PlataformaSchematic
+                        largo={largo}
+                        alto={alto}
+                        ejes={ejes}
+                        camaUtil={camaUtilValue}
+                        lengthUnit={lengthUnit}
+                    />
+                );
+            case 'CISTERNA':
+                return (
+                    <CisternaSchematic largo={largo} alto={alto} ejes={ejes} lengthUnit={lengthUnit} />
+                );
+            case 'CAMIONETA':
+                return <CamionetaSchematic largo={largo} alto={alto} lengthUnit={lengthUnit} />;
+            default:
+                return (
+                    <GenericSchematic
+                        largo={largo}
+                        alto={alto}
+                        ejes={ejes}
+                        camaUtil={camaUtilValue}
+                        configuracionEjesCodigo={configuracionEjesCodigo}
+                        lengthUnit={lengthUnit}
+                    />
+                );
+        }
+    };
 
     return (
-        <Box
-            sx={{
-                width: '100%',
-                borderRadius: 3,
-                border: `1px solid ${theme.palette.divider}`,
-                bgcolor: blueprintBg,
-                p: { xs: 2, md: 2.5 },
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1.5,
-                position: 'relative',
-                overflow: 'hidden',
-            }}
+        <SchematicFrame
+            tipoNombre={tipoNombre}
+            ejesLabel={ejesLabel}
+            anchoLabel={formatLengthValue(ancho, lengthUnit)}
+            altoLabel={formatLengthValue(alto, lengthUnit)}
+            viewBox={frameConfig.viewBox}
+            minWidth={frameConfig.minWidth}
+            maxHeight={frameConfig.maxHeight}
+            showDefaultGroundLine={frameConfig.showDefaultGroundLine}
         >
-            {/* Header del diagrama con etiquetas técnicas */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography
-                        variant="caption"
-                        sx={{
-                            fontFamily: 'monospace',
-                            fontWeight: 800,
-                            letterSpacing: '0.08em',
-                            textTransform: 'uppercase',
-                            color: 'primary.main',
-                            fontSize: '0.75rem',
-                        }}
-                    >
-                        ESQUEMA TÉCNICO DIMENSIONAL • {tipoNombre?.toUpperCase() ?? 'UNIDAD'} ({ejesLabel})
-                    </Typography>
-                </Box>
-
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
-                        Ancho: <strong>{formattedAncho}</strong>
-                    </Typography>
-                    <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
-                        Alto: <strong>{formattedAlto}</strong>
-                    </Typography>
-                </Box>
-            </Box>
-
-            {/* Gráfico SVG Técnico (Blueprint) */}
-            <Box sx={{ width: '100%', overflowX: 'auto', py: 1 }}>
-                <svg
-                    viewBox="0 0 600 160"
-                    width="100%"
-                    height="100%"
-                    style={{ minWidth: 480, maxHeight: 160, display: 'block' }}
-                >
-                    {/* Línea de Cota Superior (Largo Total) */}
-                    <g stroke={dimensionColor} strokeWidth="1.2">
-                        <line x1="30" y1="20" x2="570" y2="20" strokeDasharray="3 3" />
-                        <line x1="30" y1="14" x2="30" y2="26" />
-                        <line x1="570" y1="14" x2="570" y2="26" />
-                        <polyline points="36,17 30,20 36,23" fill="none" />
-                        <polyline points="564,17 570,20 564,23" fill="none" />
-                    </g>
-                    <text
-                        x="300"
-                        y="16"
-                        fill={dimensionColor}
-                        fontSize="11"
-                        fontWeight="700"
-                        fontFamily="monospace"
-                        textAnchor="middle"
-                    >
-                        LONGITUD TOTAL: {formattedLargo}
-                    </text>
-
-                    {/* Chasis y Carrocería Vectorial */}
-                    <path
-                        d="M 35,55 L 120,55 L 145,90 L 430,90 L 450,80 L 565,80 L 565,102 L 440,102 L 420,112 L 140,112 L 120,78 L 35,78 Z"
-                        fill={chassisFill}
-                        stroke={strokeColor}
-                        strokeWidth="2"
-                    />
-
-                    {/* Plataforma superior de carga texturizada */}
-                    <line x1="145" y1="88" x2="430" y2="88" stroke="#FFFFFF" strokeWidth="2.5" opacity="0.8" />
-
-                    {/* Acople Cuello de Ganso / Kingpin */}
-                    <circle cx="65" cy="85" r="4.5" fill="#F59E0B" />
-                    <line x1="65" y1="85" x2="65" y2="100" stroke="#F59E0B" strokeWidth="2" />
-                    <text x="65" y="112" fill={dimensionColor} fontSize="8.5" fontFamily="monospace" textAnchor="middle">
-                        KING PIN
-                    </text>
-
-                    {/* Cota de Altura de Plataforma */}
-                    <g stroke={dimensionColor} strokeWidth="1">
-                        <line x1="285" y1="90" x2="285" y2="135" />
-                        <line x1="280" y1="90" x2="290" y2="90" />
-                        <line x1="280" y1="135" x2="290" y2="135" />
-                    </g>
-                    <text x="295" y="115" fill={dimensionColor} fontSize="9" fontWeight="700" fontFamily="monospace">
-                        {formattedAlto}
-                    </text>
-
-                    {/* Ruedas y Tren Posterior (3 Ejes) */}
-                    <g fill={isDark ? '#1E293B' : '#334155'} stroke={strokeColor} strokeWidth="2">
-                        {/* Eje 1 */}
-                        <circle cx="475" cy="115" r="15" />
-                        <circle cx="475" cy="115" r="6" fill="#94A3B8" />
-                        {/* Eje 2 */}
-                        <circle cx="510" cy="115" r="15" />
-                        <circle cx="510" cy="115" r="6" fill="#94A3B8" />
-                        {/* Eje 3 */}
-                        <circle cx="545" cy="115" r="15" />
-                        <circle cx="545" cy="115" r="6" fill="#94A3B8" />
-                    </g>
-
-                    {/* Línea de Suelo / Rasante */}
-                    <line
-                        x1="20"
-                        y1="135"
-                        x2="580"
-                        y2="135"
-                        stroke={dimensionColor}
-                        strokeWidth="1"
-                        strokeDasharray="4 2"
-                        opacity="0.4"
-                    />
-
-                    {/* Etiquetas descriptivas de zonas */}
-                    <text x="285" y="80" fill={strokeColor} fontSize="9" fontWeight="700" fontFamily="monospace" textAnchor="middle">
-                        PLATAFORMA REBAJADA DE CARGA
-                    </text>
-                    <text x="510" y="148" fill={dimensionColor} fontSize="8.5" fontFamily="monospace" textAnchor="middle">
-                        TREN TRÍDEM POSTERIOR ({ejesLabel})
-                    </text>
-                </svg>
-            </Box>
-        </Box>
+            {renderVariant()}
+        </SchematicFrame>
     );
 }

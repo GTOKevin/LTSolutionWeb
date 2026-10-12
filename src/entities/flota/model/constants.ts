@@ -9,23 +9,50 @@ export const TIPO_FLOTA_CODES = {
 } as const;
 
 /**
+ * Variante de diagrama blueprint asociada a un tipo de unidad. Los códigos
+ * coinciden con el `codigoEspecifico` que expone el catálogo VEHICULO.
+ */
+export type FlotaDiagramCode =
+    | 'TRACTO'
+    | 'CAMA_BAJA'
+    | 'CAMA_CUNA'
+    | 'PLATAFORMA'
+    | 'CISTERNA'
+    | 'CAMIONETA';
+
+/**
  * Único punto de verdad de los `TipoMaestroID` de la sección VEHICULO que la UI
- * necesita como fallback (prefijo de código interno y configuración de ejes).
- * No pueden derivarse de forma sincrónica desde el catálogo (es async) y el
- * backend no expone todavía el código de cada tipo, por lo que se centralizan
- * aquí y se documenta la dependencia. NO duplicar estos ids en otros módulos.
+ * necesita como fallback (prefijo de código interno, configuración de ejes,
+ * variante de diagrama y aplicabilidad de Cama Útil). No pueden derivarse de
+ * forma sincrónica desde el catálogo (es async) y el backend no expone todavía
+ * el código de cada tipo, por lo que se centralizan aquí y se documenta la
+ * dependencia. NO duplicar estos ids en otros módulos.
  *
  * TODO(catalog): migrar a derivación por catálogo (`maestroApi.getSelect` con
- * sección VEHICULO) cuando el backend publique el código de cada tipo de flota.
+ * sección VEHICULO) cuando el backend publique el `codigoEspecifico` de cada tipo.
  */
 export const TIPO_FLOTA_MAESTRO = {
-    TRACTO: { id: 101, prefix: 'TR', configEjes: true },
-    CAMA_BAJA: { id: 102, prefix: 'CB', configEjes: false },
-    CAMA_CUNA: { id: 103, prefix: 'CC', configEjes: false },
-    PLATAFORMA: { id: 104, prefix: 'PL', configEjes: false },
-    CISTERNA: { id: 105, prefix: 'CI', configEjes: false },
-    ESCOLTA_LIVIANO: { id: 106, prefix: 'CA', configEjes: false },
-} as const;
+    TRACTO: { id: 101, prefix: 'TR', configEjes: true, diagram: 'TRACTO', camaUtil: false },
+    CAMA_BAJA: { id: 102, prefix: 'CB', configEjes: false, diagram: 'CAMA_BAJA', camaUtil: true },
+    CAMA_CUNA: { id: 103, prefix: 'CC', configEjes: false, diagram: 'CAMA_CUNA', camaUtil: true },
+    PLATAFORMA: { id: 104, prefix: 'PL', configEjes: false, diagram: 'PLATAFORMA', camaUtil: true },
+    CISTERNA: { id: 105, prefix: 'CI', configEjes: false, diagram: 'CISTERNA', camaUtil: false },
+    CAMIONETA: { id: 106, prefix: 'CA', configEjes: false, diagram: 'CAMIONETA', camaUtil: false },
+} as const satisfies Record<
+    string,
+    { id: number; prefix: string; configEjes: boolean; diagram: FlotaDiagramCode; camaUtil: boolean }
+>;
+
+type FlotaTipoMaestro = (typeof TIPO_FLOTA_MAESTRO)[keyof typeof TIPO_FLOTA_MAESTRO];
+
+/** Resuelve el maestro de tipo de flota por id (fallback documentado por catálogo). */
+export function getTipoFlotaMaestro(tipoFlotaId?: number | null): FlotaTipoMaestro | undefined {
+    if (tipoFlotaId == null) {
+        return undefined;
+    }
+
+    return Object.values(TIPO_FLOTA_MAESTRO).find((tipo) => tipo.id === tipoFlotaId);
+}
 
 /** Prefijo de código interno por `TipoMaestroID`, derivado de `TIPO_FLOTA_MAESTRO`. */
 export const TIPO_FLOTA_PREFIX: Record<number, string> = Object.values(TIPO_FLOTA_MAESTRO).reduce<
@@ -41,8 +68,9 @@ export const CONFIG_EJES_APLICA: number[] = Object.values(TIPO_FLOTA_MAESTRO)
     .map((tipo) => tipo.id);
 
 /**
- * Indica si el tipo de unidad es una carreta (`O4`: cama baja, cama cuna,
- * plataforma o cisterna), donde aplica la longitud de "Cama Útil".
+ * Indica si el tipo de unidad es una carreta de categoría `O4` (cama baja,
+ * cama cuna, plataforma o cisterna). Es una clasificación de categoría, no la
+ * regla de Cama Útil — para eso usar `resolveCamaUtilAplica` (excluye cisterna).
  * Se resuelve por código del catálogo VEHICULO, sin hardcodear ids.
  */
 export function isCarretaO4(tipoFlotaId?: number | null, listaFlota: SelectItem[] = []): boolean {
@@ -108,7 +136,7 @@ export const FLOTA_TABS: FlotaTipoTab[] = [
     { value: TIPO_FLOTA_MAESTRO.CAMA_CUNA.id, label: 'Cama Cuna' },
     { value: TIPO_FLOTA_MAESTRO.PLATAFORMA.id, label: 'Plataforma' },
     { value: TIPO_FLOTA_MAESTRO.CISTERNA.id, label: 'Cisterna' },
-    { value: TIPO_FLOTA_MAESTRO.ESCOLTA_LIVIANO.id, label: 'Escoltas / Livianos' },
+    { value: TIPO_FLOTA_MAESTRO.CAMIONETA.id, label: 'Camionetas' },
 ];
 
 /** Opciones de filtro de estado operativo. `activo` se resuelve como filtro booleano. */

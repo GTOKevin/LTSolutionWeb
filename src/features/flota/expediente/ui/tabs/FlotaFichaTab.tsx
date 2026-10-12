@@ -3,8 +3,9 @@ import type { FlotaExpediente, FlotaHistorialViaje } from '@entities/flota/model
 import { FlotaEstadoOperativoChip } from '@entities/flota/ui/FlotaEstadoOperativoChip';
 import { SectionHeader } from '@shared/components/ui/SectionHeader';
 import { buildCodigoInterno } from '@entities/flota/model/constants';
+import { resolveVehicleDiagramVariant } from '@entities/flota/model/diagram';
 import { formatDateShort } from '@shared/utils/date-utils';
-import { resolveWeightUnitFromCode, WEIGHT_UNIT_SUFFIX } from '@shared/utils/format-utils';
+import { resolveLengthUnitFromCode, resolveWeightUnitFromCode, WEIGHT_UNIT_SUFFIX } from '@shared/utils/format-utils';
 import { PeruvianPlate } from '../../../shared/ui/PeruvianPlate';
 import { FlotaBalanzaBar } from '../../../shared/ui/FlotaBalanzaBar';
 import { VehicleSchematicDiagram } from '../VehicleSchematicDiagram';
@@ -33,11 +34,17 @@ export function FlotaFichaTab({ expediente }: FlotaFichaTabProps) {
 
     const codigo = flota.codigoInterno ?? buildCodigoInterno(flota.tipoFlota, flota.flotaID);
 
+    // Variante de diagrama y unidad de longitud derivadas del catálogo.
+    const diagramVariant = resolveVehicleDiagramVariant(flota);
+    const lengthUnit = resolveLengthUnitFromCode(flota.tipoMedida?.codigo);
+
     // Unidad de peso derivada del código del catálogo (no fija "KG").
     const cargaUnit = resolveWeightUnitFromCode(flota.tipoPeso?.codigo);
     const cargaUnitSuffix = cargaUnit ? ` ${WEIGHT_UNIT_SUFFIX[cargaUnit]}` : '';
     const formatCargaUtil = (value?: number | null) =>
         value == null ? '—' : `${value.toLocaleString('es-PE')}${cargaUnitSuffix}`;
+
+    const isCamioneta = diagramVariant === 'CAMIONETA';
 
     return (
         <Box sx={{ px: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -114,21 +121,30 @@ export function FlotaFichaTab({ expediente }: FlotaFichaTabProps) {
                 </Grid>
             </Paper>
 
-            {/* Esquema Técnico Dimensional (Blueprint SVG) */}
-            <Box>
-                <SectionHeader number="1" title="Esquema Técnico & Cotas Dimensionales" themeColor={theme.palette.primary.main} />
-                <VehicleSchematicDiagram
-                    largo={flota.largo}
-                    ancho={flota.ancho}
-                    alto={flota.alto}
-                    tipoNombre={flota.tipoFlotaNavigation?.nombre}
-                    ejes={flota.ejes}
-                />
-            </Box>
+            {/* Esquema Técnico Dimensional (Blueprint SVG) - Excepto Camioneta */}
+            {!isCamioneta ? (
+                <Box>
+                    <SectionHeader number="1" title="Esquema Técnico & Cotas Dimensionales" themeColor={theme.palette.primary.main} />
+                    <VehicleSchematicDiagram
+                        variant={diagramVariant}
+                        tipoNombre={flota.tipoFlotaNavigation?.nombre}
+                        ejes={flota.ejes}
+                        largo={flota.largo}
+                        ancho={flota.ancho}
+                        alto={flota.alto}
+                        camaUtil={flota.camaUtil}
+                        configuracionEjesCodigo={flota.configuracionEjes?.codigo}
+                        configuracionEjesNombre={flota.configuracionEjes?.nombre}
+                        codigoEspecifico={flota.tipoFlotaNavigation?.codigoEspecifico}
+                        tipoFlotaId={flota.tipoFlota}
+                        lengthUnit={lengthUnit}
+                    />
+                </Box>
+            ) : null}
 
             {/* Balanza de Pesos y Límites MTC */}
             <Box>
-                <SectionHeader number="2" title="Balanza de Pesos & Capacidad Autorizada" themeColor={theme.palette.success.main} />
+                <SectionHeader number={isCamioneta ? "1" : "2"} title="Balanza de Pesos & Capacidad Autorizada" themeColor={theme.palette.success.main} />
                 <FlotaBalanzaBar
                     pesoBruto={flota.pesoBruto}
                     pesoNeto={flota.pesoNeto}
@@ -139,7 +155,7 @@ export function FlotaFichaTab({ expediente }: FlotaFichaTabProps) {
 
             {/* Identificación y Especificaciones Técnicas */}
             <Box>
-                <SectionHeader number="3" title="Especificaciones Técnicas del Vehículo" themeColor={theme.palette.secondary.main} />
+                <SectionHeader number={isCamioneta ? "2" : "3"} title="Especificaciones Técnicas del Vehículo" themeColor={theme.palette.secondary.main} />
                 <Paper
                     elevation={0}
                     sx={{

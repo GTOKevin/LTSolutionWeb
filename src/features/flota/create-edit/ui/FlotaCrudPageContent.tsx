@@ -35,7 +35,8 @@ import { FormSelect } from '@/shared/components/ui/FormSelect';
 import { FlotaDocumentosList } from '../../documentos/ui/FlotaDocumentosList';
 import type { CreateFlotaSchema } from '../../model/schema';
 import type { useFlotaForm } from '../../hooks/useFlotaForm';
-import { buildCodigoInterno, CONFIG_EJES_APLICA, isCarretaO4 } from '@entities/flota/model/constants';
+import { buildCodigoInterno, CONFIG_EJES_APLICA } from '@entities/flota/model/constants';
+import { resolveCamaUtilAplica } from '@entities/flota/model/diagram';
 import { PeruvianPlate } from '../../shared/ui/PeruvianPlate';
 import { FlotaBalanzaBar } from '../../shared/ui/FlotaBalanzaBar';
 import {
@@ -101,7 +102,11 @@ export function FlotaCrudPageContent({
     const pesoNeto = Number(watch('pesoNeto')) || 0;
     const cargaUtil = Math.max(0, pesoBruto - pesoNeto);
     const configEjesVisible = CONFIG_EJES_APLICA.includes(tipoFlota);
-    const camaUtilVisible = isCarretaO4(tipoFlota, listaFlota);
+    // Cama Útil aplica solo a Cama Baja / Cama Cuna / Plataforma (excluye cisterna).
+    const camaUtilVisible = resolveCamaUtilAplica(
+        listaFlota.find((item) => item.id === tipoFlota)?.extraTwo,
+        tipoFlota,
+    );
     const codigoInterno = flotaId ? buildCodigoInterno(tipoFlota, flotaId) : 'Se generará al guardar';
 
     const currentPlaca = watch('placa') || '';
@@ -351,7 +356,12 @@ export function FlotaCrudPageContent({
                                                         if (!CONFIG_EJES_APLICA.includes(nextTipo)) {
                                                             setValue('configuracionEjesID', null, { shouldDirty: false });
                                                         }
-                                                        if (!isCarretaO4(nextTipo, listaFlota)) {
+                                                        if (
+                                                            !resolveCamaUtilAplica(
+                                                                listaFlota.find((item) => item.id === nextTipo)?.extraTwo,
+                                                                nextTipo,
+                                                            )
+                                                        ) {
                                                             setValue('camaUtil', 0, { shouldDirty: false });
                                                         }
                                                     }}

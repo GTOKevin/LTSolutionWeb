@@ -58,7 +58,7 @@ export function FlotasPageContent({ controller }: FlotasPageContentProps) {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: { xs: 2, md: 3 },
-                    height: '100%',
+                    minHeight: '100%',
                 }}
             >
                 <Box
@@ -68,6 +68,7 @@ export function FlotasPageContent({ controller }: FlotasPageContentProps) {
                         alignItems: 'flex-start',
                         gap: 2,
                         flexWrap: 'wrap',
+                        flexShrink: 0,
                     }}
                 >
                     <Box>
@@ -121,7 +122,9 @@ export function FlotasPageContent({ controller }: FlotasPageContentProps) {
                     </Box>
                 </Box>
 
-                <FlotaKpiStrip resumen={controller.resumen} isLoading={controller.isResumenLoading} />
+                <Box sx={{ flexShrink: 0 }}>
+                    <FlotaKpiStrip resumen={controller.resumen} isLoading={controller.isResumenLoading} />
+                </Box>
 
                 <Paper
                     elevation={0}
@@ -129,6 +132,7 @@ export function FlotasPageContent({ controller }: FlotasPageContentProps) {
                         border: `1px solid ${theme.palette.divider}`,
                         borderRadius: 3,
                         overflow: 'hidden',
+                        flexShrink: 0,
                     }}
                 >
                     <Box sx={{ borderBottom: `1px solid ${theme.palette.divider}`, px: 1 }}>
