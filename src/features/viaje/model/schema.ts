@@ -192,8 +192,8 @@ export const viajeSchema = z.object({
 
     // Optional fields
     cotizacionID: optionalNumber(0),
-    direccionOrigen: optionalRegexText(INPUT_VAL.DIRECCION_REGEX, DIRECCION_ERROR_MSG),
-    direccionDestino: optionalRegexText(INPUT_VAL.DIRECCION_REGEX, DIRECCION_ERROR_MSG),
+    direccionOrigen: optionalMaxRegexText(INPUT_VAL.DIRECCION_REGEX, DIRECCION_ERROR_MSG, 300, 'La dirección de origen no debe exceder 300 caracteres'),
+    direccionDestino: optionalMaxRegexText(INPUT_VAL.DIRECCION_REGEX, DIRECCION_ERROR_MSG, 300, 'La dirección de destino no debe exceder 300 caracteres'),
     fechaPartida: z.string().optional(),
     fechaLlegada: z.string().optional(),
     fechaDescarga: z.string().optional(),
