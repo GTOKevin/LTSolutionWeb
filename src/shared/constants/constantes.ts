@@ -2,6 +2,7 @@ export const INPUT_VAL = {
     PLACA_PERU_REGEX: /^[A-Z0-9]{3}-[0-9]{3,4}$/,
     TEXTO_SEGURO_REGEX: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\-_.,&\s]+$/,
     ALPHA_NUMERICO_ESPECIAL: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_/()[\]:]*$/,
+    DIRECCION_REGEX: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-_/()[\]:°#&;'"´]*$/,
     ALPHA_NUMERICO_ESPACIOS: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]*$/,
     LETRAS_ESPACIO: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/,
     ALPHA_NUMERICO_GUION_SIN_ESPACIOS: /^[a-zA-Z0-9-]*$/,
@@ -20,6 +21,7 @@ export const ERROR_MESSAGES = {
     PLACA_INVALIDA: 'Debe ser una placa válida (XXX-1234 o XXX-123)',
     TEXTO_SEGURO: 'Caracteres inválidos (Solo letras, números y ,._-& )',
     ALPHA_NUMERICO_ESPECIAL: 'Caracteres inválidos (Solo letras, números y ,._-/()[]: )',
+    DIRECCION: 'Caracteres inválidos (Solo letras, números y ,._-/()[]:°#&;\'"´ )',
     ALPHA_NUMERICO_ESPACIOS: 'Caracteres inválidos (Solo letras, números y espacios)',
     LETRAS_ESPACIO: 'Caracteres inválidos (Solo letras y espacios)',
     ALPHA_NUMERICO_GUION_SIN_ESPACIOS: 'Caracteres inválidos (Solo letras, números y guiones, sin espacios)',
@@ -36,6 +38,8 @@ export const ERROR_MESSAGES = {
 }
 
 export const ALPHA_ESPECIAL_ERROR_MSG = 'Caracteres inválidos (Solo letras, números y ,._-/()[]: )';
+
+export const DIRECCION_ERROR_MSG = ERROR_MESSAGES.DIRECCION;
 
 
 export const ROWS_PER_PAGE_OPTIONS = [5, 10, 25, 50];

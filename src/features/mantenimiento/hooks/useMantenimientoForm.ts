@@ -18,9 +18,11 @@ interface UseMantenimientoFormProps {
     onCreateSuccess?: (id: number) => void;
     onClose: () => void;
     open: boolean;
+    /** Precarga la unidad al crear un mantenimiento desde el módulo de Flota. */
+    initialFlotaID?: number;
 }
 
-export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onCreateSuccess, onClose, open }: UseMantenimientoFormProps) {
+export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onCreateSuccess, onClose, open, initialFlotaID }: UseMantenimientoFormProps) {
     const [confirmationOpen, setConfirmationOpen] = useState(false);
     const [pendingData, setPendingData] = useState<CreateMantenimientoSchema | null>(null);
     const {
@@ -93,7 +95,7 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onCreateS
                 });
             } else {
                 reset({
-                    flotaID: 0,
+                    flotaID: initialFlotaID ?? 0,
                     tipoServicioID: 0,
                     fechaIngreso: new Date().toISOString().split('T')[0],
                     fechaSalida: undefined,
@@ -117,7 +119,7 @@ export function useMantenimientoForm({ mantenimientoToEdit, onSuccess, onCreateS
                 cleanupUiState();
             };
         }
-    }, [open, mantenimientoToEdit, reset, resetUiState]);
+    }, [open, mantenimientoToEdit, reset, resetUiState, initialFlotaID]);
 
     const handleError = (error: unknown) => {
         const genericError = handleBackendErrors<CreateMantenimientoSchema>(error, setError);

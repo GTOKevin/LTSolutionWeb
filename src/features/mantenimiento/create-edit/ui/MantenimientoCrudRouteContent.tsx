@@ -9,7 +9,7 @@ import {
     Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { APP_PATHS, buildAppDetailPath } from '@shared/config/app-routes';
 import { mantenimientoApi } from '@entities/mantenimiento/api/mantenimiento.api';
 import { useMantenimientoForm } from '@features/mantenimiento/hooks/useMantenimientoForm';
@@ -26,8 +26,10 @@ interface MantenimientoCrudRouteContentProps {
 export function MantenimientoCrudRouteContent({ mode }: MantenimientoCrudRouteContentProps) {
     const navigate = useNavigate();
     const { id } = useParams();
+    const [searchParams] = useSearchParams();
     const mantenimientoId = Number(id);
     const shouldLoadMantenimiento = mode !== 'create' && Number.isFinite(mantenimientoId) && mantenimientoId > 0;
+    const initialFlotaID = mode === 'create' ? Number(searchParams.get('flotaID')) || undefined : undefined;
 
     const {
         data: mantenimiento,
@@ -63,6 +65,7 @@ export function MantenimientoCrudRouteContent({ mode }: MantenimientoCrudRouteCo
         onCreateSuccess: (createdMantenimientoId) => navigate(buildAppDetailPath(APP_PATHS.mantenimientos, createdMantenimientoId)),
         onClose: () => navigate(APP_PATHS.mantenimientos),
         open: true,
+        initialFlotaID,
     });
 
     const tabs = getMantenimientoCrudTabs(canEditDetails);

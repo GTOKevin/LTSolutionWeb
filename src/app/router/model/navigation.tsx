@@ -30,6 +30,7 @@ import {
     APP_ROUTE_SEGMENTS,
     buildAppCreatePath,
     buildAppDetailPath,
+    buildAppExpedientePath,
     buildAppViewPath,
 } from '@shared/config/app-routes';
 import { PERMISSIONS } from '@shared/constants/permissions';
@@ -39,6 +40,7 @@ export {
     APP_ROUTE_SEGMENTS,
     buildAppCreatePath,
     buildAppDetailPath,
+    buildAppExpedientePath,
     buildAppViewPath,
 };
 

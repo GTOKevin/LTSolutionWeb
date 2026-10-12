@@ -47,6 +47,22 @@ export const handleAddressKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => 
 };
 
 /**
+ * Validates and restricts input to allow letters, numbers, spaces and common
+ * address characters, including extended symbols used in real addresses
+ * (´ ° # & ; ' "). Deeper than `handleAddressKeyDown`, which relies on
+ * `ALPHA_NUMERICO_ESPECIAL` and is kept for backward compatibility.
+ *
+ * Usage: <TextField onKeyDown={handleDireccionKeyDown} ... />
+ */
+export const handleDireccionKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key.length > 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+
+    if (!INPUT_VAL.DIRECCION_REGEX.test(e.key)) {
+        e.preventDefault();
+    }
+};
+
+/**
  * Validates and restricts input to only allow letters, numbers and spaces.
  * Useful for fields like names and surnames (nombres y apellidos).
  * 

@@ -64,3 +64,7 @@ export function buildAppDetailPath(basePath: string, id: string | number) {
 export function buildAppViewPath(basePath: string, id: string | number) {
     return `${buildAppDetailPath(basePath, id)}/ver`;
 }
+
+export function buildAppExpedientePath(basePath: string, id: string | number) {
+    return `${buildAppDetailPath(basePath, id)}/expediente`;
+}
